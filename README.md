@@ -18,7 +18,7 @@ Work supported by the UWSN Lab at University of Connecticut.
 --------------------------------------
 
 #### Requirements and On-going work
-This code is meant to be as a add-on to current NS3 software and therefore requires NS3 (www.nsnam.org) and all pre-requirements of said software. Current work of Aqua-Sim Next Generation is in very early stages and therefore will be extremely buggy (so use with caution). 
+This code is meant to be as a add-on to current NS3 software and therefore requires NS-3 and all pre-requirements of said software. Current work of Aqua-Sim Next Generation is in very early stages and therefore will be extremely buggy (so use with caution). 
 
 Examples, Tests, and overall protocols are unsupported at this time.
 
