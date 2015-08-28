@@ -1,17 +1,13 @@
-Nodes = ns3::NodeContainer <node-container.h>
-			(smart ptr, create, add, get<index>)
-Poi Traffic Generate = ns3::OnOffApplication <onoff-application.h> & <on-off-helper.h>
-			(setMaxBytes, start/stop, pktSize, cbrRate)
-Mobility Model/Node Positioning = ns3::Vector <vector.h> & "Mobility" (ns3::Box, ns3::ConstantPositionMobilityModel, ns3::ConstantVelocityMobilityModel, ns3::ListPositionAllocator, ns3::MobilityHelper, etc.)
+Aqua-Sim Next Generation
 
-sink = "NetDevice" <net-device.h & net-device-container.h> ns3::NetDevice & ns3::NetDeviceContainer
+-------------------------------------
 
+Aqua-Sim is a underwater network simulator. This work consists of rewriting and porting Aqua-Sim (a package originally build on top of NS2, see http://obinet.engr.uconn.edu/wiki/index.php/Aqua-Sim for more information) to NS3 to improve upon current simulation issues such as memory leakage and usage simplicity.
 
-Channel???
+Work supported by the UWSN Lab at University of Connecticut.
 
+--------------------------------------
 
+This code is meant to be as a add-on to current NS3 software and therefore requires NS3 (www.nsnam.org) and all pre-requirements of said software. Current work of Aqua-Sim Next Generation is in very early stages and therefore will be extremely buggy (so use with caution). 
 
-
-For Routing layer: inheritance from Ipv4 (since almost all routing layers use or are based on this class)
-
-
+Examples, Tests, and overall protocols are unsupported at this time.
