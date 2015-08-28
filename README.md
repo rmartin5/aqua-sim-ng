@@ -4,7 +4,7 @@
 
 #### About
 
-Aqua-Sim is a underwater network simulator which supports a vast amount of protocols and features. Originally developed on the basis of [NS-2](http://www.isi.edu/nsnam/ns/), Aqua-Sim can effectively simulate acoustic signal attenuation and packet collisions in underwater sensor networks. Moreover, Aqua-Sim supports three-dimensional deployment. This work consists of rewriting and porting [Aqua-Sim](http://uwsn.engr.uconn.edu/wiki/index.php?title=Aqua-Sim&redirect=no) from [NS-3](www.nsnam.org) to improve upon current simulation issues such as memory leakage and usage simplicity.
+Aqua-Sim is a underwater network simulator which supports a vast amount of protocols and features. Originally developed on the basis of [NS-2](http://www.isi.edu/nsnam/ns/), Aqua-Sim can effectively simulate acoustic signal attenuation and packet collisions in underwater sensor networks. Moreover, Aqua-Sim supports three-dimensional deployment. This work consists of rewriting and porting [Aqua-Sim](http://uwsn.engr.uconn.edu/wiki/index.php?title=Aqua-Sim&redirect=no) from [NS-3](http://www.nsnam.org) to improve upon current simulation issues such as memory leakage and usage simplicity.
 
 Work supported by the UWSN Lab at University of Connecticut.
 
