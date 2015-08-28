@@ -1,0 +1,17 @@
+Nodes = ns3::NodeContainer <node-container.h>
+			(smart ptr, create, add, get<index>)
+Poi Traffic Generate = ns3::OnOffApplication <onoff-application.h> & <on-off-helper.h>
+			(setMaxBytes, start/stop, pktSize, cbrRate)
+Mobility Model/Node Positioning = ns3::Vector <vector.h> & "Mobility" (ns3::Box, ns3::ConstantPositionMobilityModel, ns3::ConstantVelocityMobilityModel, ns3::ListPositionAllocator, ns3::MobilityHelper, etc.)
+
+sink = "NetDevice" <net-device.h & net-device-container.h> ns3::NetDevice & ns3::NetDeviceContainer
+
+
+Channel???
+
+
+
+
+For Routing layer: inheritance from Ipv4 (since almost all routing layers use or are based on this class)
+
+
