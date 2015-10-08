@@ -45,11 +45,11 @@ AquaSimChannel::GetTypeId ()
     .AddAttribute ("SetProp", "A pointer to set the propagation model.",
                    PointerValue (CreateObject<AquaSimSimplePropagation> ()),
                    MakePointerAccessor (&AquaSimChannel::m_prop),
-                   MakePOinterChecker<AquaSimPropagation> ())
+                   MakePointerChecker<AquaSimPropagation> ())
     .AddAttribute ("SetNoise", "A pointer to set the noise generator.",
                    PointerValue (CreateObject<AquaSimConstNoiseGen> ()),
                    MakePointerAccessor (&AquaSimChannel::m_noiseGen),
-                   MakePOinterChecker<AquaSimNoiseGen> ())
+                   MakePointerChecker<AquaSimNoiseGen> ())
   ;
   return tid;
 }
@@ -62,16 +62,16 @@ AquaSimChannel::SetNoiseGenerator (Ptr<AquaSimNoiseGen> noiseGen)
 }
 
 void
-AquaSimChannel::SetPropagation (Ptr<AquaSimPropagation> prop)
+AquaSimChannel::SetPropagation (Ptr<AquaSimSimplePropagation> prop)
 {
   NS_ASSERT (prop);
   m_prop = prop;
 }
 
-Ptr<NetDevice>
+Ptr<AquaSimNetDevice>
 AquaSimChannel::GetDevice (uint32_t i) const
 {
-  return m_deviceList[i].first;
+  return m_deviceList[i];
 }
 
 uint32_t 
@@ -99,14 +99,16 @@ AquaSimChannel::RemoveDevice(Ptr<AquaSimNetDevice> device)
   if (m_deviceList.empty())
     NS_LOG_WARN(this << " deviceList is empty");
   else
-    std::vector<Ptr<AquaSimNetDeivce> >::const_iterator it = m_deviceList.begin();
+  {
+	std::vector<Ptr<AquaSimNetDevice> >::const_iterator it = m_deviceList.begin();
     for(; it != m_deviceList.end(); ++it)
       {
         if(m_deviceList[it] == device)
           {
-             m_deviceList.erase(it);
+             m_deviceList.erase(m_deviceList.begin() + it);
           }
       }
+  }
 }
 
 void
@@ -117,7 +119,7 @@ AquaSimChannel::Recv(Ptr<Packet> p, Ptr<AquaSimPhy> phy)
 }
 
 void
-AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<Phy> tifp)
+AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
 { 
   NS_LOG_FUNCTION(this << " Packet:" << p);
 
@@ -134,11 +136,11 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<Phy> tifp)
 
   std::vector<PktRecvUnit>* recvUnits = m_prop->ReceivedCopies(sender, p, m_deviceList);
 
-  for(int i=0; i<recvUnits.Size(); i++) {
+  for(int i=0; i<recvUnits->size(); i++) {
     if (sender == (*recvUnits)[i].recver)
       continue;
     recver = (*recvUnits)[i].recver;
-    pDelay = (*recvUnits)[i].pdelay;
+    pDelay = (*recvUnits)[i].pDelay;
 
     p->m_pStamp.Pr() = (*recvUnits)[i].pr;
     p->m_pStamp.noise() = m_noiseGen->Noise(NOW + pDelay, recver->X()
