@@ -25,7 +25,9 @@ namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (AquaSimModulation);
 
-AquaSimModulation::AquaSimModulation () {
+AquaSimModulation::AquaSimModulation () :
+    m_codingEff(1), m_sps(1), m_ber(0)
+{
 }
 
 TypeId
@@ -34,32 +36,32 @@ AquaSimConstNoiseGen::GetTypeId (void)
   static TypeId tid = TypeId ("ns3::AquaSimModulation")
     .SetParent<Object> ()
     .AddAttribute ("CodingEff", "The coding efficiency: number of symbols per bit.",
-                   TypeId::ATTR_GET|TypeId::ATTR_SET,
-                   DoubleValue (1),
-                   MakeDoubleAccessor (&AquaSimModulation::m_codingEff),
-                   MakeDoubleChecker<double> ())
+       TypeId::ATTR_GET|TypeId::ATTR_SET,
+       DoubleValue (1),
+       MakeDoubleAccessor (&AquaSimModulation::m_codingEff),
+       MakeDoubleChecker<double> ())
     .AddAttribute ("SPS", "The number of symbols per second.",
-                   TypeId::ATTR_GET|TypeId::ATTR_SET,
-                   UintegerValue (1),
-                   MakeUintegerAccessor (&AquaSimModulation::m_sps),
-                   MakeUintegerChecker<uint32_t> ())
+       TypeId::ATTR_GET|TypeId::ATTR_SET,
+       UintegerValue (1),
+       MakeUintegerAccessor (&AquaSimModulation::m_sps),
+       MakeUintegerChecker<uint32_t> ())
     .AddAttribute ("BER", "The bit error rate.",
-                   TypeId::ATTR_GET|TypeId::ATTR_SET,
-                   DoubleValue (0),
-                   MakeDoubleAccessor (&AquaSimModulation::m_ber),
-                   MakeDoubleChecker<double> ())
+       TypeId::ATTR_GET|TypeId::ATTR_SET,
+       DoubleValue (0),
+       MakeDoubleAccessor (&AquaSimModulation::m_ber),
+       MakeDoubleChecker<double> ())
   ;
   return tid;
 }
 
 double
 AquaSimModulation::TxTime (int pktSize) {
-  return pktSize*8/bps();
+  return pktSize*8/Bps();
 }
 
 int
 AquaSimModulation::PktSize (double txTime) {
-  return int(txTime*bps()/8);
+  return int(txTime*Bps()/8);
 }
 
 double
