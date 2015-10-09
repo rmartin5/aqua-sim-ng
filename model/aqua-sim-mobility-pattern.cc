@@ -14,11 +14,11 @@ NS_OBJECT_ENSURE_REGISTERED(AquaSimMobilityPattern);
 void
 AquaSimPosUpdateHelper::Expire() 
 {
-	m_mP->HandleLocUpdate();
-	if (m_posUpdateHelper.IsRunning) {
-		m_posUpdateHelper.Remove();
-	}
-	m_posUpdateHelper.Schedule(m_mP->UptIntv());
+  m_mP->HandleLocUpdate();
+  if (m_updateIntv.IsRunning()) {
+      m_updateIntv.Cancel();
+  }
+  m_updateIntv.Schedule(m_mP->UptIntv());
 }
 
 /**
@@ -29,15 +29,15 @@ AquaSimPosUpdateHelper::Expire()
 * @param Y		node's Y coordinate
 * @param Z		node's Z coordinate
 */
-LocationCache::LocationCache(Time duration,
-							Time interval, double X, double Y, double Z,
-							double dX, double dY, double dZ) :
-	locations(1 + size_t(ceil(duration / interval))),
-	m_bIndex(0), m_size(1)
+LocationCache::LocationCache(Time duration, Time interval,
+			     double X, double Y, double Z,
+			     double dX, double dY, double dZ) :
+  locations(1 + size_t(ceil(duration / interval))),
+  m_bIndex(0), m_size(1)
 {
-	this->interval = interval;
-	locations[0].loc = Location3D(X, Y, Z);
-	locations[0].sp = Speed(dX, dY, dZ);
+  m_interval = interval;
+  locations[0].loc = Location3D(X, Y, Z);
+  locations[0].sp = Speed(dX, dY, dZ);
 }
 
 /**
@@ -45,18 +45,18 @@ LocationCache::LocationCache(Time duration,
 */
 inline size_t
 LocationCache::Capacity() {
-	return locations.size();
+  return locations.size();
 }
 
 inline Time
 LocationCache::LastUpdateTime() {
-	return Empty() ? -1 : m_fstUptTime + m_interval * (m_size - 1);
+  return Empty() ? -1 : m_fstUptTime + m_interval * (m_size - 1);
 }
 
 
 bool
 LocationCache::InRange(Time t) {
-	return t >= m_fstUptTime && t < (NOW + m_interval * (Capacity() - 1));
+  return t >= m_fstUptTime && t < (Simulator::Now + m_interval * (Capacity() - 1));
 }
 
 /**
@@ -68,21 +68,21 @@ LocationCache::InRange(Time t) {
 */
 void
 LocationCache::AddNewLoc(const LocationCacheElem &lce) {
-	locations[(m_bIndex + m_size) % Capacity()] = lce;
-	if (Full())
-		m_bIndex++;
-	else
-		m_size++;
+  locations[(m_bIndex + m_size) % Capacity()] = lce;
+  if (Full())
+    m_bIndex++;
+  else
+    m_size++;
 }
 
 
 LocationCacheElem
 LocationCache::GetLocByTime(Time t) {
-	if (t < m_fstUptTime || t > LastUpdateTime()) {
-		throw std::out_of_range("LocationCache::GetLocByTime");
-	}
+  if (t < m_fstUptTime || t > LastUpdateTime()) {
+    throw std::out_of_range("LocationCache::GetLocByTime");
+  }
 
-	return locations[m_bIndex + size_t((t - m_fstUptTime) / m_interval)];
+  return locations[m_bIndex + size_t((t - m_fstUptTime) / m_interval)];
 }
 
 
@@ -98,25 +98,25 @@ m_node(NULL), m_lc(NULL), m_posUpdateHelper(this)
 TypeId
 AquaSimMobilityPattern::GetTypeId(void)
 {
-	static TypeId tid = TypeId("ns3::AquaSimMobilityPattern")
-		.SetParent<Object>()
-		.AddConstructor<AquaSimMobilityPattern>()
-		.AddAttribute("UpdateInt", "Set the update interval. Default is 0.001.")
-			TimeValue(0.001),
-			GetAccessor(&AquaSimMobilityPattern::m_updateInterval),
-			MakeTimeChecker<Time>())
-		;
-	return tid;
+  static TypeId tid = TypeId("ns3::AquaSimMobilityPattern")
+    .SetParent<Object>()
+    .AddConstructor<AquaSimMobilityPattern>()
+    .AddAttribute ("UpdateInt", "Set the update interval. Default is 0.001.",
+      TimeValue(Seconds (0.001)),
+      MakeTimeAccessor(&AquaSimMobilityPattern::m_updateInterval),
+      MakeTimeChecker())
+    ;
+  return tid;
 }
 
 
 AquaSimMobilityPattern::~AquaSimMobilityPattern() {
-delete m_lc;
+  delete m_lc;
 }
 
 void
 AquaSimMobilityPattern::SetNode(AquaSimNode *n) {
-	m_node = n;
+  m_node = n;
 }
 
 /**
@@ -124,17 +124,16 @@ AquaSimMobilityPattern::SetNode(AquaSimNode *n) {
 */
 void
 AquaSimMobilityPattern::Start() {
-	if (NULL != m_lc) {
-		delete m_lc;
-		m_lc = NULL;
-	}
+  if (NULL != m_lc) {
+    delete m_lc;
+    m_lc = NULL;
+  }
 
-	m_lc = new LocationCache(5, m_updateInterval
-		m_node->X(), m_node->Y(), m_node->Z(),
-		m_node->dX(), m_node->dY(), m_node->dZ());
-	Init();
-
-	m_posUpdateHelper.Expire(NULL);
+  m_lc = new LocationCache(5, m_updateInterval,
+			    m_node->X(), m_node->Y(), m_node->Z(),
+			    m_node->dX(), m_node->dY(), m_node->dZ());
+  Init();
+  m_posUpdateHelper.Expire();
 }
 
 
@@ -151,9 +150,9 @@ return;
 */
 LocationCacheElem
 AquaSimMobilityPattern::GenNewLoc() {
-	NS_LOG_FUNCTION(this >> "A Dummy one! Shouldn't call this function!");
-	LocationCacheElem newLoc;
-	return newLoc;
+  NS_LOG_FUNCTION(this >> "A Dummy one! Shouldn't call this function!");
+  LocationCacheElem newLoc;
+  return newLoc;
 }
 
 /*
@@ -172,47 +171,49 @@ GridKeeper::instance()->new_moves(node);
 */
 void
 AquaSimMobilityPattern::HandleLocUpdate() {
-	LocationCacheElem e;
-	while (m_lc->LastUpdateTime() < NOW) {
-		e = GenNewLoc();
-		RestrictLocByBound(e);
-		m_lc->AddNewLoc(e);
-	}
-	//find the time closest one to NOW
-	e = GetLocByTime(NOW);
-	double oldX = m_node->X();
-	m_node->X() = e.loc.X();
-	m_node->Y() = e.loc.Y();
-	m_node->Z() = e.loc.Z();
-	m_node->dX() = e.sp.dX();
-	m_node->dY() = e.sp.dY();
-	m_node->dZ() = e.sp.dZ();
-	m_node->speed() = e.sp.getSpeed();		//could be completed by MobilityModel::GetVelocity
+  LocationCacheElem e;
+  while (m_lc->LastUpdateTime() < Simulator::Now) {
+    e = GenNewLoc();
+    RestrictLocByBound(e);
+    m_lc->AddNewLoc(e);
+  }
 
-	if (oldX != m_node->X())			//TODO adjust node to satisfy topography use here T()
-		m_node->T()->updateNodesList(m_node, oldX); //X_ is the key value of SortList
+  //find the time closest one to NOW
+  Time t = Simulator::Now;
+  e = GetLocByTime(t);
+  double oldX = m_node->X();
+  m_node->X() = e.loc.X();
+  m_node->Y() = e.loc.Y();
+  m_node->Z() = e.loc.Z();
+  m_node->dX() = e.sp.dX();
+  m_node->dY() = e.sp.dY();
+  m_node->dZ() = e.sp.dZ();
+  m_node->speed() = e.sp.GetSpeed();		//could be completed by MobilityModel::GetVelocity
 
-	//updateGridKeeper(); //do I really need this?!!!!!
-	m_node->PositionUpdateTime() = NOW;
-	//record the movement
-	//namLogMobility(m_lc->lastUpdateTime(), e);
+  if (oldX != m_node->X())			//TODO adjust node to satisfy topography use here T()
+    m_node->T()->updateNodesList(m_node, oldX); //X_ is the key value of SortList
+
+  //updateGridKeeper(); //do I really need this?!!!!!
+  m_node->PositionUpdateTime() = Simulator::Now;
+  //record the movement
+  //namLogMobility(m_lc->lastUpdateTime(), e);
 }
 
 
 LocationCacheElem
 AquaSimMobilityPattern::GetLocByTime(Time t) {
-	if (!m_lc->InRange(t)) {
-		throw std::out_of_range("AquaSimMobilityPattern::GetLocByTime");
-	}
+  if (!m_lc->InRange(t)) {
+    throw std::out_of_range("AquaSimMobilityPattern::GetLocByTime");
+  }
 
-	LocationCacheElem newLce;
-	while (m_lc->LastUpdateTime() < t) {
-		newLce = GenNewLoc();
-		RestrictLocByBound(newLce);
-		m_lc->AddNewLoc(newLce);
-	}
+  LocationCacheElem newLce;
+  while (m_lc->LastUpdateTime() < t) {
+    newLce = GenNewLoc();
+    RestrictLocByBound(newLce);
+    m_lc->AddNewLoc(newLce);
+  }
 
-	return m_lc->GetLocByTime(t);
+  return m_lc->GetLocByTime(t);
 }
 
 
@@ -240,23 +241,23 @@ update_interval);
 */
 void
 AquaSimMobilityPattern::RestrictLocByBound(LocationCacheElem &lce){
-	/*
-	 * TODO
-	 * This should all be replaced using ns3::Box Class
-	 *
-	 */
-	bool recheck = true;
-	Ptr<CubicPositionAllocator> T = m_node->T();
+  /*
+   * TODO
+   * This should all be replaced using ns3::Box Class
+   *
+   */
+  bool recheck = true;
+  Ptr<CubicPositionAllocator> T = m_node->T();
 
-	while (recheck) {
-		recheck = false;
-		recheck = recheck || BounceByEdge(lce.loc.X(), lce.sp.dX(), T->GetMinX(), true);
-		recheck = recheck || BounceByEdge(lce.loc.X(), lce.sp.dX(), T->GetMaxX(), false);
-		recheck = recheck || BounceByEdge(lce.loc.Y(), lce.sp.dY(), T->GetMinY(), true);
-		recheck = recheck || BounceByEdge(lce.loc.Y(), lce.sp.dY(), T->GetMaxY(), false);
-		recheck = recheck || BounceByEdge(lce.loc.Z(), lce.sp.dZ(), T->GetMinZ(), true);
-		recheck = recheck || BounceByEdge(lce.loc.Z(), lce.sp.dZ(), T->GetMaxZ(), false);
-	}
+  while (recheck) {
+    recheck = false;
+    recheck = recheck || BounceByEdge(lce.loc.X(), lce.sp.dX(), T->GetMinX(), true);
+    recheck = recheck || BounceByEdge(lce.loc.X(), lce.sp.dX(), T->GetMaxX(), false);
+    recheck = recheck || BounceByEdge(lce.loc.Y(), lce.sp.dY(), T->GetMinY(), true);
+    recheck = recheck || BounceByEdge(lce.loc.Y(), lce.sp.dY(), T->GetMaxY(), false);
+    recheck = recheck || BounceByEdge(lce.loc.Z(), lce.sp.dZ(), T->GetMinZ(), true);
+    recheck = recheck || BounceByEdge(lce.loc.Z(), lce.sp.dZ(), T->GetMaxZ(), false);
+  }
 }
 
 /**
@@ -273,14 +274,14 @@ AquaSimMobilityPattern::RestrictLocByBound(LocationCacheElem &lce){
 bool
 AquaSimMobilityPattern::BounceByEdge(double &coord, double &dspeed,
 double bound, bool lowerBound) {
-	if ((lowerBound && (coord < bound)) /*below lower bound*/
-		|| (!lowerBound && (coord > bound)) /*beyond upper bound*/) {
-		coord = bound + bound - coord;
-		dspeed = -dspeed;
-		return true;
-	}
+  if ((lowerBound && (coord < bound)) /*below lower bound*/
+	  || (!lowerBound && (coord > bound)) /*beyond upper bound*/) {
+    coord = bound + bound - coord;
+    dspeed = -dspeed;
+    return true;
+  }
 
-	return false;
+  return false;
 }
 
 
