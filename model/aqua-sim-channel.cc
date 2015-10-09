@@ -19,6 +19,7 @@
  */
 
 #include "aqua-sim-channel.h"
+#include "aqua-sim-packetstamp.h"
 
 namespace ns3 {
 
@@ -43,13 +44,13 @@ AquaSimChannel::GetTypeId ()
     .SetParent<Channel> ()
     .AddConstructor<AquaSimChannel> ()
     .AddAttribute ("SetProp", "A pointer to set the propagation model.",
-                   PointerValue (CreateObject<AquaSimSimplePropagation> ()),
-                   MakePointerAccessor (&AquaSimChannel::m_prop),
-                   MakePointerChecker<AquaSimPropagation> ())
+       PointerValue (CreateObject<AquaSimSimplePropagation> ()),
+       MakePointerAccessor (&AquaSimChannel::m_prop),
+       MakePointerChecker<AquaSimPropagation> ())
     .AddAttribute ("SetNoise", "A pointer to set the noise generator.",
-                   PointerValue (CreateObject<AquaSimConstNoiseGen> ()),
-                   MakePointerAccessor (&AquaSimChannel::m_noiseGen),
-                   MakePointerChecker<AquaSimNoiseGen> ())
+       PointerValue (CreateObject<AquaSimConstNoiseGen> ()),
+       MakePointerAccessor (&AquaSimChannel::m_noiseGen),
+       MakePointerChecker<AquaSimNoiseGen> ())
   ;
   return tid;
 }
@@ -100,7 +101,7 @@ AquaSimChannel::RemoveDevice(Ptr<AquaSimNetDevice> device)
     NS_LOG_WARN(this << " deviceList is empty");
   else
   {
-	std::vector<Ptr<AquaSimNetDevice> >::const_iterator it = m_deviceList.begin();
+    std::vector<Ptr<AquaSimNetDevice> >::const_iterator it = m_deviceList.begin();
     for(; it != m_deviceList.end(); ++it)
       {
         if(m_deviceList[it] == device)
@@ -124,9 +125,9 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
   NS_LOG_FUNCTION(this << " Packet:" << p);
 
   Ptr<AquaSimNode> sender = (AquaSimNode*)(tifp->Node()), recver = NULL;
-  Ptr<AquaSimPhy> rifp = NULL;
+  std::vector<Ptr<AquaSimPhy> > rifp = NULL;
   Ptr<Packet> pCopy = NULL;
-  double pDelay = 0.0;
+  Time pDelay = Seconds (0.0);
 
   /*
   if(!m_sorted){
@@ -142,16 +143,15 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
     recver = (*recvUnits)[i].recver;
     pDelay = (*recvUnits)[i].pDelay;
 
-    p->m_pStamp.Pr() = (*recvUnits)[i].pr;
-    p->m_pStamp.noise() = m_noiseGen->Noise(NOW + pDelay, recver->X()
-                                               recver->Y(), recver->Z());
+    p->m_pStamp->Pr() = (*recvUnits)[i].pR;
+    p->m_pStamp->Noise() = m_noiseGen->Noise(Simulator::Now() + pDelay, recver->X(), recver->Y(), recver->Z());
     /**
      * Send to each interface a copy, and we will filter the packet
      * in physical layer according to freq and modulation
      */
-    for (std::vector<AquaSimPhy> it = std::begin(rifp); it!=std::end(rifp); ++it) {
+    for (std::vector<AquaSimPhy> it = rifp.begin(); it!=rifp.end(); it++) {
       pCopy = p->Copy();
-      Simulator::Schedule(pDelay, *it, pCopy);
+      Simulator::Schedule(pDelay, it, pCopy);
     }
   }
   p = 0; //smart pointer will unref automatically once out of scope
@@ -159,9 +159,10 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
 }
 
 double
-AquaSimChannel::GetPropDelay (Ptr<MobilityModel> *tnode, Ptr<MobilityModel> *rnode)
+AquaSimChannel::GetPropDelay (Ptr<MobilityModel> tnode, Ptr<MobilityModel> rnode)
 {
-  return AquaSimPropagation::PDelay(tnode,rnode);  //May be bug due to calling prop and not simple prop... needs to be checked
+  AquaSimSimplePropagation prop;
+  return prop.PDelay(tnode,rnode).GetSeconds();
 }
    	
 double
@@ -170,8 +171,4 @@ AquaSimChannel::Distance(Ptr<MobilityModel> tnode, Ptr<MobilityModel> rnode)
   return tnode->GetDistanceFrom(rnode);
 }
 
-};  // class AquaSimChannel
-
 } // namespace ns3
-
-#endif /* AQUA_SIM_CHANNEL.H */

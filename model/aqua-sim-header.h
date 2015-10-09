@@ -16,8 +16,8 @@ using namespace ns3;
 
 
 struct addr_t {
-	Address addr;
-	int32_t port;
+  Address addr;
+  int32_t port;
 };
 
 class AquaSimHeader : public Header
@@ -49,16 +49,16 @@ public:
   uint16_t GetUId();
 
   //Setters
-  uint32_t SetTxTime(uint32_t time);
-  uint8_t SetDirection(uint8_t direction);
-  Address SetNextHop(Address nextHop);
-  uint16_t SetNumForwards(uint16_t numForwards);
-  Address SetSAddr(Address sAddr);
-  Address SetDAddr(Address dAddr);
-  int32_t SetSPort(int32_t sPort);
-  int32_t SetDPort(int32_t dPort);
-  uint8_t SetErrorFlag(uint8_t error);
-  uint16_t SetUId(uint16_t uId);
+  void SetTxTime(uint32_t time);
+  void SetDirection(uint8_t direction);
+  void SetNextHop(Address nextHop);
+  void SetNumForwards(uint16_t numForwards);
+  void SetSAddr(Address sAddr);
+  void SetDAddr(Address dAddr);
+  void SetSPort(int32_t sPort);
+  void SetDPort(int32_t dPort);
+  void SetErrorFlag(uint8_t error);
+  void SetUId(uint16_t uId);
 
 
   //inherited by Header class
