@@ -24,25 +24,25 @@ class Packet;
 enum PacketStatus{ RECEPTION, COLLISION, INVALID };
 
 struct IncomingPacket{
-	Packet* packet;
-	enum PacketStatus status;
-	IncomingPacket* next;
-	IncomingPacket(Packet* p = NULL, PacketStatus s = INVALID) :
-		packet(p), status(s), next(NULL) {}
+  Packet* packet;
+  enum PacketStatus status;
+  IncomingPacket* next;
+  IncomingPacket(Packet* p = NULL, PacketStatus s = INVALID) :
+	  packet(p), status(s), next(NULL) {}
 };
 
 class AquaSimPhy;
 class AquaSimSignalCache;
 
 struct PktSubmissionUnit{
-	IncomingPacket* inPkt;
-	Time endT;	//ending time of reception
-	friend bool operator < (const PktSubmissionUnit &l, const PktSubmissionUnit &r) {
-		//pkt with earlier ending time appears at the front
-		return l.endT >= r.endT;
-	}
+  IncomingPacket* inPkt;
+  Time endT;	//ending time of reception
+  friend bool operator < (const PktSubmissionUnit &l, const PktSubmissionUnit &r) {
+    //pkt with earlier ending time appears at the front
+    return l.endT >= r.endT;
+  }
 	
-	PktSubmissionUnit(IncomingPacket* inPkt_, Time endT_);
+  PktSubmissionUnit(IncomingPacket* inPkt_, Time endT_);
 };
 
 /**
@@ -50,15 +50,15 @@ struct PktSubmissionUnit{
 */
 class PktSubmissionTimer : public Timer{	
 private:
-	std::priority_queue<PktSubmissionUnit> m_waitingList;
-	AquaSimSignalCache* m_sC;
+  std::priority_queue<PktSubmissionUnit> m_waitingList;
+  AquaSimSignalCache* m_sC;
 public:
-	PktSubmissionTimer(AquaSimSignalCache* sC);
-	virtual ~PktSubmissionTimer(void);
-	static TypeId GetTypeId(void);
+  PktSubmissionTimer(AquaSimSignalCache* sC);
+  virtual ~PktSubmissionTimer(void);
+  static TypeId GetTypeId(void);
 
-	virtual void Expire(void);
-	void AddNewSubmission(IncomingPacket* inPkt);
+  virtual void Expire(void);
+  void AddNewSubmission(IncomingPacket* inPkt);
 };  // class PktSubmissionTimer
 
 /**
@@ -67,43 +67,43 @@ public:
 */
 class AquaSimSignalCache : public Object { 
 public:
-	AquaSimSignalCache(void);
-	virtual ~AquaSimSignalCache(void);
-	static TypeId GetTypeId(void);
+  AquaSimSignalCache(void);
+  virtual ~AquaSimSignalCache(void);
+  static TypeId GetTypeId(void);
 
-	virtual void AddNewPacket(Ptr<Packet>);
-	virtual bool DeleteIncomingPacket(Ptr<Packet>);
-	void InvalidateIncomingPacket(void);
-	IncomingPacket* Lookup(Ptr<Packet>);
-	PacketStatus status;
-	PacketStatus Status(Ptr<Packet> p);
-	void SubmitPkt(IncomingPacket* inPkt);
+  virtual void AddNewPacket(Ptr<Packet>);
+  virtual bool DeleteIncomingPacket(Ptr<Packet>);
+  void InvalidateIncomingPacket(void);
+  IncomingPacket* Lookup(Ptr<Packet>);
+  PacketStatus status;
+  PacketStatus Status(Ptr<Packet> p);
+  void SubmitPkt(IncomingPacket* inPkt);
 
-	friend class PktSubmissionTimer;
+  friend class PktSubmissionTimer;
 
 protected:
-	virtual void UpdatePacketStatus(void);
+  virtual void UpdatePacketStatus(void);
 
 public:
-	int m_pktNum;	// number of active incoming packets
-	double m_totalPS; // total power strength of active incoming packets
+  int m_pktNum;	// number of active incoming packets
+  double m_totalPS; // total power strength of active incoming packets
 
 protected:
-	IncomingPacket* m_head;
-	Ptr<AquaSimPhy> m_phy;
-	PktSubmissionTimer* m_pktSubTimer;
-	Ptr<AquaSimEnergyModel> m_em;
-	Ptr<AquaSimConstNoiseGen> m_noise;
+  IncomingPacket* m_head;
+  Ptr<AquaSimPhy> m_phy;
+  PktSubmissionTimer* m_pktSubTimer;
+  Ptr<AquaSimEnergyModel> m_em;
+  Ptr<AquaSimConstNoiseGen> m_noise;
 
 private:
-	/**
-	* hide this interface from other classes, UnderwaterPhy
-	* is the only one can use this method
-	*/
-	void AttachPhy(Ptr<AquaSimPhy> phy) {
-		m_phy = phy;
-	}
-	friend class AquaSimPhy;
+  /**
+  * hide this interface from other classes, UnderwaterPhy
+  * is the only one can use this method
+  */
+  void AttachPhy(Ptr<AquaSimPhy> phy) {
+	  m_phy = phy;
+  }
+  friend class AquaSimPhy;
 };  //class AquaSimSignalCache
 
 
@@ -112,7 +112,7 @@ private:
 */
 class AquaSimMultiPathSignalCache : public AquaSimSignalCache {
 	
-	//TODO
+  //TODO - in future work.
 
 };  //class AquaSimMultiPathSignalCache
 
