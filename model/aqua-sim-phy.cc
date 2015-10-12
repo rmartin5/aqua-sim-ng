@@ -52,6 +52,18 @@ AquaSimPhy::AquaSimPhy(void) : Object(), m_idleTimer(this)
   m_powerLevels[1] = 0.660;  /*0.660 indicates 1.6 W drained power for transmission*/
   m_PoweredOn = true;
 
+  m_RXThresh = 0;
+  m_CSThresh = 0;
+  m_CPThresh = 10;
+  m_pT = 0.2818;
+  m_EnergyTurnOn = 0;
+  m_EnergyTurnOff = 0;
+  m_lambda = 0.0;
+  m_pIdle = 0.0;
+  m_L = 0;
+  m_K = 2.0;
+  m_freq = 25;
+
   Simulator::Schedule(Time(1.0), &AquaSimPhy::Expire, this);	//start energy drain
 }
 
@@ -133,71 +145,71 @@ AquaSimPhy::GetTypeId(void)
 void
 AquaSimPhy::SetTxPower(double ptConsume)
 {
-	m_ptConsume = ptConsume;
-	//NS_ASSERT(EM() != NULL);
-	m_eM->SetTxPower(m_ptConsume);	
+  m_ptConsume = ptConsume;
+  //NS_ASSERT(EM() != NULL);
+  m_eM->SetTxPower(m_ptConsume);
 }
 
 void
 AquaSimPhy::SetRxPower(double prConsume)
 {
-	m_prConsume = prConsume;
-	//NS_ASSERT(EM() != NULL);
-	m_eM->SetRxPower(m_prConsume);
+  m_prConsume = prConsume;
+  //NS_ASSERT(EM() != NULL);
+  m_eM->SetRxPower(m_prConsume);
 }
 
 void
 AquaSimPhy::SetIdlePower(double pIdle)
 {
-	m_pIdle = pIdle;
-	//NS_ASSERT(EM() != NULL);
-	m_eM->SetIdlePower(m_pIdle);
+  m_pIdle = pIdle;
+  //NS_ASSERT(EM() != NULL);
+  m_eM->SetIdlePower(m_pIdle);
 }
 
 /*
 void
 AquaSimPhy::SetAntenna(Ptr<AquaSimAntenna> ant)
 {
-	m_ant = ant;
+  m_ant = ant;
 }
 */
 
 void
 AquaSimPhy::SetNode(Ptr<AquaSimNode> node)
 {
-	m_node = node;
+  m_node = node;
 }
 
 void
 AquaSimPhy::SetSinrChecker(Ptr<AquaSimSinrChecker> sinrChecker)
 {
-	m_sinrChecker = sinrChecker;
+  m_sinrChecker = sinrChecker;
 }
 
 void
 AquaSimPhy::SetSignalCache(Ptr<AquaSimSignalCache> sC)
 {
-	m_sC = sC;
-	m_sC->AttachPhy(this);	//Need to implement signal cache module for this...
+  m_sC = sC;
+  m_sC->AttachPhy(this);	//Need to implement signal cache module for this...
 }
 
 void
 AquaSimPhy::AddModulation(Ptr<AquaSimModulation> modulation, std::string modulationName)
 {
-	/**
-	* format:  phyobj add-modulation modulation_name modulation_obj
-	* the first added modulation scheme will be the default one
-	*/
-	if (modulation == NULL || modulationName.empty())
-		NS_LOG_ERROR("AddModulation NULL value for modulation " << modulation << " or name " << modulationName);
-	else if (m_modulations.count(modulationName) > 0)
-		NS_LOG_WARN("Duplicate modulations");
-	else {
-		if (m_modulations.size() == 0)
-			m_modulationName = modulationName;
+  /**
+  * format:  phyobj add-modulation modulation_name modulation_obj
+  * the first added modulation scheme will be the default one
+  */
+  if (modulation == NULL || modulationName.empty())
+    NS_LOG_ERROR("AddModulation NULL value for modulation " << modulation << " or name " << modulationName);
+  else if (m_modulations.count(modulationName) > 0)
+    NS_LOG_WARN("Duplicate modulations");
+  else {
+    if (m_modulations.size() == 0)
+      m_modulationName = modulationName;
 
-		m_modulations[modulationName] = modulation;
-	}
+    m_modulations[modulationName] = modulation;
+  }
 }
 
 /**
@@ -205,90 +217,90 @@ AquaSimPhy::AddModulation(Ptr<AquaSimModulation> modulation, std::string modulat
 */
 void
 AquaSimPhy::UpdateTxEnergy(Time txTime, double pT, double pIdle) {
-	NS_LOG_FUNCTION(this << "Currently not implemented");
-	/*double startTime = Simulator::Now().GetSeconds(), endTime = Simulator::Now().GetSeconds() + txTime.GetSeconds();
+  NS_LOG_FUNCTION(this << "Currently not implemented");
+  /*double startTime = Simulator::Now().GetSeconds(), endTime = Simulator::Now().GetSeconds() + txTime.GetSeconds();
 
-	if (NULL != EM()) {
-		if (startTime >= m_updateEnergyTime) {
-			EM()->DecrIdleEnergy(startTime - m_updateEnergyTime);
-			m_updateEnergyTime = startTime;
-		}
-		EM()->DecrTxEnergy(txTime.GetSeconds());
-		m_updateEnergyTime = endTime;
-	}
-	else
-		NS_LOG_FUNCTION(this << " No EnergyModel set.");
-	*/
+  if (NULL != EM()) {
+    if (startTime >= m_updateEnergyTime) {
+      EM()->DecrIdleEnergy(startTime - m_updateEnergyTime);
+      m_updateEnergyTime = startTime;
+    }
+    EM()->DecrTxEnergy(txTime.GetSeconds());
+    m_updateEnergyTime = endTime;
+  }
+  else
+    NS_LOG_FUNCTION(this << " No EnergyModel set.");
+  */
 }
 
 
 void
 AquaSimPhy::UpdateRxEnergy(Time txTime) {
-	double startTime = Simulator::Now().GetSeconds();
-	double endTime = startTime + txTime.GetSeconds();
+  double startTime = Simulator::Now().GetSeconds();
+  double endTime = startTime + txTime.GetSeconds();
 
-	/*if (EM() == NULL) {
-		NS_LOG_FUNCTION(this << " No EnergyModel set.");
-		return;
-	}
-	*/
+  /*if (EM() == NULL) {
+    NS_LOG_FUNCTION(this << " No EnergyModel set.");
+    return;
+  }
+  */
 
-	if (startTime > m_updateEnergyTime) {
-		//EM()->DecrIdleEnergy(startTime - m_updateEnergyTime);
-		//EM()->DecrRcvEnergy(txTime.GetSeconds());
-		m_updateEnergyTime = endTime;
-	}
-	else{
-		/* In this case, this node is receiving some other packet*/
-		if (endTime > m_updateEnergyTime) {		 //TODO check for pkt errors
-			//EM()->DecrRcvEnergy(endTime - m_updateEnergyTime);
-			m_updateEnergyTime = endTime;
-		}
-	}
+  if (startTime > m_updateEnergyTime) {
+    //EM()->DecrIdleEnergy(startTime - m_updateEnergyTime);
+    //EM()->DecrRcvEnergy(txTime.GetSeconds());
+    m_updateEnergyTime = endTime;
+  }
+  else{
+    /* In this case, this node is receiving some other packet*/
+    if (endTime > m_updateEnergyTime) {		 //TODO check for pkt errors
+      //EM()->DecrRcvEnergy(endTime - m_updateEnergyTime);
+      m_updateEnergyTime = endTime;
+    }
+  }
 
 
-	/*if (EM()->Energy() <= 0) {
-		EM()->SetEnergy(-1);
-		Node()->LogEnergy(0);
-	}
-	*/
+  /*if (EM()->Energy() <= 0) {
+    EM()->SetEnergy(-1);
+    Node()->LogEnergy(0);
+  }
+  */
 }
 
 void
 AquaSimPhy::UpdateIdleEnergy() {
-	if (!m_PoweredOn /*|| EM() == NULL*/ )
-		return;
+  if (!m_PoweredOn /*|| EM() == NULL*/ )
+    return;
 
-	if (Simulator::Now().GetSeconds() > m_updateEnergyTime && m_PoweredOn) {
-		//EM()->DecrIdleEnergy(Simulator::Now().GetSeconds() - m_updateEnergyTime);
-		m_updateEnergyTime = Simulator::Now().GetSeconds();
-	}
+  if (Simulator::Now().GetSeconds() > m_updateEnergyTime && m_PoweredOn) {
+    //EM()->DecrIdleEnergy(Simulator::Now().GetSeconds() - m_updateEnergyTime);
+    m_updateEnergyTime = Simulator::Now().GetSeconds();
+  }
 
-	// log node energy
-	/*if (EM()->Energy() > 0) {
-		Node()->LogEnergy(1);
-	}
-	else {
-		Node()->LogEnergy(0);
-	}
-	*/
+  // log node energy
+  /*if (EM()->Energy() > 0) {
+    Node()->LogEnergy(1);
+  }
+  else {
+    Node()->LogEnergy(0);
+  }
+  */
 
-	Simulator::Schedule(Time(1.0), &AquaSimPhy::UpdateIdleEnergy, this);	//m_idleTimer.resched(1.0);
+  Simulator::Schedule(Time(1.0), &AquaSimPhy::UpdateIdleEnergy, this);	//m_idleTimer.resched(1.0);
 }
 
 bool
 AquaSimPhy::Decodable(double noise, double ps) {
-	double epsilon = 1e-6;	//accuracy for float comparison
+  double epsilon = 1e-6;	//accuracy for float comparison
 
-	if (ps < m_RXThresh) //signal is too weak
-		return false;
+  if (ps < m_RXThresh) //signal is too weak
+    return false;
 
-	if (fabs(noise) <  epsilon) {
-		//avoid being divided by 0 when calculating SINR
-		return true;
-	}
+  if (fabs(noise) <  epsilon) {
+    //avoid being divided by 0 when calculating SINR
+    return true;
+  }
 
-	return m_sinrChecker->Decodable(ps / noise);
+  return m_sinrChecker->Decodable(ps / noise);
 }
 
 /**
@@ -298,22 +310,22 @@ AquaSimPhy::Decodable(double noise, double ps) {
 */
 Ptr<Packet> 
 AquaSimPhy::StampTxInfo(Ptr<Packet> p) {
-	//if (!m_ant)
-	//	NS_LOG_WARN("No antenna!\n");
+  //if (!m_ant)
+  //	NS_LOG_WARN("No antenna!\n");
 
-	Ptr<AquaSimPacketStamp> pStamp;
-	pStamp->Stamp(GetPointer(p), m_pT, m_lambda);
+  Ptr<AquaSimPacketStamp> pStamp;
+  pStamp->Stamp(GetPointer(p), m_pT, m_lambda);
 
-				//TODO this is not correct...
-					// this does not translate to anything
-	/*			
-	Ptr<AquaSimPacketStamp> const &txInfo = pStamp;
-	txInfo->Freq() = Freq();			
-	txInfo->Pt() = m_powerLevels[m_ptLevel];
-	txInfo->ModName() = m_modulationName;
-	*/
-				
-	return p;
+			  //TODO this is not correct...
+				  // this does not translate to anything
+  /*
+  Ptr<AquaSimPacketStamp> const &txInfo = pStamp;
+  txInfo->Freq() = Freq();
+  txInfo->Pt() = m_powerLevels[m_ptLevel];
+  txInfo->ModName() = m_modulationName;
+  */
+
+  return p;
 }
 
 /**
@@ -322,33 +334,33 @@ AquaSimPhy::StampTxInfo(Ptr<Packet> p) {
 */
 void
 AquaSimPhy::Recv(Ptr<Packet> p) {  // Handler* h
-	NS_ASSERT(Initialized());
-	AquaSimHeader asHeader;	
-	p->PeekHeader(asHeader);
-	NS_LOG_DEBUG ("direction=" << asHeader.GetDirection());
+  NS_ASSERT(Initialized());
+  AquaSimHeader asHeader;
+  p->PeekHeader(asHeader);
+  NS_LOG_DEBUG ("direction=" << asHeader.GetDirection());
 
-	if (asHeader.GetDirection() == AquaSimHeader::DOWN) {
-		SendPktDown(p);
-	}
-	else {
-		if (asHeader.GetDirection() != AquaSimHeader::UP) {
-			NS_LOG_WARN("Direction for pkt-flow not specified, "
-				"sending pkt up the stack on default.\n");
-		}
-		
-		p = PrevalidateIncomingPkt(p);
+  if (asHeader.GetDirection() == AquaSimHeader::DOWN) {
+    SendPktDown(p);
+  }
+  else {
+    if (asHeader.GetDirection() != AquaSimHeader::UP) {
+      NS_LOG_WARN("Direction for pkt-flow not specified, "
+	      "sending pkt up the stack on default.\n");
+    }
 
-		if (p != NULL) {
-			//put the packet into the incoming queue
-			m_sC->AddNewPacket(p);
-		}
-	}
+    p = PrevalidateIncomingPkt(p);
+
+    if (p != NULL) {
+      //put the packet into the incoming queue
+      m_sC->AddNewPacket(p);
+    }
+  }
 }
 
 bool AquaSimPhy::MatchFreq(double freq) {
-	double epsilon = 1e-6;	//accuracy for float comparison
+  double epsilon = 1e-6;	//accuracy for float comparison
 
-	return std::fabs(freq - m_freq) < epsilon;
+  return std::fabs(freq - m_freq) < epsilon;
 }
 
 /**
@@ -363,49 +375,49 @@ bool AquaSimPhy::MatchFreq(double freq) {
 */
 Ptr<Packet>
 AquaSimPhy::PrevalidateIncomingPkt(Ptr<Packet> p) {
-	Ptr<AquaSimPacketStamp> pStamp;
-	
-	AquaSimHeader asHeader;	
-	p->PeekHeader(asHeader);
-	NS_LOG_DEBUG ("TxTime=" << asHeader.GetTxTime());
-	Time txTime = Time::FromInteger(asHeader.GetTxTime(),Time::S); 		
+  Ptr<AquaSimPacketStamp> pStamp;
 
-	if (Node()->FailureStatus()) {
-		NS_LOG_WARN("AquaSimPhy: nodeId=" << Node()->GetId() << " fails!\n");
-		p = 0;
-		return NULL;
-	}
+  AquaSimHeader asHeader;
+  p->PeekHeader(asHeader);
+  NS_LOG_DEBUG ("TxTime=" << asHeader.GetTxTime());
+  Time txTime = Time::FromInteger(asHeader.GetTxTime(),Time::S);
 
-	if (!MatchFreq(pStamp->Freq())) {
-		p = 0;
-		return NULL;
-	}
+  if (Node()->FailureStatus()) {
+    NS_LOG_WARN("AquaSimPhy: nodeId=" << Node()->GetId() << " fails!\n");
+    p = 0;
+    return NULL;
+  }
 
-	/**
-	* any packet error set here result from that a packet
-	* cannot be detected by the modem, so modem's status doesn't receive
-	*/
-	if (/*(EM() && EM()->Energy() <= 0) ||*/ Status() == PHY_SLEEP
-		|| Status() == PHY_SEND
-		|| pStamp->Pr() < m_RXThresh
-		|| Status() == PHY_DISABLE) {
+  if (!MatchFreq(pStamp->Freq())) {
+    p = 0;
+    return NULL;
+  }
 
-		/**
-		* p still can pass since its signal may affect other packets
-		* when this node wake up or start to receive other packets
-		*/
-		NS_LOG_DEBUG(this << " packet error");
-		asHeader.SetErrorFlag(true);
-		p->AddHeader(asHeader);
-	}
+  /**
+  * any packet error set here result from that a packet
+  * cannot be detected by the modem, so modem's status doesn't receive
+  */
+  if (/*(EM() && EM()->Energy() <= 0) ||*/ Status() == PHY_SLEEP
+				      || Status() == PHY_SEND
+				      || pStamp->Pr() < m_RXThresh
+				      || Status() == PHY_DISABLE) {
 
-	else {
-		Status() = PHY_RECV;
-	}
+    /**
+    * p still can pass since its signal may affect other packets
+    * when this node wake up or start to receive other packets
+    */
+    NS_LOG_DEBUG(this << " packet error");
+    asHeader.SetErrorFlag(true);
+    p->AddHeader(asHeader);
+  }
 
-	UpdateRxEnergy(txTime);
+  else {
+	  Status() = PHY_RECV;
+  }
 
-	return p;
+  UpdateRxEnergy(txTime);
+
+  return p;
 }
 
 /**
@@ -413,49 +425,49 @@ AquaSimPhy::PrevalidateIncomingPkt(Ptr<Packet> p) {
 */
 void
 AquaSimPhy::SendPktDown(Ptr<Packet> p) {
-	AquaSimHeader asHeader;	
-	p->PeekHeader(asHeader);
-	NS_LOG_DEBUG ("TxTime=" << asHeader.GetTxTime());
+  AquaSimHeader asHeader;
+  p->PeekHeader(asHeader);
+  NS_LOG_DEBUG ("TxTime=" << asHeader.GetTxTime());
 
-	if (Node()->FailureStatus()) {
-		NS_LOG_WARN("AquaSimPhy nodeId=" << Node()->GetId() << " fails!\n");
-		p = 0;
-		return;
-	}
+  if (Node()->FailureStatus()) {
+    NS_LOG_WARN("AquaSimPhy nodeId=" << Node()->GetId() << " fails!\n");
+    p = 0;
+    return;
+  }
 
-	if (Status() == PHY_SLEEP || /*(NULL != EM() && EM()->Energy() <= 0) ||*/ Status() == PHY_DISABLE) {
-		p = 0;
-		return;
-	}
+  if (Status() == PHY_SLEEP || /*(NULL != EM() && EM()->Energy() <= 0) ||*/ Status() == PHY_DISABLE) {
+    p = 0;
+    return;
+  }
 
-	switch (Status()){
-	case PHY_SEND:
-		UpdateTxEnergy(Time::FromInteger(asHeader.GetTxTime(),Time::S), m_ptConsume, m_pIdle);
-		//Should be reset to PHY_IDLE once txtime has ended...
-		// Does this occur somewhere else??
-		break;
-	case PHY_IDLE:
-		NS_LOG_WARN("AquaSimPhy node(" << Node()->GetId() << "):mac forgot to change"
-			<< "the status at time " << Simulator::Now() << "\n");
-		break;
-	case PHY_SLEEP:
-		NS_LOG_WARN("AquaSimPhy node(" << Node()->GetId() << ") is sleeping!\n");
-		break;
-	default:
-		NS_LOG_WARN("AquaSimPhy: wrong status\n");
-	}
+  switch (Status()){
+  case PHY_SEND:
+    UpdateTxEnergy(Time::FromInteger(asHeader.GetTxTime(),Time::S), m_ptConsume, m_pIdle);
+    //Should be reset to PHY_IDLE once txtime has ended...
+    // Does this occur somewhere else??
+    break;
+  case PHY_IDLE:
+    NS_LOG_WARN("AquaSimPhy node(" << Node()->GetId() << "):mac forgot to change"
+	    << "the status at time " << Simulator::Now() << "\n");
+    break;
+  case PHY_SLEEP:
+    NS_LOG_WARN("AquaSimPhy node(" << Node()->GetId() << ") is sleeping!\n");
+    break;
+  default:
+    NS_LOG_WARN("AquaSimPhy: wrong status\n");
+  }
 
-	/*
-	*  Stamp the packet with the interface arguments
-	*/
-	StampTxInfo(p);
+  /*
+  *  Stamp the packet with the interface arguments
+  */
+  StampTxInfo(p);
 
-	/**
-	* here we simulate multi-channel (different frequencies),
-	* not multiple tranceiver, so we pass the packet to channel_ directly
-	* p' uw_txinfo_ carries channel frequency information
-	*/
-	m_channel->Recv(p, this);
+  /**
+  * here we simulate multi-channel (different frequencies),
+  * not multiple tranceiver, so we pass the packet to channel_ directly
+  * p' uw_txinfo_ carries channel frequency information
+  */
+  m_channel->Recv(p, this);
 }
 
 /**
@@ -463,9 +475,8 @@ AquaSimPhy::SendPktDown(Ptr<Packet> p) {
 * but actually go to trace module first
 */
 void
-AquaSimPhy::SendPktUp(Ptr<Packet> p)	//TODO this should probably be a Callback
-{
-	m_mac->Recv(p);
+AquaSimPhy::SendPktUp(Ptr<Packet> p) {	//TODO this should probably be a Callback
+  m_mac->Recv(p);
 }
 
 /**
@@ -473,56 +484,56 @@ AquaSimPhy::SendPktUp(Ptr<Packet> p)	//TODO this should probably be a Callback
 */
 void
 AquaSimPhy::SignalCacheCallback(Ptr<Packet> p) {
-	SendPktUp(p);
+  SendPktUp(p);
 }
 
 void
 AquaSimPhy::PowerOn() {
-	if (Status() == PHY_DISABLE)
-		NS_LOG_FUNCTION(this << " Node " << m_node << " is disabled.");
-	else
-	{
-		m_PoweredOn = true;
-		m_status = PHY_IDLE;
-		/*if (EM() != NULL) {
-			//minus the energy consumed by power on
-			EM()->SetEnergy(std::max(0, EM->Energy() - m_EnergyTurnOn));
-			m_updateEnergyTime = std::max(Simulator::Now().GetSeconds, m_updateEnergyTime);
-		}
-		*/
-	}
+  if (Status() == PHY_DISABLE)
+    NS_LOG_FUNCTION(this << " Node " << m_node << " is disabled.");
+  else
+  {
+    m_PoweredOn = true;
+    m_status = PHY_IDLE;
+    /*if (EM() != NULL) {
+	    //minus the energy consumed by power on
+	    EM()->SetEnergy(std::max(0, EM->Energy() - m_EnergyTurnOn));
+	    m_updateEnergyTime = std::max(Simulator::Now().GetSeconds, m_updateEnergyTime);
+    }
+    */
+  }
 }
 
 void
 AquaSimPhy::PowerOff() {
-	if (Status() == PHY_DISABLE)
-		NS_LOG_FUNCTION(this << " Node " << m_node << " is disabled.");
-	else
-	{
-		m_PoweredOn = false;
-		m_status = PHY_SLEEP;
-		/*if (EM() == NULL)
-			return; 
-		*/
+  if (Status() == PHY_DISABLE)
+    NS_LOG_FUNCTION(this << " Node " << m_node << " is disabled.");
+  else
+  {
+    m_PoweredOn = false;
+    m_status = PHY_SLEEP;
+    /*if (EM() == NULL)
+	    return;
+    */
 
-		//minus the energy consumed by power off
-		//EM()->SetEnergy(std::max(0, EM->Energy() - m_EnergyTurnOff));
+    //minus the energy consumed by power off
+    //EM()->SetEnergy(std::max(0, EM->Energy() - m_EnergyTurnOff));
 
-		if (Simulator::Now().GetSeconds() > m_updateEnergyTime) {
-			//EM()->DecrIdleEnergy(Simulator::Now().GetSeconds() - m_updateEnergyTime);
-			m_updateEnergyTime = Simulator::Now().GetSeconds();
-		}
-	}
+    if (Simulator::Now().GetSeconds() > m_updateEnergyTime) {
+      //EM()->DecrIdleEnergy(Simulator::Now().GetSeconds() - m_updateEnergyTime);
+      m_updateEnergyTime = Simulator::Now().GetSeconds();
+    }
+  }
 }
 
 void 
 AquaSimPhy::Dump(void) const
 {
-	NS_LOG_DEBUG("AquaSimPhy Dump: Channel(" << m_channel << ") " <<
-		"Pt(" << m_pT << ") " <<
-		//"Gt(" << m_ant->GetTxGain(0, 0, 0, m_lambda) << ") " <<
-		"lambda(" << m_lambda << ") " <<
-		"L(" << m_L << ")\n");
+  NS_LOG_DEBUG("AquaSimPhy Dump: Channel(" << m_channel << ") " <<
+	       "Pt(" << m_pT << ") " <<
+	       //"Gt(" << m_ant->GetTxGain(0, 0, 0, m_lambda) << ") " <<
+	       "lambda(" << m_lambda << ") " <<
+	       "L(" << m_L << ")\n");
 }
 
 /**
@@ -531,36 +542,36 @@ AquaSimPhy::Dump(void) const
 */
 Time
 AquaSimPhy::CalcTxTime(int pktSize, Ptr<std::string> modName) {
-	return Time::FromDouble(Modulation(modName)->TxTime(pktSize), Time::S) + 
-			Time::FromInteger(Preamble(),Time::S);
+  return Time::FromDouble(Modulation(modName)->TxTime(pktSize), Time::S) +
+		  Time::FromInteger(Preamble(),Time::S);
 }
 
 int
 AquaSimPhy::CalcPktSize(double txTime, Ptr<std::string> modName) {
-	return Modulation(modName)->PktSize(txTime - Preamble());
+  return Modulation(modName)->PktSize(txTime - Preamble());
 }
 
 void
 AquaSimPhy::StatusShift(double txTime) {
-	double endTime = Simulator::Now().GetSeconds() + txTime;
-	/*  The receiver is receiving a packet when the
-	transmitter begins to transmit a data.
-	We assume the half-duplex mode, the transmitter
-	stops the receiving process and begins the sending
-	process.
-	*/
-	if (m_updateEnergyTime < endTime)
-	{
-		//double overlapTime = m_updateEnergyTime - Simulator::Now().GetSeconds();
-		//double actualTxTime = endTime - m_updateEnergyTime;
-		//EM()->DecrEnergy(overlapTime, m_ptConsume - m_prConsume);
-		//EM()->DecrTxEnergy(actualTxTime);
-		m_updateEnergyTime = endTime;
-	}
-	else {
-		//double overlapTime = txTime;
-		//EM()->DecrEnergy(overlapTime,	m_ptConsume - m_prConsume);
-	}
+  double endTime = Simulator::Now().GetSeconds() + txTime;
+  /*  The receiver is receiving a packet when the
+  transmitter begins to transmit a data.
+  We assume the half-duplex mode, the transmitter
+  stops the receiving process and begins the sending
+  process.
+  */
+  if (m_updateEnergyTime < endTime)
+  {
+    //double overlapTime = m_updateEnergyTime - Simulator::Now().GetSeconds();
+    //double actualTxTime = endTime - m_updateEnergyTime;
+    //EM()->DecrEnergy(overlapTime, m_ptConsume - m_prConsume);
+    //EM()->DecrTxEnergy(actualTxTime);
+    m_updateEnergyTime = endTime;
+  }
+  else {
+    //double overlapTime = txTime;
+    //EM()->DecrEnergy(overlapTime, m_ptConsume - m_prConsume);
+  }
 }
 
 /**
@@ -570,35 +581,36 @@ AquaSimPhy::StatusShift(double txTime) {
 */
 Ptr<AquaSimModulation>
 AquaSimPhy::Modulation(Ptr<std::string> modName) {
-	std::map<std::string, Ptr<AquaSimModulation> >::iterator pos;
-	if (m_modulations.size() == 0) {
-		NS_LOG_WARN("No modulations\n");
-		return NULL;
-	}
-	else if (modName == NULL) {
-		modName = &m_modulationName;
-		pos = m_modulations.find(*modName);
-		if (m_modulations.end() != pos) {
-			return pos->second;
-		}
-		else {
-			NS_LOG_WARN("Failed to locate modulation " << modName->c_str() << "\n");
-			return NULL;
-		}
-	}
+  std::map<std::string, Ptr<AquaSimModulation> >::iterator pos;
+  if (m_modulations.size() == 0) {
+    NS_LOG_WARN("No modulations\n");
+    return NULL;
+  }
+  else if (modName == NULL) {
+    modName = &m_modulationName;
+    pos = m_modulations.find(*modName);
+    if (m_modulations.end() != pos) {
+      return pos->second;
+    }
+    else {
+      NS_LOG_WARN("Failed to locate modulation " << modName->c_str() << "\n");
+      return NULL;
+    }
+  }
+  return NULL;
 }
 
 void
 AquaSimPhy::EnergyDeplete() {
-	NS_LOG_FUNCTION(this);
-	NS_LOG_DEBUG("Energy is depleted on node " << m_node);
+  NS_LOG_FUNCTION(this);
+  NS_LOG_DEBUG("Energy is depleted on node " << m_node);
 
-	m_status = PHY_DISABLE;
+  m_status = PHY_DISABLE;
 }
 
 void
 AquaSimPhy::Expire(void) {
-	AquaSimIdleTimer::Expire();
+  m_idleTimer.Expire();
 }
 
 };  // namespace ns3
