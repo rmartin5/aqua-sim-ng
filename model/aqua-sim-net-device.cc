@@ -41,24 +41,24 @@ AquaSimNetDevice::~AquaSimNetDevice ()
 TypeId
 AquaSimNetDevice::GetTypeId ()
 {
-  static TypeId tid = TypeId ("ns3::AquaSimNetDevice")
-    .setParent<NetDevice> ()
+  static TypeId tid = TypeId("ns3::AquaSimNetDevice")
+    .SetParent<NetDevice>()
     .AddAttribute ("Phy", "The PHY layer attached to this device.",
-                   PointerValue (),
-                   MakePointerAccessor (&AquaSimNetDevice::m_phy),
-                   MakePointerChecker())
+       PointerValue (),
+       MakePointerAccessor (&AquaSimNetDevice::m_phy),
+       MakePointerChecker<AquaSimPhy>())
     .AddAttribute ("Mac", "The MAC layer attached to this device.",
-                   PointerValue (),
-                   MakePointerAccessor (&AquaSimNetDevice::m_mac),
-                   MakePointerChecker())
+       PointerValue (),
+       MakePointerAccessor (&AquaSimNetDevice::m_mac),
+       MakePointerChecker<AquaSimMac>())
     .AddAttribute ("Channel", "The Channel layer attached to this device.",
-                   PointerValue (),
-                   MakePointerAccessor (&AquaSimNetDevice::m_channel),
-                   MakePointerChecker())    
-    //.AddAttribute ("App", "The App layer attached to this device.",
-    //             PointerValue (&AquaSimNetDevie::m_app),
-    //             MakePointerAccessor (&AquaSimNetDevice::GetApp, &AquaSimNetDevice::SetApp),
-    //             MakePointerChecker())
+       PointerValue (),
+       MakePointerAccessor (&AquaSimNetDevice::m_channel),
+       MakePointerChecker<AquaSimChannel>())
+  //.AddAttribute ("App", "The App layer attached to this device.",
+    // PointerValue (&AquaSimNetDevie::m_app),
+    // MakePointerAccessor (&AquaSimNetDevice::GetApp, &AquaSimNetDevice::SetApp),
+    // MakePointerChecker<AquaSimApp>())
   ;     //Added mobility model? routing layer?
   return tid;
 }  
