@@ -64,7 +64,7 @@ public:
 	//void Start(void);
 	//void CheckPosition(void);
 
-	Ptr<CubicPositionAllocator> T(void) { return m_T; }
+	Ptr<CubicPositionAllocator> T(void) { return m_T; }	//TODO
 
 	/*coordinates*/
 	inline double &X(void) { return m_x; }
@@ -182,7 +182,7 @@ protected:
 	//UnderwaterMobilityPattern * MP_; //our new mobility pattern module
 	Ptr<MobilityModel> m_MP;
 
-	Ptr<CubicPositionAllocator> m_T;
+	Ptr<CubicPositionAllocator> m_T;	//TODO
 
 	void RandomPosition(void);
 	int m_randomMotion;	// is mobile

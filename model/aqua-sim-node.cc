@@ -269,7 +269,7 @@ AquaSimNode::PropDelay(double distance)
 {
 	NS_LOG_FUNCTION(this);
 	//printf("aquasimnode: ?????????????????the properdelay\n");
-	return distance / SPEED_OF_SOUND_IN_WATER;
+	return distance / SOUND_SPEED_IN_WATER;
 	/*
 	 *	redudant, this is done in AquaSimChannel
 	*/
