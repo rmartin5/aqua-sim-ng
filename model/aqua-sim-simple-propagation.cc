@@ -60,7 +60,7 @@ AquaSimSimplePropagation::ReceivedCopies (Ptr<AquaSimNode> s, Ptr<Packet> p, std
   Ptr<AquaSimNode> node = NULL;
   double dist = 0;
   AquaSimPacketStamp pStamp;
-  Ptr<MobilityModel> x, y;  //placeholder, TODO adapt using AquaSimNode
+  Ptr<MobilityModel> x, y;  //placeholder,  TODO adapt using AquaSimNode
 
   //need to implement pStamp as part of packet p
   std::vector<Ptr<AquaSimNetDevice> >::const_iterator it = dList.begin();
