@@ -182,7 +182,7 @@ protected:
 	*/
 	Ptr<AquaSimNode> m_node;
 	Ptr<AquaSimEnergyModel> m_eM; 
-			//TODO this needs to be replaced with m_node.EM() once functional
+			 //TODO this needs to be replaced with m_node.EM() once functional
 
 	bool m_PoweredOn;  //true: power on false:power off
 

@@ -240,7 +240,7 @@ AquaSimPhy::UpdateRxEnergy(Time txTime) {
 	}
 	else{
 		/* In this case, this node is receiving some other packet*/
-		if (endTime > m_updateEnergyTime) {		//TODO check for pkt errors
+		if (endTime > m_updateEnergyTime) {		 //TODO check for pkt errors
 			//EM()->DecrRcvEnergy(endTime - m_updateEnergyTime);
 			m_updateEnergyTime = endTime;
 		}
