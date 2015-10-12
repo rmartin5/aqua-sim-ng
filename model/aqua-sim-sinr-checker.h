@@ -30,6 +30,7 @@ class AquaSimSinrChecker {
 public:
   static TypeId GetTypeId (void);
   AquaSimSinrChecker (void);
+  virtual ~AquaSimSinrChecker();
   virtual bool Decodable (double sinr);
 };
 
@@ -38,6 +39,7 @@ class AquaSimThresholdSinrChecker : public AquaSimSinrChecker {
 public:
   static TypeId GetTypeId (void);
   AquaSimThresholdSinrChecker ();
+  virtual ~AquaSimThresholdSinrChecker();
   virtual bool Decodable (double sinr);
 protected:
   double m_decThresh;  //threshold of decodable packet

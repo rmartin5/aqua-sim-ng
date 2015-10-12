@@ -47,15 +47,17 @@ AquaSimThresholdSinrChecker::GetTypeId (void)
   static TypeId tid = TypeId ("ns3::AquaSimThresholdSinrChecker")
     .SetParent<AquaSimSinrChecker> ()
     .AddAttribute ("DecodeableThresh", "The decodable threshold of a packet.",
-                   TypeId::ATTR_GET|TypeId::ATTR_SET,
-                   DoubleValue (0),
-                   MakeDoubleAccessor (&AquaSimThresholdSinrChecker::m_decThresh),
-                   MakeDoubleChecker<double> ())
+       TypeId::ATTR_GET|TypeId::ATTR_SET,
+       DoubleValue (0),
+       MakeDoubleAccessor (&AquaSimThresholdSinrChecker::m_decThresh),
+       MakeDoubleChecker<double> ())
     ;
   return tid;
 }
 
-AquaSimThresholdSinrChecker::AquaSimThresholdSinrChecker () {
+AquaSimThresholdSinrChecker::AquaSimThresholdSinrChecker ()
+{
+  m_decThresh = 0;
 }
 
 bool
