@@ -73,16 +73,16 @@ node->position_update_interval_);
 
 AquaSimNode::AquaSimNode(void)
 {	
-	m_MP = NULL;		//MobileNode()
-	m_id = 0;
-	m_sid = 0;
-	m_sinkStatus = 0;
-	m_failureStatus = false;// add by peng xie
-	m_failureStatusPro = 0;//added by peng xie AND ZHENG
-	m_failurePro = 0.0; // add by peng xie
-	m_transStatus = NIDLE;
-	m_setHopStatus = 0;
-	m_nextHop = -10;
+  m_MP = NULL;		//MobileNode()
+  m_id = 0;
+  m_sid = 0;
+  m_sinkStatus = 0;
+  m_failureStatus = false;// add by peng xie
+  m_failureStatusPro = 0;//added by peng xie AND ZHENG
+  m_failurePro = 0.0; // add by peng xie
+  m_transStatus = NIDLE;
+  m_setHopStatus = 0;
+  m_nextHop = -10;
 }
 
 AquaSimNode::~AquaSimNode(void)
@@ -118,70 +118,70 @@ s.schedule(&uw_pos_handle_, &uw_pos_intr_, position_update_interval_);
 TypeId
 AquaSimNode::GetTypeId(void)
 {
-	static TypeId tid = TypeId("ns3::AquaSimNode")
-		.SetParent<Node>()
-		//3 following commands are for VBF related protocols only
-		.AddAttribute("SetCx", "Set x for VBF related protocols.",
-						DoubleValue(0),
-						MakeDoubleAccessor(&AquaSimNode::m_cX),
-						MakeDoubleChecker<double>())
-		.AddAttribute("SetCy", "Set y for VBF related protocols.",
-						DoubleValue(0),
-						MakeDoubleAccessor(&AquaSimNode::m_cY),
-						MakeDoubleChecker<double>())
-		.AddAttribute("SetCz", "Set z for VBF related protocols.",
-						DoubleValue(0),
-						MakeDoubleAccessor(&AquaSimNode::m_cZ),
-						MakeDoubleChecker<double>())
-		.AddAttribute("RandomMotion", "Node is mobile.",
-						IntegerValue(0),
-						MakeIntegerAccessor(&AquaSimNode::m_randomMotion),
-						MakeIntegerChecker<int>())
-		.AddAttribute("SetFailureStatus", "Set node failure status. Default false.",
-						BooleanValue(0),
-						MakeBooleanAccessor(&AquaSimNode::m_failureStatus),
-						MakeBooleanChecker())
-		.AddAttribute("SetFailureStatusPro", "Set node failure status pro.",
-						DoubleValue(0),
-						MakeDoubleAccessor(&AquaSimNode::m_failureStatusPro),
-						MakeDoubleChecker<double>())
-		.AddAttribute("SetFailurePro", "Set node failure pro.",
-						DoubleValue(0),
-						MakeDoubleAccessor(&AquaSimNode::m_failurePro),
-						MakeDoubleChecker<double>())
-		.AddAttribute("NextHop", "Set next hop. Default is 1.",
-						IntegerValue(1),
-						MakeIntegerAccessor(&AquaSimNode::m_nextHop),
-						MakeIntegerChecker<int>())
-		.AddAttribute("SinkStatus", "Set the sink's status, int value.",
-						IntegerValue(0),
-						MakeIntegerAccessor(&AquaSimNode::m_sinkStatus),
-						MakeIntegerChecker<int> ())
-		;
-	return tid;
+  static TypeId tid = TypeId("ns3::AquaSimNode")
+    .SetParent<Node>()
+    //3 following commands are for VBF related protocols only
+    .AddAttribute("SetCx", "Set x for VBF related protocols.",
+      DoubleValue(0),
+      MakeDoubleAccessor(&AquaSimNode::m_cX),
+      MakeDoubleChecker<double>())
+    .AddAttribute("SetCy", "Set y for VBF related protocols.",
+      DoubleValue(0),
+      MakeDoubleAccessor(&AquaSimNode::m_cY),
+      MakeDoubleChecker<double>())
+    .AddAttribute("SetCz", "Set z for VBF related protocols.",
+      DoubleValue(0),
+      MakeDoubleAccessor(&AquaSimNode::m_cZ),
+      MakeDoubleChecker<double>())
+    .AddAttribute("RandomMotion", "Node is mobile.",
+      IntegerValue(0),
+      MakeIntegerAccessor(&AquaSimNode::m_randomMotion),
+      MakeIntegerChecker<int>())
+    .AddAttribute("SetFailureStatus", "Set node failure status. Default false.",
+      BooleanValue(0),
+      MakeBooleanAccessor(&AquaSimNode::m_failureStatus),
+      MakeBooleanChecker())
+    .AddAttribute("SetFailureStatusPro", "Set node failure status pro.",
+      DoubleValue(0),
+      MakeDoubleAccessor(&AquaSimNode::m_failureStatusPro),
+      MakeDoubleChecker<double>())
+    .AddAttribute("SetFailurePro", "Set node failure pro.",
+      DoubleValue(0),
+      MakeDoubleAccessor(&AquaSimNode::m_failurePro),
+      MakeDoubleChecker<double>())
+    .AddAttribute("NextHop", "Set next hop. Default is 1.",
+      IntegerValue(1),
+      MakeIntegerAccessor(&AquaSimNode::m_nextHop),
+      MakeIntegerChecker<int>())
+    .AddAttribute("SinkStatus", "Set the sink's status, int value.",
+      IntegerValue(0),
+      MakeIntegerAccessor(&AquaSimNode::m_sinkStatus),
+      MakeIntegerChecker<int> ())
+    ;
+  return tid;
 }
 
 bool
 AquaSimNode::Move(void)  //TODO mobility model would be better suited for this...
 {
-	//redefine the this function
-	//Scheduler& s = Scheduler::instance();
-	//random_destination();
-	//s.schedule(&uw_pos_handle_, &uw_pos_intr_, position_update_interval_);
-	if (NULL == m_MP)
-		return false;
+  //redefine the this function
+  //Scheduler& s = Scheduler::instance();
+  //random_destination();
+  //s.schedule(&uw_pos_handle_, &uw_pos_intr_, position_update_interval_);
+  if (NULL == m_MP)
+    return false;
 
-	//m_MP->Start();		//this is a bug...
-	return true;
+  //m_MP->Start();		//this is a bug...
+  return true;
 }
 
 bool
 AquaSimNode::IsMove(void)		//TODO mobility model would be better suited for this...
 {
-	if (NULL == m_MP)
-		return false;
+  if (NULL == m_MP)
+    return false;
 
-	return true;
+  return true;
 }
 
 /*void
@@ -202,37 +202,37 @@ m_positionUpdateTime = 0.0;
 int
 AquaSimNode::SetSinkStatus()
 {
-	m_sinkStatus = 1;
-	return 0;
+  m_sinkStatus = 1;
+  return 0;
 }
 
 
 int
 AquaSimNode::ClearSinkStatus()
 {
-	m_sinkStatus = 0;
-	return 0;
+  m_sinkStatus = 0;
+  return 0;
 }
 
 void
 AquaSimNode::GenerateFailure()
 {
-	double error_pro = m_uniformRand->GetValue();
-	if (error_pro<m_failureStatusPro)
-		m_failureStatus = true;
+  double error_pro = m_uniformRand->GetValue();
+  if (error_pro<m_failureStatusPro)
+    m_failureStatus = true;
 }
 
 /*
 void
 AquaSimNode::CheckPosition()
 {
-	if ((m_x == destX_) || (m_y == destY_)) {
-		RandomSpeed();
-		RandomDestination();
-	}
-	else {
-		log_movement();
-	}
+  if ((m_x == destX_) || (m_y == destY_)) {
+  RandomSpeed();
+  RandomDestination();
+  }
+  else {
+    log_movement();
+  }
 }*/
 
 /*
@@ -267,76 +267,76 @@ speed_);
 double
 AquaSimNode::PropDelay(double distance)
 {
-	NS_LOG_FUNCTION(this);
-	//printf("aquasimnode: ?????????????????the properdelay\n");
-	return distance / SOUND_SPEED_IN_WATER;
-	/*
-	 *	redudant, this is done in AquaSimChannel
-	*/
+  NS_LOG_FUNCTION(this);
+  //printf("aquasimnode: ?????????????????the properdelay\n");
+  return distance / SOUND_SPEED_IN_WATER;
+  /*
+   *	redudant, this is done in AquaSimChannel
+  */
 }
 
 uint32_t
 AquaSimNode::AddApplication(Ptr<Application> application)
 {
-	NS_LOG_FUNCTION(this << application);
-	uint32_t index = m_applications.size();
-	m_applications.push_back (application);
-	application->SetNode(this);
-	Simulator::ScheduleWithContext(GetId(), Seconds(0.0), 
-				&Application::Initialize, application);
-	return index;
+  NS_LOG_FUNCTION(this << application);
+  uint32_t index = m_applications.size();
+  m_applications.push_back (application);
+  application->SetNode(this);
+  Simulator::ScheduleWithContext(GetId(), Seconds(0.0),
+			  &Application::Initialize, application);
+  return index;
 }
 
 uint32_t
 AquaSimNode::AddDevice(Ptr<AquaSimNetDevice> device)
 {
-	NS_LOG_FUNCTION(this << device);
-	uint32_t index = m_devices.size();
-	m_devices.push_back(device);
-	device->SetNode(this);
-	return index;
+  NS_LOG_FUNCTION(this << device);
+  uint32_t index = m_devices.size();
+  m_devices.push_back(device);
+  device->SetNode(this);
+  return index;
 }
 Ptr<Application>
 AquaSimNode::GetApplication(uint32_t index) const
 {
-	NS_LOG_FUNCTION(this << index);
-	return m_applications[index];
+  NS_LOG_FUNCTION(this << index);
+  return m_applications[index];
 }
 Ptr<AquaSimNetDevice> 
 AquaSimNode::GetDevice(uint32_t index) const
 {
-	NS_LOG_FUNCTION(this << index);
-	return m_devices[index];
+  NS_LOG_FUNCTION(this << index);
+  return m_devices[index];
 }
 uint32_t 
 AquaSimNode::GetId(void) const
 {
-	NS_LOG_FUNCTION(this);
-	return m_id;
+  NS_LOG_FUNCTION(this);
+  return m_id;
 }
 uint32_t 
 AquaSimNode::GetSystemId(void) const
 {
-	NS_LOG_FUNCTION(this);
-	return m_sid;
+  NS_LOG_FUNCTION(this);
+  return m_sid;
 }
 uint32_t 
 AquaSimNode::GetNApplications(void) const
 {
-	NS_LOG_FUNCTION(this);
-	return m_applications.size();
+  NS_LOG_FUNCTION(this);
+  return m_applications.size();
 }
 uint32_t 
 AquaSimNode::GetNDevices(void) const
 {
-	NS_LOG_FUNCTION(this);
-	return m_devices.size();
+  NS_LOG_FUNCTION(this);
+  return m_devices.size();
 }
 
 void
 AquaSimNode::UpdatePosition(void)
 {
-	NS_LOG_FUNCTION(this << "Not implemented.");
+  NS_LOG_FUNCTION(this << "Not implemented.");
 }
 
 } // namespace ns3
