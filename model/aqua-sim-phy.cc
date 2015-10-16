@@ -12,7 +12,6 @@
 #include "ns3/uinteger.h"
 
 #include "aqua-sim-phy.h"
-#include "aqua-sim-packetstamp.h"
 #include "aqua-sim-header.h"
 #include "aqua-sim-energy-model.h"
 
@@ -312,18 +311,15 @@ Ptr<Packet>
 AquaSimPhy::StampTxInfo(Ptr<Packet> p) {
   //if (!m_ant)
   //	NS_LOG_WARN("No antenna!\n");
+  AquaSimHeader asHeader;
+  p->PeekHeader(asHeader);
+  asHeader.Stamp(GetPointer(p), m_pT, m_lambda);
 
-  Ptr<AquaSimPacketStamp> pStamp;
-  pStamp->Stamp(GetPointer(p), m_pT, m_lambda);
+  asHeader.SetFreq(m_freq);
+  asHeader.SetPt(m_powerLevels[m_ptLevel]);
+  asHeader.SetModName(m_modulationName);
 
-			  //TODO this is not correct...
-				  // this does not translate to anything
-  /*
-  Ptr<AquaSimPacketStamp> const &txInfo = pStamp;
-  txInfo->Freq() = Freq();
-  txInfo->Pt() = m_powerLevels[m_ptLevel];
-  txInfo->ModName() = m_modulationName;
-  */
+  p->AddHeader(asHeader);
 
   return p;
 }
@@ -375,8 +371,6 @@ bool AquaSimPhy::MatchFreq(double freq) {
 */
 Ptr<Packet>
 AquaSimPhy::PrevalidateIncomingPkt(Ptr<Packet> p) {
-  Ptr<AquaSimPacketStamp> pStamp;
-
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
   NS_LOG_DEBUG ("TxTime=" << asHeader.GetTxTime());
@@ -388,7 +382,7 @@ AquaSimPhy::PrevalidateIncomingPkt(Ptr<Packet> p) {
     return NULL;
   }
 
-  if (!MatchFreq(pStamp->Freq())) {
+  if (!MatchFreq(asHeader.GetFreq())) {
     p = 0;
     return NULL;
   }
@@ -399,7 +393,7 @@ AquaSimPhy::PrevalidateIncomingPkt(Ptr<Packet> p) {
   */
   if (/*(EM() && EM()->Energy() <= 0) ||*/ Status() == PHY_SLEEP
 				      || Status() == PHY_SEND
-				      || pStamp->Pr() < m_RXThresh
+				      || asHeader.GetPr() < m_RXThresh
 				      || Status() == PHY_DISABLE) {
 
     /**

@@ -4,7 +4,6 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include "aqua-sim-packetstamp.h"
 #include "aqua-sim-mac.h"
 #include "aqua-sim-node.h"
 #include "aqua-sim-phy.h"
@@ -74,6 +73,7 @@ node->position_update_interval_);
 AquaSimNode::AquaSimNode(void)
 {	
   m_MP = NULL;		//MobileNode()
+
   m_id = 0;
   m_sid = 0;
   m_sinkStatus = 0;
@@ -83,6 +83,16 @@ AquaSimNode::AquaSimNode(void)
   m_transStatus = NIDLE;
   m_setHopStatus = 0;
   m_nextHop = -10;
+  m_carrierId = false;
+  m_carrierSense = false;
+  m_statusChangeTime = 0.0;
+
+  m_x = m_y = m_z = 0.0;
+  m_dX = m_dY = m_dZ = 0.0;
+  m_cX = m_cY = m_cZ = 0.0;
+  m_speed = 0.0;
+
+  m_randomMotion = 0;
 }
 
 AquaSimNode::~AquaSimNode(void)

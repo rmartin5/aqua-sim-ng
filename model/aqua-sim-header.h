@@ -1,8 +1,12 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+
 #include "ns3/ptr.h"
 #include "ns3/packet.h"
 #include "ns3/header.h"
+
 #include <iostream>
+#include <string>
+//#include <map>
 
 using namespace ns3;
 
@@ -11,8 +15,9 @@ using namespace ns3;
 
 #include "ns3/address.h"
 
-/* Aqua Sim Header
-  */
+/**
+ *  Aqua-Sim Header
+ */
 
 
 struct addr_t {
@@ -25,13 +30,14 @@ class AquaSimHeader : public Header
 public:
 
   enum dir_t { DOWN = -1, NONE = 0, UP = 1 };
+  enum AquaSimMacDemuxPktType{ UWPTYPE_LOC, UWPTYPE_SYNC, UWPTYPE_OTHER };
   
   AquaSimHeader();
   virtual ~AquaSimHeader();
 
   //Protocol specific access to the header
 
-  /***This is clunky and needs to be revamped to match real world headers***/
+  /***TODO This is clunky and needs to be revamped to match real world headers***/
 
   //Getters
   uint32_t GetTxTime();  // tx time for this packet in sec
@@ -40,7 +46,7 @@ public:
 						until channel changes it to +1 (UPWARD) */
   //uint8_t GetAddrType();	//type of next hop addr... not in use currently
   Address GetNextHop();	// next hop for this packet
-  uint16_t GetNumForwards();	// how many times this pkt was forwarded
+  uint8_t GetNumForwards();	// how many times this pkt was forwarded
   Address GetSAddr();
   Address GetDAddr();
   int32_t GetSPort();
@@ -48,11 +54,24 @@ public:
   uint8_t GetErrorFlag();
   uint16_t GetUId();
 
+  //Packet Stamp Getters:
+  double GetTxRange();
+  double GetPt();
+  double GetPr();
+  double GetFreq();
+  double GetNoise();
+  std::string GetModName();
+
+  /*
+  * Demux feature needs to be implemented
+  AquaSimMacDemuxPktType & MacDemuxPType(void) { return m_macDemuxPType; }
+  */
+
   //Setters
   void SetTxTime(uint32_t time);
   void SetDirection(uint8_t direction);
   void SetNextHop(Address nextHop);
-  void SetNumForwards(uint16_t numForwards);
+  void SetNumForwards(uint8_t numForwards);
   void SetSAddr(Address sAddr);
   void SetDAddr(Address dAddr);
   void SetSPort(int32_t sPort);
@@ -60,6 +79,17 @@ public:
   void SetErrorFlag(uint8_t error);
   void SetUId(uint16_t uId);
 
+  //Packet Stamp Setters:
+  void SetTxRange(double txRange);
+  void SetPt(double pt);
+  void SetPr(double pr);
+  void SetFreq(double freq);
+  void SetNoise(double noise);
+  void SetModName(std::string modName);
+
+
+  bool CheckConflict();  //check if parameters conflict
+  void Stamp(Ptr<Packet> p, double pt, double pr);
 
   //inherited by Header class
   static TypeId GetTypeId(void);
@@ -75,12 +105,30 @@ private:
   uint8_t m_direction;  // direction: 0=none, 1=up, -1=down
   //uint8_t m_addrType;
   Address m_nextHop;
-  uint16_t m_numForwards;
+  uint8_t m_numForwards;
   addr_t m_src;
   addr_t m_dst;
   uint8_t m_errorFlag;	
   uint16_t m_uId;
 
+
+  //Packet Stamp variables:
+  /**
+  * only one between m_ptLevel and m_txRange can should be set
+  * run CheckConflict() to avoid conflict
+  */
+
+  double m_pt;		//transmission power, set according to Pt_level_
+  double m_pr;		//rx power, set by channel/propagation module
+  double m_txRange;	//transmission range
+  double m_freq;	//central frequency
+  double m_noise;	//background noise at the receiver side
+  std::string m_modName;
+
+  /*
+  * Demux features needs to be implemented
+  *AquaSimMacDemuxPktType m_macDemuxPType;
+  */
 };
 
 

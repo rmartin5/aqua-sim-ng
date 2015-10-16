@@ -17,16 +17,21 @@ NS_OBJECT_ENSURE_REGISTERED(AquaSimHeader);
 
 AquaSimHeader::AquaSimHeader(void) :
     m_txTime(0), m_direction(dir_t::DOWN), m_nextHop(NULL),
-    m_numForwards(0), m_errorFlag(0), m_uId(-1)
+    m_numForwards(0), m_errorFlag(0), m_uId(-1),
+    m_pt(-1), m_pr(-1),
+    m_txRange(-1), m_freq(-1), m_noise(0)
 {
   //m_src.addr(Address());
   //m_dst.addr(Address());
   //m_src.port(0);
   //m_dst.port(0);
+
+  NS_LOG_FUNCTION(this);
 }
 
 AquaSimHeader::~AquaSimHeader(void)
 {
+  NS_LOG_FUNCTION(this);
 }
 
 TypeId
@@ -51,9 +56,15 @@ AquaSimHeader::Deserialize(Buffer::Iterator start)
   Buffer::Iterator i = start;
   m_txTime = i.ReadNtohU32();
   m_direction = i.ReadU8();	//wasted space due to only needing 2 bits
-  m_numForwards = i.ReadNtohU16();
+  m_numForwards = i.ReadU8();
   m_errorFlag = i.ReadU8();	//wasted space due to only needing 1 bit
   m_uId = i.ReadNtohU16();
+
+  m_pt = i.ReadU8();
+  m_pr = i.ReadU8();
+  m_txRange = i.ReadNtohU16();
+  m_freq = i.ReadU8();
+  m_noise = i.ReadU8();
 
   return GetSerializedSize();
 }
@@ -67,7 +78,7 @@ AquaSimHeader::GetSerializedSize(void) const
   example can be seen @ main-packet-header.cc*/
 
   //reserved bytes for header
-  return (4 + 1 + 2 + 1 + 2);
+  return (4 + 1 + 1 + 1 + 2 + 1 + 1 + 2 + 1 + 1);
 }
 
 void 
@@ -76,10 +87,16 @@ AquaSimHeader::Serialize(Buffer::Iterator start) const
   Buffer::Iterator i = start;
   i.WriteHtonU32(m_txTime);
   i.WriteU8(m_direction);
-  i.WriteHtonU16(m_numForwards);
+  i.WriteU8(m_numForwards);
   i.WriteU8(m_errorFlag);
   i.WriteHtonU16(m_uId);
   //src/dst port + address
+  i.WriteU8(m_pt);
+  i.WriteU8(m_pr);
+  i.WriteU16(m_txRange);
+  i.WriteU8(m_freq);
+  i.WriteU8(m_noise);
+  //m_modName
 }
 
 void 
@@ -112,6 +129,15 @@ AquaSimHeader::Print(std::ostream &os) const
   }
 
   os << " UniqueID=" << m_uId;
+
+  os << " Tx Power=" << m_pt << " Rx Power=" << m_pr;
+
+  os << " Trans Range=" << m_txRange;
+
+  os << " Frequency=" << m_freq;
+
+  os << " Noise=" << m_noise;
+
 }
 
 uint32_t
@@ -138,7 +164,7 @@ AquaSimHeader::GetNextHop(void)
   return m_nextHop;
 }
 
-uint16_t
+uint8_t
 AquaSimHeader::GetNumForwards(void)
 {
   return m_numForwards;
@@ -180,6 +206,39 @@ AquaSimHeader::GetUId(void)
   return m_uId;
 }
 
+double
+AquaSimHeader::GetTxRange()
+{
+  return m_txRange;
+}
+double
+AquaSimHeader::GetPt()
+{
+  return m_pt;
+}
+double
+AquaSimHeader::GetPr()
+{
+  return m_pr;
+}
+double
+AquaSimHeader::GetFreq()
+{
+  return m_freq;
+}
+double
+AquaSimHeader::GetNoise()
+{
+  return m_noise;
+}
+std::string
+AquaSimHeader::GetModName()
+{
+  return m_modName;
+}
+
+
+
 void
 AquaSimHeader::SetTxTime(uint32_t time)
 {
@@ -199,7 +258,7 @@ AquaSimHeader::SetNextHop(Address nextHop)
 }
 
 void
-AquaSimHeader::SetNumForwards(uint16_t numForwards)
+AquaSimHeader::SetNumForwards(uint8_t numForwards)
 {
   m_numForwards = numForwards;
 }
@@ -239,4 +298,49 @@ AquaSimHeader::SetUId(uint16_t uId)
 {
   NS_LOG_FUNCTION(this << "this is not unique and must be removed/implemented");
   m_uId = uId;
+}
+
+void
+AquaSimHeader::SetTxRange(double txRange)
+{
+  m_txRange = txRange;
+}
+void
+AquaSimHeader::SetPt(double pt)
+{
+  m_pt = pt;
+}
+void
+AquaSimHeader::SetPr(double pr)
+{
+  m_pr = pr;
+}
+void
+AquaSimHeader::SetFreq(double freq)
+{
+  m_freq = freq;
+}
+void
+AquaSimHeader::SetNoise(double noise)
+{
+  m_noise = noise;
+}
+void
+AquaSimHeader::SetModName(std::string modName)
+{
+  m_modName = modName;
+}
+
+
+bool
+AquaSimHeader::CheckConflict()
+{
+  return (m_txRange > 0 && m_pt < 0) || (m_txRange < 0 && m_pt > 0);
+}
+
+void
+AquaSimHeader::Stamp(Ptr<Packet> p, double pt, double pr)
+{
+  m_pt = pt;
+  m_pr = pr;
 }

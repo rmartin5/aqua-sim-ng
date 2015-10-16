@@ -7,7 +7,7 @@
 #     conf.check_nonfatal(header_name='stdint.h', define_name='HAVE_STDINT_H')
 
 def build(bld):
-    module = bld.create_ns3_module('aqua-sim', ['network', 'energy', 'antenna'])
+    module = bld.create_ns3_module('aqua-sim-ng', ['network', 'energy', 'antenna'])
     module.source = [
       #  'model/aqua-sim.cc',
       #  'model/aqua-sim-channel.cc',
@@ -20,7 +20,6 @@ def build(bld):
       #  'model/aqua-sim-net-device.cc',
       #  'model/aqua-sim-node.cc',
       #  'model/aqua-sim-noise-generator.cc',
-      #  'model/aqua-sim-packetstamp.cc',
       #  'model/aqua-sim-phy.cc',
       #  'model/aqua-sim-propagation.cc',
       #  'model/aqua-sim-simple-propagation.cc',
@@ -31,13 +30,13 @@ def build(bld):
       #  'helper/aqua-sim-helper.cc',
         ]
 
-    module_test = bld.create_ns3_module_test_library('aqua-sim')
+    module_test = bld.create_ns3_module_test_library('aqua-sim-ng')
     module_test.source = [
         # 'test/aqua-sim-test-suite.cc',
         ]
 
     headers = bld(features='ns3header')
-    headers.module = 'aqua-sim'
+    headers.module = 'aqua-sim-ng'
     headers.source = [
        # 'model/aqua-sim.h',
        # 'model/aqua-sim-channel.h',
@@ -50,7 +49,6 @@ def build(bld):
        # 'model/aqua-sim-net-device.h',
        # 'model/aqua-sim-node.h',
        # 'model/aqua-sim-noise-generator.h',
-       # 'model/aqua-sim-packetstamp.h',
        # 'model/aqua-sim-phy.h',
        # 'model/aqua-sim-propagation.h',
        # 'model/aqua-sim-range-propagation.h',

@@ -10,7 +10,6 @@
 
 #include "aqua-sim-mac.h"
 #include "aqua-sim-node.h"
-#include "aqua-sim-packetstamp.h"
 
 #include "ns3/address.h"
 #include "ns3/pointer.h"
@@ -21,7 +20,6 @@
 
 namespace ns3 {
 
-class AquaSimPacketStamp;
 class AquaSimNode;
 class AquaSimMac;
 class Packet;
@@ -58,7 +56,6 @@ protected:
   //NsObject *port_dmux;
 
 private:
-  AquaSimPacketStamp* m_pStamp;
   Ptr<AquaSimMac> m_mac;
 
 };  //AquaSimRouting class

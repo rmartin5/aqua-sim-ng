@@ -6,7 +6,6 @@
 #include "ns3/simulator.h"
 
 #include "aqua-sim-header.h"
-#include "aqua-sim-packetstamp.h"
 #include "aqua-sim-routing.h"
 #include "aqua-sim-mac.h"
 
@@ -33,7 +32,6 @@ AquaSimRouting::AquaSimRouting()
 {
   NS_LOG_FUNCTION(this);
   //m_node = NULL;
-  m_pStamp = NULL;
   //m_tracetarget=NULL;		//to be implemented
   //ll(NULL), port_dmux(NULL)
 }

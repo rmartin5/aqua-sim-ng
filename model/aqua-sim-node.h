@@ -6,7 +6,6 @@
 #define AQUA_SIM_NODE_H
 
 
-#include "aqua-sim-packetstamp.h"
 #include "aqua-sim-phy.h"
 #include "aqua-sim-energy-model.h"
 #include "aqua-sim-net-device.h"
@@ -30,7 +29,6 @@ enum TransmissionStatus { SLEEP, NIDLE, SEND, RECV, NStatus };	//idle currently 
 
 //class UnderwaterMobilityPattern;	
 class MobilityModel;	//TODO inherited Aqua Sim specialized class???
-class AquaSimPacketStamp;
 class AquaSimEnergyModel;
 class AquaSimNetDevice;
 
@@ -64,7 +62,7 @@ public:
   //void Start(void);
   //void CheckPosition(void);
 
-  Ptr<CubicPositionAllocator> T(void) { return m_T; }	//TODO
+  //Ptr<CubicPositionAllocator> T(void) { return m_T; }	//TODO
 
   /*coordinates*/
   inline double &X(void) { return m_x; }
@@ -107,8 +105,6 @@ public:
   int m_nextHop;
   int m_setHopStatus;
   int m_sinkStatus;
-  AquaSimPacketStamp* m_pStamp;
-
 
 
   void UpdatePosition(void);  //out of date... should be using ns3's mobility module
@@ -182,7 +178,7 @@ protected:
   //UnderwaterMobilityPattern * MP_; //our new mobility pattern module
   Ptr<MobilityModel> m_MP;
 
-  Ptr<CubicPositionAllocator> m_T;	//TODO
+  //Ptr<CubicPositionAllocator> m_T;	//TODO
 
   void RandomPosition(void);
   int m_randomMotion;	// is mobile

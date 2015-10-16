@@ -22,7 +22,6 @@
 #include "ns3/nstime.h"
 
 #include "aqua-sim-simple-propagation.h"
-#include "aqua-sim-packetstamp.h"
 
 #include <stdio.h>
 #include <vector>
@@ -59,17 +58,19 @@ AquaSimSimplePropagation::ReceivedCopies (Ptr<AquaSimNode> s, Ptr<Packet> p, std
   PktRecvUnit pru;
   Ptr<AquaSimNode> node = NULL;
   double dist = 0;
-  AquaSimPacketStamp pStamp;
+
+  AquaSimHeader asHeader;
+  p->PeekHeader(asHeader);
+
   Ptr<MobilityModel> x, y;  //placeholder,  TODO adapt using AquaSimNode
 
-  //need to implement pStamp as part of packet p
   std::vector<Ptr<AquaSimNetDevice> >::const_iterator it = dList.begin();
   for(; it != dList.end(); ++it)
   {
     dist = distance(x,y);
     pru.recver = node;
     pru.pDelay = Time::FromDouble(dist / SOUND_SPEED_IN_WATER,Time::S);
-    pru.pR = RayleighAtt(dist, pStamp.Freq(), pStamp.Pt());
+    pru.pR = RayleighAtt(dist, asHeader.GetFreq(), asHeader.GetPt());
     res->push_back(pru);
   }
 
