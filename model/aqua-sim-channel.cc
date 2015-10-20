@@ -19,7 +19,9 @@
  */
 
 #include "aqua-sim-channel.h"
-#include "aqua-sim-packetstamp.h"
+
+//#include "aqua-sim-packetstamp.h"
+// FIXME - packetstamp issues here
 
 namespace ns3 {
 
