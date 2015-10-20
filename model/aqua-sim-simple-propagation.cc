@@ -62,7 +62,7 @@ AquaSimSimplePropagation::ReceivedCopies (Ptr<AquaSimNode> s, Ptr<Packet> p, std
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
 
-  Ptr<MobilityModel> x, y;  //placeholder,  TODO adapt using AquaSimNode
+  Ptr<MobilityModel> x, y;  //placeholder,  TODO adapt using AquaSimNode or MobilityModel...
 
   std::vector<Ptr<AquaSimNetDevice> >::const_iterator it = dList.begin();
   for(; it != dList.end(); ++it)

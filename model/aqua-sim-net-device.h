@@ -70,7 +70,7 @@ public:
   virtual void DoDispose (void);
   virtual void DoInitialize (void);
 
-  void ForwardUp (Ptr<Packet> packet, Ptr<MobilityModel> src, Ptr<MobilityModel> dst);
+  void ForwardUp (Ptr<Packet> packet, Ptr<MobilityModel> src, Ptr<MobilityModel> dst);  // TODO - no init of ForwardUp
 
   //inherited functions from NetDevice class
   virtual void AddLinkChangeCallback (Callback<void> callback);

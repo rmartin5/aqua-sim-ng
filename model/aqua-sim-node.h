@@ -57,7 +57,7 @@ public:
   static TypeId GetTypeId(void);
 
   double PropDelay(double); //not this node's responsiblity here
-  bool Move(void);	/*start the movement*/
+  bool Move(void);	/*start the movement*/	//TODO Move() and IsMove() can be handled by a simple GetVelocity() which calls mp.GetVelocity()
   bool IsMove(void);
   //void Start(void);
   //void CheckPosition(void);
@@ -107,7 +107,7 @@ public:
   int m_sinkStatus;
 
 
-  void UpdatePosition(void);  //out of date... should be using ns3's mobility module
+  void UpdatePosition(void);  //TODO UpdatePosition() out of date... should be using ns3's mobility module
 
   //inherited from Node class
   virtual uint32_t AddApplication(Ptr<Application> application);
@@ -129,8 +129,8 @@ private:
   double m_statusChangeTime;  //the time when changing m_preTransStatus to m_transStatus
 
   bool	m_failureStatus;// 1 if node fails, 0 otherwise
-  double 	m_failurePro;
-  double 	m_failureStatusPro;
+  double m_failurePro;
+  double m_failureStatusPro;
 
   /*
   *  The following indicate the (x,y,z) position of the node on
@@ -174,11 +174,11 @@ protected:
   */
   void GenerateFailure(void);
 
-  //TODO remove.
+  //FIXME - fully integrate MobilityModel within ASNode
   //UnderwaterMobilityPattern * MP_; //our new mobility pattern module
   Ptr<MobilityModel> m_MP;
 
-  //Ptr<CubicPositionAllocator> m_T;	//TODO
+  //Ptr<CubicPositionAllocator> m_T;	//TODO ... remove
 
   void RandomPosition(void);
   int m_randomMotion;	// is mobile
