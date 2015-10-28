@@ -50,7 +50,7 @@ public:
   virtual void Recv(Ptr<Packet>, Ptr<AquaSimPhy>);
 
   //inherited
-  virtual Ptr<AquaSimNetDevice> GetDevice (uint32_t i);
+  Ptr<AquaSimNetDevice> GetDevice (uint32_t i);
   virtual uint32_t GetId (void) const;
   virtual uint32_t GetNDevices (void) const;
   virtual void AddDevice (Ptr<AquaSimNetDevice> device);
@@ -58,7 +58,7 @@ public:
 
 private:
   void SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp); 
-  double GetPropDelay (Ptr<MobilityModel> tnode, Ptr<MobilityModel> rnode);
+  double GetPropDelay (Ptr<AquaSimNode> tnode, Ptr<AquaSimNode> rnode);
    	
 	/* For list-keeper, channel keeps list of mobilenodes 
 	   listening on to it */
@@ -68,7 +68,7 @@ private:
 
 
         //void calculatePosition(Node* sender,Node* receiver, Packet* p);
-  double Distance(Ptr<MobilityModel> tnode,Ptr<MobilityModel> rnode);
+  double Distance(Ptr<AquaSimNode> tnode,Ptr<AquaSimNode> rnode);
 	//void addNodeToList(MobileNode *mn);
 	//void removeNodeFromList(MobileNode *mn);
 	//void sortLists(void);

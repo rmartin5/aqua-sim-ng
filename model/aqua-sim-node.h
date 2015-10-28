@@ -27,8 +27,8 @@ namespace ns3{
 
 enum TransmissionStatus { SLEEP, NIDLE, SEND, RECV, NStatus };	//idle currently used by ns3:WireState
 
-//class UnderwaterMobilityPattern;	
-class MobilityModel;	//TODO inherited Aqua Sim specialized class???
+//class UnderwaterMobilityPattern;	//TODO enhance mobility model with underwater mobility pattern
+class MobilityModel;
 class AquaSimEnergyModel;
 class AquaSimNetDevice;
 
@@ -42,30 +42,23 @@ AquaSimNode *node;
 };
 */
 
-/******************
-Should probably inherit from MobilityModel instead of Node
-for position/vector purposes.
 
-Adjust rest of module to match
-*********************/
-
-class AquaSimNode : public Node
+class AquaSimNode : public Node, public MobilityModel
 {
 public:
   AquaSimNode(void);
   virtual ~AquaSimNode(void);
   static TypeId GetTypeId(void);
 
-  double PropDelay(double); //not this node's responsiblity here
-  bool Move(void);	/*start the movement*/	//TODO Move() and IsMove() can be handled by a simple GetVelocity() which calls mp.GetVelocity()
-  bool IsMove(void);
+  double PropDelay(double); //TODO ... remove... not this node's responsibility here
+  //bool Move(void);	/*start the movement... should be handled within example*/
   //void Start(void);
   //void CheckPosition(void);
 
   //Ptr<CubicPositionAllocator> T(void) { return m_T; }	//TODO
 
   /*coordinates*/
-  inline double &X(void) { return m_x; }
+  inline double &X(void) { return m_x; }	//TODO ****redefine coordinates and speed projections using mobilitymodel API
   inline double &Y(void) { return m_y; }
   inline double &Z(void) { return m_z; }
   /*speeds projected to each axis*/
@@ -106,10 +99,13 @@ public:
   int m_setHopStatus;
   int m_sinkStatus;
 
-
   void UpdatePosition(void);  //TODO UpdatePosition() out of date... should be using ns3's mobility module
 
-  //inherited from Node class
+  bool IsMoving(void);
+
+  /*
+   * inherited from Node
+   */
   virtual uint32_t AddApplication(Ptr<Application> application);
   virtual uint32_t AddDevice(Ptr<AquaSimNetDevice> device);
   virtual Ptr<Application> GetApplication(uint32_t index) const;
@@ -123,6 +119,17 @@ public:
   //				Ptr<AquaSimNetDevice> device, bool promiscuous=false);
   //virtual void UnregisterDeviceAdditionLister (DeviceAdditionListener listener);
   //virtual void UnregisterProtocolHandler(ProtocolHandler handler);
+
+  /*
+   * inherited from MobilityModel
+   */
+  virtual int64_t AssignStreams (int64_t stream);
+  virtual double GetDistanceFrom (Ptr<const MobilityModel> position) const;
+  virtual Vector GetPosition(void) const;
+  virtual double GetRelativeSpeed(Ptr<const MobilityModel> other) const;
+  virtual Vector GetVelocity(void) const;
+  virtual void SetPosition(const Vector &position);
+
 
 private:
   enum  TransmissionStatus m_transStatus;

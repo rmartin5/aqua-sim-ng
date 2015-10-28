@@ -69,7 +69,7 @@ public:
   
   virtual void DoDispose (void);
   virtual void DoInitialize (void);
-
+  //TODO forward up is doing nothing here....
   void ForwardUp (Ptr<Packet> packet, Ptr<MobilityModel> src, Ptr<MobilityModel> dst);  // TODO - no init of ForwardUp
 
   //inherited functions from NetDevice class

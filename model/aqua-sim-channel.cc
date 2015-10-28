@@ -19,9 +19,7 @@
  */
 
 #include "aqua-sim-channel.h"
-
-//#include "aqua-sim-packetstamp.h"
-// FIXME - packetstamp issues here
+#include "aqua-sim-header.h"
 
 namespace ns3 {
 
@@ -72,7 +70,7 @@ AquaSimChannel::SetPropagation (Ptr<AquaSimSimplePropagation> prop)
 }
 
 Ptr<AquaSimNetDevice>
-AquaSimChannel::GetDevice (uint32_t i) const
+AquaSimChannel::GetDevice (uint32_t i)
 {
   return m_deviceList[i];
 }
@@ -145,8 +143,14 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
     recver = (*recvUnits)[i].recver;
     pDelay = (*recvUnits)[i].pDelay;
 
-    p->m_pStamp->Pr() = (*recvUnits)[i].pR;
-    p->m_pStamp->Noise() = m_noiseGen->Noise(Simulator::Now() + pDelay, recver->X(), recver->Y(), recver->Z());
+    AquaSimHeader asHeader;
+    p->PeekHeader(asHeader);
+
+    asHeader.SetPr((*recvUnits)[i].pR);
+    asHeader.SetNoise(m_noiseGen->Noise(Simulator::Now() + pDelay, recver->X(), recver->Y(), recver->Z()));
+
+    p->AddHeader(asHeader);
+
     /**
      * Send to each interface a copy, and we will filter the packet
      * in physical layer according to freq and modulation
@@ -161,14 +165,13 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
 }
 
 double
-AquaSimChannel::GetPropDelay (Ptr<MobilityModel> tnode, Ptr<MobilityModel> rnode)
+AquaSimChannel::GetPropDelay (Ptr<AquaSimNode> tnode, Ptr<AquaSimNode> rnode)
 {
-  AquaSimSimplePropagation prop;
-  return prop.PDelay(tnode,rnode).GetSeconds();
+  return m_prop->PDelay(tnode, rnode).GetSeconds();		//FIXME this may output garbage (time/double conversions)
 }
    	
 double
-AquaSimChannel::Distance(Ptr<MobilityModel> tnode, Ptr<MobilityModel> rnode)
+AquaSimChannel::Distance(Ptr<AquaSimNode> tnode, Ptr<AquaSimNode> rnode)
 {
   return tnode->GetDistanceFrom(rnode);
 }

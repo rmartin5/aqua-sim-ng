@@ -43,7 +43,7 @@ public:
   static TypeId GetTypeId (void);
   AquaSimSimplePropagation (void);
   virtual std::vector<PktRecvUnit>* ReceivedCopies (Ptr<AquaSimNode>, Ptr<Packet>,  std::vector<Ptr<AquaSimNetDevice> >);
-  virtual Time PDelay (Ptr<MobilityModel> s, Ptr<MobilityModel> r);
+  virtual Time PDelay (Ptr<AquaSimNode> s, Ptr<AquaSimNode> r);
 
 protected:
   double RayleighAtt (double dist, double freq, double pT);

@@ -78,7 +78,7 @@ AquaSimSimplePropagation::ReceivedCopies (Ptr<AquaSimNode> s, Ptr<Packet> p, std
 }
 
 Time
-AquaSimSimplePropagation::PDelay (Ptr<MobilityModel> s, Ptr<MobilityModel> r)
+AquaSimSimplePropagation::PDelay (Ptr<AquaSimNode> s, Ptr<AquaSimNode> r)
 {
   return Time::FromDouble((s->GetDistanceFrom(r) / SOUND_SPEED_IN_WATER ),Time::S);
 }

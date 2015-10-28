@@ -172,24 +172,15 @@ AquaSimNode::GetTypeId(void)
 }
 
 bool
-AquaSimNode::Move(void)  //TODO mobility model would be better suited for this...
+AquaSimNode::IsMoving(void)
 {
-  //redefine the this function
-  //Scheduler& s = Scheduler::instance();
-  //random_destination();
-  //s.schedule(&uw_pos_handle_, &uw_pos_intr_, position_update_interval_);
-  if (NULL == m_MP)
-    return false;
+  if (m_MP == NULL){
+      return false;
+  }
 
-  //m_MP->Start();		//this is a bug...
-  return true;
-}
-
-bool
-AquaSimNode::IsMove(void)		//TODO mobility model would be better suited for this...
-{
-  if (NULL == m_MP)
-    return false;
+  if (!m_MP->GetVelocity()) {
+      return false;
+  }
 
   return true;
 }
