@@ -173,7 +173,7 @@ AquaSimChannel::GetPropDelay (Ptr<AquaSimNode> tnode, Ptr<AquaSimNode> rnode)
 double
 AquaSimChannel::Distance(Ptr<AquaSimNode> tnode, Ptr<AquaSimNode> rnode)
 {
-  return tnode->GetDistanceFrom(rnode);
+  return tnode->DistanceFrom(rnode);
 }
 
 } // namespace ns3

@@ -340,4 +340,34 @@ AquaSimNode::UpdatePosition(void)
   NS_LOG_FUNCTION(this << "Not implemented.");
 }
 
+double
+AquaSimNode::DistanceFrom(Ptr<AquaSimNode> n)
+{
+  return m_MP->GetDistanceFrom(n->m_MP);
+}
+
+Vector
+AquaSimNode::Position(void)
+{
+  return m_MP->GetPosition();
+}
+
+double
+AquaSimNode::RelativeSpeed(Ptr<AquaSimNode> n)
+{
+  return m_MP->GetRelativeSpeed(n->m_MP);
+}
+
+Vector
+AquaSimNode::Velocity(void)
+{
+  return m_MP->GetVelocity();
+}
+
+void
+AquaSimNode::SetNodePosition(const Vector &position)
+{
+  m_MP->SetPosition(position);
+}
+
 } // namespace ns3

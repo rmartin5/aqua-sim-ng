@@ -123,13 +123,12 @@ public:
   /*
    * inherited from MobilityModel
    */
+  double DistanceFrom(Ptr<AquaSimNode> n);
+  Vector Position(void);
+  double RelativeSpeed(Ptr<AquaSimNode> n);
+  Vector Velocity(void);
+  void SetNodePosition(const Vector &position);
   virtual int64_t AssignStreams (int64_t stream);
-  virtual double GetDistanceFrom (Ptr<const MobilityModel> position) const;
-  virtual Vector GetPosition(void) const;
-  virtual double GetRelativeSpeed(Ptr<const MobilityModel> other) const;
-  virtual Vector GetVelocity(void) const;
-  virtual void SetPosition(const Vector &position);
-
 
 private:
   enum  TransmissionStatus m_transStatus;
@@ -183,6 +182,7 @@ protected:
 
   //FIXME - fully integrate MobilityModel within ASNode
   //UnderwaterMobilityPattern * MP_; //our new mobility pattern module
+
   Ptr<MobilityModel> m_MP;
 
   //Ptr<CubicPositionAllocator> m_T;	//TODO ... remove

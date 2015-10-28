@@ -39,7 +39,6 @@ namespace ns3 {
  */
 
 class AquaSimNode;
-class MobilityModel;
 
 struct PktRecvUnit {
   double pR;
@@ -58,12 +57,12 @@ public:
 
   virtual std::vector<PktRecvUnit> ReceivedCopies (Ptr<AquaSimNode> s,
                                                      Ptr<Packet> p) = 0;
-  virtual Time PDelay (Ptr<MobilityModel> s, Ptr<MobilityModel> r) = 0;
+  virtual Time PDelay (Ptr<AquaSimNode> s, Ptr<AquaSimNode> r) = 0;
 
 protected:
   virtual double Rayleigh (double SL) = 0;
   virtual double Thorp (double range, double freq) = 0;
-  virtual double distance (Ptr<MobilityModel> s, Ptr<MobilityModel> r) = 0;
+  virtual double distance (Ptr<AquaSimNode> s, Ptr<AquaSimNode> r) = 0;
 
 //Topography *topo;
 

@@ -22,12 +22,12 @@
 #define AQUA_SIM_SIMPLE_PROPAGATION_H
 
 #include "ns3/nstime.h"
-#include "ns3/mobility-model.h"
 #include "ns3/random-variable-stream.h"
 
 #include <vector>
 #include "aqua-sim-propagation.h"
 #include "aqua-sim-net-device.h"
+#include "aqua-sim-node.h"
 
 namespace ns3 {
 
@@ -42,14 +42,14 @@ class AquaSimSimplePropagation : public AquaSimPropagation
 public:    
   static TypeId GetTypeId (void);
   AquaSimSimplePropagation (void);
-  virtual std::vector<PktRecvUnit>* ReceivedCopies (Ptr<AquaSimNode>, Ptr<Packet>,  std::vector<Ptr<AquaSimNetDevice> >);
+  virtual std::vector<PktRecvUnit>* ReceivedCopies (Ptr<AquaSimNode> s, Ptr<Packet> p,  std::vector<Ptr<AquaSimNetDevice> > dList);
   virtual Time PDelay (Ptr<AquaSimNode> s, Ptr<AquaSimNode> r);
 
 protected:
   double RayleighAtt (double dist, double freq, double pT);
   virtual double Rayleigh (double SL);
   virtual double Thorp (double range, double freq);
-  virtual double distance (Ptr<MobilityModel> s, Ptr<MobilityModel> r);
+  virtual double distance (Ptr<AquaSimNode> s, Ptr<AquaSimNode> r);
 
 private:
   Ptr<LogNormalRandomVariable> m_rand;

@@ -17,7 +17,6 @@
  *
  * Author: Robert Martin <robert.martin@engr.uconn.edu>
  */
-#include "ns3/mobility-model.h"
 #include "ns3/log.h"
 #include "ns3/nstime.h"
 
@@ -62,12 +61,12 @@ AquaSimSimplePropagation::ReceivedCopies (Ptr<AquaSimNode> s, Ptr<Packet> p, std
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
 
-  Ptr<MobilityModel> x, y;  //placeholder,  TODO adapt using AquaSimNode or MobilityModel...
+  Ptr<AquaSimNode> x, y;
 
-  std::vector<Ptr<AquaSimNetDevice> >::const_iterator it = dList.begin();
+  std::vector<Ptr<AquaSimNetDevice> >::const_iterator it = dList.begin();	//FIXME this is buggy...
   for(; it != dList.end(); ++it)
   {
-    dist = distance(x,y);
+    dist = x->DistanceFrom(y);
     pru.recver = node;
     pru.pDelay = Time::FromDouble(dist / SOUND_SPEED_IN_WATER,Time::S);
     pru.pR = RayleighAtt(dist, asHeader.GetFreq(), asHeader.GetPt());
@@ -80,7 +79,7 @@ AquaSimSimplePropagation::ReceivedCopies (Ptr<AquaSimNode> s, Ptr<Packet> p, std
 Time
 AquaSimSimplePropagation::PDelay (Ptr<AquaSimNode> s, Ptr<AquaSimNode> r)
 {
-  return Time::FromDouble((s->GetDistanceFrom(r) / SOUND_SPEED_IN_WATER ),Time::S);
+  return Time::FromDouble((s->DistanceFrom(r) / SOUND_SPEED_IN_WATER ),Time::S);
 }
     
 double
@@ -134,11 +133,10 @@ AquaSimSimplePropagation::Thorp (double dist, double freq)
 }
 
 double
-AquaSimSimplePropagation::distance (Ptr<MobilityModel> s, Ptr<MobilityModel> r)
+AquaSimSimplePropagation::distance (Ptr<AquaSimNode> s, Ptr<AquaSimNode> r)
 {
-  NS_LOG_FUNCTION(this << " currently not implemented, dummy value of 1 returned.");
-  return 1;
-  //return s->GetDistanceFrom(r);  //Redundant: Done on channel as well...
+  NS_LOG_FUNCTION(this);
+  return s->DistanceFrom(r);	//redundant...
 }
 
 }  // namespace ns3
