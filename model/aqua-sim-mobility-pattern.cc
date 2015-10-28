@@ -1,6 +1,6 @@
 //...
 
-
+/******
 #include "ns3/log.h"
 
 #include "aqua-sim-mobility-pattern.h"
@@ -29,6 +29,9 @@ AquaSimPosUpdateHelper::Expire()
 * @param Y		node's Y coordinate
 * @param Z		node's Z coordinate
 */
+
+/******
+
 LocationCache::LocationCache(Time duration, Time interval,
 			     double X, double Y, double Z,
 			     double dX, double dY, double dZ) :
@@ -43,6 +46,9 @@ LocationCache::LocationCache(Time duration, Time interval,
 /**
 * @return the max number of locations can be stored
 */
+
+/******
+
 inline size_t
 LocationCache::Capacity() {
   return locations.size();
@@ -66,6 +72,9 @@ LocationCache::InRange(Time t) {
 *
 * @param loc the new location
 */
+
+/******
+
 void
 LocationCache::AddNewLoc(const LocationCacheElem &lce) {
   locations[(m_bIndex + m_size) % Capacity()] = lce;
@@ -89,6 +98,7 @@ LocationCache::GetLocByTime(Time t) {
 /*****
 * implementations of AquaSimMobilityPattern
 *****/
+/******
 
 AquaSimMobilityPattern::AquaSimMobilityPattern() :
 m_node(NULL), m_lc(NULL), m_posUpdateHelper(this)
@@ -122,6 +132,8 @@ AquaSimMobilityPattern::SetNode(AquaSimNode *n) {
 /**
 * mobility pattern starts to work, i.e., the host node starts to move
 */
+/******
+
 void
 AquaSimMobilityPattern::Start() {
   if (NULL != m_lc) {
@@ -141,6 +153,8 @@ AquaSimMobilityPattern::Start() {
 * initiate aquasim mobility pattern, derived class
 * should overload this one
 */
+/******
+
 void AquaSimMobilityPattern::Init() {
 return;
 }
@@ -148,6 +162,8 @@ return;
 /**
 * a dummy one
 */
+/******
+
 LocationCacheElem
 AquaSimMobilityPattern::GenNewLoc() {
   NS_LOG_FUNCTION(this >> "A Dummy one! Shouldn't call this function!");
@@ -169,6 +185,8 @@ GridKeeper::instance()->new_moves(node);
 /**
 * the interface for AquaSimPosUpdateHelper to call
 */
+/******
+
 void
 AquaSimMobilityPattern::HandleLocUpdate() {
   LocationCacheElem e;
@@ -239,6 +257,8 @@ update_interval);
 * update node's position. if it's out of bound
 * We simply bounce the node by the corresponding edge
 */
+/******
+
 void
 AquaSimMobilityPattern::RestrictLocByBound(LocationCacheElem &lce){
   /*
@@ -246,6 +266,8 @@ AquaSimMobilityPattern::RestrictLocByBound(LocationCacheElem &lce){
    * This should all be replaced using ns3::Box Class
    *
    */
+/******
+
   bool recheck = true;
   Ptr<CubicPositionAllocator> T = m_node->T();
 
@@ -271,11 +293,13 @@ AquaSimMobilityPattern::RestrictLocByBound(LocationCacheElem &lce){
 *
 * @return  true for coord is changed, false for not
 */
+/******
+
 bool
 AquaSimMobilityPattern::BounceByEdge(double &coord, double &dspeed,
 double bound, bool lowerBound) {
-  if ((lowerBound && (coord < bound)) /*below lower bound*/
-	  || (!lowerBound && (coord > bound)) /*beyond upper bound*/) {
+  if ((lowerBound && (coord < bound)) /*below lower bound*/ /******
+	  || (!lowerBound && (coord > bound)) /*beyond upper bound*//******) {
     coord = bound + bound - coord;
     dspeed = -dspeed;
     return true;
