@@ -1,5 +1,6 @@
 //...
 
+/******
 
 #ifndef AQUA_SIM_MOBILITY_PATTERN_H
 #define AQUA_SIM_MOBILITY_PATTERN_H
@@ -28,6 +29,7 @@ namespace ns3{
 /* Some redudency within these classes, compared to ns3,
 but for this port this ns2 version will suffix
 */
+/******
 
 class AquaSimMobilityPattern;
 
@@ -112,6 +114,7 @@ public:
   void pop_front();
   const LocationCacheElem & front();
   */
+/******
 
 };  // class LocationCache
 
@@ -120,6 +123,8 @@ public:
 * base class of mobility pattern
 * AquaSimNode will possess a member of this type
 */
+/******
+
 class AquaSimMobilityPattern : public Object{
 public:
   AquaSimMobilityPattern();
@@ -139,7 +144,8 @@ protected:
 					  * derived class need to overload to
 					  * update node's position;
 					  */
-  /*initialize mobility pattern here*/
+  /*initialize mobility pattern here*/ /******
+
   virtual void Init();
 
   //void UpdateGridKeeper();
