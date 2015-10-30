@@ -334,12 +334,6 @@ AquaSimNode::GetNDevices(void) const
   return m_devices.size();
 }
 
-void
-AquaSimNode::UpdatePosition(void)
-{
-  NS_LOG_FUNCTION(this << "Not implemented.");
-}
-
 double
 AquaSimNode::DistanceFrom(Ptr<AquaSimNode> n)
 {

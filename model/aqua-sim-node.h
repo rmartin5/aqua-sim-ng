@@ -99,7 +99,7 @@ public:
   int m_setHopStatus;
   int m_sinkStatus;
 
-  void UpdatePosition(void);  //TODO UpdatePosition() out of date... should be using ns3's mobility module
+  //void UpdatePosition(void);  // UpdatePosition() out of date... should be using ns3's mobility module
 
   bool IsMoving(void);
 
