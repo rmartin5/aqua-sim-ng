@@ -50,12 +50,12 @@ public:
   virtual ~AquaSimNode(void);
   static TypeId GetTypeId(void);
 
-  double PropDelay(double); //TODO ... remove... not this node's responsibility here
+  double PropDelay(double); //... remove... not this node's responsibility here
   //bool Move(void);	/*start the movement... should be handled within example*/
   //void Start(void);
   //void CheckPosition(void);
 
-  //Ptr<CubicPositionAllocator> T(void) { return m_T; }	//TODO
+  //Ptr<CubicPositionAllocator> T(void) { return m_T; }	//mobility model may cover this...
 
   /*coordinates*/
   inline double &X(void) { return m_x; }	//TODO ****redefine coordinates and speed projections using mobilitymodel API
@@ -185,7 +185,7 @@ protected:
 
   Ptr<MobilityModel> m_MP;
 
-  //Ptr<CubicPositionAllocator> m_T;	//TODO ... remove
+  //Ptr<CubicPositionAllocator> m_T;	//... remove
 
   void RandomPosition(void);
   int m_randomMotion;	// is mobile

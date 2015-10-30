@@ -1,6 +1,7 @@
 //...
 
 #include "aqua-sim-mac.h"
+#include "aqua-sim-header.h"
 
 #include "ns3/log.h"
 #include "ns3/pointer.h"
@@ -77,19 +78,26 @@ AquaSimMac::SendDown(Ptr<Packet> p)
 
 void
 AquaSimMac::HandleIncomingPkt(Ptr<Packet> p) { 	
-  //m_recvChannel->AddNewPacket(p);
+  NS_LOG_FUNCTION(this);
 
-  double txTime = p->m_pStamp...;		//TODO fix this handler...
+  //m_recvChannel->AddNewPacket(p);
+  AquaSimHeader asHeader;
+  p->PeekHeader(asHeader);
+
+  double txTime = asHeader.GetTxTime();
   if (Phy()->Status() != PHY_SEND) {
 	  Node()->SetCarrierSense(true);
   }
-  Simulator::Schedule(txTime, &m_recvHandler, p);
+  p->AddHeader(asHeader);
+
+  Simulator::Schedule(Seconds(txTime), &Recv, p );
   return;
 }
 
 void
 AquaSimMac::HandleOutgoingPkt(Ptr<Packet> p) {
-  m_callback = h;
+  NS_LOG_FUNCTION(this);
+  //m_callback = h;
   /*
   *  TODO Handle busy terminal problem before trying to tx packet
   */
@@ -100,8 +108,10 @@ void
 AquaSimMac::Recv(Ptr<Packet> p) {
   //assert(initialized());
   NS_ASSERT(m_node && m_phy && m_rout);
+  AquaSimHeader asHeader;
+  p->PeekHeader(asHeader);
 
-  if (p->GetDirection == DOWN){		//TODO get p header, check GetDirection() == dir_t::DOWN
+  if (asHeader.GetDirection() == AquaSimHeader::DOWN){
 	  // Handle outgoing packets.
 	  HandleOutgoingPkt(p);
   }
