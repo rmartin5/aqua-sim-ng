@@ -208,7 +208,7 @@ AquaSimMobilityPattern::HandleLocUpdate() {
   m_node->dZ() = e.sp.dZ();
   m_node->speed() = e.sp.GetSpeed();		//could be completed by MobilityModel::GetVelocity
 
-  if (oldX != m_node->X())			//TODO adjust node to satisfy topography use here T()
+  if (oldX != m_node->X())			// adjust node to satisfy topography use here T()
     m_node->T()->updateNodesList(m_node, oldX); //X_ is the key value of SortList
 
   //updateGridKeeper(); //do I really need this?!!!!!
@@ -262,7 +262,6 @@ update_interval);
 void
 AquaSimMobilityPattern::RestrictLocByBound(LocationCacheElem &lce){
   /*
-   * TODO
    * This should all be replaced using ns3::Box Class
    *
    */
