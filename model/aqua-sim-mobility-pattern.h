@@ -40,7 +40,7 @@ public:
     m_mP = mP;
   }
 private:
-  void Expire(void);	//TODO - this can just use MobilityModel functions...
+  void Expire(void);	// this can just use MobilityModel functions...
   AquaSimMobilityPattern * m_mP;
   Timer m_updateIntv;
 };  //class AquaSimPosUpdateHelper
