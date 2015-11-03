@@ -33,6 +33,8 @@ class AquaSimSinrChecker;
 class AquaSimSignalCache;
 class AquaSimModulation;
 class AquaSimNode;
+class AquaSimChannel;
+class AquaSimMac;
 class Packet;
 class AquaSimEnergyModel;
 

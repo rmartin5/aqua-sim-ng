@@ -36,20 +36,21 @@ extern const double SOUND_SPEED_IN_WATER;
  * This propagation model calculates attenuation using rayleigh model
  * and allows all nodes in the network to receive a copy.
  */
+class AquaSimNetDevice;
 
 class AquaSimSimplePropagation : public AquaSimPropagation
 {
 public:    
   static TypeId GetTypeId (void);
   AquaSimSimplePropagation (void);
-  virtual std::vector<PktRecvUnit>* ReceivedCopies (Ptr<AquaSimNode> s, Ptr<Packet> p,  std::vector<Ptr<AquaSimNetDevice> > dList);
-  virtual Time PDelay (Ptr<AquaSimNode> s, Ptr<AquaSimNode> r);
+  virtual std::vector<PktRecvUnit> ReceivedCopies (Ptr<AquaSimNode> s, Ptr<Packet> p,  std::vector<Ptr<AquaSimNetDevice> > dList);
+  Time PDelay (Ptr<AquaSimNode> s, Ptr<AquaSimNode> r);
 
 protected:
   double RayleighAtt (double dist, double freq, double pT);
-  virtual double Rayleigh (double SL);
-  virtual double Thorp (double range, double freq);
-  virtual double distance (Ptr<AquaSimNode> s, Ptr<AquaSimNode> r);
+  double Rayleigh (double SL);
+  double Thorp (double range, double freq);
+  double distance (Ptr<AquaSimNode> s, Ptr<AquaSimNode> r);
 
 private:
   Ptr<LogNormalRandomVariable> m_rand;

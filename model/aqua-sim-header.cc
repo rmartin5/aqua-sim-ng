@@ -16,7 +16,7 @@ NS_LOG_COMPONENT_DEFINE("AquaSimHeader");
 NS_OBJECT_ENSURE_REGISTERED(AquaSimHeader);
 
 AquaSimHeader::AquaSimHeader(void) :
-    m_txTime(0), m_direction(dir_t::DOWN), m_nextHop(NULL),
+    m_txTime(0), m_direction(DOWN), m_nextHop(),
     m_numForwards(0), m_errorFlag(0), m_uId(-1),
     m_pt(-1), m_pr(-1),
     m_txRange(-1), m_freq(-1), m_noise(0)

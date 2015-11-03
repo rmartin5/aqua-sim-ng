@@ -174,11 +174,14 @@ AquaSimNode::GetTypeId(void)
 bool
 AquaSimNode::IsMoving(void)
 {
+  NS_LOG_FUNCTION(this);
+
   if (m_MP == NULL){
       return false;
   }
 
-  if (!m_MP->GetVelocity()) {
+  Vector vel = m_MP->GetVelocity();
+  if (vel.x==0 && vel.y==0 && vel.z==0) {
       return false;
   }
 
@@ -279,7 +282,7 @@ AquaSimNode::PropDelay(double distance)
 uint32_t
 AquaSimNode::AddApplication(Ptr<Application> application)
 {
-  NS_LOG_FUNCTION(this << application);
+  NS_LOG_FUNCTION(this);
   uint32_t index = m_applications.size();
   m_applications.push_back (application);
   application->SetNode(this);
@@ -291,7 +294,7 @@ AquaSimNode::AddApplication(Ptr<Application> application)
 uint32_t
 AquaSimNode::AddDevice(Ptr<AquaSimNetDevice> device)
 {
-  NS_LOG_FUNCTION(this << device);
+  NS_LOG_FUNCTION(this);
   uint32_t index = m_devices.size();
   m_devices.push_back(device);
   device->SetNode(this);
@@ -300,13 +303,13 @@ AquaSimNode::AddDevice(Ptr<AquaSimNetDevice> device)
 Ptr<Application>
 AquaSimNode::GetApplication(uint32_t index) const
 {
-  NS_LOG_FUNCTION(this << index);
+  NS_LOG_FUNCTION(this);
   return m_applications[index];
 }
 Ptr<AquaSimNetDevice> 
 AquaSimNode::GetDevice(uint32_t index) const
 {
-  NS_LOG_FUNCTION(this << index);
+  NS_LOG_FUNCTION(this);
   return m_devices[index];
 }
 uint32_t 

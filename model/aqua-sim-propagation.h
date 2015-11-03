@@ -44,7 +44,7 @@ struct PktRecvUnit {
   double pR;
   Time pDelay;
   Ptr<AquaSimNode> recver;
-  PktRecvUnit (): pR(-1), pDelay(-1), recver(NULL) {}
+  PktRecvUnit (): pR(-1), pDelay(-1), recver() {}
 };
 
 class AquaSimPropagation : public Object

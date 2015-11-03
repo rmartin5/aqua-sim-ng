@@ -18,9 +18,9 @@
  * Author: Robert Martin <robert.martin@engr.uconn.edu>
  */
 #include "ns3/log.h"
-#include "ns3/nstime.h"
 
 #include "aqua-sim-simple-propagation.h"
+#include "aqua-sim-header.h"
 
 #include <stdio.h>
 #include <vector>
@@ -40,6 +40,7 @@ AquaSimSimplePropagation::GetTypeId ()
 {
   static TypeId tid = TypeId ("ns3::AquaSimSimplePropagation")
     .SetParent<AquaSimPropagation>()
+    .AddConstructor<AquaSimSimplePropagation>()
   ;
   return tid;
 }
@@ -49,7 +50,7 @@ AquaSimSimplePropagation::AquaSimSimplePropagation ()
 
 }
 
-std::vector<PktRecvUnit>*
+std::vector<PktRecvUnit>
 AquaSimSimplePropagation::ReceivedCopies (Ptr<AquaSimNode> s, Ptr<Packet> p, std::vector<Ptr<AquaSimNetDevice> > dList)
 {
   std::vector<PktRecvUnit>* res = new std::vector<PktRecvUnit>;
@@ -63,11 +64,11 @@ AquaSimSimplePropagation::ReceivedCopies (Ptr<AquaSimNode> s, Ptr<Packet> p, std
 
   Ptr<AquaSimNode> x, y;
 
-  std::vector<Ptr<AquaSimNetDevice> >::const_iterator it = dList.begin();	//FIXME this is buggy...
+  std::vector<Ptr<AquaSimNetDevice> >::size_type it = dList.begin();	//FIXME this is buggy...
   for(; it != dList.end(); ++it)
   {
-    dist = x->DistanceFrom(y);
-    pru.recver = node;
+    dist = x->DistanceFrom(y);		//this does nothing... needs to be entirely rewritten...
+    pru.recver = dList[it]->m_node;
     pru.pDelay = Time::FromDouble(dist / SOUND_SPEED_IN_WATER,Time::S);
     pru.pR = RayleighAtt(dist, asHeader.GetFreq(), asHeader.GetPt());
     res->push_back(pru);

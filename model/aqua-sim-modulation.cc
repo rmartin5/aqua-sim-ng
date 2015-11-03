@@ -18,7 +18,11 @@
  * Author: Robert Martin <robert.martin@engr.uconn.edu>
  */
 
+#include "ns3/double.h"
+#include "ns3/uinteger.h"
+
 #include "aqua-sim-modulation.h"
+
 #include <cmath>
 
 namespace ns3 {
@@ -31,23 +35,20 @@ AquaSimModulation::AquaSimModulation () :
 }
 
 TypeId
-AquaSimConstNoiseGen::GetTypeId (void)
+AquaSimModulation::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::AquaSimModulation")
     .SetParent<Object> ()
     .AddAttribute ("CodingEff", "The coding efficiency: number of symbols per bit.",
-       TypeId::ATTR_GET|TypeId::ATTR_SET,
-       DoubleValue (1),
+       DoubleValue (1.0),
        MakeDoubleAccessor (&AquaSimModulation::m_codingEff),
        MakeDoubleChecker<double> ())
     .AddAttribute ("SPS", "The number of symbols per second.",
-       TypeId::ATTR_GET|TypeId::ATTR_SET,
        UintegerValue (1),
        MakeUintegerAccessor (&AquaSimModulation::m_sps),
        MakeUintegerChecker<uint32_t> ())
     .AddAttribute ("BER", "The bit error rate.",
-       TypeId::ATTR_GET|TypeId::ATTR_SET,
-       DoubleValue (0),
+       DoubleValue (0.0),
        MakeDoubleAccessor (&AquaSimModulation::m_ber),
        MakeDoubleChecker<double> ())
   ;

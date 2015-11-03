@@ -47,14 +47,14 @@ public:
   
   void SetNoiseGenerator (Ptr<AquaSimNoiseGen> noiseGen);
   void SetPropagation (Ptr<AquaSimSimplePropagation> prop);
-  virtual void Recv(Ptr<Packet>, Ptr<AquaSimPhy>);
+  void Recv(Ptr<Packet>, Ptr<AquaSimPhy>);
 
   //inherited
   Ptr<AquaSimNetDevice> GetDevice (uint32_t i);
-  virtual uint32_t GetId (void) const;
-  virtual uint32_t GetNDevices (void) const;
-  virtual void AddDevice (Ptr<AquaSimNetDevice> device);
-  virtual void RemoveDevice(Ptr<AquaSimNetDevice> device);
+  uint32_t GetId (void) const;
+  uint32_t GetNDevices (void) const;
+  void AddDevice (Ptr<AquaSimNetDevice> device);
+  void RemoveDevice(Ptr<AquaSimNetDevice> device);
 
 private:
   void SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp); 

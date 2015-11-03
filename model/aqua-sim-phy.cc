@@ -44,6 +44,8 @@ AquaSimPhy::AquaSimPhy(void) : Object(), m_idleTimer(this)
   m_sC = NULL; 
   m_sinrChecker = NULL;
   m_eM = NULL;
+  m_channel = NULL;
+  m_mac = NULL;
 
   m_ptLevel = 0; 
   m_ptConsume = 0.660;

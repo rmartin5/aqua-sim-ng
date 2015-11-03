@@ -21,6 +21,8 @@
 #include "aqua-sim-channel.h"
 #include "aqua-sim-header.h"
 
+#include "ns3/log.h"
+
 namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (AquaSimChannel);
@@ -41,8 +43,8 @@ TypeId
 AquaSimChannel::GetTypeId ()
 {
   static TypeId tid= TypeId ("ns3::AquaSimChannel")
-    .SetParent<Channel> ()
-    .AddConstructor<AquaSimChannel> ()
+    //.SetParent<Channel> ()
+    //.AddConstructor<AquaSimChannel> ()
     .AddAttribute ("SetProp", "A pointer to set the propagation model.",
        PointerValue (CreateObject<AquaSimSimplePropagation> ()),
        MakePointerAccessor (&AquaSimChannel::m_prop),
@@ -78,7 +80,7 @@ AquaSimChannel::GetDevice (uint32_t i)
 uint32_t 
 AquaSimChannel::GetId (void) const
 {
-  NS_LOG_WARN(this << " not implemented");
+  NS_LOG_WARN("AquaSimChannel::GetId not implemented");
   return 0;
 }
 
@@ -98,15 +100,16 @@ void
 AquaSimChannel::RemoveDevice(Ptr<AquaSimNetDevice> device)
 {
   if (m_deviceList.empty())
-    NS_LOG_WARN(this << " deviceList is empty");
+    NS_LOG_WARN("AquaSimChannel::RemoveDevice: deviceList is empty");
   else
   {
-    std::vector<Ptr<AquaSimNetDevice> >::const_iterator it = m_deviceList.begin();
-    for(; it != m_deviceList.end(); ++it)
+    std::vector<Ptr<AquaSimNetDevice> >::iterator it = m_deviceList.begin();
+    for( int i = 0; i < m_deviceList.size(); ++i)
       {
-        if(m_deviceList[it] == device)
+	++it;
+        if(m_deviceList[i] == device)
           {
-             m_deviceList.erase(m_deviceList.begin() + it);
+            m_deviceList.erase(it);
           }
       }
   }
@@ -122,10 +125,12 @@ AquaSimChannel::Recv(Ptr<Packet> p, Ptr<AquaSimPhy> phy)
 void
 AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
 { 
-  NS_LOG_FUNCTION(this << " Packet:" << p);
+  NS_LOG_FUNCTION(this);
+  NS_LOG_DEBUG("Packet:" << p);
 
-  Ptr<AquaSimNode> sender = (AquaSimNode*)(tifp->Node()), recver = NULL;
-  std::vector<Ptr<AquaSimPhy> > rifp = NULL;
+  Ptr<AquaSimNode> sender = (Ptr<AquaSimNode>)(tifp->Node());
+  Ptr<AquaSimNode>recver = NULL;
+  std::vector<Ptr<AquaSimPhy> > rifp;
   Ptr<Packet> pCopy = NULL;
   Time pDelay = Seconds (0.0);
 
@@ -137,7 +142,7 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
 
   std::vector<PktRecvUnit>* recvUnits = m_prop->ReceivedCopies(sender, p, m_deviceList);
 
-  for(int i=0; i<recvUnits->size(); i++) {
+  for(std::vector<int>::size_type i=0; i < recvUnits->size(); i++) {
     if (sender == (*recvUnits)[i].recver)
       continue;
     recver = (*recvUnits)[i].recver;
@@ -155,12 +160,15 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
      * Send to each interface a copy, and we will filter the packet
      * in physical layer according to freq and modulation
      */
-    for (std::vector<AquaSimPhy> it = rifp.begin(); it!=rifp.end(); it++) {
+      // TODO check if vector of Ptr<AquaSimPhy> or just AquaSimPhy below
+    for (std::vector<Ptr<AquaSimPhy> >::iterator it = rifp.begin(); it!=rifp.end(); it++) {
       pCopy = p->Copy();
-      Simulator::Schedule(pDelay, it, pCopy);
+      Simulator::Schedule(pDelay, it, &pCopy);
     }
   }
-  p = 0; //smart pointer will unref automatically once out of scope
+  pCopy->Unref();
+  p->Unref();
+  //p = 0; //smart pointer will unref automatically once out of scope
   delete recvUnits;
 }
 

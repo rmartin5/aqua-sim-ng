@@ -10,7 +10,6 @@
 #include "ns3/address.h"
 #include "ns3/callback.h"
 
-#include "aqua-sim-packetstamp.h"
 #include "aqua-sim-node.h"
 #include "aqua-sim-phy.h"
 #include "aqua-sim-routing.h"
@@ -31,7 +30,7 @@ public:
 
   static TypeId GetTypeId(void);
 
-  Ptr<AquaSimNode> Node() { return m_node; }
+  //Ptr<AquaSimNode> Node() { return m_node; }
   Ptr<AquaSimPhy> Phy() { return m_phy; }
   Ptr<AquaSimRouting> Routing() { return m_rout;}
 
