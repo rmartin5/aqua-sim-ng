@@ -26,10 +26,10 @@
 #include "ns3/traced-callback.h"
 #include "ns3/address.h"      //could be updated to support own unique address type for uwsn
 
-#include "aqua-sim-phy.h"
 #include "aqua-sim-mac.h"
 #include "aqua-sim-channel.h"
 #include "aqua-sim-node.h"
+#include "aqua-sim-phy-cmn.h"
 
 namespace ns3 {
 

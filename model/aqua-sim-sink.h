@@ -15,10 +15,9 @@
 
 #include "aqua-sim-hash-table.h"
 #include "aqua-sim-node.h"
-#include "aqua-sim-phy.h"
-//#include "vbf/vectorbasedforward.h"
-
 #include <set>
+
+#include "aqua-sim-phy-cmn.h"
 using namespace std;
 
 // Aqua Sim Sink

@@ -4,9 +4,9 @@
 #include <stdio.h>
 
 #include "aqua-sim-sink.h"
-#include "aqua-sim-phy.h"
 #include "aqua-sim-header.h"
 #include "aqua-sim-hash-table.h"
+#include "aqua-sim-phy-cmn.h"
 
 #include "ns3/random-variable-stream.h"
 #include "ns3/log.h"

@@ -2,10 +2,11 @@
 
 //#include ...
 #include "aqua-sim-signal-cache.h"
-#include "aqua-sim-phy.h"
 #include "aqua-sim-header.h"
 
 #include <queue>
+
+#include "aqua-sim-phy-cmn.h"
 #include "ns3/simulator.h"
 #include "ns3/log.h"
 

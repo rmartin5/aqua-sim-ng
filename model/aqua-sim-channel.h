@@ -23,7 +23,7 @@
 
 #include "aqua-sim-noise-generator.h"
 #include "aqua-sim-net-device.h"
-#include "aqua-sim-phy.h"
+#include "aqua-sim-phy-cmn.h"
 #include "aqua-sim-simple-propagation.h"
 
 #include "ns3/mobility-model.h"

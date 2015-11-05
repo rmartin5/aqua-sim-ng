@@ -11,10 +11,10 @@
 #include "ns3/callback.h"
 
 #include "aqua-sim-node.h"
-#include "aqua-sim-phy.h"
 #include "aqua-sim-routing.h"
 //#include "aqua-sim-address.h"  
 #include <string>
+#include "aqua-sim-phy-cmn.h"
 
 namespace ns3{
 

@@ -6,9 +6,9 @@
 #define AQUA_SIM_NODE_H
 
 
-#include "aqua-sim-phy.h"
 #include "aqua-sim-energy-model.h"
 #include "aqua-sim-net-device.h"
+#include "aqua-sim-phy-cmn.h"
 #include "aqua-sim-simple-propagation.h"
 
 #include "ns3/packet.h"	
