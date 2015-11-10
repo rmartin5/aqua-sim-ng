@@ -9,9 +9,19 @@
 #define AQUA_SIM_PHY_H_
 
 #include "ns3/object.h"
+#include "ns3/packet.h"
 
-// TODO create a base class for this...
+#include <string>
 
+#include "aqua-sim-net-device.h"
+#include "aqua-sim-sinr-checker.h"
+#include "aqua-sim-signal-cache.h"
+#include "aqua-sim-modulation.h"
+
+/*
+ * Baseclass for Aqua-Sim Phy
+ *
+ */
 namespace ns3 {
 
   enum PhyStatus {
@@ -24,10 +34,15 @@ namespace ns3 {
   	PHY_DISABLE
   	};
 
+  class AquaSimNetDevice;
+  class AquaSimSinrChecker;
+  class AquaSimSignalCache;
+  class AquaSimModulation;
+  class Packet;
+
   class AquaSimPhy : public Object
   {
-    AquaSimPhy();
-    virtual ~AquaSimPhy();
+  public:
     static TypeId GetTypeId();
 
     virtual void SetTxPower(double ptConsume) = 0;
@@ -44,23 +59,27 @@ namespace ns3 {
 
     virtual void UpdateIdleEnergy() = 0;
     /***************
-     * could this just be handled by energy model instead???
+     * could this just be handled by energy model instead??? AquaSimEnergyModel()
      **************/
 
-    inline double GetEnergySpread(void){ return m_K; }
-    inline double GetFrequency(){ return m_freq; }
-    inline bool MatchFreq(double freq);
-    inline double GetL() const { return m_L; }
-    inline double GetLambda() { return m_lambda; }
-
-    inline PhyStatus &Status() {return m_status;}
     virtual void PowerOn() = 0;
     virtual void PowerOff() = 0;
     virtual void StatusShift(double x) = 0; //Necessary?????
 
+    inline Time CalcTxTime(int pktsize, Ptr<std::string> modName = NULL);
+    inline int CalcPktSize(double txtime, Ptr<std::string> modName = NULL);
+
+    virtual Ptr<AquaSimNode> Node() const = 0;
+
+  protected:
+    virtual Ptr<Packet> PrevalidateIncomingPkt(Ptr<Packet> p) = 0;
+    virtual void UpdateTxEnergy(Time txTime, double pT, double pIdle) = 0;
+    virtual void UpdateRxEnergy(Time txTime) = 0;
+    virtual Ptr<Packet> StampTxInfo(Ptr<Packet> p) = 0;
+    virtual void EnergyDeplete() = 0;
+
   }; //AquaSimPhy class
 
-} //ns3
+} //ns3 namespace
 
-
-#endif /* SRC_AQUA_SIM_NG_MODEL_AQUA_SIM_PHY_H_ */
+#endif /* AQUA_SIM_PHY_H_ */

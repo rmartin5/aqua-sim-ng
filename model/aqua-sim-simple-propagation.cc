@@ -62,12 +62,10 @@ AquaSimSimplePropagation::ReceivedCopies (Ptr<AquaSimNode> s, Ptr<Packet> p, std
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
 
-  Ptr<AquaSimNode> x, y;
-
-  std::vector<Ptr<AquaSimNetDevice> >::size_type it = dList.begin();	//FIXME this is buggy...
+  std::vector<Ptr<AquaSimNetDevice> >::size_type it = dList.begin();
   for(; it != dList.end(); ++it)
   {
-    dist = x->DistanceFrom(y);		//this does nothing... needs to be entirely rewritten...
+    dist = s->DistanceFrom(dList[it]->m_node);
     pru.recver = dList[it]->m_node;
     pru.pDelay = Time::FromDouble(dist / SOUND_SPEED_IN_WATER,Time::S);
     pru.pR = RayleighAtt(dist, asHeader.GetFreq(), asHeader.GetPt());

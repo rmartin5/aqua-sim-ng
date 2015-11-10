@@ -130,7 +130,7 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
 
   Ptr<AquaSimNode> sender = (Ptr<AquaSimNode>)(tifp->Node());
   Ptr<AquaSimNode>recver = NULL;
-  std::vector<Ptr<AquaSimPhy> > rifp;
+  std::vector<Ptr<AquaSimPhy> > rifp;	//must support multiple recv phy in future
   Ptr<Packet> pCopy = NULL;
   Time pDelay = Seconds (0.0);
 
@@ -147,6 +147,7 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
       continue;
     recver = (*recvUnits)[i].recver;
     pDelay = (*recvUnits)[i].pDelay;
+    //rifp = recver->ifhead().lh_first;
 
     AquaSimHeader asHeader;
     p->PeekHeader(asHeader);
@@ -160,11 +161,18 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
      * Send to each interface a copy, and we will filter the packet
      * in physical layer according to freq and modulation
      */
-      // TODO check if vector of Ptr<AquaSimPhy> or just AquaSimPhy below
-    for (std::vector<Ptr<AquaSimPhy> >::iterator it = rifp.begin(); it!=rifp.end(); it++) {
-      pCopy = p->Copy();
-      Simulator::Schedule(pDelay, it, &pCopy);
-    }
+    pCopy = p->Copy();
+    Simulator::Schedule(pDelay, recver, &pCopy);
+
+    /* FIXME in future support multiple phy with below code.
+     *
+     * for (std::vector<Ptr<AquaSimPhy> >::iterator it = rifp.begin(); it!=rifp.end(); it++) {
+     *	 pCopy = p->Copy();
+     *   Simulator::Schedule(pDelay, it, &pCopy);
+     * }
+     *
+     */
+
   }
   pCopy->Unref();
   p->Unref();
@@ -175,7 +183,7 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
 double
 AquaSimChannel::GetPropDelay (Ptr<AquaSimNode> tnode, Ptr<AquaSimNode> rnode)
 {
-  return m_prop->PDelay(tnode, rnode).GetSeconds();		//FIXME this may output garbage (time/double conversions)
+  return m_prop->PDelay(tnode, rnode).GetSeconds();
 }
    	
 double
