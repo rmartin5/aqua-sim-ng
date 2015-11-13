@@ -130,6 +130,7 @@ AquaSimNode::GetTypeId(void)
 {
   static TypeId tid = TypeId("ns3::AquaSimNode")
     .SetParent<Node>()
+    .SetParent<MobilityModel>()
     //3 following commands are for VBF related protocols only
     .AddAttribute("SetCx", "Set x for VBF related protocols.",
       DoubleValue(0),

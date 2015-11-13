@@ -43,8 +43,8 @@ class AquaSimNode;
 struct PktRecvUnit {
   double pR;
   Time pDelay;
-  Ptr<AquaSimNode> recver;
-  PktRecvUnit (): pR(-1), pDelay(-1), recver() {}
+  Ptr<AquaSimNode> recver;      //Ptr causing error here...
+  //PktRecvUnit () : pR(-1), pDelay(-1), recver(NULL) {}
 };
 
 class AquaSimPropagation : public Object

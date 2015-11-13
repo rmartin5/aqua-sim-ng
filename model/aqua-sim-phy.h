@@ -66,8 +66,8 @@ namespace ns3 {
     virtual void PowerOff() = 0;
     virtual void StatusShift(double x) = 0; //Necessary?????
 
-    inline Time CalcTxTime(int pktsize, Ptr<std::string> modName = NULL);
-    inline int CalcPktSize(double txtime, Ptr<std::string> modName = NULL);
+    virtual Time CalcTxTime(int pktsize, Ptr<std::string> modName = NULL) = 0;
+    virtual int CalcPktSize(double txtime, Ptr<std::string> modName = NULL) = 0;
 
     virtual Ptr<AquaSimNode> Node() const = 0;
 
@@ -77,6 +77,9 @@ namespace ns3 {
     virtual void UpdateRxEnergy(Time txTime) = 0;
     virtual Ptr<Packet> StampTxInfo(Ptr<Packet> p) = 0;
     virtual void EnergyDeplete() = 0;
+    void AttachPhyToSignalCache(Ptr<AquaSimSignalCache> sC, Ptr<AquaSimPhy> phy);
+
+    virtual void DoDispose();
 
   }; //AquaSimPhy class
 

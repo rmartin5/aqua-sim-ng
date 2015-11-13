@@ -19,27 +19,20 @@
 
 namespace ns3 {
 
-NS_LOG_COMPONENT_DEFINE("AquaSimPhyCmnCmn");
+NS_LOG_COMPONENT_DEFINE("AquaSimPhyCmn");
 
-void
-AquaSimIdleTimer::Expire(void)
+AquaSimPhyCmn::AquaSimPhyCmn(void) : AquaSimPhy(),
+    m_sinrChecker(NULL),
+    m_node(NULL)
+    //, m_idleTimer(this)
 {
-  m_a->UpdateIdleEnergy();
-  Simulator::Schedule(Time(1.0), &AquaSimIdleTimer::Expire, this);
-}
-
-AquaSimPhyCmn::AquaSimPhyCmn(void) : Object(), m_idleTimer(this)
-{
-
   m_updateEnergyTime = Simulator::Now().GetSeconds();
   m_preamble = 1.5;
   m_trigger = 0.45;
   m_status = PHY_IDLE;
   m_modulationName = "";
   //m_ant = NULL;
-  m_node = NULL;
   m_sC = NULL; 
-  m_sinrChecker = NULL;
   m_eM = NULL;
   m_channel = NULL;
   m_mac = NULL;
@@ -67,14 +60,14 @@ AquaSimPhyCmn::AquaSimPhyCmn(void) : Object(), m_idleTimer(this)
 
 AquaSimPhyCmn::~AquaSimPhyCmn(void)
 {
-  //delete m_sC;
+  DoDispose();
 }
 
 TypeId
 AquaSimPhyCmn::GetTypeId(void)
 {
-  static TypeId tid = TypeId("ns3::AquaSimPhyCmnCmn")
-    .SetParent<Object>()
+  static TypeId tid = TypeId("ns3::AquaSimPhyCmn")
+     .SetParent<AquaSimPhy> ()
     //.AddConstructor<AquaSimPhyCmn>()
     .AddAttribute("CPThresh", "Capture Threshold (db), default is 10.0 set as 10.",
       DoubleValue (10),
@@ -173,13 +166,13 @@ AquaSimPhyCmn::SetAntenna(Ptr<AquaSimAntenna> ant)
 */
 
 void
-AquaSimPhyCmn::SetNode(Ptr<AquaSimNode> node)
+AquaSimPhyCmn::SetNode(AquaSimNode * node)
 {
   m_node = node;
 }
 
 void
-AquaSimPhyCmn::SetSinrChecker(Ptr<AquaSimSinrChecker> sinrChecker)
+AquaSimPhyCmn::SetSinrChecker(AquaSimSinrChecker * sinrChecker)
 {
   m_sinrChecker = sinrChecker;
 }
@@ -188,11 +181,11 @@ void
 AquaSimPhyCmn::SetSignalCache(Ptr<AquaSimSignalCache> sC)
 {
   m_sC = sC;
-  m_sC->AttachPhy(this);	//Need to implement signal cache module for this...
+  AquaSimPhy::AttachPhyToSignalCache(m_sC,this);
 }
 
 void
-AquaSimPhyCmn::AddModulation(Ptr<AquaSimModulation> modulation, std::string modulationName)
+AquaSimPhyCmn::AddModulation(AquaSimModulation* modulation, std::string modulationName)
 {
   /**
   * format:  phyobj add-modulation modulation_name modulation_obj
@@ -560,9 +553,9 @@ AquaSimPhyCmn::StatusShift(double txTime) {
 *	@return     NULL if ModName cannot be found in m_modulations
 *	@return		a pointer to the corresponding AquaSimModulation obj
 */
-Ptr<AquaSimModulation>
-AquaSimPhyCmn::Modulation(Ptr<std::string> modName) {
-  std::map<std::string, Ptr<AquaSimModulation> >::iterator pos;
+AquaSimModulation *
+AquaSimPhyCmn::Modulation(std::string * modName) {
+  std::map<std::string, AquaSimModulation* >::iterator pos;
   if (m_modulations.size() == 0) {
     NS_LOG_WARN("No modulations\n");
     return NULL;
@@ -591,7 +584,41 @@ AquaSimPhyCmn::EnergyDeplete() {
 
 void
 AquaSimPhyCmn::Expire(void) {
-  m_idleTimer.Expire();
+  NS_LOG_INFO("Expire not currently implemented.");
+  //m_idleTimer.Expire();
 }
+
+/**
+ * calculate transmission time of a packet of size pktsize
+ * we consider the preamble
+ */
+Time
+AquaSimPhyCmn::CalcTxTime (int pktSize, std::string * modName)
+{
+
+  return Time::FromDouble(Modulation(modName)->TxTime(pktSize), Time::S)
+      + Time::FromInteger(Preamble(), Time::S);
+}
+
+int
+AquaSimPhyCmn::CalcPktSize (double txTime,std::string * modName)
+{
+  return Modulation(modName)->PktSize (txTime - Preamble());
+}
+
+AquaSimNode *
+AquaSimPhyCmn::Node()
+{
+  return m_node;
+}
+
+/*
+void
+AquaSimIdleTimer::Expire(void)
+{
+  m_a->UpdateIdleEnergy();
+  Simulator::Schedule(Time(1.0), &AquaSimIdleTimer::Expire, this);
+}
+*/
 
 };  // namespace ns3

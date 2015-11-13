@@ -2,7 +2,7 @@
 * aqua-sim-phy.cc
 *
 *  Created on: Nov 5, 2015
-*      Author: robert
+*      Author: Robert Martin
 */
 
 #include "aqua-sim-phy.h"
@@ -18,26 +18,21 @@ TypeId
 AquaSimPhy::GetTypeId ()
 {
   static TypeId tid = TypeId("ns3::AquaSimPhy")
-    .SetParent<Object>
+    .SetParent<Object>()
   ;
   return tid;
 }
 
-/**
- * calculate transmission time of a packet of size pktsize
- * we consider the preamble
- */
-Time
-AquaSimPhy::CalcTxTime (int pktSize, Ptr<std::string> modName)
+void
+AquaSimPhy::AttachPhyToSignalCache(Ptr<AquaSimSignalCache> sC, Ptr<AquaSimPhy> phy)
 {
-  return Time::FromDouble (Modulation (modName)->TxTime (pktSize), Time::S)
-      + Time::FromInteger (Preamble (), Time::S);
+  sC->AttachPhy(phy);
 }
 
-int
-AquaSimPhy::CalcPktSize (double txTime, Ptr<std::string> modName)
+void
+AquaSimPhy::DoDispose()
 {
-  return Modulation (modName)->PktSize (txTime - Preamble ());
+  Object::Dispose();
 }
 
 } //ns3 namespace

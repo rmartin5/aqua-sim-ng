@@ -14,7 +14,7 @@
 #include "aqua-sim-routing.h"
 //#include "aqua-sim-address.h"  
 #include <string>
-#include "aqua-sim-phy-cmn.h"
+#include "aqua-sim-phy.h"
 
 namespace ns3{
 

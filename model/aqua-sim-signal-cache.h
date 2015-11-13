@@ -4,7 +4,6 @@
 #ifndef AQUA_SIM_SIGNAL_CACHE_H
 #define AQUA_SIM_SIGNAL_CACHE_H
 
-//#include "aqua-sim-packetstamp.h"
 #include "aqua-sim-energy-model.h"
 #include "aqua-sim-noise-generator.h"
 #include <queue>
@@ -33,6 +32,7 @@ struct IncomingPacket{
 
 class AquaSimPhy;
 class AquaSimSignalCache;
+class AquaSimEnergyModel;
 
 struct PktSubmissionUnit{
   IncomingPacket* inPkt;

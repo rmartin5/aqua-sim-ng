@@ -1,6 +1,6 @@
-//... header
+//... header copyrights
 
-//FIXME... this needs to be updated to match common case... including source file
+
 #ifndef AQUA_SIM_PHY_CMN_H
 #define AQUA_SIM_PHY_CMN_H
 
@@ -16,19 +16,22 @@
 #include "ns3/packet.h"
 #include "ns3/object.h"
 
+#include "aqua-sim-phy.h"
+#include "aqua-sim-mac.h"
 #include "aqua-sim-signal-cache.h"
 #include "aqua-sim-modulation.h"
 #include "aqua-sim-energy-model.h"
 #include "aqua-sim-node.h"
 #include "aqua-sim-sinr-checker.h"
 #include "aqua-sim-channel.h"
-#include "aqua-sim-mac.h"
 
-//Aqua Sim Phy
+
+
+//Aqua Sim Phy Cmn
+//FIXME... this needs to be updated to match common case... including source file
 
 namespace ns3 {
 
-class AquaSimPhy;
 class AquaSimSinrChecker;
 class AquaSimSignalCache;
 class AquaSimModulation;
@@ -38,6 +41,11 @@ class AquaSimMac;
 class Packet;
 class AquaSimEnergyModel;
 
+/*
+ * TODO implement AquaSimIdleTimer fully to support energy reduction
+ */
+
+/*
 class AquaSimIdleTimer : public Timer
 {
 public:
@@ -49,6 +57,7 @@ private:
   AquaSimPhy* m_a;
   //Ptr<EventImpl> m_e;  //would probably also need to use PeekEventImpl()
 };  //  class AquaSimIdleTimer
+*/
 
 class AquaSimPhyCmn : public AquaSimPhy
 {
@@ -61,10 +70,10 @@ public:
   virtual void SetRxPower(double prConsume);
   virtual void SetIdlePower(double pIdle);
 
-  virtual void SetNode(Ptr<AquaSimNode> node);
-  virtual void SetSinrChecker(Ptr<AquaSimSinrChecker> sinrChecker);
+  virtual void SetNode(AquaSimNode * node);
+  virtual void SetSinrChecker(AquaSimSinrChecker * sinrChecker);
   virtual void SetSignalCache(Ptr<AquaSimSignalCache> sC);
-  virtual void AddModulation(Ptr<AquaSimModulation> modulation, std::string modulationName);
+  virtual void AddModulation(AquaSimModulation * modulation, std::string modulationName);
 
   virtual void Dump(void) const;
   virtual bool Decodable(double noise, double ps);
@@ -86,7 +95,8 @@ public:
   void UpdateIdleEnergy(void);
 
 
-  inline Ptr<AquaSimNode> Node(void) const { return m_node; }	//redundant
+  virtual AquaSimNode * Node();
+  //inline Ptr<AquaSimNode> Node(void) const { return m_node; }
   //inline Ptr<AquaSimEnergyModel> EM(void) { return Node()->EnergyModel(); }
   /*
    * will not have to place some of the basic functions, such as above, within child class.
@@ -100,7 +110,7 @@ public:
   inline double GetRXThresh() { return m_RXThresh; }
   inline double GetCSThresh() { return m_CSThresh; }
 
-  Ptr<AquaSimModulation> Modulation(Ptr<std::string> modName = NULL); //TODO modulation should be updated.
+  AquaSimModulation * Modulation(std::string * modName); //TODO modulation should be updated.
 
   virtual void Recv(Ptr<Packet> p);
 
@@ -113,7 +123,10 @@ public:
   inline double GetL() const { return m_L; }
   inline double GetLambda() { return m_lambda; }
 
-  inline PhyStatus &Status() {return m_status;}
+  PhyStatus &Status() {return m_status;}
+
+  inline Time CalcTxTime(int pktsize, std::string * modName = NULL);
+  inline int CalcPktSize(double txtime, std::string * modName = NULL);
 
 protected:
   virtual Ptr<Packet> PrevalidateIncomingPkt(Ptr<Packet> p);
@@ -156,7 +169,7 @@ protected:
   * Modulation Schemes. a modem can support multiple modulation schemes
   * map modulation's name to the object
   */
-  std::map<const std::string, Ptr<AquaSimModulation> > m_modulations;
+  std::map<const std::string, AquaSimModulation* > m_modulations;
   std::string m_modulationName;	//the name of current modulation
 
   /**
@@ -164,9 +177,13 @@ protected:
   * and check collisions.
   */
   Ptr<AquaSimSignalCache> m_sC;
-  Ptr<AquaSimSinrChecker> m_sinrChecker;
+  AquaSimSinrChecker * m_sinrChecker;
 
-  AquaSimIdleTimer m_idleTimer;
+  /*
+   * implement fully:
+   *
+   * AquaSimIdleTimer m_idleTimer;
+   */
 
   double m_EnergyTurnOn;	//energy consumption for turning on the modem (J)
   double m_EnergyTurnOff; //energy consumption for turning off the modem (J)
@@ -176,16 +193,19 @@ protected:
   * points to the same object as node_ in class MobileNode
   * but n_ is of type UnderwaterSensorNode * instead of MobileNode *
   */
-  Ptr<AquaSimNode> m_node;
-  Ptr<AquaSimEnergyModel> m_eM;
+
 
   bool m_PoweredOn;  //true: power on false:power off
 
-  friend class AquaSimIdleTimer;
+  //friend class AquaSimIdleTimer;
+
+  virtual void DoDispose() {AquaSimPhy::DoDispose();}
 
 private:
   Ptr<AquaSimChannel> m_channel;
   Ptr<AquaSimMac> m_mac;
+  AquaSimNode * m_node;
+  Ptr<AquaSimEnergyModel> m_eM;
 
   void Expire(void);
 

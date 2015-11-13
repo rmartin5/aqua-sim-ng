@@ -23,7 +23,6 @@
 
 #include "ns3/mobility-model.h"
 #include "ns3/nstime.h"
-#include "ns3/random-variable-stream.h"
 #include "ns3/log.h"
 #include "ns3/object.h"
 
@@ -40,13 +39,12 @@ namespace ns3 {
  */
 
 class AquaSimNode;
-class MobilityModel;
 
 struct PktRecvUnit {
   double pR;
   Time pDelay;
-  Ptr<AquaSimNode> recver;
-  PktRecvUnit (): pR(-1), pDelay(-1), recver(NULL) {}
+  Ptr<AquaSimNode> recver;      //Ptr causing error here... maybe rethink its usage?
+  PktRecvUnit () : pR(-1), pDelay(-1), recver(0) {}
 };
 
 class AquaSimPropagation : public Object
@@ -59,12 +57,12 @@ public:
 
   virtual std::vector<PktRecvUnit> ReceivedCopies (Ptr<AquaSimNode> s,
                                                      Ptr<Packet> p) = 0;
-  virtual Time PDelay (Ptr<MobilityModel> s, Ptr<MobilityModel> r) = 0;
+  virtual Time PDelay (Ptr<AquaSimNode> s, Ptr<AquaSimNode> r) = 0;
 
 protected:
   virtual double Rayleigh (double SL) = 0;
   virtual double Thorp (double range, double freq) = 0;
-  virtual double distance (Ptr<MobilityModel> s, Ptr<MobilityModel> r) = 0;
+  virtual double distance (Ptr<AquaSimNode> s, Ptr<AquaSimNode> r) = 0;
 
 //Topography *topo;
 

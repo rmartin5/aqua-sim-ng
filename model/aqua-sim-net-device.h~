@@ -26,10 +26,10 @@
 #include "ns3/traced-callback.h"
 #include "ns3/address.h"      //could be updated to support own unique address type for uwsn
 
-#include "aqua-sim-phy.h"
 #include "aqua-sim-mac.h"
 #include "aqua-sim-channel.h"
 #include "aqua-sim-node.h"
+#include "aqua-sim-phy-cmn.h"
 
 namespace ns3 {
 
@@ -62,26 +62,26 @@ public:
   void SetChannel (Ptr<AquaSimChannel> channel);
   //void SetApp (Ptr<AquaSimApp> app);
   
-  Ptr<AquaSimPhy> GetPhy (void) const;
-  Ptr<AquaSimMac> GetMac (void) const;
-  //Ptr<AquaSimApp> GetApp (void) const;
+  Ptr<AquaSimPhy> GetPhy (void);
+  Ptr<AquaSimMac> GetMac (void);
+  //Ptr<AquaSimApp> GetApp (void);
         //Not currently implemented  
   
   virtual void DoDispose (void);
   virtual void DoInitialize (void);
 
-  void ForwardUp (Ptr<Packet> packet, Ptr<MobilityModel> src, Ptr<MobilityModel> dst);
+  void ForwardUp (Ptr<Packet> packet, Ptr<MobilityModel> src, Ptr<MobilityModel> dst);  // TODO - no init of ForwardUp
 
   //inherited functions from NetDevice class
   virtual void AddLinkChangeCallback (Callback<void> callback);
   virtual Address GetAddress (void) const;
   virtual Address GetBroadcast (void) const;
-  virtual Ptr<AquaSimChannel> GetChannel (void) const;
+  virtual Ptr<AquaSimChannel> GetChannel (void);
   virtual uint32_t GetIfIndex (void) const;
   virtual uint16_t GetMtu (void) const;
   virtual Address GetMulticast (Ipv4Address multicastGroup) const;
   virtual Address GetMulticast (Ipv6Address addr) const;
-  virtual Ptr<AquaSimNode> GetNode (void) const;
+  virtual Ptr<AquaSimNode> GetNode (void);
   virtual bool IsBridge (void) const;
   virtual bool IsBroadcast (void) const;
   virtual bool IsLinkUp (void) const;

@@ -23,8 +23,8 @@
 
 #include "aqua-sim-noise-generator.h"
 #include "aqua-sim-net-device.h"
-#include "aqua-sim-phy.h"
-#include "aqua-sim-propagation.h"
+#include "aqua-sim-phy-cmn.h"
+#include "aqua-sim-simple-propagation.h"
 
 #include "ns3/mobility-model.h"
 #include "ns3/channel.h"
@@ -32,7 +32,7 @@
 namespace ns3 {
 
 class AquaSimNetDevice;
-class AquaSimPropagation;
+class AquaSimSimplePropagation;
 class AquaSimPhy;
 
 class AquaSimChannel : public Channel
@@ -46,19 +46,19 @@ public:
         //double TransmitDistance(){return distCST;}; 
   
   void SetNoiseGenerator (Ptr<AquaSimNoiseGen> noiseGen);
-  void SetPropagation (Ptr<AquaSimPropagation> prop);
-  virtual void Recv(Ptr<Packet>, Ptr<AquaSimPhy>);
+  void SetPropagation (Ptr<AquaSimSimplePropagation> prop);
+  void Recv(Ptr<Packet>, Ptr<AquaSimPhy>);
 
   //inherited
-  virtual Ptr<AquaSimNetDevice> GetDevice (uint32_t i);
-  virtual uint32_t GetId (void) const;
-  virtual uint32_t GetNDevices (void) const;
-  virtual void AddDevice (Ptr<AquaSimNetDevice> device);
-  virtual void RemoveDevice(Ptr<AquaSimNetDevice> device);
+  Ptr<AquaSimNetDevice> GetDevice (uint32_t i);
+  uint32_t GetId (void) const;
+  uint32_t GetNDevices (void) const;
+  void AddDevice (Ptr<AquaSimNetDevice> device);
+  void RemoveDevice(Ptr<AquaSimNetDevice> device);
 
 private:
   void SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp); 
-  double GetPropDelay (Ptr<MobilityModel> *tnode, Ptr<MobilityModel> *rnode);
+  double GetPropDelay (Ptr<AquaSimNode> tnode, Ptr<AquaSimNode> rnode);
    	
 	/* For list-keeper, channel keeps list of mobilenodes 
 	   listening on to it */
@@ -68,7 +68,7 @@ private:
 
 
         //void calculatePosition(Node* sender,Node* receiver, Packet* p);
-  double Distance(Ptr<MobilityModel> * ,Ptr<MobilityModel> *);
+  double Distance(Ptr<AquaSimNode> tnode,Ptr<AquaSimNode> rnode);
 	//void addNodeToList(MobileNode *mn);
 	//void removeNodeFromList(MobileNode *mn);
 	//void sortLists(void);
@@ -78,7 +78,7 @@ private:
 protected:
         //static double m_distCST;      
         //void EstTransLocation(MobileNode* sender, MobileNode* recver); // to be added by Robert to estimate receiving position
-  Ptr<AquaSimPropagation> m_prop;
+  Ptr<AquaSimSimplePropagation> m_prop;
   Ptr<AquaSimNoiseGen> m_noiseGen;
   std::vector<Ptr<AquaSimNetDevice> > m_deviceList; 
 };  // class AquaSimChannel
