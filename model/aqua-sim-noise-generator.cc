@@ -26,26 +26,35 @@ namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE("AquaSimNoiseGen");
 NS_OBJECT_ENSURE_REGISTERED (AquaSimNoiseGen);
+NS_OBJECT_ENSURE_REGISTERED (AquaSimConstNoiseGen);
 
 TypeId
 AquaSimNoiseGen::GetTypeId (void)
 {
-  static TypeId tid = TypeId ("ns3::AquaSimNoiseGenerator")
+  static TypeId tid = TypeId ("ns3::AquaSimNoiseGen")
     .SetParent<Object> ()
     ;
   return tid;
 }
 
+AquaSimConstNoiseGen::AquaSimConstNoiseGen() :
+    m_noise(0)
+{
+}
+
+AquaSimConstNoiseGen::~AquaSimConstNoiseGen()
+{
+}
+
 TypeId
 AquaSimConstNoiseGen::GetTypeId (void)
 {
-  static TypeId tid = TypeId ("ns3::AquaSimConstNoiseGenerator")
+  static TypeId tid = TypeId ("ns3::AquaSimConstNoiseGen")
     .SetParent<AquaSimNoiseGen> ()
     .AddAttribute ("Noise", "The constant noise of the channel.",
-                   TypeId::ATTR_GET|TypeId::ATTR_SET,
-                   DoubleValue (0),
-                   MakeDoubleAccessor (&AquaSimConstNoiseGen::m_noise),
-                   MakeDoubleChecker<double> ())
+       DoubleValue (0),
+       MakeDoubleAccessor (&AquaSimConstNoiseGen::m_noise),
+       MakeDoubleChecker<double> ())
   ;
   return tid;
 }

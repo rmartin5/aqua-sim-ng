@@ -21,36 +21,39 @@
 #ifndef AQUA_SIM_SIMPLE_PROPAGATION_H
 #define AQUA_SIM_SIMPLE_PROPAGATION_H
 
-#include "ns3/nstime.h"
 #include "ns3/random-variable-stream.h"
 
 #include <vector>
+
 #include "aqua-sim-propagation.h"
 #include "aqua-sim-net-device.h"
 #include "aqua-sim-node.h"
 
 namespace ns3 {
 
-extern const double SOUND_SPEED_IN_WATER;
+//extern const double SOUND_SPEED_IN_WATER;
 /**
  * This propagation model calculates attenuation using rayleigh model
  * and allows all nodes in the network to receive a copy.
  */
-class AquaSimNetDevice;
 
 class AquaSimSimplePropagation : public AquaSimPropagation
 {
 public:    
   static TypeId GetTypeId (void);
   AquaSimSimplePropagation (void);
-  virtual std::vector<PktRecvUnit> ReceivedCopies (Ptr<AquaSimNode> s, Ptr<Packet> p,  std::vector<Ptr<AquaSimNetDevice> > dList);
-  Time PDelay (Ptr<AquaSimNode> s, Ptr<AquaSimNode> r);
+  ~AquaSimSimplePropagation (void);
+
+  virtual std::vector<PktRecvUnit> * ReceivedCopies (AquaSimNode * s,
+						     Ptr<Packet> p,
+						     std::vector<Ptr<AquaSimNetDevice> > dList);
+  //virtual Time PDelay (AquaSimNode * s, AquaSimNode * r);
 
 protected:
-  double RayleighAtt (double dist, double freq, double pT);
-  double Rayleigh (double SL);
-  double Thorp (double range, double freq);
-  double distance (Ptr<AquaSimNode> s, Ptr<AquaSimNode> r);
+  virtual double RayleighAtt (double dist, double freq, double pT);
+  virtual double Rayleigh (double SL);
+  virtual double Thorp (double range, double freq);
+  //virtual double distance (AquaSimNode * s, AquaSimNode * r);
 
 private:
   Ptr<LogNormalRandomVariable> m_rand;

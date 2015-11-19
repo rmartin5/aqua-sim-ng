@@ -7,8 +7,7 @@
 #include "aqua-sim-mac.h"
 #include "aqua-sim-node.h"
 #include "aqua-sim-channel.h"
-#include "aqua-sim-phy-cmn.h"
-#include "aqua-sim-simple-propagation.h"
+#include "aqua-sim-phy.h"
 
 #include "ns3/random-variable-stream.h"
 #include "ns3/packet.h"
@@ -189,6 +188,19 @@ AquaSimNode::IsMoving(void)
   return true;
 }
 
+Ptr<AquaSimPhy>
+AquaSimNode::GetPhy() const
+{
+  return m_phy;
+}
+
+void
+AquaSimNode::SetPhy(Ptr<AquaSimPhy> phy)
+{
+  NS_LOG_FUNCTION(this);
+  m_phy = phy;
+}
+
 /*void
 AquaSimNode::RandomPosition(void)
 {
@@ -269,17 +281,6 @@ speed_);
 }
 */
 
-double
-AquaSimNode::PropDelay(double distance)
-{
-  NS_LOG_FUNCTION(this);
-  //printf("aquasimnode: ?????????????????the properdelay\n");
-  return distance / SOUND_SPEED_IN_WATER;
-  /*
-   *	redudant, this is done in AquaSimChannel
-  */
-}
-
 uint32_t
 AquaSimNode::AddApplication(Ptr<Application> application)
 {
@@ -339,7 +340,7 @@ AquaSimNode::GetNDevices(void) const
 }
 
 double
-AquaSimNode::DistanceFrom(Ptr<AquaSimNode> n)
+AquaSimNode::DistanceFrom(AquaSimNode * n) const
 {
   return m_MP->GetDistanceFrom(n->m_MP);
 }
@@ -351,7 +352,7 @@ AquaSimNode::Position(void)
 }
 
 double
-AquaSimNode::RelativeSpeed(Ptr<AquaSimNode> n)
+AquaSimNode::RelativeSpeed(AquaSimNode * n)
 {
   return m_MP->GetRelativeSpeed(n->m_MP);
 }

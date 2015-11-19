@@ -25,46 +25,47 @@
 #include "ns3/nstime.h"
 #include "ns3/log.h"
 #include "ns3/object.h"
+#include "ns3/packet.h"
+
+#include <vector>
 
 #include "aqua-sim-node.h"
-#include <vector>
 
 namespace ns3 {
 
+extern const double SOUND_SPEED_IN_WATER;
+
 /*
- * \ Underwater propagation model.
+ * \ Underwater propagation model base class.
  *
  * Calculates the Pr by which the receiver will get a packet sent by
  * the node that applied the tx PacketStamp for a given interface type
  */
 
-class AquaSimNode;
+class AquaSimNetDevice;
 
 struct PktRecvUnit {
   double pR;
   Time pDelay;
-  Ptr<AquaSimNode> recver;      //Ptr causing error here...
-  //PktRecvUnit () : pR(-1), pDelay(-1), recver(NULL) {}
+  AquaSimNode * recver;
+  PktRecvUnit () : pR(-1), pDelay(-1), recver(NULL) {}
 };
 
 class AquaSimPropagation : public Object
 {
 public:
-  AquaSimPropagation();
-  ~AquaSimPropagation ();
-
   static TypeId GetTypeId (void);
 
-  virtual std::vector<PktRecvUnit> ReceivedCopies (Ptr<AquaSimNode> s,
-                                                     Ptr<Packet> p) = 0;
-  virtual Time PDelay (Ptr<AquaSimNode> s, Ptr<AquaSimNode> r) = 0;
+  virtual std::vector<PktRecvUnit> * ReceivedCopies (AquaSimNode * s,
+                                                     Ptr<Packet> p,
+						     std::vector<Ptr<AquaSimNetDevice> > dList) = 0;
+  virtual Time PDelay (AquaSimNode * s, AquaSimNode * r);
 
 protected:
+  virtual double RayleighAtt (double dist, double freq, double pT) = 0;
   virtual double Rayleigh (double SL) = 0;
   virtual double Thorp (double range, double freq) = 0;
-  virtual double distance (Ptr<AquaSimNode> s, Ptr<AquaSimNode> r) = 0;
-
-//Topography *topo;
+  virtual double distance (AquaSimNode * s, AquaSimNode * r);
 
 };  //class AquaSimPropagation
 

@@ -18,6 +18,7 @@
  * Author: Robert Martin <robert.martin@engr.uconn.edu>
  */
 #include "ns3/log.h"
+#include "ns3/nstime.h"
 
 #include "aqua-sim-simple-propagation.h"
 #include "aqua-sim-header.h"
@@ -30,7 +31,7 @@
 
 namespace ns3 {
 
-const double SOUND_SPEED_IN_WATER = 1500.0;
+//const double SOUND_SPEED_IN_WATER = 1500.0;
 
 NS_LOG_COMPONENT_DEFINE ("AquaSimSimplePropagation");
 NS_OBJECT_ENSURE_REGISTERED (AquaSimSimplePropagation);
@@ -45,40 +46,40 @@ AquaSimSimplePropagation::GetTypeId ()
   return tid;
 }
 
-AquaSimSimplePropagation::AquaSimSimplePropagation ()
+AquaSimSimplePropagation::AquaSimSimplePropagation () :
+    AquaSimPropagation()
 {
-
 }
 
-std::vector<PktRecvUnit>
-AquaSimSimplePropagation::ReceivedCopies (Ptr<AquaSimNode> s, Ptr<Packet> p, std::vector<Ptr<AquaSimNetDevice> > dList)
+AquaSimSimplePropagation::~AquaSimSimplePropagation()
+{
+}
+
+std::vector<PktRecvUnit> *
+AquaSimSimplePropagation::ReceivedCopies (AquaSimNode * s,
+					  Ptr<Packet> p,
+					  std::vector<Ptr<AquaSimNetDevice> > dList)
 {
   std::vector<PktRecvUnit>* res = new std::vector<PktRecvUnit>;
   //find all nodes which will receive a copy
   PktRecvUnit pru;
-  Ptr<AquaSimNode> node = NULL;
   double dist = 0;
 
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
 
-  std::vector<Ptr<AquaSimNetDevice> >::size_type it = dList.begin();
-  for(; it != dList.end(); ++it)
+  unsigned i = 0;
+  std::vector<Ptr<AquaSimNetDevice> >::iterator it = dList.begin();
+  for(; it != dList.end(); it++, i++)
   {
-    dist = s->DistanceFrom(dList[it]->m_node);
-    pru.recver = dList[it]->m_node;
-    pru.pDelay = Time::FromDouble(dist / SOUND_SPEED_IN_WATER,Time::S);
+    dist = s->DistanceFrom(dList[i]->GetNode());
+    pru.recver = dList[i]->GetNode();
+    pru.pDelay = Time::FromDouble(dist / ns3::SOUND_SPEED_IN_WATER,Time::S);
     pru.pR = RayleighAtt(dist, asHeader.GetFreq(), asHeader.GetPt());
     res->push_back(pru);
   }
 
   return res;
-}
-
-Time
-AquaSimSimplePropagation::PDelay (Ptr<AquaSimNode> s, Ptr<AquaSimNode> r)
-{
-  return Time::FromDouble((s->DistanceFrom(r) / SOUND_SPEED_IN_WATER ),Time::S);
 }
     
 double
@@ -129,13 +130,6 @@ AquaSimSimplePropagation::Thorp (double dist, double freq)
                 + 0.000275 * pow(freq,2) + 0.003 );
   
   return spre + abso;
-}
-
-double
-AquaSimSimplePropagation::distance (Ptr<AquaSimNode> s, Ptr<AquaSimNode> r)
-{
-  NS_LOG_FUNCTION(this);
-  return s->DistanceFrom(r);	//redundant...
 }
 
 }  // namespace ns3

@@ -14,13 +14,12 @@
 #include "aqua-sim-routing.h"
 //#include "aqua-sim-address.h"  
 #include <string>
-#include "aqua-sim-phy.h"
 
 namespace ns3{
 
 class AquaSimNode;
-class AquaSimPhy;
 class AquaSimRouting;
+class AquaSimPhy;
 class Packet;
 
 class AquaSimMac : public Object {
@@ -59,9 +58,9 @@ public:
   void PowerOn(void);
   void InterruptRecv(double);
 
-  double GetTxTime(int pktLen, Ptr<std::string> modName = NULL);
-  double GetTxTime(Ptr<Packet> pkt, Ptr<std::string> modName = NULL);
-  int  GetSizeByTxTime(double txTime, Ptr<std::string> modName = NULL); //get packet size by txtime
+  double GetTxTime(int pktLen, std::string * modName = NULL);
+  double GetTxTime(Ptr<Packet> pkt, std::string * modName = NULL);
+  int  GetSizeByTxTime(double txTime, std::string * modName = NULL); //get packet size by txtime
   // The sending process can stop receiving process and change the transmission
   // status of the node since underwatermac is half-duplex
 

@@ -24,30 +24,24 @@
 namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (AquaSimSinrChecker);
-
-AquaSimSinrChecker::AquaSimSinrChecker()
-{
-}
+NS_OBJECT_ENSURE_REGISTERED (AquaSimThresholdSinrChecker);
 
 TypeId
 AquaSimSinrChecker::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::AquaSimSinrChecker")
-    //.SetParent<Object> ()
-    //.AddConstructor<AquaSimSinrChecker>()
+      .SetParent<Object>()
     ;
   return tid;
 }
-
-NS_OBJECT_ENSURE_REGISTERED (AquaSimThresholdSinrChecker);
 
 TypeId
 AquaSimThresholdSinrChecker::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::AquaSimThresholdSinrChecker")
     .SetParent<AquaSimSinrChecker> ()
+    .AddConstructor<AquaSimThresholdSinrChecker>()
     .AddAttribute ("DecodeableThresh", "The decodable threshold of a packet.",
-       TypeId::ATTR_GET|TypeId::ATTR_SET,
        DoubleValue (0),
        MakeDoubleAccessor (&AquaSimThresholdSinrChecker::m_decThresh),
        MakeDoubleChecker<double> ())
@@ -58,6 +52,10 @@ AquaSimThresholdSinrChecker::GetTypeId (void)
 AquaSimThresholdSinrChecker::AquaSimThresholdSinrChecker ()
 {
   m_decThresh = 0;
+}
+
+AquaSimThresholdSinrChecker::~AquaSimThresholdSinrChecker()
+{
 }
 
 bool

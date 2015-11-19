@@ -28,8 +28,8 @@ public:
   AquaSimEnergyModel();
   virtual ~AquaSimEnergyModel();
 
-  virtual void SetNode(Ptr<AquaSimNode> node);
-  virtual Ptr<AquaSimNode> GetNode(void) const;
+  virtual void SetNode(AquaSimNode * node);
+  virtual AquaSimNode * GetNode(void) const;
 
   virtual void ChangeState(int newState);
   virtual double DoGetCurrentA(void) const; //maybe depending if current draw for its states are know or not
@@ -67,7 +67,7 @@ private:
   double m_rxP, m_txP, m_idleP;
   double m_totalEnergyConsumption;	//if energy recharging where incorporated
 
-  Ptr<AquaSimNode> m_node;
+  AquaSimNode * m_node;
   Ptr<EnergySource> m_source;
 
 

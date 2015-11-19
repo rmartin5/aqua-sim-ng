@@ -8,6 +8,10 @@ namespace ns3 {
 
 /* ... */
 
+/*
+ * Reference uan-mac and uan-helper.cc for examples of aggregation system (query interface design pattern)
+ */
+
 }
 
 #endif /* AQUA_SIM_HELPER_H */

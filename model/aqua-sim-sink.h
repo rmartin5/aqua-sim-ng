@@ -13,11 +13,13 @@
 #include "ns3/nstime.h"
 #include "ns3/timer.h"
 
+#include "aqua-sim-phy.h"
 #include "aqua-sim-hash-table.h"
 #include "aqua-sim-node.h"
+
 #include <set>
 
-#include "aqua-sim-phy-cmn.h"
+
 using namespace std;
 
 // Aqua Sim Sink
@@ -51,7 +53,6 @@ public:
 // Class SinkAgent as source and sink for directed diffusion
 
 class AquaSimHashTable;
-class AquaSimPhy;
 
 class AquaSimSink : public Object {
 

@@ -6,6 +6,7 @@
 
 #include "aqua-sim-energy-model.h"
 #include "aqua-sim-noise-generator.h"
+#include "aqua-sim-phy.h"
 #include <queue>
 
 #include "ns3/timer.h"

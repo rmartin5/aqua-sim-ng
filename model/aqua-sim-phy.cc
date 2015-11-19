@@ -8,11 +8,13 @@
 #include "aqua-sim-phy.h"
 
 #include "ns3/nstime.h"
+#include "ns3/log.h"
 
 namespace ns3
 {
 
-NS_OBJECT_ENSURE_REGISTERED (AquaSimPhy);
+NS_LOG_COMPONENT_DEFINE("AquaSimPhy");
+NS_OBJECT_ENSURE_REGISTERED(AquaSimPhy);
 
 TypeId
 AquaSimPhy::GetTypeId ()

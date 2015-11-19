@@ -29,7 +29,8 @@ namespace ns3 {
 NS_OBJECT_ENSURE_REGISTERED (AquaSimNetDevice);
 
 AquaSimNetDevice::AquaSimNetDevice ()
-  : NetDevice()
+  : NetDevice(),
+    m_node(NULL)
 {
   m_configComplete = false;
 }
@@ -72,7 +73,7 @@ AquaSimNetDevice::DoDispose (void)
 void
 AquaSimNetDevice::DoInitialize (void)
 {
-  m_phy->Initialize ();
+  //m_phy->Initialize ();
   m_mac->Initialize ();
   //m_app->Initialize ();
   //channel?
@@ -120,7 +121,7 @@ AquaSimNetDevice::SetApp (Ptr<AquaSimApp> app)
 }
 */
 void
-AquaSimNetDevice::SetNode (Ptr<AquaSimNode> node)
+AquaSimNetDevice::SetNode (AquaSimNode * node)
 {
   m_node = node;
 }
@@ -143,7 +144,7 @@ AquaSimNetDevice::GetChannel (void)
   return m_channel;
 }
  
-Ptr<AquaSimNode>
+AquaSimNode *
 AquaSimNetDevice::GetNode (void)
 {
   return m_node;

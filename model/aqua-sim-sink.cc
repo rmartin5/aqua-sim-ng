@@ -6,7 +6,7 @@
 #include "aqua-sim-sink.h"
 #include "aqua-sim-header.h"
 #include "aqua-sim-hash-table.h"
-#include "aqua-sim-phy-cmn.h"
+#include "aqua-sim-phy.h"
 
 #include "ns3/random-variable-stream.h"
 #include "ns3/log.h"
@@ -225,7 +225,7 @@ void
 AquaSimSink::SendPkt()
 {
   if (m_activeSense) {
-    m_node->UpdatePosition();
+    //m_node->UpdatePosition();
     if (!SenseAreaSet.IsInSenseArea(m_node->X(), m_node->Y(), m_node->Z())) {
       //detect frequently
       m_interval = 1;
@@ -298,7 +298,7 @@ AquaSimSink::SendPkt()
   else {
     NS_ASSERT(pkt != NULL);
     // printf("The target's address is not  empty\n");
-    m_phy->SendPktDown(pkt);
+    m_phy->PktTransmit(pkt);
   }
   // printf("I exit the sendpk \n");
 }
@@ -358,7 +358,7 @@ AquaSimSink::DataReady()
   else {
     NS_ASSERT(pkt != NULL);
     // printf("The target's address is not  empty\n");
-    m_phy->SendPktDown(pkt);
+    m_phy->PktTransmit(pkt);
   }
   // printf("I exit the sendpk \n");
 }
@@ -423,7 +423,7 @@ AquaSimSink::SourceDeny(uint32_t id, double x, double y, double z)
 
   pkt->AddHeader(ashdr);
 
-  m_phy->SendPktDown(pkt);
+  m_phy->PktTransmit(pkt);
 }
 
 
@@ -492,7 +492,7 @@ AquaSimSink::BcastInterest()
 
   pkt->AddHeader(ashdr);
 
-  m_phy->SendPktDown(pkt);
+  m_phy->PktTransmit(pkt);
 
   if (m_periodic == true) {
     if (m_periodicTimer.IsRunning()) {

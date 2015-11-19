@@ -8,8 +8,6 @@
 
 #include "aqua-sim-energy-model.h"
 #include "aqua-sim-net-device.h"
-#include "aqua-sim-phy.h"
-#include "aqua-sim-simple-propagation.h"
 
 #include "ns3/packet.h"	
 #include "ns3/address.h"
@@ -19,6 +17,7 @@
 #include "ns3/random-variable-stream.h"
 #include "ns3/position-allocator.h"
 #include "ns3/application.h"
+
 //#include "trace.h"		//TODO should include trace
 
 // Aqua Sim Node
@@ -31,6 +30,7 @@ enum TransmissionStatus { SLEEP, NIDLE, SEND, RECV, NStatus };	//idle currently 
 class MobilityModel;
 class AquaSimEnergyModel;
 class AquaSimNetDevice;
+class AquaSimPhy;
 
 /*
 class AquaSimPositionHandler : public Handler {
@@ -50,7 +50,7 @@ public:
   virtual ~AquaSimNode(void);
   static TypeId GetTypeId(void);
 
-  double PropDelay(double); //... remove... not this node's responsibility here
+  //double PropDelay(double); //... remove... not this node's responsibility here
   //bool Move(void);	/*start the movement... should be handled within example*/
   //void Start(void);
   //void CheckPosition(void);
@@ -102,6 +102,8 @@ public:
   //void UpdatePosition(void);  // UpdatePosition() out of date... should be using ns3's mobility module
 
   bool IsMoving(void);
+  Ptr<AquaSimPhy> GetPhy() const;
+  void SetPhy(Ptr<AquaSimPhy> phy);
 
   /*
    * inherited from Node
@@ -123,12 +125,12 @@ public:
   /*
    * inherited from MobilityModel
    */
-  double DistanceFrom(Ptr<AquaSimNode> n);
+  double DistanceFrom(AquaSimNode * n) const;
   Vector Position(void);
-  double RelativeSpeed(Ptr<AquaSimNode> n);
+  double RelativeSpeed(AquaSimNode * n);
   Vector Velocity(void);
   void SetNodePosition(const Vector &position);
-  virtual int64_t AssignStreams (int64_t stream);
+  //virtual int64_t AssignStreams (int64_t stream);
 
 private:
   enum  TransmissionStatus m_transStatus;
@@ -190,8 +192,10 @@ protected:
   void RandomPosition(void);
   int m_randomMotion;	// is mobile
 
+private:
   Ptr<UniformRandomVariable> m_uniformRand;
   Ptr<AquaSimEnergyModel> m_energyModel;
+  Ptr<AquaSimPhy> m_phy;
 
 public:
   Ptr<AquaSimEnergyModel> EnergyModel(void) { return m_energyModel; }

@@ -26,6 +26,8 @@
 
 namespace ns3 {
 
+const double SOUND_SPEED_IN_WATER = 1500;
+
 NS_LOG_COMPONENT_DEFINE ("AquaSimPropagation");
 NS_OBJECT_ENSURE_REGISTERED (AquaSimPropagation);
 
@@ -38,12 +40,17 @@ AquaSimPropagation::GetTypeId ()
   return tid;
 }
 
-AquaSimPropagation::AquaSimPropagation ()
+Time
+AquaSimPropagation::PDelay (AquaSimNode * s, AquaSimNode * r)
 {
+  return Time::FromDouble((s->DistanceFrom(r) / ns3::SOUND_SPEED_IN_WATER ),Time::S);
 }
 
-AquaSimPropagation::~AquaSimPropagation ()
+double
+AquaSimPropagation::distance (AquaSimNode * s, AquaSimNode * r)
 {
+  NS_LOG_FUNCTION(this);
+  return s->DistanceFrom(r);	//redundant...
 }
 
 }  // namespace n3

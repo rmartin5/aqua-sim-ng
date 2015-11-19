@@ -6,7 +6,7 @@
 
 #include <queue>
 
-#include "aqua-sim-phy-cmn.h"
+#include "aqua-sim-phy.h"
 #include "ns3/simulator.h"
 #include "ns3/log.h"
 

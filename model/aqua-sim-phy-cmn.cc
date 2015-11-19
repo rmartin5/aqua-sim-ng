@@ -14,14 +14,17 @@
 #include "aqua-sim-header.h"
 #include "aqua-sim-energy-model.h"
 #include "aqua-sim-phy-cmn.h"
+#include "aqua-sim-phy.h"
 
-//Aqua Sim Phy
+//Aqua Sim Phy Cmn
 
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE("AquaSimPhyCmn");
+NS_OBJECT_ENSURE_REGISTERED(AquaSimPhyCmn);
 
-AquaSimPhyCmn::AquaSimPhyCmn(void) : AquaSimPhy(),
+AquaSimPhyCmn::AquaSimPhyCmn(void) :
+    AquaSimPhy(),
     m_sinrChecker(NULL),
     m_node(NULL)
     //, m_idleTimer(this)
@@ -68,7 +71,6 @@ AquaSimPhyCmn::GetTypeId(void)
 {
   static TypeId tid = TypeId("ns3::AquaSimPhyCmn")
      .SetParent<AquaSimPhy> ()
-    //.AddConstructor<AquaSimPhyCmn>()
     .AddAttribute("CPThresh", "Capture Threshold (db), default is 10.0 set as 10.",
       DoubleValue (10),
       MakeDoubleAccessor(&AquaSimPhyCmn::m_CPThresh),
@@ -166,6 +168,12 @@ AquaSimPhyCmn::SetAntenna(Ptr<AquaSimAntenna> ant)
 */
 
 void
+AquaSimPhyCmn::SetASNetDevice(Ptr<AquaSimNetDevice> device)
+{
+  m_device = device;
+}
+
+void
 AquaSimPhyCmn::SetNode(AquaSimNode * node)
 {
   m_node = node;
@@ -185,7 +193,7 @@ AquaSimPhyCmn::SetSignalCache(Ptr<AquaSimSignalCache> sC)
 }
 
 void
-AquaSimPhyCmn::AddModulation(AquaSimModulation* modulation, std::string modulationName)
+AquaSimPhyCmn::AddModulation(Ptr<AquaSimModulation> modulation, std::string modulationName)
 {
   /**
   * format:  phyobj add-modulation modulation_name modulation_obj
@@ -331,7 +339,7 @@ AquaSimPhyCmn::Recv(Ptr<Packet> p) {  // Handler* h
   NS_LOG_DEBUG ("direction=" << asHeader.GetDirection());
 
   if (asHeader.GetDirection() == AquaSimHeader::DOWN) {
-    SendPktDown(p);
+    PktTransmit(p);
   }
   else {
     if (asHeader.GetDirection() != AquaSimHeader::UP) {
@@ -413,7 +421,7 @@ AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p) {
 * pass packet p to channel
 */
 void
-AquaSimPhyCmn::SendPktDown(Ptr<Packet> p) {
+AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
   NS_LOG_DEBUG ("TxTime=" << asHeader.GetTxTime());
@@ -553,9 +561,9 @@ AquaSimPhyCmn::StatusShift(double txTime) {
 *	@return     NULL if ModName cannot be found in m_modulations
 *	@return		a pointer to the corresponding AquaSimModulation obj
 */
-AquaSimModulation *
+Ptr<AquaSimModulation>
 AquaSimPhyCmn::Modulation(std::string * modName) {
-  std::map<std::string, AquaSimModulation* >::iterator pos;
+  std::map<std::string, Ptr<AquaSimModulation> >::iterator pos;
   if (m_modulations.size() == 0) {
     NS_LOG_WARN("No modulations\n");
     return NULL;
@@ -601,7 +609,7 @@ AquaSimPhyCmn::CalcTxTime (int pktSize, std::string * modName)
 }
 
 int
-AquaSimPhyCmn::CalcPktSize (double txTime,std::string * modName)
+AquaSimPhyCmn::CalcPktSize (double txTime, std::string * modName)
 {
   return Modulation(modName)->PktSize (txTime - Preamble());
 }

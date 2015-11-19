@@ -18,18 +18,18 @@
  * Author: Robert Martin <robert.martin@engr.uconn.edu>
  */
 
+#include "ns3/log.h"
+#include "ns3/ptr.h"
+
 #include "aqua-sim-channel.h"
 #include "aqua-sim-header.h"
-
-#include "ns3/log.h"
 
 namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (AquaSimChannel);
+NS_LOG_COMPONENT_DEFINE("AquaSimChannel");
 
 AquaSimChannel::AquaSimChannel ()
-  : m_prop(NULL),
-    m_noiseGen(NULL)
 {
 }
 
@@ -46,11 +46,11 @@ AquaSimChannel::GetTypeId ()
     //.SetParent<Channel> ()
     //.AddConstructor<AquaSimChannel> ()
     .AddAttribute ("SetProp", "A pointer to set the propagation model.",
-       PointerValue (CreateObject<AquaSimSimplePropagation> ()),
+       PointerValue (),
        MakePointerAccessor (&AquaSimChannel::m_prop),
        MakePointerChecker<AquaSimPropagation> ())
     .AddAttribute ("SetNoise", "A pointer to set the noise generator.",
-       PointerValue (CreateObject<AquaSimConstNoiseGen> ()),
+       PointerValue (),
        MakePointerAccessor (&AquaSimChannel::m_noiseGen),
        MakePointerChecker<AquaSimNoiseGen> ())
   ;
@@ -65,7 +65,7 @@ AquaSimChannel::SetNoiseGenerator (Ptr<AquaSimNoiseGen> noiseGen)
 }
 
 void
-AquaSimChannel::SetPropagation (Ptr<AquaSimSimplePropagation> prop)
+AquaSimChannel::SetPropagation (Ptr<AquaSimPropagation> prop)
 {
   NS_ASSERT (prop);
   m_prop = prop;
@@ -80,7 +80,7 @@ AquaSimChannel::GetDevice (uint32_t i)
 uint32_t 
 AquaSimChannel::GetId (void) const
 {
-  NS_LOG_WARN("AquaSimChannel::GetId not implemented");
+  NS_LOG_INFO("AquaSimChannel::GetId not implemented");
   return 0;
 }
 
@@ -99,15 +99,15 @@ AquaSimChannel::AddDevice (Ptr<AquaSimNetDevice> device)
 void
 AquaSimChannel::RemoveDevice(Ptr<AquaSimNetDevice> device)
 {
+  NS_LOG_FUNCTION(this);
   if (m_deviceList.empty())
-    NS_LOG_WARN("AquaSimChannel::RemoveDevice: deviceList is empty");
+    NS_LOG_DEBUG("AquaSimChannel::RemoveDevice: deviceList is empty");
   else
   {
     std::vector<Ptr<AquaSimNetDevice> >::iterator it = m_deviceList.begin();
-    for( int i = 0; i < m_deviceList.size(); ++i)
+    for(; it != m_deviceList.end(); ++it)
       {
-	++it;
-        if(m_deviceList[i] == device)
+        if(*it == device)
           {
             m_deviceList.erase(it);
           }
@@ -128,9 +128,10 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
   NS_LOG_FUNCTION(this);
   NS_LOG_DEBUG("Packet:" << p);
 
-  Ptr<AquaSimNode> sender = (Ptr<AquaSimNode>)(tifp->Node());
-  Ptr<AquaSimNode>recver = NULL;
-  std::vector<Ptr<AquaSimPhy> > rifp;	//must support multiple recv phy in future
+  AquaSimNode * sender = (AquaSimNode *)(tifp->Node());
+  AquaSimNode * recver = NULL;
+  //std::vector<Ptr<AquaSimPhy> > rifp;	//must support multiple recv phy in future
+  Ptr<AquaSimPhy> rifp;
   Ptr<Packet> pCopy = NULL;
   Time pDelay = Seconds (0.0);
 
@@ -140,13 +141,14 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
   }
   */
 
-  std::vector<PktRecvUnit>* recvUnits = m_prop->ReceivedCopies(sender, p, m_deviceList);
+  std::vector<PktRecvUnit> * recvUnits = m_prop->ReceivedCopies(sender, p, m_deviceList);
 
-  for(std::vector<int>::size_type i=0; i < recvUnits->size(); i++) {
+  for (std::vector<PktRecvUnit>::size_type i = 0; i < recvUnits->size(); i++) {
     if (sender == (*recvUnits)[i].recver)
       continue;
     recver = (*recvUnits)[i].recver;
     pDelay = (*recvUnits)[i].pDelay;
+    rifp = recver->GetPhy();
     //rifp = recver->ifhead().lh_first;
 
     AquaSimHeader asHeader;
@@ -162,7 +164,8 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
      * in physical layer according to freq and modulation
      */
     pCopy = p->Copy();
-    Simulator::Schedule(pDelay, recver, &pCopy);
+    Simulator::Schedule(pDelay, &AquaSimPhy::Recv, rifp, pCopy);
+    //Simulator::Schedule(pDelay, recver, &pCopy);		REMOVE
 
     /* FIXME in future support multiple phy with below code.
      *
@@ -181,13 +184,13 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
 }
 
 double
-AquaSimChannel::GetPropDelay (Ptr<AquaSimNode> tnode, Ptr<AquaSimNode> rnode)
+AquaSimChannel::GetPropDelay (AquaSimNode * tnode, AquaSimNode * rnode)
 {
   return m_prop->PDelay(tnode, rnode).GetSeconds();
 }
    	
 double
-AquaSimChannel::Distance(Ptr<AquaSimNode> tnode, Ptr<AquaSimNode> rnode)
+AquaSimChannel::Distance(AquaSimNode * tnode, AquaSimNode * rnode)
 {
   return tnode->DistanceFrom(rnode);
 }

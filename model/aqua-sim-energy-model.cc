@@ -1,8 +1,10 @@
 /// ... header
 
+#include "ns3/energy-source.h"
+
 #include "aqua-sim-energy-model.h"
 #include "aqua-sim-node.h"
-#include "ns3/energy-source.h"
+#include "aqua-sim-phy.h"
 
 // Aqua Sim Energy Model
 
@@ -20,23 +22,31 @@ AquaSimEnergyModel::GetTypeId()
   return tid;
 }
 
-AquaSimEnergyModel::AquaSimEnergyModel() : m_energy(0.0),
-    m_initialEnergy(0.0), m_rxP(0), m_txP(0), m_idleP(0),
-    m_node(NULL), m_source(0), m_totalEnergyConsumption(0.0)
+AquaSimEnergyModel::AquaSimEnergyModel() :
+    m_energy(0.0),
+    m_initialEnergy(0.0),
+    m_rxP(0),
+    m_txP(0),
+    m_idleP(0),
+    m_totalEnergyConsumption(0.0),
+    m_node(NULL)
 {
+  //m_source = 0;
 }
 
 AquaSimEnergyModel::~AquaSimEnergyModel()
 {
+  m_node = NULL;
+  delete m_node;
 }
 
 void 
-AquaSimEnergyModel::SetNode(Ptr<AquaSimNode> node)
+AquaSimEnergyModel::SetNode(AquaSimNode * node)
 {
   m_node = node;
 }
 
-Ptr<AquaSimNode>
+AquaSimNode *
 AquaSimEnergyModel::GetNode() const
 {
   return m_node;
@@ -52,7 +62,7 @@ double
 AquaSimEnergyModel::DoGetCurrentA(void) const
 {
   NS_LOG_FUNCTION(this);
-  GetCurrentA();
+  return GetCurrentA();
 }
 
 void 
@@ -63,7 +73,8 @@ AquaSimEnergyModel::HandleEnergyDepletion(void)
 	  << ", calling AquaSimPhy::EnergyDeplete");
 
   Ptr<AquaSimNetDevice> dev = m_node->GetDevice(0)->GetObject<AquaSimNetDevice>();
-  dev->GetPhy()->EnergyDeplete();
+  Ptr<AquaSimPhy> phy = dev->GetPhy();
+  phy->EnergyDeplete();
 }
 
 void 

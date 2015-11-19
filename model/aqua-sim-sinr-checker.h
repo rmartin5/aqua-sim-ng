@@ -26,12 +26,10 @@
 namespace ns3 {
 
 //interface of Aqua Sim SINR Checker
-class AquaSimSinrChecker {
+class AquaSimSinrChecker : public Object{
 public:
   static TypeId GetTypeId (void);
-  AquaSimSinrChecker (void);
-  virtual ~AquaSimSinrChecker();
-  virtual bool Decodable (double sinr);
+  virtual bool Decodable (double sinr) = 0;
 };
 
 

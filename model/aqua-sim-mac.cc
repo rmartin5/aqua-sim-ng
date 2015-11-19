@@ -86,7 +86,7 @@ AquaSimMac::HandleIncomingPkt(Ptr<Packet> p) {
 
   double txTime = asHeader.GetTxTime();
   if (Phy()->Status() != PHY_SEND) {
-	  Node()->SetCarrierSense(true);
+	  m_node->SetCarrierSense(true);
   }
   p->AddHeader(asHeader);
 
@@ -125,8 +125,7 @@ TypeId
 AquaSimMac::GetTypeId(void)
 {
   static TypeId tid = TypeId("ns3::AquaSimMac")
-	  .SetParent<Object>()
-	  .AddConstructor<AquaSimMac>()
+      .SetParent<Object>()
   ;
   return tid;
 }
@@ -157,17 +156,18 @@ AquaSimMac::PowerOff()
 * 		specified by mod_name
 */
 double
-AquaSimMac::GetTxTime(int pktLen, Ptr<std::string> modName)
+AquaSimMac::GetTxTime(int pktLen, std::string * modName)
 {
   return Phy()->CalcTxTime(pktLen, modName);
 }
 
 double
-AquaSimMac::GetTxTime(Ptr<Packet> pkt, Ptr<std::string> modName) {
+AquaSimMac::GetTxTime(Ptr<Packet> pkt, std::string * modName) {
   return GetTxTime(pkt->GetSize(), modName);
 }
 
-int AquaSimMac::GetSizeByTxTime(double txTime, Ptr<std::string> modName) {
+int
+AquaSimMac::GetSizeByTxTime(double txTime, std::string * modName) {
   return Phy()->CalcPktSize(txTime, modName);
 }
 
