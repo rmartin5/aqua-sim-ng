@@ -22,8 +22,12 @@ AquaSimMac::AquaSimMac() : m_node(NULL),
 {
 }
 
+AquaSimMac::~AquaSimMac()
+{
+}
+
 void
-AquaSimMac::SetNode(Ptr<AquaSimNode> node){
+AquaSimMac::SetNode(AquaSimNode * node){
   NS_LOG_FUNCTION(this << node);
   m_node = node;
 	
@@ -90,7 +94,7 @@ AquaSimMac::HandleIncomingPkt(Ptr<Packet> p) {
   }
   p->AddHeader(asHeader);
 
-  Simulator::Schedule(Seconds(txTime), &Recv, p );
+  Simulator::Schedule(Seconds(txTime), &AquaSimMac::Recv, this, p);
   return;
 }
 
@@ -155,13 +159,14 @@ AquaSimMac::PowerOff()
 * @return txtime of a packet of size pkt_len using the modulation scheme
 * 		specified by mod_name
 */
-double
+
+Time
 AquaSimMac::GetTxTime(int pktLen, std::string * modName)
 {
   return Phy()->CalcTxTime(pktLen, modName);
 }
 
-double
+Time
 AquaSimMac::GetTxTime(Ptr<Packet> pkt, std::string * modName) {
   return GetTxTime(pkt->GetSize(), modName);
 }

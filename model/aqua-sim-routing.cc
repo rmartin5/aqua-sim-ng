@@ -28,10 +28,10 @@ AquaSimRouting::GetTypeId(void)
   return tid;
 }
 
-AquaSimRouting::AquaSimRouting()
+AquaSimRouting::AquaSimRouting() :
+    m_node(NULL)
 {
   NS_LOG_FUNCTION(this);
-  //m_node = NULL;
   //m_tracetarget=NULL;		//to be implemented
   //ll(NULL), port_dmux(NULL)
 }

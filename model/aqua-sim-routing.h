@@ -33,7 +33,7 @@ public:
   virtual ~AquaSimRouting(void);
 
   /*avoid instantiation since UnderwaterRouting's behavior is not defined*/
-  virtual void Recv(Ptr<Packet>) = 0;	//handler not implemented
+  virtual void Recv(Ptr<Packet> p) = 0;	//handler not implemented
 protected:
   /*send packet up to port-demux*/
   virtual void SendUp(Ptr<Packet> p);			//demux not implemented yet.
@@ -50,7 +50,7 @@ protected:
   virtual bool AmISrc(const Ptr<Packet> p);
 protected:
   Address m_myAddr;  //the ip address of this node
-  Ptr<AquaSimNode> m_node; //the host node
+  AquaSimNode * m_node; //the host node
   //Ptr<Trace> m_traceTarget;       // Trace Target	TODO need to initiate tracing
   //NsObject *ll;			//pointer to link layer object
   //NsObject *port_dmux;

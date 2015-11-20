@@ -25,48 +25,48 @@ class Packet;
 class AquaSimMac : public Object {
 public:
   AquaSimMac(void);
-  virtual ~AquaSimMac(void);
+  ~AquaSimMac(void);
 
   static TypeId GetTypeId(void);
 
-  //Ptr<AquaSimNode> Node() { return m_node; }
+  //Ptr<AquaSimNode> Node() { return m_node; }	//can get node from phy or net device
   Ptr<AquaSimPhy> Phy() { return m_phy; }
   Ptr<AquaSimRouting> Routing() { return m_rout;}
 
-  virtual void SetNode(Ptr<AquaSimNode> node);
+  virtual void SetNode(AquaSimNode * node);
   virtual void SetPhy(Ptr<AquaSimPhy> phy);
   virtual void SetRouting(Ptr<AquaSimRouting> rout);
 
   //interfaces for derived MAC protocols
   // to process the incoming packet
-  virtual  void RecvProcess(Ptr<Packet>);
+  virtual void RecvProcess(Ptr<Packet> p);
   // to process the outgoing packet
-  virtual  void TxProcess(Ptr<Packet>);
+  virtual void TxProcess(Ptr<Packet> p);
 
   //interfaces for derived base MAC classes
-  virtual void HandleIncomingPkt(Ptr<Packet>);
-  virtual void HandleOutgoingPkt(Ptr<Packet>);
+  virtual void HandleIncomingPkt(Ptr<Packet> p);
+  virtual void HandleOutgoingPkt(Ptr<Packet> p);
 
 	  //Do we need a to address in the cb?
-  virtual void SetForwardUpCallback(Callback<void, Ptr<Packet>, Address> upCallback);
+  virtual void SetForwardUpCallback(Callback<void, Ptr<Packet> , Address> upCallback);
   //virtual void SetLinkUpCallback(Callback<void> linkUp);
   //virtual void SetLinkDownCallback(Callback<void> linkDown);
-  virtual  void SendUp(Ptr<Packet>);
-  virtual  void SendDown(Ptr<Packet>);
+  virtual  void SendUp(Ptr<Packet> p);
+  virtual  void SendDown(Ptr<Packet> p);
 
   void PowerOff(void);
   void PowerOn(void);
-  void InterruptRecv(double);
+  void InterruptRecv(double txTime);
 
-  double GetTxTime(int pktLen, std::string * modName = NULL);
-  double GetTxTime(Ptr<Packet> pkt, std::string * modName = NULL);
+  Time GetTxTime(int pktLen, std::string * modName = NULL);
+  Time GetTxTime(Ptr<Packet> pkt, std::string * modName = NULL);
   int  GetSizeByTxTime(double txTime, std::string * modName = NULL); //get packet size by txtime
   // The sending process can stop receiving process and change the transmission
   // status of the node since underwatermac is half-duplex
 
   double GetPreamble(void);
 
-  void Recv(Ptr<Packet>);	//TODO move to private once non-base MAC classes available
+  void Recv(Ptr<Packet> p);	//TODO move to private once non-base MAC classes available
 
 private:
   // to receive packet from upper layer and lower layer
@@ -78,7 +78,7 @@ private:
   */
 
 protected:
-  Ptr<AquaSimNode> m_node;// the node this mac is attached
+  AquaSimNode * m_node;// the node this mac is attached
   Ptr<AquaSimPhy> m_phy;
   Ptr<AquaSimRouting> m_rout;
 
