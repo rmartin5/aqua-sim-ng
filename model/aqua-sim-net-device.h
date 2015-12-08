@@ -59,11 +59,13 @@ public:
   //attach
   void SetPhy (Ptr<AquaSimPhy> phy);
   void SetMac (Ptr<AquaSimMac> mac);
+  void SetRouting (Ptr<AquaSimRouting> routing);
   void SetChannel (Ptr<AquaSimChannel> channel);
   //void SetApp (Ptr<AquaSimApp> app);
   
   Ptr<AquaSimPhy> GetPhy (void);
   Ptr<AquaSimMac> GetMac (void);
+  Ptr<AquaSimRouting> GetRouting (void);
   //Ptr<AquaSimApp> GetApp (void);
         //Not currently implemented  
   
@@ -128,6 +130,7 @@ private:
   AquaSimNode * m_node;
   Ptr<AquaSimPhy> m_phy;
   Ptr<AquaSimMac> m_mac;
+  Ptr<AquaSimRouting> m_routing;
   //Ptr<AquaSimApp> m_app;
   Ptr<AquaSimChannel> m_channel;
 

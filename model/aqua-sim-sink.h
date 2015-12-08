@@ -24,6 +24,17 @@ using namespace std;
 
 // Aqua Sim Sink
 
+/*
+ *
+ * FIXME
+ * This is redundant since AquaSimNode can act as a sink...
+ * 	Plus node inherits mobility model allowing easier vector positioning.
+ * 	Could instead integrate some additional features from here into AquaSimNode.
+ * 	Also could implement bound checking within the Mobility Model or AquaSimNode.
+ *
+ * 	Remove/rethink this work in future iterations.
+ */
+
 namespace ns3{
 
 struct SenseAreaElem{

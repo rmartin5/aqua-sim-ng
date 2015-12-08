@@ -52,6 +52,10 @@ AquaSimNetDevice::GetTypeId ()
        PointerValue (),
        MakePointerAccessor (&AquaSimNetDevice::m_mac),
        MakePointerChecker<AquaSimMac>())
+    .AddAttribute ("Routing", "The Routing layer attached to this device.",
+       PointerValue (),
+       MakePointerAccessor (&AquaSimNetDevice::m_routing),
+       MakePointerChecker<AquaSimRouting>())
     .AddAttribute ("Channel", "The Channel layer attached to this device.",
        PointerValue (),
        MakePointerAccessor (&AquaSimNetDevice::m_channel),
@@ -107,6 +111,13 @@ AquaSimNetDevice::SetMac (Ptr<AquaSimMac> mac)
 }
 
 void
+AquaSimNetDevice::SetRouting(Ptr<AquaSimRouting> routing)
+{
+  m_routing = routing;
+  CompleteConfig ();
+}
+
+void
 AquaSimNetDevice::SetChannel (Ptr<AquaSimChannel> channel)
 {
   m_channel = channel;
@@ -136,6 +147,12 @@ Ptr<AquaSimMac>
 AquaSimNetDevice::GetMac (void)
 {
   return m_mac;
+}
+
+Ptr<AquaSimRouting>
+AquaSimNetDevice::GetRouting (void)
+{
+  return m_routing;
 }
 
 Ptr<AquaSimChannel>
