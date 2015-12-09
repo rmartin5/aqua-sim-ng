@@ -60,7 +60,7 @@ AquaSimConstNoiseGen::GetTypeId (void)
 }
 
 double
-AquaSimConstNoiseGen::Noise(Time t, double x, double y, double z) {
+AquaSimConstNoiseGen::Noise(Time t, Vector vector) {
   return m_noise;
 }
 

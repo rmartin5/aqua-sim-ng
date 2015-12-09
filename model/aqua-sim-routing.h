@@ -9,7 +9,7 @@
 //#include <classifier-port.h>
 
 #include "aqua-sim-mac.h"
-#include "aqua-sim-node.h"
+#include "aqua-sim-net-device.h"
 
 #include "ns3/address.h"
 #include "ns3/pointer.h"
@@ -20,7 +20,7 @@
 
 namespace ns3 {
 
-class AquaSimNode;
+class AquaSimNetDevice;
 class AquaSimMac;
 class Packet;
 
@@ -50,7 +50,7 @@ protected:
   virtual bool AmISrc(const Ptr<Packet> p);
 protected:
   Address m_myAddr;  //the ip address of this node
-  AquaSimNode * m_node; //the host node
+  Ptr<AquaSimNetDevice> m_device;
   //Ptr<Trace> m_traceTarget;       // Trace Target	TODO need to initiate tracing
   //NsObject *ll;			//pointer to link layer object
   //NsObject *port_dmux;

@@ -35,6 +35,10 @@ using namespace std;
  * 	Remove/rethink this work in future iterations.
  */
 
+/*
+ * *** CURRENTLY NOT IN USE
+ */
+
 namespace ns3{
 
 struct SenseAreaElem{

@@ -41,16 +41,10 @@ AquaSimPropagation::GetTypeId ()
 }
 
 Time
-AquaSimPropagation::PDelay (AquaSimNode * s, AquaSimNode * r)
-{
-  return Time::FromDouble((s->DistanceFrom(r) / ns3::SOUND_SPEED_IN_WATER ),Time::S);
-}
-
-double
-AquaSimPropagation::distance (AquaSimNode * s, AquaSimNode * r)
+AquaSimPropagation::PDelay (Ptr<MobilityModel> s, Ptr<MobilityModel> r)
 {
   NS_LOG_FUNCTION(this);
-  return s->DistanceFrom(r);	//redundant...
+  return Time::FromDouble((s->GetDistanceFrom(r) / ns3::SOUND_SPEED_IN_WATER), Time::S);
 }
 
 }  // namespace n3

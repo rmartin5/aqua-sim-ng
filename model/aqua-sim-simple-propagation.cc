@@ -56,7 +56,7 @@ AquaSimSimplePropagation::~AquaSimSimplePropagation()
 }
 
 std::vector<PktRecvUnit> *
-AquaSimSimplePropagation::ReceivedCopies (AquaSimNode * s,
+AquaSimSimplePropagation::ReceivedCopies (Ptr<AquaSimNetDevice> s,
 					  Ptr<Packet> p,
 					  std::vector<Ptr<AquaSimNetDevice> > dList)
 {
@@ -72,11 +72,16 @@ AquaSimSimplePropagation::ReceivedCopies (AquaSimNode * s,
   std::vector<Ptr<AquaSimNetDevice> >::iterator it = dList.begin();
   for(; it != dList.end(); it++, i++)
   {
-    dist = s->DistanceFrom(dList[i]->GetNode());
-    pru.recver = dList[i]->GetNode();
+    dist = s->GetMobility()->GetDistanceFrom(dList[i]->GetMobility());
+    pru.recver = dList[i];
     pru.pDelay = Time::FromDouble(dist / ns3::SOUND_SPEED_IN_WATER,Time::S);
     pru.pR = RayleighAtt(dist, asHeader.GetFreq(), asHeader.GetPt());
     res->push_back(pru);
+
+    NS_LOG_DEBUG("dist:" << dist
+		 << " recver:" << pru.recver
+		 << " pDelay" << pru.pDelay
+		 << " pR" << pru.pR);
   }
 
   return res;

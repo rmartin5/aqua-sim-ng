@@ -27,6 +27,12 @@
 
 //...
 
+
+/*
+ *
+ * *** CURRENTLY AquaSimNode NOT IN USE, SEE AquaSimNetDevice INSTEAD.
+ */
+
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE("AquaSimNode");

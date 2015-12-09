@@ -39,7 +39,7 @@ public:
   static TypeId GetTypeId (void);
 
   // return the noise strength at location (x,y,z) at time t
-  virtual double Noise (Time t, double x, double y, double z) = 0;
+  virtual double Noise (Time t, Vector vector) = 0;
   virtual double Noise (void) = 0;
 };	//class AquaSimNoiseGen
 
@@ -49,7 +49,7 @@ public:
   ~AquaSimConstNoiseGen ();
   static TypeId GetTypeId (void);
 
-  virtual double Noise (Time t, double x, double y, double z);
+  virtual double Noise (Time t, Vector vector);
   virtual double Noise (void);
 
 private:

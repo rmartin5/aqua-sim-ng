@@ -6,6 +6,7 @@
 #include "ns3/log.h"
 #include "ns3/pointer.h"
 #include "ns3/address.h"
+#include "ns3/ptr.h"
 
 //...
 
@@ -16,9 +17,31 @@ NS_OBJECT_ENSURE_REGISTERED(AquaSimMac);
 
 /*
 * Base class for Aqua Sim MAC
+* Once child created this needs to be updated ****
 */
-AquaSimMac::AquaSimMac() : m_node(NULL),
-    m_phy(NULL), m_callback(NULL)
+
+TypeId
+AquaSimMac::GetTypeId(void)
+{
+  static TypeId tid = TypeId("ns3::AquaSimMac")
+  .SetParent<Object>()
+  .AddAttribute ("SetNetDevice", "A pointer to connect to the net device.",
+    PointerValue (),
+    MakePointerAccessor (&AquaSimMac::m_device),
+    MakePointerChecker<AquaSimMac> ())
+  .AddAttribute ("SetPhy", "A pointer to set the phy layer.",
+    PointerValue (),
+    MakePointerAccessor (&AquaSimMac::m_phy),
+    MakePointerChecker<AquaSimMac> ())
+  .AddAttribute ("SetRouting", "A pointer to set the routing layer.",
+    PointerValue (),
+    MakePointerAccessor (&AquaSimMac::m_rout),
+    MakePointerChecker<AquaSimMac> ())
+  ;
+  return tid;
+}
+
+AquaSimMac::AquaSimMac()
 {
 }
 
@@ -27,12 +50,10 @@ AquaSimMac::~AquaSimMac()
 }
 
 void
-AquaSimMac::SetNode(AquaSimNode * node){
-  NS_LOG_FUNCTION(this << node);
-  m_node = node;
-	
-  //if needed set up handler here, should be set up such as a callback
-  //i.e. m_node->RegisterProtocolHandler (MakeCallBack (&AquaSimMac::Recv, this), ...);
+AquaSimMac::SetDevice(Ptr<AquaSimNetDevice> device)
+{
+  NS_LOG_FUNCTION(this);
+  m_device = device;
 }
 
 void
@@ -67,7 +88,7 @@ AquaSimMac::SetForwardUpCallback(Callback<void, Ptr<Packet>, Address> upCallback
 void
 AquaSimMac::SendUp(Ptr<Packet> p)
 {
-  NS_ASSERT(m_node && m_phy && m_rout);
+  NS_ASSERT(m_device && m_phy && m_rout);
 
   m_rout->Recv(p);
 }
@@ -75,7 +96,7 @@ AquaSimMac::SendUp(Ptr<Packet> p)
 void
 AquaSimMac::SendDown(Ptr<Packet> p)
 {
-  NS_ASSERT(m_node && m_phy && m_rout);
+  NS_ASSERT(m_device && m_phy && m_rout);
 
   m_phy->Recv(p);
 }
@@ -90,7 +111,7 @@ AquaSimMac::HandleIncomingPkt(Ptr<Packet> p) {
 
   double txTime = asHeader.GetTxTime();
   if (Phy()->Status() != PHY_SEND) {
-	  m_node->SetCarrierSense(true);
+      m_device->SetCarrierSense(true);
   }
   p->AddHeader(asHeader);
 
@@ -111,7 +132,7 @@ AquaSimMac::HandleOutgoingPkt(Ptr<Packet> p) {
 void
 AquaSimMac::Recv(Ptr<Packet> p) {
   //assert(initialized());
-  NS_ASSERT(m_node && m_phy && m_rout);
+  NS_ASSERT(m_device && m_phy && m_rout);
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
 
@@ -123,15 +144,6 @@ AquaSimMac::Recv(Ptr<Packet> p) {
 	  // Handle incoming packets.
 	  HandleIncomingPkt(p);
   }
-}
-
-TypeId
-AquaSimMac::GetTypeId(void)
-{
-  static TypeId tid = TypeId("ns3::AquaSimMac")
-      .SetParent<Object>()
-  ;
-  return tid;
 }
 
 void
@@ -178,7 +190,7 @@ AquaSimMac::GetSizeByTxTime(double txTime, std::string * modName) {
 
 void AquaSimMac::InterruptRecv(double txTime){
   //assert(initialized());
-  NS_ASSERT(m_node && m_phy && m_rout);
+  NS_ASSERT(m_device && m_phy && m_rout);
 
   if (PHY_RECV == Phy()->Status()){
 	  Phy()->StatusShift(txTime);

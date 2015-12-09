@@ -23,7 +23,6 @@
 
 #include "aqua-sim-noise-generator.h"
 #include "aqua-sim-net-device.h"
-#include "aqua-sim-node.h"
 #include "aqua-sim-propagation.h"
 
 #include "ns3/mobility-model.h"
@@ -31,9 +30,7 @@
 
 namespace ns3 {
 
-class AquaSimNetDevice;
 class AquaSimPhy;
-class AquaSimNode;
 class AquaSimPropagation;
 
 class AquaSimChannel : public Channel
@@ -59,7 +56,7 @@ public:
 
 private:
   void SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp);
-  double GetPropDelay (AquaSimNode * tnode, AquaSimNode * rnode);
+  double GetPropDelay (Ptr<AquaSimNetDevice> tdevice, Ptr<AquaSimNetDevice> rdevice);
    	
 	/* For list-keeper, channel keeps list of mobilenodes 
 	   listening on to it */
@@ -69,7 +66,7 @@ private:
 
 
         //void calculatePosition(Node* sender,Node* receiver, Packet* p);
-  double Distance(AquaSimNode * tnode,AquaSimNode * rnode);
+  double Distance(Ptr<AquaSimNetDevice> tdevice, Ptr<AquaSimNetDevice> rdevice);
 	//void addNodeToList(MobileNode *mn);
 	//void removeNodeFromList(MobileNode *mn);
 	//void sortLists(void);

@@ -15,7 +15,6 @@
 #include "aqua-sim-signal-cache.h"
 #include "aqua-sim-modulation.h"
 #include "aqua-sim-energy-model.h"
-#include "aqua-sim-node.h"
 #include "aqua-sim-sinr-checker.h"
 #include "aqua-sim-channel.h"
 
@@ -31,8 +30,8 @@ namespace ns3 {
 class AquaSimSinrChecker;
 class AquaSimSignalCache;
 class AquaSimModulation;
-class AquaSimNode;
 class AquaSimChannel;
+class AquaSimNetDevice;
 class AquaSimMac;
 class Packet;
 class AquaSimEnergyModel;
@@ -66,10 +65,11 @@ public:
   virtual void SetRxPower(double prConsume);
   virtual void SetIdlePower(double pIdle);
 
-  virtual void SetASNetDevice(Ptr<AquaSimNetDevice> device);
+  virtual void SetNetDevice(Ptr<AquaSimNetDevice> device);
   virtual void SetSinrChecker(AquaSimSinrChecker * sinrChecker);
   virtual void SetSignalCache(Ptr<AquaSimSignalCache> sC);
   virtual void AddModulation(Ptr<AquaSimModulation> modulation, std::string modulationName);
+  virtual Ptr<AquaSimNetDevice> GetNetDevice ();
 
   virtual void Dump(void) const;
   virtual bool Decodable(double noise, double ps);
@@ -85,14 +85,12 @@ public:
   inline Time CalcTxTime(int pktsize, std::string * modName = NULL);
   inline int CalcPktSize(double txtime, std::string * modName = NULL);
 
-  virtual AquaSimNode * Node();
   virtual void SignalCacheCallback(Ptr<Packet> p);
   virtual void Recv(Ptr<Packet> p);
-  virtual void SetNode(AquaSimNode * node);
 
   /*
   inline int Initialized(void) {
-	  return (Trigger() <= Preamble() && Node()
+	  return (Trigger() <= Preamble() && m_device
 			  && m_mac != NULL && m_channel != NULL
 			  && m_modulations.size()>0
 			  && m_sC != NULL && m_sinrChecker != NULL
@@ -100,8 +98,7 @@ public:
   }
   */
 
-  //inline Ptr<AquaSimNode> Node(void) const { return m_node; }
-  //inline Ptr<AquaSimEnergyModel> EM(void) { return Node()->EnergyModel(); }
+  //inline Ptr<AquaSimEnergyModel> EM(void) { return m_device->EnergyModel(); }
   /*
    * will not have to place some of the basic functions, such as above, within child class.
    */
@@ -202,7 +199,6 @@ protected:
 private:
   Ptr<AquaSimChannel> m_channel;
   Ptr<AquaSimMac> m_mac;
-  AquaSimNode * m_node;
   Ptr<AquaSimEnergyModel> m_eM;
   Ptr<AquaSimNetDevice> m_device;
 

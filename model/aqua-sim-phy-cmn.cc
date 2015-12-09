@@ -25,8 +25,7 @@ NS_OBJECT_ENSURE_REGISTERED(AquaSimPhyCmn);
 
 AquaSimPhyCmn::AquaSimPhyCmn(void) :
     AquaSimPhy(),
-    m_sinrChecker(NULL),
-    m_node(NULL)
+    m_sinrChecker(NULL)
     //, m_idleTimer(this)
 {
   m_updateEnergyTime = Simulator::Now().GetSeconds();
@@ -168,15 +167,10 @@ AquaSimPhyCmn::SetAntenna(Ptr<AquaSimAntenna> ant)
 */
 
 void
-AquaSimPhyCmn::SetASNetDevice(Ptr<AquaSimNetDevice> device)
+AquaSimPhyCmn::SetNetDevice(Ptr<AquaSimNetDevice> device)
 {
+  NS_LOG_FUNCTION(this);
   m_device = device;
-}
-
-void
-AquaSimPhyCmn::SetNode(AquaSimNode * node)
-{
-  m_node = node;
 }
 
 void
@@ -209,6 +203,12 @@ AquaSimPhyCmn::AddModulation(Ptr<AquaSimModulation> modulation, std::string modu
 
     m_modulations[modulationName] = modulation;
   }
+}
+
+Ptr<AquaSimNetDevice>
+AquaSimPhyCmn::GetNetDevice()
+{
+  return m_device;
 }
 
 /**
@@ -250,7 +250,7 @@ AquaSimPhyCmn::UpdateRxEnergy(Time txTime) {
     m_updateEnergyTime = endTime;
   }
   else{
-    /* In this case, this node is receiving some other packet*/
+    /* In this case, this device is receiving some other packet*/
     if (endTime > m_updateEnergyTime) {		 //TODO check for pkt errors
       //EM()->DecrRcvEnergy(endTime - m_updateEnergyTime);
       m_updateEnergyTime = endTime;
@@ -260,7 +260,7 @@ AquaSimPhyCmn::UpdateRxEnergy(Time txTime) {
 
   /*if (EM()->Energy() <= 0) {
     EM()->SetEnergy(-1);
-    Node()->LogEnergy(0);
+    m_device->LogEnergy(0);
   }
   */
 }
@@ -275,12 +275,12 @@ AquaSimPhyCmn::UpdateIdleEnergy() {
     m_updateEnergyTime = Simulator::Now().GetSeconds();
   }
 
-  // log node energy
+  // log device energy
   /*if (EM()->Energy() > 0) {
-    Node()->LogEnergy(1);
+    m_device->LogEnergy(1);
   }
   else {
-    Node()->LogEnergy(0);
+    m_device->LogEnergy(0);
   }
   */
 
@@ -379,8 +379,8 @@ AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p) {
   NS_LOG_DEBUG ("TxTime=" << asHeader.GetTxTime());
   Time txTime = Time::FromInteger(asHeader.GetTxTime(),Time::S);
 
-  if (Node()->FailureStatus()) {
-    NS_LOG_WARN("AquaSimPhyCmn: nodeId=" << Node()->GetId() << " fails!\n");
+  if (m_device->FailureStatus()) {
+    NS_LOG_WARN("AquaSimPhyCmn: nodeId=" << m_device->GetNode()->GetId() << " fails!\n");
     p = 0;
     return NULL;
   }
@@ -426,8 +426,8 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
   p->PeekHeader(asHeader);
   NS_LOG_DEBUG ("TxTime=" << asHeader.GetTxTime());
 
-  if (Node()->FailureStatus()) {
-    NS_LOG_WARN("AquaSimPhyCmn nodeId=" << Node()->GetId() << " fails!\n");
+  if (m_device->FailureStatus()) {
+    NS_LOG_WARN("AquaSimPhyCmn nodeId=" << m_device->GetNode()->GetId() << " fails!\n");
     p = 0;
     return;
   }
@@ -444,11 +444,11 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
     // Does this occur somewhere else??
     break;
   case PHY_IDLE:
-    NS_LOG_WARN("AquaSimPhyCmn node(" << Node()->GetId() << "):mac forgot to change"
+    NS_LOG_WARN("AquaSimPhyCmn node(" << m_device->GetNode()->GetId() << "):mac forgot to change"
 	    << "the status at time " << Simulator::Now() << "\n");
     break;
   case PHY_SLEEP:
-    NS_LOG_WARN("AquaSimPhyCmn node(" << Node()->GetId() << ") is sleeping!\n");
+    NS_LOG_WARN("AquaSimPhyCmn node(" << m_device->GetNode()->GetId() << ") is sleeping!\n");
     break;
   default:
     NS_LOG_WARN("AquaSimPhyCmn: wrong status\n");
@@ -487,7 +487,7 @@ AquaSimPhyCmn::SignalCacheCallback(Ptr<Packet> p) {
 void
 AquaSimPhyCmn::PowerOn() {
   if (Status() == PHY_DISABLE)
-    NS_LOG_FUNCTION(this << " Node " << m_node << " is disabled.");
+    NS_LOG_FUNCTION(this << " Node " << m_device->GetNode() << " is disabled.");
   else
   {
     m_PoweredOn = true;
@@ -504,7 +504,7 @@ AquaSimPhyCmn::PowerOn() {
 void
 AquaSimPhyCmn::PowerOff() {
   if (Status() == PHY_DISABLE)
-    NS_LOG_FUNCTION(this << " Node " << m_node << " is disabled.");
+    NS_LOG_FUNCTION(this << " Node " << m_device->GetNode() << " is disabled.");
   else
   {
     m_PoweredOn = false;
@@ -585,7 +585,7 @@ AquaSimPhyCmn::Modulation(std::string * modName) {
 void
 AquaSimPhyCmn::EnergyDeplete() {
   NS_LOG_FUNCTION(this);
-  NS_LOG_DEBUG("Energy is depleted on node " << m_node);
+  NS_LOG_DEBUG("Energy is depleted on node " << m_device->GetNode());
 
   m_status = PHY_DISABLE;
 }
@@ -612,12 +612,6 @@ int
 AquaSimPhyCmn::CalcPktSize (double txTime, std::string * modName)
 {
   return Modulation(modName)->PktSize (txTime - Preamble());
-}
-
-AquaSimNode *
-AquaSimPhyCmn::Node()
-{
-  return m_node;
 }
 
 /*

@@ -15,7 +15,8 @@
 #include "ns3/nstime.h"
 #include "ns3/mobility-model.h"		//redundant
 
-#include "aqua-sim-node.h"
+
+ **** should remove AquaSimNode / Node references within this file
 
 
 #ifndef PI

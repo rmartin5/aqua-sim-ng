@@ -26,10 +26,9 @@
 #include "ns3/log.h"
 #include "ns3/object.h"
 #include "ns3/packet.h"
+#include "ns3/mobility-model.h"
 
 #include <vector>
-
-#include "aqua-sim-node.h"
 
 namespace ns3 {
 
@@ -47,7 +46,7 @@ class AquaSimNetDevice;
 struct PktRecvUnit {
   double pR;
   Time pDelay;
-  AquaSimNode * recver;
+  Ptr<AquaSimNetDevice> recver;
   PktRecvUnit () : pR(-1), pDelay(-1), recver(NULL) {}
 };
 
@@ -56,16 +55,15 @@ class AquaSimPropagation : public Object
 public:
   static TypeId GetTypeId (void);
 
-  virtual std::vector<PktRecvUnit> * ReceivedCopies (AquaSimNode * s,
+  virtual std::vector<PktRecvUnit> * ReceivedCopies (Ptr<AquaSimNetDevice> s,
                                                      Ptr<Packet> p,
 						     std::vector<Ptr<AquaSimNetDevice> > dList) = 0;
-  virtual Time PDelay (AquaSimNode * s, AquaSimNode * r);
+  virtual Time PDelay (Ptr<MobilityModel> s, Ptr<MobilityModel> r);
 
 protected:
   virtual double RayleighAtt (double dist, double freq, double pT) = 0;
   virtual double Rayleigh (double SL) = 0;
   virtual double Thorp (double range, double freq) = 0;
-  virtual double distance (AquaSimNode * s, AquaSimNode * r);
 
 };  //class AquaSimPropagation
 

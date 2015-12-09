@@ -6,7 +6,7 @@
 
 #include "ns3/device-energy-model.h"
 #include "ns3/nstime.h"
-#include "aqua-sim-node.h"
+#include "aqua-sim-net-device.h"
 
 /*
 Aqua Sim Energy model
@@ -19,7 +19,7 @@ Base case is very similar to UAN's AcousticModemEnergyModel.
 
 namespace ns3 {
 
-class AquaSimNode;
+class AquaSimNetDevice;
 
 class AquaSimEnergyModel : public DeviceEnergyModel
 {
@@ -28,8 +28,8 @@ public:
   AquaSimEnergyModel();
   virtual ~AquaSimEnergyModel();
 
-  virtual void SetNode(AquaSimNode * node);
-  virtual AquaSimNode * GetNode(void) const;
+  virtual void SetDevice(Ptr<AquaSimNetDevice> device);
+  virtual Ptr<AquaSimNetDevice> GetDevice(void) const;
 
   virtual void ChangeState(int newState);
   virtual double DoGetCurrentA(void) const; //maybe depending if current draw for its states are know or not
@@ -42,7 +42,7 @@ public:
   void SetEnergySource(Ptr<EnergySource> source); //only called by DeviceEnergyModel helper...
 
 
-  //include callback if energy is <= 0.0 during decreasing... to call energy depleted on Phy using m_node...
+  //include callback if energy is <= 0.0 during decreasing... to call energy depleted on Phy using device...
 
   void SetRxPower(double);
   void SetTxPower(double);
@@ -67,7 +67,7 @@ private:
   double m_rxP, m_txP, m_idleP;
   double m_totalEnergyConsumption;	//if energy recharging where incorporated
 
-  AquaSimNode * m_node;
+  Ptr<AquaSimNetDevice> m_device;
   Ptr<EnergySource> m_source;
 
 

@@ -27,7 +27,6 @@
 
 #include "aqua-sim-propagation.h"
 #include "aqua-sim-net-device.h"
-#include "aqua-sim-node.h"
 
 namespace ns3 {
 
@@ -44,16 +43,14 @@ public:
   AquaSimSimplePropagation (void);
   ~AquaSimSimplePropagation (void);
 
-  virtual std::vector<PktRecvUnit> * ReceivedCopies (AquaSimNode * s,
+  virtual std::vector<PktRecvUnit> * ReceivedCopies (Ptr<AquaSimNetDevice> s,
 						     Ptr<Packet> p,
 						     std::vector<Ptr<AquaSimNetDevice> > dList);
-  //virtual Time PDelay (AquaSimNode * s, AquaSimNode * r);
 
 protected:
   virtual double RayleighAtt (double dist, double freq, double pT);
   virtual double Rayleigh (double SL);
   virtual double Thorp (double range, double freq);
-  //virtual double distance (AquaSimNode * s, AquaSimNode * r);
 
 private:
   Ptr<LogNormalRandomVariable> m_rand;

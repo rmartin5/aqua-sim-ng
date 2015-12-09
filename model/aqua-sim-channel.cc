@@ -128,8 +128,8 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
   NS_LOG_FUNCTION(this);
   NS_LOG_DEBUG("Packet:" << p);
 
-  AquaSimNode * sender = (AquaSimNode *)(tifp->Node());
-  AquaSimNode * recver = NULL;
+  Ptr<AquaSimNetDevice> sender = Ptr<AquaSimNetDevice>(tifp->GetNetDevice());
+  Ptr<AquaSimNetDevice> recver = NULL;
   //std::vector<Ptr<AquaSimPhy> > rifp;	//must support multiple recv phy in future
   Ptr<AquaSimPhy> rifp;
   Ptr<Packet> pCopy = NULL;
@@ -155,7 +155,7 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
     p->PeekHeader(asHeader);
 
     asHeader.SetPr((*recvUnits)[i].pR);
-    asHeader.SetNoise(m_noiseGen->Noise(Simulator::Now() + pDelay, recver->X(), recver->Y(), recver->Z()));
+    asHeader.SetNoise(m_noiseGen->Noise(Simulator::Now() + pDelay, recver->GetMobility()->GetPosition()));
 
     p->AddHeader(asHeader);
 
@@ -184,15 +184,17 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
 }
 
 double
-AquaSimChannel::GetPropDelay (AquaSimNode * tnode, AquaSimNode * rnode)
+AquaSimChannel::GetPropDelay (Ptr<AquaSimNetDevice> tdevice, Ptr<AquaSimNetDevice> rdevice)
 {
-  return m_prop->PDelay(tnode, rnode).GetSeconds();
+  NS_ASSERT(tdevice->GetMobility() || rdevice->GetMobility());
+  return m_prop->PDelay(tdevice->GetMobility(), rdevice->GetMobility()).GetSeconds();
 }
    	
 double
-AquaSimChannel::Distance(AquaSimNode * tnode, AquaSimNode * rnode)
+AquaSimChannel::Distance(Ptr<AquaSimNetDevice> tdevice, Ptr<AquaSimNetDevice> rdevice)
 {
-  return tnode->DistanceFrom(rnode);
+  NS_ASSERT(tdevice->GetMobility() || rdevice->GetMobility());
+  return tdevice->GetMobility()->GetDistanceFrom(rdevice->GetMobility());
 }
 
 } // namespace ns3

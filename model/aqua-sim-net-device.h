@@ -25,10 +25,10 @@
 #include "ns3/net-device.h"
 #include "ns3/traced-callback.h"
 #include "ns3/address.h"      //could be updated to support own unique address type for uwsn
+#include "ns3/random-variable-stream.h"
 
 #include "aqua-sim-mac.h"
 #include "aqua-sim-channel.h"
-#include "aqua-sim-node.h"
 #include "aqua-sim-phy.h"
 
 namespace ns3 {
@@ -41,13 +41,16 @@ namespace ns3 {
 
     //TODO clean up this ugly mess...
 
+enum TransmissionStatus{SLEEP, NDIDLE, SEND, RECV, NSTATUS };
+
 class AquaSimMobilityPattern;  //Additional mobility patterns
 class AquaSimChannel;
 class AquaSimMac;
-class AquaSimNode;
+class AquaSimEnergyModel;
 //class AquaSimApp;
 //class AquaSimRouting;
 class MobilityModel;
+class Node;
 
 class AquaSimNetDevice : public NetDevice
 {
@@ -83,7 +86,7 @@ public:
   //virtual uint16_t GetMtu (void) const;
   //virtual Address GetMulticast (Ipv4Address multicastGroup) const;
   //virtual Address GetMulticast (Ipv6Address addr) const;
-  virtual AquaSimNode * GetNode (void);
+  virtual Ptr<Node> GetNode (void);
   //virtual bool IsBridge (void) const;
   //virtual bool IsBroadcast (void) const;
   //virtual bool IsLinkUp (void) const;
@@ -96,49 +99,100 @@ public:
   //virtual void SetAddress (Address address);
   //virtual void SetIfIndex (const uint32_t index);
   //virtual bool SetMtu (const uint16_t mtu);
-  virtual void SetNode (AquaSimNode * node);
+  virtual void SetNode (Ptr<Node> node);
   //virtual void SetPromiscReceiveCallback (PromiscReceiveCallback cb);
   //virtual void SetReceiveCallback (ReceiveCallback cb);
   //virtual bool SupportsSendFrom (void) const;
 
+  /*
+   * Taken from AquaSimNode during consolidation
+   */
+  //bool Move(void);	/*start the movement... should be handled within example*/
+  //void Start(void);
+  //void CheckPosition(void);
+  inline Time &PositionUpdateTime(void) { return m_positionUpdateTime; }
 
+  //sink related attributes
+  int ClearSinkStatus(void);
+  int SetSinkStatus(void);
+  inline int GetSinkStatus(void) { return m_sinkStatus; }
 
-  /*    //sink and general node functions & variables below...
-  //Sink
-  int ClearSinkStatus ();
-  int SetSinkStatus ();		//variable???
-  int GetSinkStatus () {return sinkStatus_; }  
+  //VBF
+  inline double &CX(void) { return m_cX; }
+  inline double &CY(void) { return m_cY; }
+  inline double &CZ(void) { return m_cZ; }
 
-  inline bool FailureStatus () { return failureStatus_; }
-  inline double FailurePro () { return failurePro; }
-  inline double FailureStatusPro () { return failureStatusPro_; }
+  inline bool FailureStatus(void) { return m_failureStatus; }
+  inline double FailurePro(void) { return m_failurePro; }
+  inline double FailureStatusPro(void) { return m_failureStatusPro; }
 
-  void SetCarrierSense (bool f)
+  inline void SetTransmissionStatus(enum TransmissionStatus status) {
+    m_transStatus = status;
+  }
+  inline enum TransmissionStatus TransmissionStatus(void) { return m_transStatus; }
 
+  inline bool CarrierSense(void) { return m_carrierSense; }
+  inline void ResetCarrierSense(void) { m_carrierSense = false; }
+  inline void SetCarrierSense(bool f){
+    m_carrierSense = f;
+    m_carrierId = f;
+  }
+  inline bool CarrierId(void) { return m_carrierId; }
+  inline void ResetCarrierId(void) { m_carrierId = false; }
+
+  int m_nextHop;
+  int m_setHopStatus;
   int m_sinkStatus;
-  bool m_failureStatus;  //1 if node fails, 0 otherwise
-  double m_failurePro;
-  double m_failureStatusPro;
- 
-*/ 
 
+  //void UpdatePosition(void);  // UpdatePosition() out of date... should be using ns3's mobility module
+  bool IsMoving(void);
+  Ptr<AquaSimEnergyModel> EnergyModel(void) {return m_energyModel; }
+
+  Ptr<MobilityModel> GetMobility(void);
+  void SetMobility(Ptr<MobilityModel> mobility);
+
+protected:
+
+  void GenerateFailure(void);
 
 private:
   
   void CompleteConfig (void);
   
-  AquaSimNode * m_node;
   Ptr<AquaSimPhy> m_phy;
   Ptr<AquaSimMac> m_mac;
   Ptr<AquaSimRouting> m_routing;
   //Ptr<AquaSimApp> m_app;
   Ptr<AquaSimChannel> m_channel;
+  Ptr<Node> m_node;
+  Ptr<UniformRandomVariable> m_uniformRand;
+  Ptr<AquaSimEnergyModel> m_energyModel;
+  Ptr<MobilityModel> m_mobility;
 
   NetDevice::ReceiveCallback m_forwardUp;
   bool m_configComplete;
 
   //m_clear for dispose?? to clear all layers from net-device side.
 
+  /*
+   * From AquaSimNode
+   */
+  enum  TransmissionStatus m_transStatus;
+  double m_statusChangeTime;  //the time when changing m_preTransStatus to m_transStatus
+
+  bool	m_failureStatus;// 1 if node fails, 0 otherwise
+  double m_failurePro;
+  double m_failureStatusPro;
+
+  //the following attributes are added by Peng Xie for RMAC and VBF
+  double m_cX;
+  double m_cY;
+  double m_cZ;
+
+  bool m_carrierSense;
+  bool m_carrierId;
+
+  Time m_positionUpdateTime;
 };  // class AquaSimNetDevice
 
 

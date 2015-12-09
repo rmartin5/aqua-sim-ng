@@ -51,15 +51,18 @@ main (int argc, char *argv[])
   //AquaSimEnergyHelper energy;	//******this could instead be handled by node helper. ****/
   asHelper.SetChannel(channel.Create());
 
+  /*
+   * Preset up mobility model for nodes and sinks here
+   */
   for (int i = 0; i < nodes; i++)
     {
       //select i-th node within nodesCon
 
-      //set node's vector location
-      //create new as net device
+      //attach mobility model to node and set vector location
+      //create new as-netdevice
       //
 
-      //add device ( asHelper.Create(this node, new as net device)
+      //add device ( asHelper.Create(this node, as-netdevice)
 	  //NOTE: std::vector<Ptr<AquaSimNetDevice> > m_deviceList; in channel
 	  //	AND void AddDevice (Ptr<AquaSimNetDevice> device);
 

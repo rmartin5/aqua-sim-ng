@@ -26,11 +26,24 @@
 
 namespace ns3 {
 
+NS_LOG_COMPONENT_DEFINE("AquaSimNetDevice");
 NS_OBJECT_ENSURE_REGISTERED (AquaSimNetDevice);
 
 AquaSimNetDevice::AquaSimNetDevice ()
   : NetDevice(),
-    m_node(NULL)
+    m_sinkStatus(0),
+    m_failureStatus(false), //added by peng xie
+    m_failureStatusPro(0), //added by peng xie and zheng
+    m_failurePro(0.0), //added by peng xie
+    m_transStatus(NIDLE),
+    m_setHopStatus(0),
+    m_nextHop(-10),
+    m_carrierId(false),
+    m_carrierSense(false),
+    m_statusChangeTime(0.0),
+    m_cX(0.0),
+    m_cY(0.0),
+    m_cZ(0.0)
 {
   m_configComplete = false;
 }
@@ -45,26 +58,63 @@ AquaSimNetDevice::GetTypeId ()
   static TypeId tid = TypeId("ns3::AquaSimNetDevice")
     .SetParent<NetDevice>()
     .AddAttribute ("Phy", "The PHY layer attached to this device.",
-       PointerValue (),
-       MakePointerAccessor (&AquaSimNetDevice::m_phy),
-       MakePointerChecker<AquaSimPhy>())
+      PointerValue (),
+      MakePointerAccessor (&AquaSimNetDevice::m_phy),
+      MakePointerChecker<AquaSimPhy>())
     .AddAttribute ("Mac", "The MAC layer attached to this device.",
-       PointerValue (),
-       MakePointerAccessor (&AquaSimNetDevice::m_mac),
-       MakePointerChecker<AquaSimMac>())
+      PointerValue (),
+      MakePointerAccessor (&AquaSimNetDevice::m_mac),
+      MakePointerChecker<AquaSimMac>())
     .AddAttribute ("Routing", "The Routing layer attached to this device.",
-       PointerValue (),
-       MakePointerAccessor (&AquaSimNetDevice::m_routing),
-       MakePointerChecker<AquaSimRouting>())
+      PointerValue (),
+      MakePointerAccessor (&AquaSimNetDevice::m_routing),
+      MakePointerChecker<AquaSimRouting>())
     .AddAttribute ("Channel", "The Channel layer attached to this device.",
-       PointerValue (),
-       MakePointerAccessor (&AquaSimNetDevice::m_channel),
-       MakePointerChecker<AquaSimChannel>())
+      PointerValue (),
+      MakePointerAccessor (&AquaSimNetDevice::m_channel),
+      MakePointerChecker<AquaSimChannel>())
   //.AddAttribute ("App", "The App layer attached to this device.",
-    // PointerValue (&AquaSimNetDevie::m_app),
-    // MakePointerAccessor (&AquaSimNetDevice::GetApp, &AquaSimNetDevice::SetApp),
-    // MakePointerChecker<AquaSimApp>())
-  ;     //Added mobility model? routing layer?
+    //PointerValue (&AquaSimNetDevie::m_app),
+    //MakePointerAccessor (&AquaSimNetDevice::GetApp, &AquaSimNetDevice::SetApp),
+    //MakePointerChecker<AquaSimApp>())
+    .AddAttribute ("Mobility", "The Mobility model attached to this device.",
+      PointerValue (),
+      MakePointerAccessor (&AquaSimNetDevice::m_mobility),
+      MakePointerChecker<MobilityModel>())
+  //3 following commands are for VBF related protocols only
+    .AddAttribute("SetCx", "Set x for VBF related protocols.",
+      DoubleValue(0),
+      MakeDoubleAccessor(&AquaSimNetDevice::m_cX),
+      MakeDoubleChecker<double>())
+   .AddAttribute("SetCy", "Set y for VBF related protocols.",
+      DoubleValue(0),
+      MakeDoubleAccessor(&AquaSimNetDevice::m_cY),
+      MakeDoubleChecker<double>())
+   .AddAttribute("SetCz", "Set z for VBF related protocols.",
+      DoubleValue(0),
+      MakeDoubleAccessor(&AquaSimNetDevice::m_cZ),
+      MakeDoubleChecker<double>())
+   .AddAttribute("SetFailureStatus", "Set node failure status. Default false.",
+     BooleanValue(0),
+     MakeBooleanAccessor(&AquaSimNetDevice::m_failureStatus),
+     MakeBooleanChecker())
+   .AddAttribute("SetFailureStatusPro", "Set node failure status pro.",
+     DoubleValue(0),
+     MakeDoubleAccessor(&AquaSimNetDevice::m_failureStatusPro),
+     MakeDoubleChecker<double>())
+   .AddAttribute("SetFailurePro", "Set node failure pro.",
+     DoubleValue(0),
+     MakeDoubleAccessor(&AquaSimNetDevice::m_failurePro),
+     MakeDoubleChecker<double>())
+   .AddAttribute("NextHop", "Set next hop. Default is 1.",
+     IntegerValue(1),
+     MakeIntegerAccessor(&AquaSimNetDevice::m_nextHop),
+     MakeIntegerChecker<int>())
+   .AddAttribute("SinkStatus", "Set the sink's status, int value.",
+     IntegerValue(0),
+     MakeIntegerAccessor(&AquaSimNetDevice::m_sinkStatus),
+     MakeIntegerChecker<int> ())
+  ;
   return tid;
 }  
 
@@ -78,7 +128,7 @@ void
 AquaSimNetDevice::DoInitialize (void)
 {
   //m_phy->Initialize ();
-  m_mac->Initialize ();
+  //m_mac->Initialize ();
   //m_app->Initialize ();
   //channel?
   NetDevice::DoInitialize ();
@@ -87,18 +137,19 @@ AquaSimNetDevice::DoInitialize (void)
 void
 AquaSimNetDevice::CompleteConfig (void)
 {
-  if (m_mac == 0 || m_phy == 0 || /*m_app == 0 ||*/ m_node == 0 || m_configComplete)
+  if (m_mac == 0 || m_phy == 0 || /*m_app == 0 ||*/ m_node == 0 || m_phy || m_configComplete)
     {
       return;
     }
   //exec
-  //TODO set app, phy, ++
+  //TODO set app, ++
   m_configComplete = true;
 }
 
 void
 AquaSimNetDevice::SetPhy (Ptr<AquaSimPhy> phy)
 {
+  NS_LOG_FUNCTION(this);
   m_phy = phy;
   CompleteConfig ();
 }
@@ -106,6 +157,7 @@ AquaSimNetDevice::SetPhy (Ptr<AquaSimPhy> phy)
 void
 AquaSimNetDevice::SetMac (Ptr<AquaSimMac> mac)
 {
+  NS_LOG_FUNCTION(this);
   m_mac = mac;
   CompleteConfig ();
 }
@@ -113,6 +165,7 @@ AquaSimNetDevice::SetMac (Ptr<AquaSimMac> mac)
 void
 AquaSimNetDevice::SetRouting(Ptr<AquaSimRouting> routing)
 {
+  NS_LOG_FUNCTION(this);
   m_routing = routing;
   CompleteConfig ();
 }
@@ -120,6 +173,7 @@ AquaSimNetDevice::SetRouting(Ptr<AquaSimRouting> routing)
 void
 AquaSimNetDevice::SetChannel (Ptr<AquaSimChannel> channel)
 {
+  NS_LOG_FUNCTION(this);
   m_channel = channel;
   CompleteConfig ();
 }
@@ -127,14 +181,23 @@ AquaSimNetDevice::SetChannel (Ptr<AquaSimChannel> channel)
 void
 AquaSimNetDevice::SetApp (Ptr<AquaSimApp> app)
 {
+  NS_LOG_FUNCTION(this);
   m_app = app;
   CompleteConfig ();
 }
 */
 void
-AquaSimNetDevice::SetNode (AquaSimNode * node)
+AquaSimNetDevice::SetNode (Ptr<Node> node)
 {
+  NS_LOG_FUNCTION(this);
   m_node = node;
+}
+
+void
+AquaSimNetDevice::SetMobility(Ptr<MobilityModel> mobility)
+{
+  NS_LOG_FUNCTION(this);
+  m_mobility = mobility;
 }
 
 Ptr<AquaSimPhy>
@@ -161,10 +224,16 @@ AquaSimNetDevice::GetChannel (void)
   return m_channel;
 }
  
-AquaSimNode *
+Ptr<Node>
 AquaSimNetDevice::GetNode (void)
 {
   return m_node;
+}
+
+Ptr<MobilityModel>
+AquaSimNetDevice::GetMobility (void)
+{
+  return m_mobility;
 }
 
 /*
@@ -174,5 +243,44 @@ AquaSimNetDevice::GetApp (void)
 }
 */
 
+bool
+AquaSimNetDevice::IsMoving(void)
+{
+  NS_LOG_FUNCTION(this);
+
+  if (m_mobility == NULL){
+      return false;
+  }
+
+  Vector vel = m_mobility->GetVelocity();
+  if (vel.x==0 && vel.y==0 && vel.z==0) {
+      return false;
+  }
+
+  return true;
+}
+
+int
+AquaSimNetDevice::SetSinkStatus()
+{
+  m_sinkStatus = 1;
+  return 0;
+}
+
+
+int
+AquaSimNetDevice::ClearSinkStatus()
+{
+  m_sinkStatus = 0;
+  return 0;
+}
+
+void
+AquaSimNetDevice::GenerateFailure()
+{
+  double error_pro = m_uniformRand->GetValue();
+  if (error_pro < m_failureStatusPro)
+    m_failureStatus = true;
+}
 
 }  // namespace ns3

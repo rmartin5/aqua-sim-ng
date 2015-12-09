@@ -10,14 +10,13 @@
 #include "ns3/address.h"
 #include "ns3/callback.h"
 
-#include "aqua-sim-node.h"
 #include "aqua-sim-routing.h"
 //#include "aqua-sim-address.h"  
 #include <string>
 
 namespace ns3{
 
-class AquaSimNode;
+class AquaSimNetDevice;
 class AquaSimRouting;
 class AquaSimPhy;
 class Packet;
@@ -29,11 +28,11 @@ public:
 
   static TypeId GetTypeId(void);
 
-  //Ptr<AquaSimNode> Node() { return m_node; }	//can get node from phy or net device
+  Ptr<AquaSimNetDevice> Device() {return m_device; }
   Ptr<AquaSimPhy> Phy() { return m_phy; }
   Ptr<AquaSimRouting> Routing() { return m_rout;}
 
-  virtual void SetNode(AquaSimNode * node);
+  virtual void SetDevice(Ptr<AquaSimNetDevice> device);
   virtual void SetPhy(Ptr<AquaSimPhy> phy);
   virtual void SetRouting(Ptr<AquaSimRouting> rout);
 
@@ -78,7 +77,7 @@ private:
   */
 
 protected:
-  AquaSimNode * m_node;// the node this mac is attached
+  Ptr<AquaSimNetDevice> m_device;// the device this mac is attached
   Ptr<AquaSimPhy> m_phy;
   Ptr<AquaSimRouting> m_rout;
 

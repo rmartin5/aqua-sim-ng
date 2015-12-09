@@ -3,7 +3,6 @@
 #include "ns3/energy-source.h"
 
 #include "aqua-sim-energy-model.h"
-#include "aqua-sim-node.h"
 #include "aqua-sim-phy.h"
 
 // Aqua Sim Energy Model
@@ -18,6 +17,10 @@ TypeId
 AquaSimEnergyModel::GetTypeId()
 {
   static TypeId tid= TypeId ("ns3::AquaSimChannel")
+    .AddAttribute ("NetDevice", "The Aqua Sim Net Device this model resides on.",
+      PointerValue (),
+      MakePointerAccessor (&AquaSimEnergyModel::m_device),
+      MakePointerChecker<AquaSimEnergyModel>())
     ;
   return tid;
 }
@@ -28,28 +31,25 @@ AquaSimEnergyModel::AquaSimEnergyModel() :
     m_rxP(0),
     m_txP(0),
     m_idleP(0),
-    m_totalEnergyConsumption(0.0),
-    m_node(NULL)
+    m_totalEnergyConsumption(0.0)
 {
   //m_source = 0;
 }
 
 AquaSimEnergyModel::~AquaSimEnergyModel()
 {
-  m_node = NULL;
-  delete m_node;
 }
 
 void 
-AquaSimEnergyModel::SetNode(AquaSimNode * node)
+AquaSimEnergyModel::SetDevice(Ptr<AquaSimNetDevice> device)
 {
-  m_node = node;
+  m_device = device;
 }
 
-AquaSimNode *
-AquaSimEnergyModel::GetNode() const
+Ptr<AquaSimNetDevice>
+AquaSimEnergyModel::GetDevice() const
 {
-  return m_node;
+  return m_device;
 }
 
 void 
@@ -69,12 +69,10 @@ void
 AquaSimEnergyModel::HandleEnergyDepletion(void)
 {
   NS_LOG_FUNCTION(this);
-  NS_LOG_DEBUG(this << "Energy is depleted on node " << m_node
+  NS_LOG_DEBUG(this << "Energy is depleted on device " << m_device
 	  << ", calling AquaSimPhy::EnergyDeplete");
 
-  Ptr<AquaSimNetDevice> dev = m_node->GetDevice(0)->GetObject<AquaSimNetDevice>();
-  Ptr<AquaSimPhy> phy = dev->GetPhy();
-  phy->EnergyDeplete();
+  m_device->GetPhy()->EnergyDeplete();
 }
 
 void 
