@@ -54,24 +54,70 @@ main (int argc, char *argv[])
   /*
    * Preset up mobility model for nodes and sinks here
    */
-  for (int i = 0; i < nodes; i++)
+  MobilityHelper mobility;
+  NetDeviceContainer devices;
+  Ptr<ListPositionAllocator> position = CreateObject<ListPositionAllocator> ();
+
+  //Static Y and Z dimension for now
+  double m_YBoundry = 0;
+  double m_ZBoundry = 0;
+  double m_XBoundry = 0;
+
+  for (NodeContainer::Iterator i = nodesCon.Begin(); i != nodesCon.End(); i++)
     {
-      //select i-th node within nodesCon
+      Ptr<AquaSimNetDevice> newDevice = CreateObject<AquaSimNetDevice>();
+      position->Add(Vector(m_XBoundry, m_YBoundry, m_ZBoundry));
 
-      //attach mobility model to node and set vector location
-      //create new as-netdevice
-      //
+      newDevice = asHelper.Create(*i, newDevice);
 
-      //add device ( asHelper.Create(this node, as-netdevice)
-	  //NOTE: std::vector<Ptr<AquaSimNetDevice> > m_deviceList; in channel
-	  //	AND void AddDevice (Ptr<AquaSimNetDevice> device);
-
+      m_XBoundry += 20;
     }
 
-  for (int i = 0; i < sinks; i++)
+  for (NodeContainer::Iterator i = sinksCon.Begin(); i != sinksCon.End(); i++)
     {
+      Ptr<AquaSimNetDevice> newDevice = CreateObject<AquaSimNetDevice>();
+      position->Add(Vector(m_XBoundry, m_YBoundry, m_ZBoundry));
 
+      newDevice = asHelper.Create(*i, newDevice);
+
+      m_XBoundry += 20;
     }
+
+
+  mobility.SetPositionAllocator(position);
+  mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+  mobility.Install(nodesCon);
+  mobility.Install(sinksCon);
+
+  /*
+  PacketSocketAddress socket;
+  socket.SetSingleDevice (0);
+  socket.SetPhysicalAddress (Address ());
+  socket.SetProtocol (0);
+
+  OnOffHelper app ("ns3::PacketSocketFactory", Address (socket));
+  app.SetAttribute ("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
+  app.SetAttribute ("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
+  app.SetAttribute ("DataRate", DataRateValue (m_dataRate));
+  app.SetAttribute ("PacketSize", UintegerValue (m_packetSize));
+
+  ApplicationContainer apps = app.Install (nodesCon);
+  apps.Start (Seconds (0.5));
+  Time nextEvent = Seconds (0.5);
+  */
+
+  ApplicationContainer serverApp;
+  UdpServerHelper myServer (9);
+  serverApp = myServer.Install (nodesCon.Get (0));
+  serverApp.Start (Seconds (0.0));
+  serverApp.Stop (Seconds (simStop + 1));
+
+
+  Simulator::Stop(Seconds(simStop + 1));
+  Simulator::Run();
+  Simulator::Destroy(); //null all nodes too??
+
+  return 0;
 }
 
 

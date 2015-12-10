@@ -190,7 +190,7 @@ AquaSimHelper::SetRouting (std::string type,
 }
 
 Ptr<AquaSimNetDevice>
-AquaSimHelper::Create(AquaSimNode * node, Ptr<AquaSimNetDevice> device) const
+AquaSimHelper::Create(Ptr<Node> node, Ptr<AquaSimNetDevice> device) const
 {
   Ptr<AquaSimPhy> phy = m_phy.Create<AquaSimPhy>();
   Ptr<AquaSimMac> mac = m_mac.Create<AquaSimMac>();
@@ -202,6 +202,7 @@ AquaSimHelper::Create(AquaSimNode * node, Ptr<AquaSimNetDevice> device) const
 
   NS_ASSERT(m_channel);
   device->SetChannel(m_channel);
+  m_channel->AddDevice(device);
 
   node->AddDevice(device);
 

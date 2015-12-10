@@ -73,7 +73,7 @@ public:
 			     std::string n6 = "", const AttributeValue &v6 = EmptyAttributeValue (),
 			     std::string n7 = "", const AttributeValue &v7 = EmptyAttributeValue ());
 
-    Ptr<AquaSimNetDevice> Create (AquaSimNode * node, Ptr<AquaSimNetDevice> device) const;
+    Ptr<AquaSimNetDevice> Create (Ptr<Node> node, Ptr<AquaSimNetDevice> device) const;
 
 private:
 
