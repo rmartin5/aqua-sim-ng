@@ -21,6 +21,9 @@
 #include "ns3/log.h"
 #include "ns3/attribute.h"
 #include "ns3/net-device.h"
+#include "ns3/double.h"
+#include "ns3/boolean.h"
+#include "ns3/integer.h"
 
 #include "aqua-sim-net-device.h"
 
@@ -31,19 +34,21 @@ NS_OBJECT_ENSURE_REGISTERED (AquaSimNetDevice);
 
 AquaSimNetDevice::AquaSimNetDevice ()
   : NetDevice(),
-    m_sinkStatus(0),
-    m_failureStatus(false), //added by peng xie
-    m_failureStatusPro(0), //added by peng xie and zheng
-    m_failurePro(0.0), //added by peng xie
-    m_transStatus(NIDLE),
-    m_setHopStatus(0),
     m_nextHop(-10),
-    m_carrierId(false),
-    m_carrierSense(false),
+    m_setHopStatus(0),
+    m_sinkStatus(0),
+    m_transStatus(NIDLE),
     m_statusChangeTime(0.0),
+    m_failureStatus(false), //added by peng xie
+    m_failurePro(0.0), //added by peng xie
+    m_failureStatusPro(0.0), //added by peng xie and zheng
     m_cX(0.0),
     m_cY(0.0),
-    m_cZ(0.0)
+    m_cZ(0.0),
+    m_carrierSense(false),
+    m_carrierId(false),
+    m_ifIndex(0),
+    m_mtu(0)
 {
   m_configComplete = false;
 }
@@ -218,14 +223,14 @@ AquaSimNetDevice::GetRouting (void)
   return m_routing;
 }
 
-Ptr<AquaSimChannel>
-AquaSimNetDevice::GetChannel (void)
+Ptr<Channel>
+AquaSimNetDevice::GetChannel (void) const
 {
   return m_channel;
 }
  
 Ptr<Node>
-AquaSimNetDevice::GetNode (void)
+AquaSimNetDevice::GetNode (void) const
 {
   return m_node;
 }
@@ -281,6 +286,155 @@ AquaSimNetDevice::GenerateFailure()
   double error_pro = m_uniformRand->GetValue();
   if (error_pro < m_failureStatusPro)
     m_failureStatus = true;
+}
+
+void
+AquaSimNetDevice::AddLinkChangeCallback (Callback< void > callback)
+{
+  NS_LOG_WARN("Not implemented");
+}
+
+Address
+AquaSimNetDevice::GetAddress (void) const
+{
+  NS_LOG_WARN("Not implemented on mac yet");
+  return m_mac->GetAddress();
+}
+
+Address
+AquaSimNetDevice::GetBroadcast (void) const
+{
+  NS_LOG_WARN("Not implemented since UW is median is always broadcast (i.e. 255).");
+  return Address();
+}
+
+uint32_t
+AquaSimNetDevice::GetIfIndex (void) const
+{
+  return m_ifIndex;
+}
+
+uint16_t
+AquaSimNetDevice::GetMtu (void) const
+{
+  return m_mtu;
+}
+
+Address
+AquaSimNetDevice::GetMulticast (Ipv4Address multicastGroup) const
+{
+  NS_LOG_WARN("Not implemented");
+  return Address();
+}
+
+Address
+AquaSimNetDevice::GetMulticast (Ipv6Address addr) const
+{
+  NS_LOG_WARN("Not implemented");
+  return Address();
+}
+
+bool
+AquaSimNetDevice::IsBridge (void) const
+{
+  return false;
+}
+
+bool
+AquaSimNetDevice::IsBroadcast (void) const
+{
+  return true;
+}
+
+bool
+AquaSimNetDevice::IsLinkUp (void) const
+{
+  return (m_phy != 0);
+}
+
+bool
+AquaSimNetDevice::IsMulticast (void) const
+{
+  return false;
+}
+
+bool
+AquaSimNetDevice::IsPointToPoint (void) const
+{
+  return false;
+}
+
+bool
+AquaSimNetDevice::NeedsArp (void) const
+{
+  return false;
+}
+
+bool
+AquaSimNetDevice::Send (Ptr< Packet > packet, const Address &dest, uint16_t protocolNumber)
+{
+  if(m_routing)
+    {
+      m_routing->SendDown(packet, dest, Simulator::Now());
+      return true;
+    }
+  if (m_mac)
+    {
+      m_mac->SendDown(packet);
+      return true;
+    }
+  if (m_phy)
+    {
+      m_phy->PktTransmit(packet);
+      return true;
+    }
+  NS_LOG_WARN("No layers are attached to this device. Can not send.");
+  return false;
+}
+
+bool
+AquaSimNetDevice::SendFrom (Ptr< Packet > packet, const Address &source, const Address &dest, uint16_t protocolNumber)
+{
+  NS_LOG_WARN("SendFrom not supported");
+  return false;
+}
+
+void
+AquaSimNetDevice::SetAddress (Address address)
+{
+  m_mac->SetAddress(address);
+}
+
+void
+AquaSimNetDevice::SetIfIndex (const uint32_t index)
+{
+  m_ifIndex = index;
+}
+
+bool
+AquaSimNetDevice::SetMtu (uint16_t mtu)
+{
+  m_mtu = mtu;
+  return true;
+}
+
+void
+AquaSimNetDevice::SetPromiscReceiveCallback (PromiscReceiveCallback cb)
+{
+  NS_LOG_WARN("PromiscRecvCB Not supported");
+}
+
+void
+AquaSimNetDevice::SetReceiveCallback (ReceiveCallback cb)
+{
+  NS_LOG_WARN("RecvCallback not implemented");
+  m_forwardUp = cb;
+}
+
+bool
+AquaSimNetDevice::SupportsSendFrom (void) const
+{
+  return false;
 }
 
 }  // namespace ns3
