@@ -41,14 +41,14 @@ namespace ns3 {
 
     //TODO clean up this ugly mess...
 
-enum TransmissionStatus{SLEEP, NDIDLE, SEND, RECV, NSTATUS };
+enum TransmissionStatus{SLEEP, NIDLE, SEND, RECV, NSTATUS };
 
 class AquaSimMobilityPattern;  //Additional mobility patterns
 class AquaSimChannel;
 class AquaSimMac;
 class AquaSimEnergyModel;
 //class AquaSimApp;
-//class AquaSimRouting;
+class AquaSimRouting;
 class MobilityModel;
 class Node;
 
@@ -78,31 +78,31 @@ public:
   void ForwardUp (Ptr<Packet> packet, Ptr<MobilityModel> src, Ptr<MobilityModel> dst);  // TODO - no init of ForwardUp
 
   //inherited functions from NetDevice class
-  //virtual void AddLinkChangeCallback (Callback<void> callback);
-  //virtual Address GetAddress (void) const;
-  //virtual Address GetBroadcast (void) const;
-  virtual Ptr<AquaSimChannel> GetChannel (void);
-  //virtual uint32_t GetIfIndex (void) const;
-  //virtual uint16_t GetMtu (void) const;
-  //virtual Address GetMulticast (Ipv4Address multicastGroup) const;
-  //virtual Address GetMulticast (Ipv6Address addr) const;
-  virtual Ptr<Node> GetNode (void);
-  //virtual bool IsBridge (void) const;
-  //virtual bool IsBroadcast (void) const;
-  //virtual bool IsLinkUp (void) const;
-  //virtual bool IsMulticast (void) const;
-  //virtual bool IsPointToPoint (void) const;
-  //virtual bool NeedsArp (void) const;
-  //virtual bool Send (Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber);
-  //virtual bool SendFrom (Ptr<Packet> packet, const Address &source,
-    //                     const Address &dest, uint16_t protocolNumber);
-  //virtual void SetAddress (Address address);
-  //virtual void SetIfIndex (const uint32_t index);
-  //virtual bool SetMtu (const uint16_t mtu);
+  virtual void AddLinkChangeCallback (Callback<void> callback);
+  virtual Address GetAddress (void) const;
+  virtual Address GetBroadcast (void) const;
+  virtual Ptr<Channel> GetChannel (void) const;
+  virtual uint32_t GetIfIndex (void) const;
+  virtual uint16_t GetMtu (void) const;
+  virtual Address GetMulticast (Ipv4Address multicastGroup) const;
+  virtual Address GetMulticast (Ipv6Address addr) const;
+  virtual Ptr<Node> GetNode (void) const;
+  virtual bool IsBridge (void) const;
+  virtual bool IsBroadcast (void) const;
+  virtual bool IsLinkUp (void) const;
+  virtual bool IsMulticast (void) const;
+  virtual bool IsPointToPoint (void) const;
+  virtual bool NeedsArp (void) const;
+  virtual bool Send (Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber);
+  virtual bool SendFrom (Ptr<Packet> packet, const Address &source,
+                           const Address &dest, uint16_t protocolNumber);
+  virtual void SetAddress (Address address);
+  virtual void SetIfIndex (const uint32_t index);
+  virtual bool SetMtu (const uint16_t mtu);
   virtual void SetNode (Ptr<Node> node);
-  //virtual void SetPromiscReceiveCallback (PromiscReceiveCallback cb);
-  //virtual void SetReceiveCallback (ReceiveCallback cb);
-  //virtual bool SupportsSendFrom (void) const;
+  virtual void SetPromiscReceiveCallback (PromiscReceiveCallback cb);
+  virtual void SetReceiveCallback (ReceiveCallback cb);
+  virtual bool SupportsSendFrom (void) const;
 
   /*
    * Taken from AquaSimNode during consolidation
@@ -193,6 +193,9 @@ private:
   bool m_carrierId;
 
   Time m_positionUpdateTime;
+
+  uint32_t m_ifIndex;
+  uint16_t m_mtu;
 };  // class AquaSimNetDevice
 
 
