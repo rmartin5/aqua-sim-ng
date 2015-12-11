@@ -69,6 +69,13 @@ AquaSimMac::SetRouting(Ptr<AquaSimRouting> rout){
 }
 
 void
+AquaSimMac::SetAddress(Address addr)
+{
+  NS_LOG_FUNCTION(this << addr);
+  m_address = addr;
+}
+
+void
 AquaSimMac::RecvProcess(Ptr<Packet> p){
   NS_LOG_FUNCTION (this << " a dummy version.");
 }

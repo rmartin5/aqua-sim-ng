@@ -1,7 +1,7 @@
 
 //....
 
-
+/*
 #ifndef AQUA_SIM_NODE_H
 #define AQUA_SIM_NODE_H
 
@@ -32,7 +32,7 @@ class AquaSimEnergyModel;
 class AquaSimNetDevice;
 class AquaSimPhy;
 
-/*
+*
 class AquaSimPositionHandler : public Handler {
 public:
 AquaSimPositionHandler(AquaSimNode* n) : Node(n) {}
@@ -40,7 +40,7 @@ void Handle(Event*);
 private:
 AquaSimNode *node;
 };
-*/
+*
 
 
 class AquaSimNode : public Node, public MobilityModel
@@ -51,17 +51,17 @@ public:
   static TypeId GetTypeId(void);
 
   //double PropDelay(double); //... remove... not this node's responsibility here
-  //bool Move(void);	/*start the movement... should be handled within example*/
+  //bool Move(void);	*start the movement... should be handled within example*
   //void Start(void);
   //void CheckPosition(void);
 
   //Ptr<CubicPositionAllocator> T(void) { return m_T; }	//mobility model may cover this...
 
-  /*coordinates*/
-  inline double &X(void) { return m_x; }	//TODO ****redefine coordinates and speed projections using mobilitymodel API
+  *coordinates*
+  inline double &X(void) { return m_x; }	//TODO redefine coordinates and speed projections using mobilitymodel API
   inline double &Y(void) { return m_y; }
   inline double &Z(void) { return m_z; }
-  /*speeds projected to each axis*/
+  *speeds projected to each axis*
   inline double &dX(void) { return m_dX; }
   inline double &dY(void) { return m_dY; }
   inline double &dZ(void) { return m_dZ; }
@@ -105,9 +105,9 @@ public:
   Ptr<AquaSimPhy> GetPhy() const;
   void SetPhy(Ptr<AquaSimPhy> phy);
 
-  /*
+  *
    * inherited from Node
-   */
+   *
   virtual uint32_t AddApplication(Ptr<Application> application);
   virtual uint32_t AddDevice(Ptr<AquaSimNetDevice> device);
   virtual Ptr<Application> GetApplication(uint32_t index) const;
@@ -122,9 +122,9 @@ public:
   //virtual void UnregisterDeviceAdditionLister (DeviceAdditionListener listener);
   //virtual void UnregisterProtocolHandler(ProtocolHandler handler);
 
-  /*
+  *
    * inherited from MobilityModel
-   */
+   *
   double DistanceFrom(AquaSimNode * n) const;
   Vector Position(void);
   double RelativeSpeed(AquaSimNode * n);
@@ -140,20 +140,20 @@ private:
   double m_failurePro;
   double m_failureStatusPro;
 
-  /*
+  *
   *  The following indicate the (x,y,z) position of the node on
   *  the "terrain" of the simulation.
-  */
+  *
   double m_x;
   double m_y;
   double m_z;
   double m_speed;	// meters per second
 
-  /*
+  *
   *  The following is a unit vector that specifies the
   *  direction of the mobile node.  It is used to update
   *  position
-  */
+  *
   double m_dX;
   double m_dY;
   double m_dZ;
@@ -174,12 +174,12 @@ private:
   uint32_t m_sid;
 
 protected:
-  /*
+  *
   double m_maxSpeed;
   double m_minSpeed;
   void RandomSpeed(void);
   void RandomDestination(void);
-  */
+  *
   void GenerateFailure(void);
 
   //FIXME - fully integrate MobilityModel within ASNode
@@ -203,4 +203,5 @@ public:
 
 }  // namespace ns3
 
-#endif /* AQUA_SIM_NODE_H */
+#endif * AQUA_SIM_NODE_H *
+*/

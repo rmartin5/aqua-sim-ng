@@ -2,6 +2,13 @@
 #ifndef AQUA_SIM_HELPER_H
 #define AQUA_SIM_HELPER_H
 
+#include <string>
+#include "ns3/attribute.h"
+#include "ns3/object-factory.h"
+#include "ns3/aqua-sim-channel.h"
+#include "ns3/aqua-sim-net-device.h"
+#include "ns3/node.h"
+
 
 namespace ns3 {
 

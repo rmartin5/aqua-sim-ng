@@ -30,7 +30,11 @@
 
 #include <vector>
 
+#include "aqua-sim-net-device.h"
+
 namespace ns3 {
+
+class AquaSimNetDevice;
 
 extern const double SOUND_SPEED_IN_WATER;
 
@@ -41,7 +45,6 @@ extern const double SOUND_SPEED_IN_WATER;
  * the node that applied the tx PacketStamp for a given interface type
  */
 
-class AquaSimNetDevice;
 
 struct PktRecvUnit {
   double pR;

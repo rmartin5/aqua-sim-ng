@@ -69,7 +69,7 @@ AquaSimRouting::SendUp(Ptr<Packet> p)
   * @param delay		packet p will be sent in time of delay
   * */
 void
-AquaSimRouting::SendDown(Ptr<Packet> p, Address &nextHop, Time delay)
+AquaSimRouting::SendDown(Ptr<Packet> p, const Address &nextHop, Time delay)
 {
   //cmh->uw_flag() = true;
   //cmh->addr_type() = NS_AF_INET;

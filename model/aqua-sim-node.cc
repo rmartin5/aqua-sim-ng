@@ -1,6 +1,6 @@
 //...
 
-
+/*
 #include <math.h>
 #include <stdlib.h>
 
@@ -28,17 +28,17 @@
 //...
 
 
-/*
+*
  *
  * *** CURRENTLY AquaSimNode NOT IN USE, SEE AquaSimNetDevice INSTEAD.
- */
+ *
 
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE("AquaSimNode");
 NS_OBJECT_ENSURE_REGISTERED(AquaSimNode);
 
-/*
+*
 void
 AquaSimPositionHandler::Handle(Event*)
 {
@@ -73,7 +73,7 @@ node->check_position();
 s.schedule(&node->uw_pos_handle_, &node->uw_pos_intr_,
 node->position_update_interval_);
 }
-*/
+*
 
 AquaSimNode::AquaSimNode(void)
 {	
@@ -104,7 +104,7 @@ AquaSimNode::~AquaSimNode(void)
 {
 }
 
-/*void
+*void
 AquaSimNode::start()
 {
 Scheduler& s = Scheduler::instance();
@@ -128,7 +128,7 @@ address_, __PRETTY_FUNCTION__);
 RandomDestination();
 
 s.schedule(&uw_pos_handle_, &uw_pos_intr_, position_update_interval_);
-}*/
+}*
 
 TypeId
 AquaSimNode::GetTypeId(void)
@@ -207,7 +207,7 @@ AquaSimNode::SetPhy(Ptr<AquaSimPhy> phy)
   m_phy = phy;
 }
 
-/*void
+*void
 AquaSimNode::RandomPosition(void)
 {
 if (T_ == 0) {
@@ -220,7 +220,7 @@ Y_ = m_uniformRand->GetValue() * T_->upperY();
 Z_ = m_uniformRand->GetValue() * T_->upperZ();
 
 m_positionUpdateTime = 0.0;
-}*/
+}*
 
 int
 AquaSimNode::SetSinkStatus()
@@ -245,7 +245,7 @@ AquaSimNode::GenerateFailure()
     m_failureStatus = true;
 }
 
-/*
+*
 void
 AquaSimNode::CheckPosition()
 {
@@ -256,9 +256,9 @@ AquaSimNode::CheckPosition()
   else {
     log_movement();
   }
-}*/
+}*
 
-/*
+*
 void
 AquaSimNode::RandomSpeed()
 {
@@ -285,7 +285,7 @@ address_, __FUNCTION__);
 m_uniformRand->GetValue() * T_->upperY(),
 speed_);
 }
-*/
+*
 
 uint32_t
 AquaSimNode::AddApplication(Ptr<Application> application)
@@ -376,3 +376,4 @@ AquaSimNode::SetNodePosition(const Vector &position)
 }
 
 } // namespace ns3
+*/

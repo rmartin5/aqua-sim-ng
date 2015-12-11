@@ -27,6 +27,7 @@
 
 #include "ns3/mobility-model.h"
 #include "ns3/channel.h"
+#include "ns3/nstime.h"
 
 namespace ns3 {
 
@@ -47,12 +48,13 @@ public:
   void SetPropagation (Ptr<AquaSimPropagation> prop);
   void Recv(Ptr<Packet>, Ptr<AquaSimPhy>);
 
-  //inherited
-  Ptr<AquaSimNetDevice> GetDevice (uint32_t i);
-  uint32_t GetId (void) const;
-  uint32_t GetNDevices (void) const;
   void AddDevice (Ptr<AquaSimNetDevice> device);
   void RemoveDevice(Ptr<AquaSimNetDevice> device);
+
+  //inherited
+  virtual Ptr<NetDevice> GetDevice (uint32_t i) const;
+  uint32_t GetId (void) const;
+  virtual uint32_t GetNDevices (void) const;
 
 private:
   void SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp);

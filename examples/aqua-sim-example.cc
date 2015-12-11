@@ -1,5 +1,8 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 
+/*** IGNORE
+ *
+ *
 #include "ns3/core-module.h"
 #include "ns3/aqua-sim-helper.h"
 
@@ -81,10 +84,10 @@ main (int argc, char *argv[])
 
   NS_LOG_INFO ("Creating On/Off Application");
   //create a typical app TODO needs to be updated
-  /*PacketSocketAddress socket;  //using this for now
+  *PacketSocketAddress socket;  //using this for now
   socket.SetSingleDevice (
   OnOffHelper app ("ns3::UdpSocketFactory", Address (socket));
-  */
+  *
 
   NS_LOG_INFO ("Enabling Routing");
   //TODO
@@ -105,4 +108,4 @@ main (int argc, char *argv[])
   return 0;
 }
 
-
+*/

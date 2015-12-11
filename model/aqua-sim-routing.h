@@ -14,6 +14,7 @@
 #include "ns3/address.h"
 #include "ns3/pointer.h"
 #include "ns3/object.h"
+#include "ns3/nstime.h"
 //#include "ns3/ipv4.h"
 //#include "ns3/ipv4-routing-protocol.h"
 //#include "ns3/ipv4-static-routing.h"
@@ -34,11 +35,11 @@ public:
 
   /*avoid instantiation since UnderwaterRouting's behavior is not defined*/
   virtual void Recv(Ptr<Packet> p) = 0;	//handler not implemented
+  /*send packet p to next_hop after delay*/
+  virtual void SendDown(Ptr<Packet> p, const Address &nextHop, Time delay);
 protected:
   /*send packet up to port-demux*/
   virtual void SendUp(Ptr<Packet> p);			//demux not implemented yet.
-  /*send packet p to next_hop after delay*/
-  virtual void SendDown(Ptr<Packet> p, Address &nextHop, Time delay);
   /*check if if a dead loop results in the incoming packet*/
   virtual bool IsDeadLoop(Ptr<Packet> p);
   /*check if this node is the next hop*/

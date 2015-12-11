@@ -29,7 +29,8 @@ namespace ns3 {
 NS_OBJECT_ENSURE_REGISTERED (AquaSimChannel);
 NS_LOG_COMPONENT_DEFINE("AquaSimChannel");
 
-AquaSimChannel::AquaSimChannel ()
+AquaSimChannel::AquaSimChannel () :
+    Channel()
 {
 }
 
@@ -43,7 +44,7 @@ TypeId
 AquaSimChannel::GetTypeId ()
 {
   static TypeId tid= TypeId ("ns3::AquaSimChannel")
-    //.SetParent<Channel> ()
+    .SetParent<Channel> ()
     //.AddConstructor<AquaSimChannel> ()
     .AddAttribute ("SetProp", "A pointer to set the propagation model.",
        PointerValue (),
@@ -71,8 +72,8 @@ AquaSimChannel::SetPropagation (Ptr<AquaSimPropagation> prop)
   m_prop = prop;
 }
 
-Ptr<AquaSimNetDevice>
-AquaSimChannel::GetDevice (uint32_t i)
+Ptr<NetDevice>
+AquaSimChannel::GetDevice (uint32_t i) const
 {
   return m_deviceList[i];
 }
@@ -155,7 +156,7 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
     p->PeekHeader(asHeader);
 
     asHeader.SetPr((*recvUnits)[i].pR);
-    asHeader.SetNoise(m_noiseGen->Noise(Simulator::Now() + pDelay, recver->GetMobility()->GetPosition()));
+    asHeader.SetNoise(m_noiseGen->Noise((Simulator::Now() + pDelay), (recver->GetMobility()->GetPosition())));
 
     p->AddHeader(asHeader);
 

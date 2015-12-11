@@ -11,6 +11,8 @@
 #include "ns3/network-module.h"
 #include "ns3/mobility-module.h"
 #include "ns3/energy-module.h"  //may not be needed here...
+#include "ns3/aqua-sim-ng-module.h"
+#include "ns3/applications-module.h"
 
 /*
  * BroadCastMAC

@@ -9,6 +9,7 @@
 #include "ns3/packet.h"	
 #include "ns3/address.h"
 #include "ns3/callback.h"
+#include "ns3/nstime.h"
 
 #include "aqua-sim-routing.h"
 //#include "aqua-sim-address.h"  
@@ -35,6 +36,12 @@ public:
   virtual void SetDevice(Ptr<AquaSimNetDevice> device);
   virtual void SetPhy(Ptr<AquaSimPhy> phy);
   virtual void SetRouting(Ptr<AquaSimRouting> rout);
+
+  /*
+   * TODO address needs to be integrated into MAC layer
+   */
+  virtual Address GetAddress(void) {return m_address; }
+  virtual void SetAddress(Address addr);
 
   //interfaces for derived MAC protocols
   // to process the incoming packet
@@ -80,6 +87,7 @@ protected:
   Ptr<AquaSimNetDevice> m_device;// the device this mac is attached
   Ptr<AquaSimPhy> m_phy;
   Ptr<AquaSimRouting> m_rout;
+  Address m_address;
 
   Callback<void, Ptr<Packet>, Address> m_callback;  // for the upper layer protocol
 };  //class AquaSimMac
