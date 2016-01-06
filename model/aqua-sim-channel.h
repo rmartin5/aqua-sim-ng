@@ -21,18 +21,18 @@
 #ifndef AQUA_SIM_CHANNEL_H
 #define AQUA_SIM_CHANNEL_H
 
-#include "aqua-sim-noise-generator.h"
+#include "ns3/channel.h"
+#include "ns3/mobility-model.h"
+#include "ns3/nstime.h"
+
 #include "aqua-sim-net-device.h"
 #include "aqua-sim-propagation.h"
-
-#include "ns3/mobility-model.h"
-#include "ns3/channel.h"
-#include "ns3/nstime.h"
+#include "aqua-sim-noise-generator.h"
 
 namespace ns3 {
 
 class AquaSimPhy;
-class AquaSimPropagation;
+class Packet;
 
 class AquaSimChannel : public Channel
 {

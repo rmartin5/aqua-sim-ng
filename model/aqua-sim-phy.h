@@ -9,14 +9,14 @@
 #define AQUA_SIM_PHY_H
 
 #include "ns3/object.h"
-#include "ns3/packet.h"
+//#include "ns3/packet.h"
 
 #include <string>
 
-#include "aqua-sim-net-device.h"
-#include "aqua-sim-sinr-checker.h"
-#include "aqua-sim-signal-cache.h"
-#include "aqua-sim-modulation.h"
+//#include "aqua-sim-net-device.h"
+//#include "aqua-sim-sinr-checker.h"
+//#include "aqua-sim-signal-cache.h"
+//#include "aqua-sim-modulation.h"
 
 /*
  * Baseclass for Aqua-Sim Phy
@@ -39,6 +39,7 @@ namespace ns3 {
   class AquaSimSignalCache;
   class AquaSimModulation;
   class Packet;
+  class Time;
 
   class AquaSimPhy : public Object
   {

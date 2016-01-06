@@ -24,9 +24,8 @@ NS_LOG_COMPONENT_DEFINE("AquaSimPhyCmn");
 NS_OBJECT_ENSURE_REGISTERED(AquaSimPhyCmn);
 
 AquaSimPhyCmn::AquaSimPhyCmn(void) :
-    AquaSimPhy(),
-    m_sinrChecker(NULL)
-    //, m_idleTimer(this)
+    m_powerLevels(1, 0.660),	/*0.660 indicates 1.6 W drained power for transmission*/
+    m_sinrChecker(NULL)//, m_idleTimer(this)
 {
   m_updateEnergyTime = Simulator::Now().GetSeconds();
   m_preamble = 1.5;
@@ -42,7 +41,6 @@ AquaSimPhyCmn::AquaSimPhyCmn(void) :
   m_ptLevel = 0; 
   m_ptConsume = 0.660;
   m_prConsume = 0.395; 
-  m_powerLevels[1] = 0.660;  /*0.660 indicates 1.6 W drained power for transmission*/
   m_PoweredOn = true;
 
   m_RXThresh = 0;
@@ -69,7 +67,8 @@ TypeId
 AquaSimPhyCmn::GetTypeId(void)
 {
   static TypeId tid = TypeId("ns3::AquaSimPhyCmn")
-     .SetParent<AquaSimPhy> ()
+    .SetParent<AquaSimPhy> ()
+    .AddConstructor<AquaSimPhyCmn> ()
     .AddAttribute("CPThresh", "Capture Threshold (db), default is 10.0 set as 10.",
       DoubleValue (10),
       MakeDoubleAccessor(&AquaSimPhyCmn::m_CPThresh),
@@ -174,7 +173,7 @@ AquaSimPhyCmn::SetNetDevice(Ptr<AquaSimNetDevice> device)
 }
 
 void
-AquaSimPhyCmn::SetSinrChecker(AquaSimSinrChecker * sinrChecker)
+AquaSimPhyCmn::SetSinrChecker(Ptr<AquaSimSinrChecker> sinrChecker)
 {
   m_sinrChecker = sinrChecker;
 }

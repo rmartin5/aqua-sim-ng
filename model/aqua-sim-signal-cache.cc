@@ -19,7 +19,7 @@ NS_LOG_COMPONENT_DEFINE("AquaSimSignalCache");
 NS_OBJECT_ENSURE_REGISTERED(PktSubmissionTimer);
 
 
-PktSubmissionTimer::PktSubmissionTimer(AquaSimSignalCache* sC)
+PktSubmissionTimer::PktSubmissionTimer(Ptr<AquaSimSignalCache> sC)
 {
   m_sC = sC;
 }
@@ -71,7 +71,7 @@ NS_OBJECT_ENSURE_REGISTERED(AquaSimSignalCache);
 AquaSimSignalCache::AquaSimSignalCache() :
 m_pktNum(0), m_totalPS(0.0), m_phy(NULL), m_pktSubTimer(NULL)
 {
-  m_head = new IncomingPacket;
+  m_head = new IncomingPacket(NULL, INVALID);
   m_pktSubTimer = new PktSubmissionTimer(this);
   status = INVALID;
 }

@@ -21,15 +21,18 @@
 #ifndef AQUA_SIM_NET_DEVICE_H
 #define AQUA_SIM_NET_DEVICE_H
 
-#include "ns3/mobility-model.h"
 #include "ns3/net-device.h"
-#include "ns3/traced-callback.h"
-#include "ns3/address.h"      //could be updated to support own unique address type for uwsn
+#include "ns3/mobility-model.h"
+#include "ns3/node.h"
+#include "ns3/nstime.h"
 #include "ns3/random-variable-stream.h"
+#include "ns3/callback.h"
+#include "ns3/packet.h"
+//#include "ns3/address.h"      //could be updated to support own unique address type for uwsn
 
-#include "aqua-sim-mac.h"
-#include "aqua-sim-channel.h"
 #include "aqua-sim-phy.h"
+#include "aqua-sim-mac.h"
+#include "aqua-sim-energy-model.h"
 
 namespace ns3 {
 
@@ -43,14 +46,15 @@ namespace ns3 {
 
 enum TransmissionStatus{SLEEP, NIDLE, SEND, RECV, NSTATUS };
 
-class AquaSimMobilityPattern;  //Additional mobility patterns
-class AquaSimChannel;
-class AquaSimMac;
-class AquaSimEnergyModel;
-//class AquaSimApp;
+class Address;
+class Channel;
+class Ipv4Address;
+class Ipv6Address;
+class PromiscReceiveCallback;
+
 class AquaSimRouting;
-class MobilityModel;
-class Node;
+class AquaSimMac;
+class AquaSimChannel;
 
 class AquaSimNetDevice : public NetDevice
 {

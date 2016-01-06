@@ -20,30 +20,31 @@
 
 #include "ns3/log.h"
 #include "ns3/ptr.h"
+#include "ns3/pointer.h"
+#include "ns3/simulator.h"
 
 #include "aqua-sim-channel.h"
 #include "aqua-sim-header.h"
 
 namespace ns3 {
 
-NS_OBJECT_ENSURE_REGISTERED (AquaSimChannel);
 NS_LOG_COMPONENT_DEFINE("AquaSimChannel");
+NS_OBJECT_ENSURE_REGISTERED (AquaSimChannel);
 
-AquaSimChannel::AquaSimChannel () :
-    Channel()
+AquaSimChannel::AquaSimChannel ()// : Channel()
 {
 }
 
 AquaSimChannel::~AquaSimChannel ()
 {
   //clear all lists
-  Channel::DoDispose ();
+  //Channel::DoDispose ();
 }
 
 TypeId
 AquaSimChannel::GetTypeId ()
 {
-  static TypeId tid= TypeId ("ns3::AquaSimChannel")
+  static TypeId tid = TypeId("ns3::AquaSimChannel")
     .SetParent<Channel> ()
     //.AddConstructor<AquaSimChannel> ()
     .AddAttribute ("SetProp", "A pointer to set the propagation model.",
@@ -54,7 +55,7 @@ AquaSimChannel::GetTypeId ()
        PointerValue (),
        MakePointerAccessor (&AquaSimChannel::m_noiseGen),
        MakePointerChecker<AquaSimNoiseGen> ())
-  ;
+    ;
   return tid;
 }
 
@@ -130,10 +131,10 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
   NS_LOG_DEBUG("Packet:" << p);
 
   Ptr<AquaSimNetDevice> sender = Ptr<AquaSimNetDevice>(tifp->GetNetDevice());
-  Ptr<AquaSimNetDevice> recver = NULL;
+  Ptr<AquaSimNetDevice> recver;
   //std::vector<Ptr<AquaSimPhy> > rifp;	//must support multiple recv phy in future
   Ptr<AquaSimPhy> rifp;
-  Ptr<Packet> pCopy = NULL;
+  Ptr<Packet> pCopy;
   Time pDelay = Seconds (0.0);
 
   /*
@@ -178,8 +179,8 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
      */
 
   }
-  pCopy->Unref();
-  p->Unref();
+  //pCopy->Unref();
+  //p->Unref();
   //p = 0; //smart pointer will unref automatically once out of scope
   delete recvUnits;
 }

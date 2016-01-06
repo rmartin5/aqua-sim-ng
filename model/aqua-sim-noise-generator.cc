@@ -21,6 +21,8 @@
 #include "aqua-sim-noise-generator.h"
 #include "ns3/double.h"
 #include "ns3/log.h"
+#include "ns3/nstime.h"
+#include "ns3/vector.h"
 
 namespace ns3 {
 
@@ -51,6 +53,7 @@ AquaSimConstNoiseGen::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::AquaSimConstNoiseGen")
     .SetParent<AquaSimNoiseGen> ()
+    .AddConstructor<AquaSimConstNoiseGen> ()
     .AddAttribute ("Noise", "The constant noise of the channel.",
        DoubleValue (0),
        MakeDoubleAccessor (&AquaSimConstNoiseGen::m_noise),
@@ -60,7 +63,7 @@ AquaSimConstNoiseGen::GetTypeId (void)
 }
 
 double
-AquaSimConstNoiseGen::Noise(Time t, Vector vector) {
+AquaSimConstNoiseGen::Noise(Time t, Vector3D vector) {
   //TODO update this in future work
   return m_noise;
 }

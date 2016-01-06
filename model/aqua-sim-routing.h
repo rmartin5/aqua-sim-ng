@@ -3,26 +3,18 @@
 #ifndef AQUA_SIM_ROUTING_H
 #define AQUA_SIM_ROUTING_H
 
-//#include <stdio.h>
-//#include <agent.h>
-//#include <cmu-trace.h>
-//#include <classifier-port.h>
-
-#include "aqua-sim-mac.h"
-#include "aqua-sim-net-device.h"
-
-#include "ns3/address.h"
-#include "ns3/pointer.h"
 #include "ns3/object.h"
+#include "ns3/address.h"
 #include "ns3/nstime.h"
 //#include "ns3/ipv4.h"
 //#include "ns3/ipv4-routing-protocol.h"
 //#include "ns3/ipv4-static-routing.h"
 
+//#include "aqua-sim-mac.h"
+#include "aqua-sim-net-device.h"
+
 namespace ns3 {
 
-class AquaSimNetDevice;
-class AquaSimMac;
 class Packet;
 
 class AquaSimRouting : public Object
@@ -34,7 +26,7 @@ public:
   virtual ~AquaSimRouting(void);
 
   /*avoid instantiation since UnderwaterRouting's behavior is not defined*/
-  virtual void Recv(Ptr<Packet> p) = 0;	//handler not implemented
+  virtual void Recv(Ptr<Packet> p);	//handler not implemented
   /*send packet p to next_hop after delay*/
   virtual void SendDown(Ptr<Packet> p, const Address &nextHop, Time delay);
 protected:
@@ -57,7 +49,7 @@ protected:
   //NsObject *port_dmux;
 
 private:
-  Ptr<AquaSimMac> m_mac;
+  //Ptr<AquaSimMac> m_mac;
 
 };  //AquaSimRouting class
 

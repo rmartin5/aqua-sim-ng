@@ -5,10 +5,12 @@
 #include "ns3/attribute.h"
 #include "ns3/simulator.h"
 #include "ns3/ptr.h"
+#include "ns3/packet.h"
+#include "ns3/pointer.h"
 
 #include "aqua-sim-header.h"
 #include "aqua-sim-routing.h"
-#include "aqua-sim-mac.h"
+//#include "aqua-sim-mac.h"
 
 //Aqua Sim Routing
 
@@ -23,7 +25,7 @@ AquaSimRouting::GetTypeId(void)
 {
   static TypeId tid = TypeId("ns3::AquaSimRouting")
     .SetParent<Object>()
-    //.AddConstructor<AquaSimRouting> ()
+    .AddConstructor<AquaSimRouting> ()
     .AddAttribute("SetNetDevice", "The net device where this routing layer resides on",
       PointerValue (),
       MakePointerAccessor (&AquaSimRouting::m_device),
@@ -44,6 +46,17 @@ AquaSimRouting::~AquaSimRouting()
 {
   NS_LOG_FUNCTION(this);
 }
+
+void
+AquaSimRouting::Recv(Ptr<Packet> p)
+{
+  NS_LOG_FUNCTION(this << p << " : Currently not implemented");
+  /*
+   * TODO this should be implemented in inherited routing protocols
+   * 		This may be redundant compared with sendup/senddown.
+   */
+}
+
 
 /**
   * send packet p to the upper layer, i.e., port dmux

@@ -1,19 +1,17 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 
-#include "ns3/ptr.h"
-#include "ns3/packet.h"
-#include "ns3/header.h"
-
-#include <iostream>
-#include <string>
-//#include <map>
-
-using namespace ns3;
-
 #ifndef AQUA_SIM_HEADER_H
 #define AQUA_SIM_HEADER_H
 
+#include <string>
+#include <iostream>
+
 #include "ns3/address.h"
+#include "ns3/header.h"
+
+namespace ns3 {
+
+class Packet;
 
 /**
  *  Aqua-Sim Header
@@ -34,6 +32,7 @@ public:
   
   AquaSimHeader();
   virtual ~AquaSimHeader();
+  static TypeId GetTypeId(void);
 
   //Protocol specific access to the header
 
@@ -92,7 +91,6 @@ public:
   void Stamp(Ptr<Packet> p, double pt, double pr);
 
   //inherited by Header class
-  static TypeId GetTypeId(void);
   virtual TypeId GetInstanceTypeId(void) const;
   virtual void Print(std::ostream &os) const;
   virtual void Serialize(Buffer::Iterator start) const;
@@ -129,7 +127,9 @@ private:
   * Demux features needs to be implemented
   *AquaSimMacDemuxPktType m_macDemuxPType;
   */
-};
 
+}; //class AquaSimHeader
+
+}  // namespace ns3
 
 #endif /* AQUA_SIM_HEADER_H */

@@ -4,23 +4,17 @@
 #ifndef AQUA_SIM_SINK_H
 #define AQUA_SIM_SINK_H
 
-#include "ns3/object.h"
-#include "ns3/packet.h"
-#include "ns3/address.h"		
-#include "ns3/mobility-model.h"
-#include "ns3/random-variable-stream.h"
-#include "ns3/event-id.h"
-#include "ns3/nstime.h"
-#include "ns3/timer.h"
-
-#include "aqua-sim-phy.h"
-#include "aqua-sim-hash-table.h"
-#include "aqua-sim-node.h"
-
 #include <set>
 
+#include "ns3/object.h"
+#include "ns3/address.h"
+#include "ns3/random-variable-stream.h"
+#include "ns3/timer.h"
 
-using namespace std;
+#include "aqua-sim-hash-table.h"
+#include "aqua-sim-node.h"
+#include "aqua-sim-phy.h"
+
 
 // Aqua Sim Sink
 
@@ -56,9 +50,11 @@ struct SenseAreaElem{
   friend bool operator<(const SenseAreaElem&  e1, const SenseAreaElem& e2);
 };
 
+class Packet;
+
 class SenseArea{
 private:
-  set<SenseAreaElem> AreaSet;
+  std::set<SenseAreaElem> AreaSet;
 public:
   bool IsInSenseArea(double nx, double ny, double nz);
   void Insert(double x, double y, double z, double r);
@@ -66,8 +62,6 @@ public:
 
 
 // Class SinkAgent as source and sink for directed diffusion
-
-class AquaSimHashTable;
 
 class AquaSimSink : public Object {
 

@@ -1,10 +1,10 @@
 # -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
 
-# def options(opt):
-#     pass
+def options(opt):
+     pass
 
-# def configure(conf):
-#     conf.check_nonfatal(header_name='stdint.h', define_name='HAVE_STDINT_H')
+def configure(conf):
+     conf.check_nonfatal(header_name='stdint.h', define_name='HAVE_STDINT_H')
 
 def build(bld):
     module = bld.create_ns3_module('aqua-sim-ng', ['network', 'energy', 'mobility'])
@@ -63,5 +63,5 @@ def build(bld):
     if bld.env.ENABLE_EXAMPLES:
         bld.recurse('examples')
 
-    # bld.ns3_python_bindings()
+    bld.ns3_python_bindings()
 

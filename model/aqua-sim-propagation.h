@@ -21,20 +21,18 @@
 #ifndef AQUA_SIM_PROPAGATION_H
 #define AQUA_SIM_PROPAGATION_H
 
-#include "ns3/mobility-model.h"
-#include "ns3/nstime.h"
-#include "ns3/log.h"
-#include "ns3/object.h"
-#include "ns3/packet.h"
-#include "ns3/mobility-model.h"
-
 #include <vector>
+
+#include "ns3/nstime.h"
+#include "ns3/object.h"
 
 #include "aqua-sim-net-device.h"
 
 namespace ns3 {
 
-class AquaSimNetDevice;
+class Packet;
+class MobilityModel;
+//class AquaSimNetDevice;
 
 extern const double SOUND_SPEED_IN_WATER;
 

@@ -6,11 +6,11 @@
 #include "ns3/attribute.h"
 #include "ns3/object-factory.h"
 #include "ns3/aqua-sim-channel.h"
-#include "ns3/aqua-sim-net-device.h"
-#include "ns3/node.h"
-
 
 namespace ns3 {
+
+class AquaSimNetDevice;
+class Node;
 
 class AquaSimChannelHelper
 {

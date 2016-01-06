@@ -1,8 +1,11 @@
 /// ... header
 
 #include "ns3/energy-source.h"
+#include "ns3/log.h"
+#include "ns3/pointer.h"
 
 #include "aqua-sim-energy-model.h"
+#include "aqua-sim-net-device.h"
 #include "aqua-sim-phy.h"
 
 // Aqua Sim Energy Model
@@ -12,15 +15,15 @@ namespace ns3 {
 NS_LOG_COMPONENT_DEFINE("AquaSimEnergyModel");
 NS_OBJECT_ENSURE_REGISTERED(AquaSimEnergyModel);
 
-
 TypeId 
 AquaSimEnergyModel::GetTypeId()
 {
-  static TypeId tid= TypeId ("ns3::AquaSimChannel")
+  static TypeId tid = TypeId ("ns3::AquaSimEnergyModel")
+    .SetParent<DeviceEnergyModel> ()
     .AddAttribute ("NetDevice", "The Aqua Sim Net Device this model resides on.",
       PointerValue (),
       MakePointerAccessor (&AquaSimEnergyModel::m_device),
-      MakePointerChecker<AquaSimEnergyModel>())
+      MakePointerChecker<AquaSimNetDevice>())
     ;
   return tid;
 }

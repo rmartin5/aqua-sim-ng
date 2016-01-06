@@ -32,6 +32,8 @@ main (int argc, char *argv[])
   int nodes = 4;
   int sinks = 1;
 
+  LogComponentEnable ("Test", LOG_LEVEL_INFO);
+
   //to change on the fly
   CommandLine cmd;
   cmd.AddValue ("simStop", "Length of simulation", simStop);
@@ -107,18 +109,19 @@ main (int argc, char *argv[])
   apps.Start (Seconds (0.5));
   Time nextEvent = Seconds (0.5);
   */
-
+/*
   ApplicationContainer serverApp;
-  UdpServerHelper myServer (9);
+  UdpServerHelper myServer (250);
   serverApp = myServer.Install (nodesCon.Get (0));
   serverApp.Start (Seconds (0.0));
   serverApp.Stop (Seconds (simStop + 1));
-
+*/
 
   Simulator::Stop(Seconds(simStop + 1));
   Simulator::Run();
   Simulator::Destroy(); //null all nodes too??
 
+  std::cout << "fin.\n";
   return 0;
 }
 

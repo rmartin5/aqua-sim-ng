@@ -5,10 +5,11 @@
 *      Author: Robert Martin
 */
 
-#include "aqua-sim-phy.h"
-
 #include "ns3/nstime.h"
 #include "ns3/log.h"
+
+#include "aqua-sim-phy.h"
+#include "aqua-sim-signal-cache.h"
 
 namespace ns3
 {

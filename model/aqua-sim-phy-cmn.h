@@ -4,37 +4,31 @@
 #ifndef AQUA_SIM_PHY_CMN_H
 #define AQUA_SIM_PHY_CMN_H
 
-#include "ns3/nstime.h"
-#include "ns3/timer.h"
-#include "ns3/event-id.h"
-#include "ns3/packet.h"
-#include "ns3/object.h"
-
-#include "aqua-sim-phy.h"
-#include "aqua-sim-mac.h"
-#include "aqua-sim-signal-cache.h"
-#include "aqua-sim-modulation.h"
-#include "aqua-sim-energy-model.h"
-#include "aqua-sim-sinr-checker.h"
-#include "aqua-sim-channel.h"
-
 #include <string>
 #include <list>
 #include <map>
 #include <vector>
 
+#include "ns3/nstime.h"
+//#include "ns3/timer.h"
+//#include "ns3/event-id.h"
+//#include "ns3/packet.h"
+#include "ns3/object.h"
+
+#include "aqua-sim-phy.h"
+#include "aqua-sim-net-device.h"
+#include "aqua-sim-sinr-checker.h"
+#include "aqua-sim-signal-cache.h"
+#include "aqua-sim-energy-model.h"
+#include "aqua-sim-modulation.h"
+#include "aqua-sim-mac.h"
+#include "aqua-sim-channel.h"
+
 //Aqua Sim Phy Cmn
 
 namespace ns3 {
 
-class AquaSimSinrChecker;
-class AquaSimSignalCache;
-class AquaSimModulation;
-class AquaSimChannel;
-class AquaSimNetDevice;
-class AquaSimMac;
 class Packet;
-class AquaSimEnergyModel;
 
 /*
  * TODO implement AquaSimIdleTimer fully to support energy reduction
@@ -66,7 +60,7 @@ public:
   virtual void SetIdlePower(double pIdle);
 
   virtual void SetNetDevice(Ptr<AquaSimNetDevice> device);
-  virtual void SetSinrChecker(AquaSimSinrChecker * sinrChecker);
+  virtual void SetSinrChecker(Ptr<AquaSimSinrChecker> sinrChecker);
   virtual void SetSignalCache(Ptr<AquaSimSignalCache> sC);
   virtual void AddModulation(Ptr<AquaSimModulation> modulation, std::string modulationName);
   virtual Ptr<AquaSimNetDevice> GetNetDevice ();
@@ -171,7 +165,7 @@ protected:
   * and check collisions.
   */
   Ptr<AquaSimSignalCache> m_sC;
-  AquaSimSinrChecker * m_sinrChecker;
+  Ptr<AquaSimSinrChecker> m_sinrChecker;
 
   /*
    * implement fully:

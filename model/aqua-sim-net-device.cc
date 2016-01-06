@@ -18,14 +18,21 @@
  * Author: Robert Martin <robert.martin@engr.uconn.edu>
  */
 
+#include "ns3/vector.h"
 #include "ns3/log.h"
 #include "ns3/attribute.h"
 #include "ns3/net-device.h"
 #include "ns3/double.h"
 #include "ns3/boolean.h"
 #include "ns3/integer.h"
+#include "ns3/pointer.h"
+#include "ns3/simulator.h"
 
 #include "aqua-sim-net-device.h"
+#include "aqua-sim-phy.h"
+#include "aqua-sim-mac.h"
+#include "aqua-sim-routing.h"
+#include "aqua-sim-channel.h"
 
 namespace ns3 {
 
@@ -257,7 +264,7 @@ AquaSimNetDevice::IsMoving(void)
       return false;
   }
 
-  Vector vel = m_mobility->GetVelocity();
+  Vector3D vel = m_mobility->GetVelocity();
   if (vel.x==0 && vel.y==0 && vel.z==0) {
       return false;
   }

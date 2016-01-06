@@ -22,13 +22,13 @@
 #define AQUA_SIM_SIMPLE_PROPAGATION_H
 
 #include "ns3/random-variable-stream.h"
-
 #include <vector>
-
 #include "aqua-sim-propagation.h"
-#include "aqua-sim-net-device.h"
 
 namespace ns3 {
+
+class AquaSimNetDevice;
+class Packet;
 
 //extern const double SOUND_SPEED_IN_WATER;
 /**

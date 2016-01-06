@@ -5,8 +5,7 @@
 #define AQUA_SIM_ENERGY_MODEL_H
 
 #include "ns3/device-energy-model.h"
-#include "ns3/nstime.h"
-#include "aqua-sim-net-device.h"
+//#include "aqua-sim-net-device.h"
 
 /*
 Aqua Sim Energy model
@@ -44,20 +43,20 @@ public:
 
   //include callback if energy is <= 0.0 during decreasing... to call energy depleted on Phy using device...
 
-  void SetRxPower(double);
-  void SetTxPower(double);
-  void SetIdlePower(double);
-  void SetEnergy(double);
-  void SetInitialEnergy(double);
+  void SetRxPower(double rxP);
+  void SetTxPower(double txP);
+  void SetIdlePower(double idleP);
+  void SetEnergy(double energy);
+  void SetInitialEnergy(double initialEnergy);
 
   double GetRxPower(void);
   double GetTxPower(void);
   double GetIdlePower(void);
   double GetEnergy(void);
-  void DecrIdleEnergy(double);
-  void DecrRcvEnergy(double);
-  void DecrTxEnergy(double);
-  void DecrEnergy(double, double decrEnergy);  //allow user to specify energy decr value
+  void DecrIdleEnergy(double t);
+  void DecrRcvEnergy(double t);
+  void DecrTxEnergy(double t);
+  void DecrEnergy(double t, double decrEnergy);  //allow user to specify energy decr value
 
   /* TODO : Future work needs to incorporate total times in each state */
 

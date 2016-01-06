@@ -2,11 +2,13 @@
 
 #include "aqua-sim-mac.h"
 #include "aqua-sim-header.h"
+#include "aqua-sim-routing.h"
 
 #include "ns3/log.h"
 #include "ns3/pointer.h"
 #include "ns3/address.h"
 #include "ns3/ptr.h"
+#include "ns3/simulator.h"
 
 //...
 
@@ -25,6 +27,7 @@ AquaSimMac::GetTypeId(void)
 {
   static TypeId tid = TypeId("ns3::AquaSimMac")
   .SetParent<Object>()
+  .AddConstructor<AquaSimMac>()
   .AddAttribute ("SetNetDevice", "A pointer to connect to the net device.",
     PointerValue (),
     MakePointerAccessor (&AquaSimMac::m_device),
@@ -86,7 +89,7 @@ AquaSimMac::TxProcess(Ptr<Packet> p){
 }
 
 void
-AquaSimMac::SetForwardUpCallback(Callback<void, Ptr<Packet>, Address> upCallback)
+AquaSimMac::SetForwardUpCallback(Callback<void, const Address&> upCallback)
 {
   //not currently used.
   m_callback = upCallback;

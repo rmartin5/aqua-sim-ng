@@ -1,11 +1,15 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 
-#include "aqua-sim-helper.h"
+
 #include "ns3/log.h"
 #include "ns3/assert.h"
 #include "ns3/double.h"
+
+#include "ns3/aqua-sim-net-device.h"
 #include "ns3/aqua-sim-propagation.h"
 #include "ns3/aqua-sim-noise-generator.h"
+
+#include "aqua-sim-helper.h"
 
 namespace ns3 {
 

@@ -6,21 +6,23 @@
 #ifndef AQUA_SIM_MAC_H
 #define AQUA_SIM_MAC_H
 
-#include "ns3/packet.h"	
-#include "ns3/address.h"
-#include "ns3/callback.h"
-#include "ns3/nstime.h"
 
-#include "aqua-sim-routing.h"
-//#include "aqua-sim-address.h"  
 #include <string>
+
+#include "ns3/object.h"
+#include "ns3/address.h"
+#include "ns3/packet.h"	
+#include "ns3/nstime.h"
+#include "ns3/callback.h"
+#include "aqua-sim-net-device.h"
+#include "aqua-sim-phy.h"
+#include "aqua-sim-routing.h"
+
+//#include "aqua-sim-address.h"  
 
 namespace ns3{
 
-class AquaSimNetDevice;
 class AquaSimRouting;
-class AquaSimPhy;
-class Packet;
 
 class AquaSimMac : public Object {
 public:
@@ -53,8 +55,8 @@ public:
   virtual void HandleIncomingPkt(Ptr<Packet> p);
   virtual void HandleOutgoingPkt(Ptr<Packet> p);
 
-	  //Do we need a to address in the cb?
-  virtual void SetForwardUpCallback(Callback<void, Ptr<Packet> , Address> upCallback);
+	  //Do we need a to address in the cb? TODO set up up callback
+  virtual void SetForwardUpCallback( Callback<void, const Address&> upCallback );
   //virtual void SetLinkUpCallback(Callback<void> linkUp);
   //virtual void SetLinkDownCallback(Callback<void> linkDown);
   virtual  void SendUp(Ptr<Packet> p);
@@ -89,7 +91,7 @@ protected:
   Ptr<AquaSimRouting> m_rout;
   Address m_address;
 
-  Callback<void, Ptr<Packet>, Address> m_callback;  // for the upper layer protocol
+  Callback<void,const Address&> m_callback;  // for the upper layer protocol
 };  //class AquaSimMac
 
 }  // namespace ns3
