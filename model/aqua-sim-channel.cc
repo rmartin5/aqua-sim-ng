@@ -33,6 +33,7 @@ NS_OBJECT_ENSURE_REGISTERED (AquaSimChannel);
 
 AquaSimChannel::AquaSimChannel ()// : Channel()
 {
+  NS_LOG_FUNCTION(this);
 }
 
 AquaSimChannel::~AquaSimChannel ()
@@ -62,6 +63,7 @@ AquaSimChannel::GetTypeId ()
 void
 AquaSimChannel::SetNoiseGenerator (Ptr<AquaSimNoiseGen> noiseGen)
 {
+  NS_LOG_FUNCTION(this);
   NS_ASSERT (noiseGen);
   m_noiseGen = noiseGen;
 }
@@ -69,6 +71,7 @@ AquaSimChannel::SetNoiseGenerator (Ptr<AquaSimNoiseGen> noiseGen)
 void
 AquaSimChannel::SetPropagation (Ptr<AquaSimPropagation> prop)
 {
+  NS_LOG_FUNCTION(this);
   NS_ASSERT (prop);
   m_prop = prop;
 }
@@ -95,6 +98,7 @@ AquaSimChannel::GetNDevices (void) const
 void
 AquaSimChannel::AddDevice (Ptr<AquaSimNetDevice> device)
 {
+  NS_LOG_FUNCTION(this);
   m_deviceList.push_back(device);
 }
 
@@ -120,6 +124,7 @@ AquaSimChannel::RemoveDevice(Ptr<AquaSimNetDevice> device)
 void
 AquaSimChannel::Recv(Ptr<Packet> p, Ptr<AquaSimPhy> phy)
 {
+  NS_LOG_FUNCTION(this);
   NS_ASSERT(p != NULL || phy != NULL);
   SendUp(p,phy);
 }

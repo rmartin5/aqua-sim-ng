@@ -80,7 +80,7 @@ public:
 			     std::string n6 = "", const AttributeValue &v6 = EmptyAttributeValue (),
 			     std::string n7 = "", const AttributeValue &v7 = EmptyAttributeValue ());
 
-    Ptr<AquaSimNetDevice> Create (Ptr<Node> node, Ptr<AquaSimNetDevice> device) const;
+    Ptr<AquaSimNetDevice> Create (Ptr<Node> node, Ptr<AquaSimNetDevice> device);
 
 private:
 
@@ -88,7 +88,6 @@ private:
   ObjectFactory m_phy;
   ObjectFactory m_mac;
   ObjectFactory m_routing;
-
 };  //class AquaSimHelper
 
 /*

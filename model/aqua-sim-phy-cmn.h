@@ -98,21 +98,21 @@ public:
    */
 
 
-  inline double GetPt() { return m_pT; }
-  inline double GetRXThresh() { return m_RXThresh; }
-  inline double GetCSThresh() { return m_CSThresh; }
+  virtual inline double GetPt() { return m_pT; }
+  virtual inline double GetRXThresh() { return m_RXThresh; }
+  virtual inline double GetCSThresh() { return m_CSThresh; }
 
-  Ptr<AquaSimModulation> Modulation(std::string * modName); //TODO modulation should be updated.
+  virtual Ptr<AquaSimModulation> Modulation(std::string * modName); //TODO modulation should be updated.
 
 
-  inline double Trigger(void) { return m_trigger; }
-  inline double Preamble(void) { return m_preamble; }
+  virtual inline double Trigger(void) { return m_trigger; }
+  virtual inline double Preamble(void) { return m_preamble; }
 
-  inline double GetEnergySpread(void){ return m_K; }
-  inline double GetFrequency(){ return m_freq; }
-  inline bool MatchFreq(double freq);
-  inline double GetL() const { return m_L; }
-  inline double GetLambda() { return m_lambda; }
+  virtual inline double GetEnergySpread(void){ return m_K; }
+  virtual inline double GetFrequency(){ return m_freq; }
+  virtual inline bool MatchFreq(double freq);
+  virtual inline double GetL() const { return m_L; }
+  virtual inline double GetLambda() { return m_lambda; }
 
   virtual PhyStatus &Status() {return m_status;}
 
@@ -121,7 +121,7 @@ protected:
   virtual void UpdateTxEnergy(Time txTime, double pT, double pIdle);
   virtual void UpdateRxEnergy(Time txTime);
   virtual Ptr<Packet> StampTxInfo(Ptr<Packet> p);
-  void EnergyDeplete(void);
+  virtual void EnergyDeplete(void);
 
   //TODO energy model could substitute this and better define it all.
   double m_pT;		// transmitted signal power (W)
@@ -196,7 +196,7 @@ private:
   Ptr<AquaSimEnergyModel> m_eM;
   Ptr<AquaSimNetDevice> m_device;
 
-  void Expire(void);
+  virtual void Expire(void);
 
 }; //AquaSimPhyCmn
 

@@ -8,11 +8,14 @@
 #include "ns3/aqua-sim-net-device.h"
 #include "ns3/aqua-sim-propagation.h"
 #include "ns3/aqua-sim-noise-generator.h"
+#include "ns3/uan-address.h"
+#include "ns3/application.h"
 
 #include "aqua-sim-helper.h"
 
 namespace ns3 {
 
+NS_LOG_COMPONENT_DEFINE ("AquaSimHelper");
 
 AquaSimChannelHelper::AquaSimChannelHelper()
 {
@@ -97,6 +100,9 @@ AquaSimChannelHelper::AssignStreams (Ptr<AquaSimChannel> c, int64_t stream)
 AquaSimHelper::AquaSimHelper() :
     m_channel(0)
 {
+  /*
+   * Protocol prefix setting
+   */
   m_phy.SetTypeId("ns3::AquaSimPhyCmn");
   m_phy.Set("CPThresh", DoubleValue(10));
   m_phy.Set("CSThresh", DoubleValue(0));
@@ -197,7 +203,7 @@ AquaSimHelper::SetRouting (std::string type,
 }
 
 Ptr<AquaSimNetDevice>
-AquaSimHelper::Create(Ptr<Node> node, Ptr<AquaSimNetDevice> device) const
+AquaSimHelper::Create(Ptr<Node> node, Ptr<AquaSimNetDevice> device)
 {
   Ptr<AquaSimPhy> phy = m_phy.Create<AquaSimPhy>();
   Ptr<AquaSimMac> mac = m_mac.Create<AquaSimMac>();

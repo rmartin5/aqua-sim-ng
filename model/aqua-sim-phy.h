@@ -81,6 +81,18 @@ namespace ns3 {
     virtual double Preamble() = 0;
     virtual PhyStatus &Status() = 0;
 
+    virtual double GetPt() = 0;
+    virtual double GetRXThresh() = 0;
+    virtual double GetCSThresh() = 0;
+
+    virtual Ptr<AquaSimModulation> Modulation(std::string * modName) = 0;
+
+    virtual double GetEnergySpread(void) = 0;
+    virtual double GetFrequency() = 0;
+    virtual bool MatchFreq(double freq) = 0;
+    virtual double GetL() const = 0;
+    virtual double GetLambda() = 0;
+
   protected:
     virtual Ptr<Packet> PrevalidateIncomingPkt(Ptr<Packet> p) = 0;
     virtual void UpdateTxEnergy(Time txTime, double pT, double pIdle) = 0;
@@ -92,6 +104,7 @@ namespace ns3 {
 
 
     virtual void DoDispose();
+    virtual void Expire(void) = 0;
 
     friend class AquaSimEnergyModel;
 

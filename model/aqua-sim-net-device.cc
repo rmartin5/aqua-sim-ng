@@ -58,10 +58,12 @@ AquaSimNetDevice::AquaSimNetDevice ()
     m_mtu(0)
 {
   m_configComplete = false;
+  NS_LOG_FUNCTION(this);
 }
 
 AquaSimNetDevice::~AquaSimNetDevice ()
 {
+  NS_LOG_FUNCTION(this);
 }
 
 TypeId
@@ -134,6 +136,8 @@ void
 AquaSimNetDevice::DoDispose (void)
 {
   //TODO clear all variables and link to NetDevice to do the same...
+  NS_LOG_FUNCTION(this);
+  NetDevice::DoDispose ();
 }
 
 void
