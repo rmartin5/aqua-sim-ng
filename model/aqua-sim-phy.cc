@@ -35,6 +35,7 @@ AquaSimPhy::AttachPhyToSignalCache(Ptr<AquaSimSignalCache> sC, Ptr<AquaSimPhy> p
 void
 AquaSimPhy::DoDispose()
 {
+  NS_LOG_FUNCTION(this);
   Object::Dispose();
 }
 

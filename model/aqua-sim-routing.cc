@@ -48,6 +48,13 @@ AquaSimRouting::~AquaSimRouting()
 }
 
 void
+AquaSimRouting::SetNetDevice(Ptr<AquaSimNetDevice> device)
+{
+  NS_LOG_FUNCTION(this);
+  m_device = device;
+}
+
+void
 AquaSimRouting::Recv(Ptr<Packet> p)
 {
   NS_LOG_FUNCTION(this << p << " : Currently not implemented");

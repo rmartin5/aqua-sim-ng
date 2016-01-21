@@ -60,6 +60,8 @@ public:
   virtual void SetIdlePower(double pIdle);
 
   virtual void SetNetDevice(Ptr<AquaSimNetDevice> device);
+  virtual void SetChannel(Ptr<AquaSimChannel> channel);
+  virtual void SetMac(Ptr<AquaSimMac> mac);
   virtual void SetSinrChecker(Ptr<AquaSimSinrChecker> sinrChecker);
   virtual void SetSignalCache(Ptr<AquaSimSignalCache> sC);
   virtual void AddModulation(Ptr<AquaSimModulation> modulation, std::string modulationName);

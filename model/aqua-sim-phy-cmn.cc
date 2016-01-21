@@ -27,6 +27,8 @@ AquaSimPhyCmn::AquaSimPhyCmn(void) :
     m_powerLevels(1, 0.660),	/*0.660 indicates 1.6 W drained power for transmission*/
     m_sinrChecker(NULL)//, m_idleTimer(this)
 {
+  NS_LOG_FUNCTION(this);
+
   m_updateEnergyTime = Simulator::Now().GetSeconds();
   m_preamble = 1.5;
   m_trigger = 0.45;
@@ -60,6 +62,7 @@ AquaSimPhyCmn::AquaSimPhyCmn(void) :
 
 AquaSimPhyCmn::~AquaSimPhyCmn(void)
 {
+  NS_LOG_FUNCTION(this);
   DoDispose();
 }
 
@@ -170,6 +173,20 @@ AquaSimPhyCmn::SetNetDevice(Ptr<AquaSimNetDevice> device)
 {
   NS_LOG_FUNCTION(this);
   m_device = device;
+}
+
+void
+AquaSimPhyCmn::SetChannel(Ptr<AquaSimChannel> channel)
+{
+  NS_LOG_FUNCTION(this);
+  m_channel = channel;
+}
+
+void
+AquaSimPhyCmn::SetMac(Ptr<AquaSimMac> mac)
+{
+  NS_LOG_FUNCTION(this);
+  m_mac = mac;
 }
 
 void

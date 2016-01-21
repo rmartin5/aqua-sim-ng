@@ -39,7 +39,7 @@ AquaSimChannel::AquaSimChannel ()// : Channel()
 AquaSimChannel::~AquaSimChannel ()
 {
   //clear all lists
-  //Channel::DoDispose ();
+  Channel::DoDispose ();
 }
 
 TypeId

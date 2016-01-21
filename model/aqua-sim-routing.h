@@ -25,6 +25,8 @@ public:
   AquaSimRouting(void);
   virtual ~AquaSimRouting(void);
 
+  virtual void SetNetDevice(Ptr<AquaSimNetDevice> device);
+
   /*avoid instantiation since UnderwaterRouting's behavior is not defined*/
   virtual void Recv(Ptr<Packet> p);	//handler not implemented
   /*send packet p to next_hop after delay*/

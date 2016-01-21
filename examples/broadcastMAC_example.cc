@@ -130,8 +130,9 @@ main (int argc, char *argv[])
 
 
   PacketSocketAddress socket;
-  socket.SetSingleDevice (devices.Get(0)->GetIfIndex());
-  socket.SetPhysicalAddress (devices.Get(0)->GetAddress());
+  socket.SetAllDevices();
+  // socket.SetSingleDevice (devices.Get(0)->GetIfIndex());
+  //socket.SetPhysicalAddress (devices.Get(0)->GetAddress());
   socket.SetProtocol (0);
 
   std::cout << devices.Get(0)->GetAddress() << " &&& " << devices.Get(0)->GetIfIndex() << "\n";

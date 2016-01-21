@@ -35,6 +35,8 @@ namespace ns3 {
   	};
 
   class AquaSimNetDevice;
+  class AquaSimChannel;
+  class AquaSimMac;
   class AquaSimSinrChecker;
   class AquaSimSignalCache;
   class AquaSimModulation;
@@ -51,6 +53,8 @@ namespace ns3 {
     virtual void SetIdlePower(double pIdle) = 0;
 
     virtual void SetNetDevice(Ptr<AquaSimNetDevice> device) = 0;
+    virtual void SetChannel(Ptr<AquaSimChannel> channel) = 0;
+    virtual void SetMac(Ptr<AquaSimMac> mac) = 0;
     virtual void SetSinrChecker(Ptr<AquaSimSinrChecker> sinrChecker) = 0;
     virtual void SetSignalCache(Ptr<AquaSimSignalCache> sC) = 0;
     virtual void AddModulation(Ptr<AquaSimModulation> modulation, std::string modulationName) = 0;

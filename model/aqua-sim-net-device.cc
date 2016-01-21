@@ -55,7 +55,7 @@ AquaSimNetDevice::AquaSimNetDevice ()
     m_carrierSense(false),
     m_carrierId(false),
     m_ifIndex(0),
-    m_mtu(0)
+    m_mtu(64000)
 {
   m_configComplete = false;
   NS_LOG_FUNCTION(this);
@@ -165,33 +165,77 @@ AquaSimNetDevice::CompleteConfig (void)
 void
 AquaSimNetDevice::SetPhy (Ptr<AquaSimPhy> phy)
 {
-  NS_LOG_FUNCTION(this);
-  m_phy = phy;
-  CompleteConfig ();
+  //currently only supporting single layer per net device
+  //TODO could all this connectivity be done more efficiently?
+  if (m_phy == 0)
+    {
+      NS_LOG_FUNCTION(this);
+      m_phy = phy;
+      m_phy->SetNetDevice (Ptr<AquaSimNetDevice> (this));
+      if (m_mac != 0)
+	{
+	  m_phy->SetMac(m_mac);
+	  NS_LOG_DEBUG("Mac set for Phy layer");
+	}
+      CompleteConfig ();
+    }
+  else
+    NS_LOG_DEBUG("NetDevice could not set phy layer (" << m_phy << ")");
 }
 
 void
 AquaSimNetDevice::SetMac (Ptr<AquaSimMac> mac)
 {
-  NS_LOG_FUNCTION(this);
-  m_mac = mac;
-  CompleteConfig ();
+  //currently only supporting single layer per net device
+  if (m_mac == 0)
+    {
+      NS_LOG_FUNCTION(this);
+      m_mac = mac;
+      m_mac->SetDevice (Ptr<AquaSimNetDevice> (this));
+
+      if (m_phy != 0)
+	{
+	  m_mac->SetPhy(m_phy);
+	  NS_LOG_DEBUG("Phy set for Mac layer");
+	}
+      CompleteConfig ();
+    }
+  else
+    NS_LOG_DEBUG("NetDevice could not set mac layer (" << m_mac << ")");
 }
 
 void
 AquaSimNetDevice::SetRouting(Ptr<AquaSimRouting> routing)
 {
-  NS_LOG_FUNCTION(this);
-  m_routing = routing;
-  CompleteConfig ();
+  //currently only supporting single layer per net device
+  if (m_routing == 0)
+    {
+      NS_LOG_FUNCTION(this);
+      m_routing = routing;
+      m_routing->SetNetDevice(Ptr<AquaSimNetDevice> (this));
+
+      //TODO currently does not attach lower layers to routing layer.
+      CompleteConfig ();
+    }
+  else
+    NS_LOG_DEBUG("NetDevice could not set routing layer (" << m_routing << ")");
 }
 
 void
 AquaSimNetDevice::SetChannel (Ptr<AquaSimChannel> channel)
 {
-  NS_LOG_FUNCTION(this);
-  m_channel = channel;
-  CompleteConfig ();
+  //currently only supporting single channel per net device
+  if (m_channel == 0)
+    {
+      NS_LOG_FUNCTION(this);
+      m_channel = channel;
+
+      m_channel->AddDevice(Ptr<AquaSimNetDevice> (this));
+
+      CompleteConfig ();
+    }
+  else
+    NS_LOG_DEBUG("NetDevice could not set channel (" << m_channel << ")");
 }
 /*
 void
@@ -308,7 +352,7 @@ AquaSimNetDevice::AddLinkChangeCallback (Callback< void > callback)
 Address
 AquaSimNetDevice::GetAddress (void) const
 {
-  NS_LOG_WARN("Not implemented on mac yet");
+  NS_LOG_DEBUG(this << "Not implemented on mac yet");
   return m_mac->GetAddress();
 }
 
@@ -384,18 +428,22 @@ AquaSimNetDevice::NeedsArp (void) const
 bool
 AquaSimNetDevice::Send (Ptr< Packet > packet, const Address &dest, uint16_t protocolNumber)
 {
+  NS_LOG_FUNCTION(this << packet << dest << protocolNumber);
   if(m_routing)
     {
+      NS_LOG_DEBUG("Routing SendDown hit");
       m_routing->SendDown(packet, dest, Simulator::Now());
       return true;
     }
   if (m_mac)
     {
+      NS_LOG_DEBUG("Mac SendDown hit");
       m_mac->SendDown(packet);
       return true;
     }
   if (m_phy)
     {
+      NS_LOG_DEBUG("Phy SendDown hit");
       m_phy->PktTransmit(packet);
       return true;
     }
