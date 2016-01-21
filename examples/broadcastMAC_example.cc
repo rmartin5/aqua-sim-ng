@@ -36,22 +36,6 @@ main (int argc, char *argv[])
   uint32_t m_dataRate = 150;
   uint32_t m_packetSize = 80;
 
-  /*
-   * **********
-   * Node is the global combination here. May be helpful to review UAN and how it uses Node but my guess is this: Node stats it automatically adds created nodes to NodeList.
-   * So then by going through Nodelist it can have access to all nodes created. This means I need to make sure that Node can access netdevice (again similar to UAN).
-   * ---may not need to create a child class of Node for underwater reasons, instead may just need to ensure connection between node and net device here... may have to scale back net device
-   * and instead add to node (attaching layers to node instead of net device??? not sure standard here)
-   * ---Also need to look into id of nodes and assignment of this
-   * ---need to look at assignment of address and making it unique per node.
-   *
-   *
-   *  Ensure to use NS_LOG when testing in terminal. ie. ./waf --run broadcastMAC_example NS_LOG=Node=level_all or export 'NS_LOG=*=level_all|prefix_func'
-   *
-   *  Note: both index # is 0 while array number differs within m_device, this holds true for both local list and general node.cc list... Good to konw...
-   *  *********
-   */
-
   LogComponentEnable ("ASBroadcastMac", LOG_LEVEL_INFO);
 
   //to change on the fly
@@ -162,7 +146,7 @@ main (int argc, char *argv[])
   serverApp = myServer.Install (nodesCon.Get (0));
   serverApp.Start (Seconds (0.0));
   serverApp.Stop (Seconds (simStop + 1));
-*/ //TODO implement application within this example...
+*/ 
 
   std::cout << "Running Simulation\n";
   Simulator::Stop(Seconds(simStop + 1));
@@ -173,39 +157,3 @@ main (int argc, char *argv[])
   return 0;
 }
 
-
-/*
- *
-Within function calls
-{
-	Define starting protocols and values (each layer, energy, etc.)
-		Each protocol may need to set its own values (this can be accomplished through a helper class i.e. phy x and y, \
-		  node needs to set its positions, etc.)
-		Must loop through each node assigning its location and other features (can be done mainly through passing to helper \
-		  which then will assign appropriate values using defined functions)
-
-	Set up layout (through mobility i believe)
-	Set up trace (needs to be implemented but a TODO will work for now)
-
-
-	Create traffic generator (ns3::OnOffHelper maybe)
-
-	Start/stop time.
-	Run.
-	Null all nodes (set to 0).
-	Simulation::Destroy().
-}
-
-main
-{
-	Create basics (through function call)
-	Declare any basic variables and use helper to set up
-	call 'Run' function with the given setup from helper (i.e. Helper h; h.SetLayer(x,y,z); h.Run(); OR x = h.Run(); txtOutput(x);)
-}
-
-Notes: Must use containers (i.e. NodeContainers). Can have two different containers (sinks + nodes of same class/type). Use prebuild\
-   terms like 'Create(x)'. Use Simulator::Schedule to do events (sending or other techniques) and/or set callbacks to handle\
-   sending/recving. Error checking is a must!
-
- *
- */
