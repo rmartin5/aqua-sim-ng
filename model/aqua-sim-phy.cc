@@ -38,5 +38,4 @@ AquaSimPhy::DoDispose()
   NS_LOG_FUNCTION(this);
   Object::Dispose();
 }
-
 } //ns3 namespace

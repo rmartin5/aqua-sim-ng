@@ -212,6 +212,7 @@ AquaSimHelper::Create(Ptr<Node> node, Ptr<AquaSimNetDevice> device)
   device->SetPhy(phy);
   device->SetMac(mac);
   device->SetRouting(routing);
+  device->ConnectLayers();
 
   NS_ASSERT(m_channel);
   device->SetChannel(m_channel);

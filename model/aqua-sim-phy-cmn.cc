@@ -346,13 +346,13 @@ AquaSimPhyCmn::StampTxInfo(Ptr<Packet> p) {
 * we will cache the incoming packet in phy layer
 * and send it to MAC layer after receiving the entire one
 */
-void
+bool
 AquaSimPhyCmn::Recv(Ptr<Packet> p) {  // Handler* h
   NS_LOG_FUNCTION(this);
 
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
-  NS_LOG_DEBUG ("direction=" << asHeader.GetDirection());
+  //NS_LOG_DEBUG ("direction=" << asHeader.GetDirection());
 
   if (asHeader.GetDirection() == AquaSimHeader::DOWN) {
     PktTransmit(p);
@@ -370,6 +370,7 @@ AquaSimPhyCmn::Recv(Ptr<Packet> p) {  // Handler* h
       m_sC->AddNewPacket(p);
     }
   }
+  return true; //TODO fix this.
 }
 
 bool AquaSimPhyCmn::MatchFreq(double freq) {
@@ -436,8 +437,10 @@ AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p) {
 /**
 * pass packet p to channel
 */
-void
+bool
 AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
+  NS_LOG_FUNCTION(this);
+
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
   NS_LOG_DEBUG ("TxTime=" << asHeader.GetTxTime());
@@ -445,12 +448,14 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
   if (m_device->FailureStatus()) {
     NS_LOG_WARN("AquaSimPhyCmn nodeId=" << m_device->GetNode()->GetId() << " fails!\n");
     p = 0;
-    return;
+    return false;
   }
 
-  if (Status() == PHY_SLEEP || /*(NULL != EM() && EM()->Energy() <= 0) ||*/ Status() == PHY_DISABLE) {
+  if (Status() == PHY_SLEEP || /*(NULL != EM() && EM()->Energy() <= 0) ||*/ Status() == PHY_DISABLE)
+  {
+    NS_LOG_DEBUG("Unable to reach phy layer (sleep/disable)");
     p = 0;
-    return;
+    return false;
   }
 
   switch (Status()){
@@ -480,7 +485,7 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
   * not multiple tranceiver, so we pass the packet to channel_ directly
   * p' uw_txinfo_ carries channel frequency information
   */
-  m_channel->Recv(p, this);
+  return m_channel->Recv(p, this);
 }
 
 /**
@@ -489,7 +494,8 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
 */
 void
 AquaSimPhyCmn::SendPktUp(Ptr<Packet> p) {	//TODO this should probably be a Callback
-  m_mac->Recv(p);
+  if (!m_mac->Recv(p))
+    NS_LOG_DEBUG(this << "Mac Recv error");
 }
 
 /**

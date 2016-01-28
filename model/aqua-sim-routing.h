@@ -10,7 +10,7 @@
 //#include "ns3/ipv4-routing-protocol.h"
 //#include "ns3/ipv4-static-routing.h"
 
-//#include "aqua-sim-mac.h"
+#include "aqua-sim-mac.h"
 #include "aqua-sim-net-device.h"
 
 namespace ns3 {
@@ -26,14 +26,15 @@ public:
   virtual ~AquaSimRouting(void);
 
   virtual void SetNetDevice(Ptr<AquaSimNetDevice> device);
+  virtual void SetMac(Ptr<AquaSimMac> mac);
 
   /*avoid instantiation since UnderwaterRouting's behavior is not defined*/
-  virtual void Recv(Ptr<Packet> p);	//handler not implemented
+  virtual bool Recv(Ptr<Packet> p);	//handler not implemented
   /*send packet p to next_hop after delay*/
-  virtual void SendDown(Ptr<Packet> p, const Address &nextHop, Time delay);
+  virtual bool SendDown(Ptr<Packet> p, const Address &nextHop, Time delay);
 protected:
   /*send packet up to port-demux*/
-  virtual void SendUp(Ptr<Packet> p);			//demux not implemented yet.
+  virtual bool SendUp(Ptr<Packet> p);			//demux not implemented yet.
   /*check if if a dead loop results in the incoming packet*/
   virtual bool IsDeadLoop(Ptr<Packet> p);
   /*check if this node is the next hop*/
@@ -43,6 +44,7 @@ protected:
   /*check if this node is the source node,
 	  * i.e., whose app layer generates this packet.*/
   virtual bool AmISrc(const Ptr<Packet> p);
+  virtual void SendPacket(Ptr<Packet> p);
 protected:
   Address m_myAddr;  //the ip address of this node
   Ptr<AquaSimNetDevice> m_device;
@@ -51,7 +53,7 @@ protected:
   //NsObject *port_dmux;
 
 private:
-  //Ptr<AquaSimMac> m_mac;
+  Ptr<AquaSimMac> m_mac;
 
 };  //AquaSimRouting class
 

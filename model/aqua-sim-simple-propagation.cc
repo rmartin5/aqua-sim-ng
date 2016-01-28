@@ -60,6 +60,9 @@ AquaSimSimplePropagation::ReceivedCopies (Ptr<AquaSimNetDevice> s,
 					  Ptr<Packet> p,
 					  std::vector<Ptr<AquaSimNetDevice> > dList)
 {
+  NS_LOG_FUNCTION(this);
+  NS_ASSERT(dList.size());
+
   std::vector<PktRecvUnit>* res = new std::vector<PktRecvUnit>;
   //find all nodes which will receive a copy
   PktRecvUnit pru;
@@ -72,16 +75,28 @@ AquaSimSimplePropagation::ReceivedCopies (Ptr<AquaSimNetDevice> s,
   std::vector<Ptr<AquaSimNetDevice> >::iterator it = dList.begin();
   for(; it != dList.end(); it++, i++)
   {
-    dist = s->GetMobility()->GetDistanceFrom(dList[i]->GetMobility());
-    pru.recver = dList[i];
-    pru.pDelay = Time::FromDouble(dist / ns3::SOUND_SPEED_IN_WATER,Time::S);
-    pru.pR = RayleighAtt(dist, asHeader.GetFreq(), asHeader.GetPt());
-    res->push_back(pru);
+      //TODO current bug is due to mobility model not set. Look into how it is set and installed for each net device to fix this...
+    std::cout << dList[i]->GetMobility()->GetPosition() << "\n";
+    if (s == dList[i])	//remove this chunk once mobility bug is fixed.
+      {
+	std::cout << "inner hit:" << i << "\n";
+	NS_LOG_DEBUG("Sender and devicelist recv are the same");
+      }
+    else
+      {
+	std::cout << "outer hit:" << i << "\n";
+	std::cout << dList[i] << " and " << s << "\n";
+	dist = s->GetMobility()->GetDistanceFrom(dList[i]->GetMobility());
+	pru.recver = dList[i];
+	pru.pDelay = Time::FromDouble(dist / ns3::SOUND_SPEED_IN_WATER,Time::S);
+	pru.pR = RayleighAtt(dist, asHeader.GetFreq(), asHeader.GetPt());
+	res->push_back(pru);
 
-    NS_LOG_DEBUG("dist:" << dist
-		 << " recver:" << pru.recver
-		 << " pDelay" << pru.pDelay
-		 << " pR" << pru.pR);
+	NS_LOG_DEBUG("dist:" << dist
+		     << " recver:" << pru.recver
+		     << " pDelay" << pru.pDelay
+		     << " pR" << pru.pR);
+      }
   }
 
   return res;

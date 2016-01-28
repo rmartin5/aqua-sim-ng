@@ -34,6 +34,7 @@ NS_OBJECT_ENSURE_REGISTERED (AquaSimChannel);
 AquaSimChannel::AquaSimChannel ()// : Channel()
 {
   NS_LOG_FUNCTION(this);
+  m_deviceList.clear();
 }
 
 AquaSimChannel::~AquaSimChannel ()
@@ -121,19 +122,19 @@ AquaSimChannel::RemoveDevice(Ptr<AquaSimNetDevice> device)
   }
 }
 
-void
+bool
 AquaSimChannel::Recv(Ptr<Packet> p, Ptr<AquaSimPhy> phy)
 {
-  NS_LOG_FUNCTION(this);
+  NS_LOG_FUNCTION(this << p << phy);
   NS_ASSERT(p != NULL || phy != NULL);
-  SendUp(p,phy);
+  return SendUp(p,phy);
 }
 
-void
+bool
 AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
 { 
   NS_LOG_FUNCTION(this);
-  NS_LOG_DEBUG("Packet:" << p);
+  NS_LOG_DEBUG("Packet:" << p << " Phy:" << tifp << " Channel:" << this);
 
   Ptr<AquaSimNetDevice> sender = Ptr<AquaSimNetDevice>(tifp->GetNetDevice());
   Ptr<AquaSimNetDevice> recver;
@@ -141,7 +142,6 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
   Ptr<AquaSimPhy> rifp;
   Ptr<Packet> pCopy;
   Time pDelay = Seconds (0.0);
-
   /*
   if(!m_sorted){
     SortLists();
@@ -188,6 +188,7 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
   //p->Unref();
   //p = 0; //smart pointer will unref automatically once out of scope
   delete recvUnits;
+  return true;	//TODO fix this to make it more accurately check for issues.
 }
 
 double

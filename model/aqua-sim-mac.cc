@@ -85,7 +85,9 @@ AquaSimMac::RecvProcess(Ptr<Packet> p){
 
 void
 AquaSimMac::TxProcess(Ptr<Packet> p){
-  NS_LOG_FUNCTION(this << " a dummy version.");
+  NS_LOG_FUNCTION(this << "dummy version");
+  if (!m_phy->Recv(p))
+    NS_LOG_DEBUG(this << "Phy Recv error");
 }
 
 void
@@ -95,20 +97,20 @@ AquaSimMac::SetForwardUpCallback(Callback<void, const Address&> upCallback)
   m_callback = upCallback;
 }
 
-void
+bool
 AquaSimMac::SendUp(Ptr<Packet> p)
 {
   NS_ASSERT(m_device && m_phy && m_rout);
 
-  m_rout->Recv(p);
+  return m_rout->Recv(p);
 }
 
-void
+bool
 AquaSimMac::SendDown(Ptr<Packet> p)
 {
   NS_ASSERT(m_device && m_phy && m_rout);
 
-  m_phy->Recv(p);
+  return m_phy->Recv(p);
 }
 
 void
@@ -125,8 +127,7 @@ AquaSimMac::HandleIncomingPkt(Ptr<Packet> p) {
   }
   p->AddHeader(asHeader);
 
-  Simulator::Schedule(Seconds(txTime), &AquaSimMac::Recv, this, p);
-  return;
+  Simulator::Schedule(Seconds(txTime), &AquaSimMac::SendUp, this, p);
 }
 
 void
@@ -136,24 +137,35 @@ AquaSimMac::HandleOutgoingPkt(Ptr<Packet> p) {
   /*
   *  TODO Handle busy terminal problem before trying to tx packet
   */
+  m_phy->SetPhyStatus(PHY_SEND);
+
   TxProcess(p);
 }
 
-void
+bool
 AquaSimMac::Recv(Ptr<Packet> p) {
   //assert(initialized());
+  NS_LOG_FUNCTION(this);
+
   NS_ASSERT(m_device && m_phy && m_rout);
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
 
-  if (asHeader.GetDirection() == AquaSimHeader::DOWN){
-	  // Handle outgoing packets.
-	  HandleOutgoingPkt(p);
+  switch (asHeader.GetDirection())
+  {
+    case (AquaSimHeader::DOWN):
+      // Handle outgoing packets.
+      HandleOutgoingPkt(p);
+      return true;
+    case (AquaSimHeader::NONE):
+      NS_LOG_WARN(this << "No direction set for packet(" << p << "), dropping");
+      return false;
+    case (AquaSimHeader::UP):
+      // Handle incoming packets.
+      HandleIncomingPkt(p);
+      return true;
   }
-  else {
-	  // Handle incoming packets.
-	  HandleIncomingPkt(p);
-  }
+  return false;	//should not be hit.
 }
 
 void

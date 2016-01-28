@@ -64,6 +64,7 @@ public:
   static TypeId GetTypeId (void);  
 
   //attach
+  void ConnectLayers(void);
   void SetPhy (Ptr<AquaSimPhy> phy);
   void SetMac (Ptr<AquaSimMac> mac);
   void SetRouting (Ptr<AquaSimRouting> routing);

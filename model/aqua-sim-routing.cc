@@ -55,6 +55,13 @@ AquaSimRouting::SetNetDevice(Ptr<AquaSimNetDevice> device)
 }
 
 void
+AquaSimRouting::SetMac(Ptr<AquaSimMac> mac)
+{
+  NS_LOG_FUNCTION(this);
+  m_mac = mac;
+}
+
+bool
 AquaSimRouting::Recv(Ptr<Packet> p)
 {
   NS_LOG_FUNCTION(this << p << " : Currently not implemented");
@@ -62,6 +69,25 @@ AquaSimRouting::Recv(Ptr<Packet> p)
    * TODO this should be implemented in inherited routing protocols
    * 		This may be redundant compared with sendup/senddown.
    */
+
+if (IsDeadLoop(p))
+  {
+    NS_LOG_WARN("Packet(" << p << ") is dead loop on device(" << m_device << ")");
+    return false;
+  }
+if (~AmINextHop(p))
+  {
+    NS_LOG_WARN("Device(" << m_device <<
+		") is not the next hop, dropping packet(" << p << ")");
+    return false;
+  }
+if (AmIDst(p))
+  {
+    NS_LOG_INFO("Destination(" << m_device << ") received packet(" << p << ")");
+    return true;
+  }
+
+return SendUp(p);
 }
 
 
@@ -70,7 +96,7 @@ AquaSimRouting::Recv(Ptr<Packet> p)
   *
   * @param p   a packet
   * */
-void
+bool
 AquaSimRouting::SendUp(Ptr<Packet> p)
 {
   //port_dmux->recv(p); // (Handler*)NULL
@@ -79,6 +105,7 @@ AquaSimRouting::SendUp(Ptr<Packet> p)
 		  Or at least sent up for further processing
 		  ie. Sync, Localization, Application driven
   */
+  return true;
 }
 
 /**
@@ -88,7 +115,7 @@ AquaSimRouting::SendUp(Ptr<Packet> p)
   * @param next_hop	the next hop to route packet p
   * @param delay		packet p will be sent in time of delay
   * */
-void
+bool
 AquaSimRouting::SendDown(Ptr<Packet> p, const Address &nextHop, Time delay)
 {
   //cmh->uw_flag() = true;
@@ -101,7 +128,7 @@ AquaSimRouting::SendDown(Ptr<Packet> p, const Address &nextHop, Time delay)
   //add header to packet
   AquaSimHeader header;
   p->PeekHeader(header);
-  NS_LOG_DEBUG("Pktsize=" << header.GetSize());
+  //NS_LOG_DEBUG("Pktsize=" << header.GetSize());
   if(header.GetUId() == -1) header.SetUId(1);
   header.SetDirection(AquaSimHeader::DOWN);
   header.SetNextHop(nextHop);
@@ -113,11 +140,33 @@ AquaSimRouting::SendDown(Ptr<Packet> p, const Address &nextHop, Time delay)
   NS_LOG_FUNCTION(this << " Currently a dummy send down. delay="
 		       << delay << " p=" << p);
 
+  NS_LOG_INFO("RoutingSendDown Dump: direction:" << header.GetDirection() <<
+		", nexthop: " << header.GetNextHop() <<
+		", pktsize: " << header.GetSize() <<
+		", nosie: " << header.GetNoise() <<
+		", freq: " << header.GetFreq() <<
+		", modname: " << header.GetModName() <<
+		", SAddr: " << header.GetSAddr() <<
+		", txrange: " << header.GetTxRange() <<
+		", txtime: " << header.GetTxTime() <<
+		", device: " << m_device);
+
   /*Note this schedule will not work, should instead call internal function once
    * event is executed which will internal call Mac's function directly.
    * This should most likely be a callback.
   */
   //Simulator::Schedule(delay, &AquaSimMac::Recv, &p);
+
+  Simulator::Schedule(delay, &AquaSimRouting::SendPacket, this, p);
+  return true;
+}
+
+void
+AquaSimRouting::SendPacket(Ptr<Packet> p)
+{
+  NS_LOG_FUNCTION(this);
+  if (!m_mac->Recv(p))
+    NS_LOG_DEBUG(this << "Mac recv error");
 }
 
 /**
@@ -130,6 +179,7 @@ AquaSimRouting::SendDown(Ptr<Packet> p, const Address &nextHop, Time delay)
 bool
 AquaSimRouting::IsDeadLoop(Ptr<Packet> p) 
 {
+  NS_LOG_FUNCTION(this);
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
   NS_LOG_DEBUG ("SAddr=" << asHeader.GetSAddr());
@@ -147,6 +197,7 @@ AquaSimRouting::IsDeadLoop(Ptr<Packet> p)
 bool
 AquaSimRouting::AmISrc(const Ptr<Packet> p) 
 {
+  NS_LOG_FUNCTION(this);
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
   NS_LOG_DEBUG ("SAddr=" << asHeader.GetSAddr());
@@ -162,6 +213,7 @@ AquaSimRouting::AmISrc(const Ptr<Packet> p)
 bool
 AquaSimRouting::AmIDst(const Ptr<Packet> p) 
 {
+  NS_LOG_FUNCTION(this);
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
   NS_LOG_DEBUG ("Direction=" << asHeader.GetDirection());
@@ -178,6 +230,7 @@ AquaSimRouting::AmIDst(const Ptr<Packet> p)
 bool
 AquaSimRouting::AmINextHop(const Ptr<Packet> p) 
 {
+  NS_LOG_FUNCTION(this);
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
   NS_LOG_DEBUG ("NextHop=" << asHeader.GetNextHop());

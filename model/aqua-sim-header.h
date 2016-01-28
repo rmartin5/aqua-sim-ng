@@ -27,7 +27,7 @@ class AquaSimHeader : public Header
 {
 public:
 
-  enum dir_t { DOWN = -1, NONE = 0, UP = 1 };
+  enum dir_t { DOWN = 0, NONE = 1, UP = 2 };
   enum AquaSimMacDemuxPktType{ UWPTYPE_LOC, UWPTYPE_SYNC, UWPTYPE_OTHER };
   
   AquaSimHeader();
@@ -100,7 +100,7 @@ public:
 private:
   //uint32_t m_data;
   uint32_t m_txTime;
-  uint8_t m_direction;  // direction: 0=none, 1=up, -1=down
+  uint8_t m_direction;  // direction: 1=down, 2=none, 3=up
   //uint8_t m_addrType;
   Address m_nextHop;
   uint8_t m_numForwards;

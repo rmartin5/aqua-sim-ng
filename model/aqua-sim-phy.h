@@ -63,7 +63,7 @@ namespace ns3 {
     virtual void Dump() const = 0;
     virtual bool Decodable (double noise, double ps) = 0;
     virtual void SendPktUp(Ptr<Packet> p) = 0;
-    virtual void PktTransmit(Ptr<Packet> p) = 0;
+    virtual bool PktTransmit(Ptr<Packet> p) = 0;
     //virtual void PktTransmit(Ptr<Packet> p, Ptr<AquaSimPhy> src) = 0;
 
     virtual void UpdateIdleEnergy() = 0;
@@ -79,11 +79,12 @@ namespace ns3 {
     virtual int CalcPktSize(double txtime, std::string * modName = NULL) = 0;
 
     virtual void SignalCacheCallback(Ptr<Packet> p) = 0;
-    virtual void Recv(Ptr<Packet> p) = 0;
+    virtual bool Recv(Ptr<Packet> p) = 0;
 
     virtual double Trigger() = 0;
     virtual double Preamble() = 0;
     virtual PhyStatus &Status() = 0;
+    virtual void SetPhyStatus(PhyStatus status) = 0;
 
     virtual double GetPt() = 0;
     virtual double GetRXThresh() = 0;

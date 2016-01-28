@@ -59,8 +59,8 @@ public:
   virtual void SetForwardUpCallback( Callback<void, const Address&> upCallback );
   //virtual void SetLinkUpCallback(Callback<void> linkUp);
   //virtual void SetLinkDownCallback(Callback<void> linkDown);
-  virtual  void SendUp(Ptr<Packet> p);
-  virtual  void SendDown(Ptr<Packet> p);
+  virtual bool SendUp(Ptr<Packet> p);
+  virtual bool SendDown(Ptr<Packet> p);
 
   void PowerOff(void);
   void PowerOn(void);
@@ -74,7 +74,7 @@ public:
 
   double GetPreamble(void);
 
-  void Recv(Ptr<Packet> p);	//TODO move to private once non-base MAC classes available
+  bool Recv(Ptr<Packet> p);	//TODO move to private once non-base MAC classes available
 
 private:
   // to receive packet from upper layer and lower layer

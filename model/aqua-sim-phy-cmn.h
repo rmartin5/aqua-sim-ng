@@ -70,7 +70,7 @@ public:
   virtual void Dump(void) const;
   virtual bool Decodable(double noise, double ps);
   virtual void SendPktUp(Ptr<Packet> p);
-  virtual void PktTransmit(Ptr<Packet> p);
+  virtual bool PktTransmit(Ptr<Packet> p);
 
   virtual void UpdateIdleEnergy(void);
 
@@ -82,7 +82,7 @@ public:
   inline int CalcPktSize(double txtime, std::string * modName = NULL);
 
   virtual void SignalCacheCallback(Ptr<Packet> p);
-  virtual void Recv(Ptr<Packet> p);
+  virtual bool Recv(Ptr<Packet> p);
 
   /*
   inline int Initialized(void) {
@@ -117,6 +117,7 @@ public:
   virtual inline double GetLambda() { return m_lambda; }
 
   virtual PhyStatus &Status() {return m_status;}
+  virtual void SetPhyStatus(PhyStatus status) { m_status = status; }
 
 protected:
   virtual Ptr<Packet> PrevalidateIncomingPkt(Ptr<Packet> p);

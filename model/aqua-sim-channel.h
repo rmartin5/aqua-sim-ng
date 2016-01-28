@@ -46,7 +46,7 @@ public:
   
   void SetNoiseGenerator (Ptr<AquaSimNoiseGen> noiseGen);
   void SetPropagation (Ptr<AquaSimPropagation> prop);
-  void Recv(Ptr<Packet>, Ptr<AquaSimPhy>);
+  bool Recv(Ptr<Packet>, Ptr<AquaSimPhy>);
 
   void AddDevice (Ptr<AquaSimNetDevice> device);
   void RemoveDevice(Ptr<AquaSimNetDevice> device);
@@ -57,7 +57,7 @@ public:
   virtual uint32_t GetNDevices (void) const;
 
 private:
-  void SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp);
+  bool SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp);
   double GetPropDelay (Ptr<AquaSimNetDevice> tdevice, Ptr<AquaSimNetDevice> rdevice);
    	
 	/* For list-keeper, channel keeps list of mobilenodes 

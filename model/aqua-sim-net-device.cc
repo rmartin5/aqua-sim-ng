@@ -163,6 +163,25 @@ AquaSimNetDevice::CompleteConfig (void)
 }
 
 void
+AquaSimNetDevice::ConnectLayers()
+{
+  if (m_phy != 0 && m_mac != 0)
+    {
+      m_phy->SetMac(m_mac);
+      m_mac->SetPhy(m_phy);
+      NS_LOG_DEBUG("Phy/Mac layers set");
+    }
+
+  if (m_mac != 0 && m_routing != 0)
+    {
+      m_mac->SetRouting(m_routing);
+      m_routing->SetMac(m_mac);
+      NS_LOG_DEBUG("Routing/Mac layers set");
+    }
+}
+
+//voidconnectlayers and implementall waBelow stuff
+void
 AquaSimNetDevice::SetPhy (Ptr<AquaSimPhy> phy)
 {
   //currently only supporting single layer per net device
@@ -172,11 +191,7 @@ AquaSimNetDevice::SetPhy (Ptr<AquaSimPhy> phy)
       NS_LOG_FUNCTION(this);
       m_phy = phy;
       m_phy->SetNetDevice (Ptr<AquaSimNetDevice> (this));
-      if (m_mac != 0)
-	{
-	  m_phy->SetMac(m_mac);
-	  NS_LOG_DEBUG("Mac set for Phy layer");
-	}
+
       CompleteConfig ();
     }
   else
@@ -193,11 +208,6 @@ AquaSimNetDevice::SetMac (Ptr<AquaSimMac> mac)
       m_mac = mac;
       m_mac->SetDevice (Ptr<AquaSimNetDevice> (this));
 
-      if (m_phy != 0)
-	{
-	  m_mac->SetPhy(m_phy);
-	  NS_LOG_DEBUG("Phy set for Mac layer");
-	}
       CompleteConfig ();
     }
   else
@@ -214,7 +224,6 @@ AquaSimNetDevice::SetRouting(Ptr<AquaSimRouting> routing)
       m_routing = routing;
       m_routing->SetNetDevice(Ptr<AquaSimNetDevice> (this));
 
-      //TODO currently does not attach lower layers to routing layer.
       CompleteConfig ();
     }
   else
@@ -229,9 +238,12 @@ AquaSimNetDevice::SetChannel (Ptr<AquaSimChannel> channel)
     {
       NS_LOG_FUNCTION(this);
       m_channel = channel;
-
       m_channel->AddDevice(Ptr<AquaSimNetDevice> (this));
 
+      if (m_phy != 0)
+	{
+	  m_phy->SetChannel(m_channel);
+	}
       CompleteConfig ();
     }
   else
@@ -430,22 +442,19 @@ AquaSimNetDevice::Send (Ptr< Packet > packet, const Address &dest, uint16_t prot
 {
   NS_LOG_FUNCTION(this << packet << dest << protocolNumber);
   if(m_routing)
-    {
+    {//Note : https://www.nsnam.org/docs/release/3.24/doxygen/uan-mac-cw_8cc_source.html#l00123
       NS_LOG_DEBUG("Routing SendDown hit");
-      m_routing->SendDown(packet, dest, Simulator::Now());
-      return true;
+      return m_routing->SendDown(packet, dest, Simulator::Now());
     }
   if (m_mac)
     {
       NS_LOG_DEBUG("Mac SendDown hit");
-      m_mac->SendDown(packet);
-      return true;
+      return m_mac->Recv(packet);
     }
   if (m_phy)
     {
       NS_LOG_DEBUG("Phy SendDown hit");
-      m_phy->PktTransmit(packet);
-      return true;
+      return m_phy->PktTransmit(packet);
     }
   NS_LOG_WARN("No layers are attached to this device. Can not send.");
   return false;
