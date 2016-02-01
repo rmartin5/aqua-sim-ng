@@ -30,11 +30,11 @@ NS_LOG_COMPONENT_DEFINE("ASBroadcastMac");
 int
 main (int argc, char *argv[])
 {
-  double simStop = 10; //seconds
+  double simStop = 100; //seconds
   int nodes = 2;
   int sinks = 1;
-  uint32_t m_dataRate = 150;
-  uint32_t m_packetSize = 80;
+  uint32_t m_dataRate = 20;
+  uint32_t m_packetSize = 100;
 
   /*
    * **********
@@ -102,7 +102,7 @@ main (int argc, char *argv[])
 		     //" NDtypeid:" << newDevice->GetTypeId() <<
 		     //" Ptypeid:" << newDevice->GetPhy()->GetTypeId());
 
-      m_XBoundry += 20;
+      m_XBoundry += 2000;
     }
 
   for (NodeContainer::Iterator i = sinksCon.Begin(); i != sinksCon.End(); i++)
@@ -115,7 +115,7 @@ main (int argc, char *argv[])
       NS_LOG_DEBUG("Sink: " << *i << " newDevice: " << newDevice << " Position: " <<
 		     m_XBoundry << "," << m_YBoundry << "," << m_ZBoundry);
 
-      m_XBoundry += 20;
+      m_XBoundry += 2000;
     }
 
 
@@ -123,7 +123,8 @@ main (int argc, char *argv[])
   mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
   mobility.Install(nodesCon);
   mobility.Install(sinksCon);
-
+  //asHelper.AttachMobility(nodesCon);
+  //asHelper.AttachMobility(sinksCon);
 
   PacketSocketAddress socket;
   socket.SetAllDevices();

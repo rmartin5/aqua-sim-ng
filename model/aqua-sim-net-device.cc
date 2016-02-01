@@ -91,10 +91,6 @@ AquaSimNetDevice::GetTypeId ()
     //PointerValue (&AquaSimNetDevie::m_app),
     //MakePointerAccessor (&AquaSimNetDevice::GetApp, &AquaSimNetDevice::SetApp),
     //MakePointerChecker<AquaSimApp>())
-    .AddAttribute ("Mobility", "The Mobility model attached to this device.",
-      PointerValue (),
-      MakePointerAccessor (&AquaSimNetDevice::m_mobility),
-      MakePointerChecker<MobilityModel>())
   //3 following commands are for VBF related protocols only
     .AddAttribute("SetCx", "Set x for VBF related protocols.",
       DoubleValue(0),
@@ -130,7 +126,7 @@ AquaSimNetDevice::GetTypeId ()
      MakeIntegerChecker<int> ())
   ;
   return tid;
-}  
+}
 
 void
 AquaSimNetDevice::DoDispose (void)
@@ -265,13 +261,6 @@ AquaSimNetDevice::SetNode (Ptr<Node> node)
   m_node = node;
 }
 
-void
-AquaSimNetDevice::SetMobility(Ptr<MobilityModel> mobility)
-{
-  NS_LOG_FUNCTION(this);
-  m_mobility = mobility;
-}
-
 Ptr<AquaSimPhy>
 AquaSimNetDevice::GetPhy (void)
 {
@@ -295,17 +284,11 @@ AquaSimNetDevice::GetChannel (void) const
 {
   return m_channel;
 }
- 
+
 Ptr<Node>
 AquaSimNetDevice::GetNode (void) const
 {
   return m_node;
-}
-
-Ptr<MobilityModel>
-AquaSimNetDevice::GetMobility (void)
-{
-  return m_mobility;
 }
 
 /*
@@ -320,11 +303,14 @@ AquaSimNetDevice::IsMoving(void)
 {
   NS_LOG_FUNCTION(this);
 
-  if (m_mobility == NULL){
+  Ptr<Object> object = GetNode();
+  Ptr<MobilityModel> model = object->GetObject<MobilityModel>();
+
+  if (model == 0){
       return false;
   }
 
-  Vector3D vel = m_mobility->GetVelocity();
+  Vector3D vel = model->GetVelocity();
   if (vel.x==0 && vel.y==0 && vel.z==0) {
       return false;
   }

@@ -19,6 +19,8 @@
  */
 #include "ns3/log.h"
 #include "ns3/nstime.h"
+#include "ns3/mobility-model.h"
+#include "ns3/random-variable-stream.h"
 
 #include "aqua-sim-simple-propagation.h"
 #include "aqua-sim-header.h"
@@ -71,32 +73,29 @@ AquaSimSimplePropagation::ReceivedCopies (Ptr<AquaSimNetDevice> s,
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
 
+  Ptr<Object> sObject = s->GetNode();
+  Ptr<MobilityModel> senderModel = sObject->GetObject<MobilityModel> ();
+
   unsigned i = 0;
   std::vector<Ptr<AquaSimNetDevice> >::iterator it = dList.begin();
   for(; it != dList.end(); it++, i++)
   {
-      //TODO current bug is due to mobility model not set. Look into how it is set and installed for each net device to fix this...
-    std::cout << dList[i]->GetMobility()->GetPosition() << "\n";
-    if (s == dList[i])	//remove this chunk once mobility bug is fixed.
-      {
-	std::cout << "inner hit:" << i << "\n";
-	NS_LOG_DEBUG("Sender and devicelist recv are the same");
-      }
-    else
-      {
-	std::cout << "outer hit:" << i << "\n";
-	std::cout << dList[i] << " and " << s << "\n";
-	dist = s->GetMobility()->GetDistanceFrom(dList[i]->GetMobility());
-	pru.recver = dList[i];
-	pru.pDelay = Time::FromDouble(dist / ns3::SOUND_SPEED_IN_WATER,Time::S);
-	pru.pR = RayleighAtt(dist, asHeader.GetFreq(), asHeader.GetPt());
-	res->push_back(pru);
+    Ptr<Object> rObject = dList[i]->GetNode();
+    Ptr<MobilityModel> recvModel = rObject->GetObject<MobilityModel> ();
+    //std::cout << "sender model:" << senderModel << " recv model:" << recvModel << "\n";
+    //std::cout << "pos:" << senderModel->GetPosition() << " rpos:" << recvModel->GetPosition() << "\n";
+   // std::cout << senderModel->GetDistanceFrom(recvModel) << "\n";
 
-	NS_LOG_DEBUG("dist:" << dist
-		     << " recver:" << pru.recver
-		     << " pDelay" << pru.pDelay
-		     << " pR" << pru.pR);
-      }
+    dist = senderModel->GetDistanceFrom(recvModel);
+    pru.recver = dList[i];
+    pru.pDelay = Time::FromDouble(dist / ns3::SOUND_SPEED_IN_WATER,Time::S);
+    pru.pR = RayleighAtt(dist, asHeader.GetFreq(), asHeader.GetPt());
+    res->push_back(pru);
+
+    NS_LOG_DEBUG("dist:" << dist
+		 << " recver:" << pru.recver
+		 << " pDelay" << pru.pDelay
+		 << " pR" << pru.pR);
   }
 
   return res;
@@ -105,6 +104,7 @@ AquaSimSimplePropagation::ReceivedCopies (Ptr<AquaSimNetDevice> s,
 double
 AquaSimSimplePropagation::RayleighAtt (double dist, double freq, double pT)
 {
+  if (dist <= 0) return 0;
   double SL = pT - Thorp(dist, freq);
   return Rayleigh(SL);
 }
@@ -120,7 +120,9 @@ AquaSimSimplePropagation::Rayleigh (double SL)
   double mPr = std::pow(10, SL/20 - 6);  //signal strength (pressure in Pa)
   double segma = pow(mPr, 2) * 2 / M_PI;
 
-  return -2 * segma * m_rand->GetValue();       // std::log(Random::uniform())
+  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
+
+  return -2 * segma * std::log(m_rand->GetValue());
 }
 
 /**

@@ -22,7 +22,6 @@
 #define AQUA_SIM_NET_DEVICE_H
 
 #include "ns3/net-device.h"
-#include "ns3/mobility-model.h"
 #include "ns3/node.h"
 #include "ns3/nstime.h"
 #include "ns3/random-variable-stream.h"
@@ -51,6 +50,7 @@ class Channel;
 class Ipv4Address;
 class Ipv6Address;
 class PromiscReceiveCallback;
+class MobilityModel;
 
 class AquaSimRouting;
 class AquaSimMac;
@@ -153,9 +153,6 @@ public:
   bool IsMoving(void);
   Ptr<AquaSimEnergyModel> EnergyModel(void) {return m_energyModel; }
 
-  Ptr<MobilityModel> GetMobility(void);
-  void SetMobility(Ptr<MobilityModel> mobility);
-
 protected:
 
   void GenerateFailure(void);
@@ -172,7 +169,6 @@ private:
   Ptr<Node> m_node;
   Ptr<UniformRandomVariable> m_uniformRand;
   Ptr<AquaSimEnergyModel> m_energyModel;
-  Ptr<MobilityModel> m_mobility;
 
   NetDevice::ReceiveCallback m_forwardUp;
   bool m_configComplete;

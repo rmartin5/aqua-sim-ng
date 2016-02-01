@@ -59,6 +59,7 @@ public:
 private:
   bool SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp);
   double GetPropDelay (Ptr<AquaSimNetDevice> tdevice, Ptr<AquaSimNetDevice> rdevice);
+  Ptr<MobilityModel> GetMobilityModel(Ptr<AquaSimNetDevice> device);
    	
 	/* For list-keeper, channel keeps list of mobilenodes 
 	   listening on to it */

@@ -162,7 +162,7 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
     p->PeekHeader(asHeader);
 
     asHeader.SetPr((*recvUnits)[i].pR);
-    asHeader.SetNoise(m_noiseGen->Noise((Simulator::Now() + pDelay), (recver->GetMobility()->GetPosition())));
+    asHeader.SetNoise(m_noiseGen->Noise((Simulator::Now() + pDelay), (GetMobilityModel(recver)->GetPosition())));
 
     p->AddHeader(asHeader);
 
@@ -194,15 +194,25 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
 double
 AquaSimChannel::GetPropDelay (Ptr<AquaSimNetDevice> tdevice, Ptr<AquaSimNetDevice> rdevice)
 {
-  NS_ASSERT(tdevice->GetMobility() || rdevice->GetMobility());
-  return m_prop->PDelay(tdevice->GetMobility(), rdevice->GetMobility()).GetSeconds();
+  return m_prop->PDelay(GetMobilityModel(tdevice), GetMobilityModel(rdevice)).GetSeconds();
 }
    	
 double
 AquaSimChannel::Distance(Ptr<AquaSimNetDevice> tdevice, Ptr<AquaSimNetDevice> rdevice)
 {
-  NS_ASSERT(tdevice->GetMobility() || rdevice->GetMobility());
-  return tdevice->GetMobility()->GetDistanceFrom(rdevice->GetMobility());
+  return GetMobilityModel(tdevice)->GetDistanceFrom(GetMobilityModel(rdevice));
 }
+
+Ptr<MobilityModel>
+AquaSimChannel::GetMobilityModel(Ptr<AquaSimNetDevice> device)
+{
+  Ptr<MobilityModel> model = device->GetNode()->GetObject<MobilityModel>();
+  if (model == 0)
+    {
+      NS_LOG_DEBUG("MobilityModel does not exist for device " << device);
+    }
+  return model;
+}
+
 
 } // namespace ns3

@@ -21,6 +21,7 @@
 
 #include "ns3/nstime.h"
 #include "ns3/log.h"
+#include "ns3/mobility-model.h"
 
 #include "aqua-sim-propagation.h"
 

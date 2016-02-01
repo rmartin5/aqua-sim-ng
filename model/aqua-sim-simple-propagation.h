@@ -21,7 +21,6 @@
 #ifndef AQUA_SIM_SIMPLE_PROPAGATION_H
 #define AQUA_SIM_SIMPLE_PROPAGATION_H
 
-#include "ns3/random-variable-stream.h"
 #include <vector>
 #include "aqua-sim-propagation.h"
 
@@ -51,9 +50,6 @@ protected:
   virtual double RayleighAtt (double dist, double freq, double pT);
   virtual double Rayleigh (double SL);
   virtual double Thorp (double range, double freq);
-
-private:
-  Ptr<LogNormalRandomVariable> m_rand;
 
 };  //class AquaSimSimplePropagation
 
