@@ -30,11 +30,11 @@ NS_LOG_COMPONENT_DEFINE("ASBroadcastMac");
 int
 main (int argc, char *argv[])
 {
-  double simStop = 100; //seconds
+  double simStop = 20; //seconds
   int nodes = 2;
   int sinks = 1;
-  uint32_t m_dataRate = 20;
-  uint32_t m_packetSize = 100;
+  uint32_t m_dataRate = 80;
+  uint32_t m_packetSize = 32;
 
   /*
    * **********
@@ -57,7 +57,7 @@ main (int argc, char *argv[])
   cmd.AddValue ("sinks", "Amount of underwater sinks", sinks);
   cmd.Parse(argc,argv);
 
-  std::cout << "Initializing simulation\n";
+  std::cout << "-----------Initializing simulation-----------\n";
 
   NodeContainer nodesCon;
   NodeContainer sinksCon;
@@ -161,7 +161,7 @@ main (int argc, char *argv[])
   serverApp.Stop (Seconds (simStop + 1));
 */ //TODO implement application within this example...
 
-  std::cout << "Running Simulation\n";
+  std::cout << "-----------Running Simulation-----------\n";
   Simulator::Stop(Seconds(simStop + 1));
   Simulator::Run();
   Simulator::Destroy(); //null all nodes too??

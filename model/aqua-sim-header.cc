@@ -140,7 +140,7 @@ AquaSimHeader::Print(std::ostream &os) const
 
 }
 
-uint32_t
+double
 AquaSimHeader::GetTxTime(void)
 {
   return m_txTime;
@@ -240,7 +240,7 @@ AquaSimHeader::GetModName()
 
 
 void
-AquaSimHeader::SetTxTime(uint32_t time)
+AquaSimHeader::SetTxTime(double time)
 {
   m_txTime = time;
 }

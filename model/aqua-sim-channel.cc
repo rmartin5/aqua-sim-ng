@@ -127,7 +127,8 @@ AquaSimChannel::Recv(Ptr<Packet> p, Ptr<AquaSimPhy> phy)
 {
   NS_LOG_FUNCTION(this << p << phy);
   NS_ASSERT(p != NULL || phy != NULL);
-  return SendUp(p,phy);
+  return 1;
+  //return SendUp(p,phy);	//TODO
 }
 
 bool
@@ -141,7 +142,7 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
   //std::vector<Ptr<AquaSimPhy> > rifp;	//must support multiple recv phy in future
   Ptr<AquaSimPhy> rifp;
   Ptr<Packet> pCopy;
-  Time pDelay = Seconds (0.0);
+  double pDelay = 0.0;
   /*
   if(!m_sorted){
     SortLists();
@@ -154,15 +155,18 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
     if (sender == (*recvUnits)[i].recver)
       continue;
     recver = (*recvUnits)[i].recver;
-    pDelay = (*recvUnits)[i].pDelay;
+    pDelay = GetPropDelay(sender, (*recvUnits)[i].recver);
+    //pDelay = (*recvUnits)[i].pDelay;
     rifp = recver->GetPhy();
     //rifp = recver->ifhead().lh_first;
 
     AquaSimHeader asHeader;
-    p->PeekHeader(asHeader);
+    p->RemoveHeader(asHeader);
 
     asHeader.SetPr((*recvUnits)[i].pR);
-    asHeader.SetNoise(m_noiseGen->Noise((Simulator::Now() + pDelay), (GetMobilityModel(recver)->GetPosition())));
+    asHeader.SetNoise(m_noiseGen->Noise((Simulator::Now() + Seconds(pDelay)), (GetMobilityModel(recver)->GetPosition())));
+    asHeader.SetDirection(AquaSimHeader::UP);
+    asHeader.SetTxTime(pDelay);
 
     p->AddHeader(asHeader);
 
@@ -170,8 +174,10 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
      * Send to each interface a copy, and we will filter the packet
      * in physical layer according to freq and modulation
      */
-    pCopy = p->Copy();
-    Simulator::Schedule(pDelay, &AquaSimPhy::Recv, rifp, pCopy);
+    NS_LOG_DEBUG ("Channel. NodeS:" << sender->GetNode() << " NodeR:" << recver->GetNode()
+		  << " TxTime:" << Seconds(asHeader.GetTxTime()));
+
+    Simulator::Schedule(Seconds(pDelay), &AquaSimPhy::Recv, rifp, p);
     //Simulator::Schedule(pDelay, recver, &pCopy);		REMOVE
 
     /* FIXME in future support multiple phy with below code.
@@ -194,6 +200,7 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
 double
 AquaSimChannel::GetPropDelay (Ptr<AquaSimNetDevice> tdevice, Ptr<AquaSimNetDevice> rdevice)
 {
+  std::cout << m_prop->PDelay(GetMobilityModel(tdevice), GetMobilityModel(rdevice)).GetSeconds() << "\n";
   return m_prop->PDelay(GetMobilityModel(tdevice), GetMobilityModel(rdevice)).GetSeconds();
 }
    	

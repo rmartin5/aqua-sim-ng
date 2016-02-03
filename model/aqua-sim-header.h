@@ -39,7 +39,7 @@ public:
   /***TODO This is clunky and needs to be revamped to match real world headers***/
 
   //Getters
-  uint32_t GetTxTime();  // tx time for this packet in sec
+  double GetTxTime();  // tx time for this packet in sec
   uint32_t GetSize();	// simulated packet size
   uint8_t GetDirection();/* setting all direction of pkts to be downward as default
 						until channel changes it to +1 (UPWARD) */
@@ -67,7 +67,7 @@ public:
   */
 
   //Setters
-  void SetTxTime(uint32_t time);
+  void SetTxTime(double time);
   void SetDirection(uint8_t direction);
   void SetNextHop(Address nextHop);
   void SetNumForwards(uint8_t numForwards);
@@ -99,7 +99,7 @@ public:
 
 private:
   //uint32_t m_data;
-  uint32_t m_txTime;
+  double m_txTime;
   uint8_t m_direction;  // direction: 1=down, 2=none, 3=up
   //uint8_t m_addrType;
   Address m_nextHop;

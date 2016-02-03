@@ -82,9 +82,6 @@ AquaSimSimplePropagation::ReceivedCopies (Ptr<AquaSimNetDevice> s,
   {
     Ptr<Object> rObject = dList[i]->GetNode();
     Ptr<MobilityModel> recvModel = rObject->GetObject<MobilityModel> ();
-    //std::cout << "sender model:" << senderModel << " recv model:" << recvModel << "\n";
-    //std::cout << "pos:" << senderModel->GetPosition() << " rpos:" << recvModel->GetPosition() << "\n";
-   // std::cout << senderModel->GetDistanceFrom(recvModel) << "\n";
 
     dist = senderModel->GetDistanceFrom(recvModel);
     pru.recver = dList[i];

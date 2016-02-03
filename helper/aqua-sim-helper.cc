@@ -218,7 +218,10 @@ AquaSimHelper::Create(Ptr<Node> node, Ptr<AquaSimNetDevice> device)
   device->SetChannel(m_channel);
 
   node->AddDevice(device);
-  std::cout << "AquaSimHelper::Create Dump:" << device->GetPhy() << "/" << device->GetMac() << "/" << device->GetRouting() << "/" << device->GetChannel() << "\n";
+
+  NS_LOG_DEBUG(this << "Create Dump. Phy:" << device->GetPhy() << " Mac:"
+	       << device->GetMac() << " Routing:" << device->GetRouting()
+	       << " Channel:" << device->GetChannel() << "\n");
 
   return device;
 }

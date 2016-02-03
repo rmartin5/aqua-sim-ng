@@ -53,7 +53,7 @@ PktSubmissionTimer::AddNewSubmission(IncomingPacket* inPkt) {
   AquaSimHeader asHeader;
   (inPkt->packet)->PeekHeader(asHeader);
   NS_LOG_DEBUG ("txtime=" << asHeader.GetTxTime());
-  Time endT_ = Time(Simulator::Now().GetSeconds() + asHeader.GetTxTime());
+  Time endT_ = Time(Simulator::Now().GetSeconds() + Seconds(asHeader.GetTxTime()));
   if (m_waitingList.empty() || m_waitingList.top().endT > endT_) {
     Simulator::Schedule( endT_ - Simulator::Now(), &PktSubmissionTimer::AddNewSubmission, this, inPkt );
   }

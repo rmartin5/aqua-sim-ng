@@ -127,7 +127,8 @@ AquaSimRouting::SendDown(Ptr<Packet> p, const Address &nextHop, Time delay)
 
   //add header to packet
   AquaSimHeader header;
-  p->PeekHeader(header);
+  p->RemoveHeader(header);
+
   //NS_LOG_DEBUG("Pktsize=" << header.GetSize());
   if(header.GetUId() == -1) header.SetUId(1);
   header.SetDirection(AquaSimHeader::DOWN);
@@ -137,8 +138,7 @@ AquaSimRouting::SendDown(Ptr<Packet> p, const Address &nextHop, Time delay)
   //trace here...
 
   //send down after given delay
-  NS_LOG_FUNCTION(this << " Currently a dummy send down. delay="
-		       << delay << " p=" << p);
+  NS_LOG_FUNCTION(this << " Currently a dummy send down. delay=" << delay << " p=" << p);
 
   NS_LOG_INFO("RoutingSendDown Dump: direction:" << header.GetDirection() <<
 		", nexthop: " << header.GetNextHop() <<

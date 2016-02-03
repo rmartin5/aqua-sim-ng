@@ -106,7 +106,7 @@ AquaSimMac::SendUp(Ptr<Packet> p)
 }
 
 bool
-AquaSimMac::SendDown(Ptr<Packet> p)
+AquaSimMac::SendDown(Ptr<Packet> p)	//TODO remove this is redundant
 {
   NS_ASSERT(m_device && m_phy && m_rout);
 
@@ -119,7 +119,7 @@ AquaSimMac::HandleIncomingPkt(Ptr<Packet> p) {
 
   //m_recvChannel->AddNewPacket(p);
   AquaSimHeader asHeader;
-  p->PeekHeader(asHeader);
+  p->RemoveHeader(asHeader);
 
   double txTime = asHeader.GetTxTime();
   if (Phy()->Status() != PHY_SEND) {
@@ -165,6 +165,7 @@ AquaSimMac::Recv(Ptr<Packet> p) {
       HandleIncomingPkt(p);
       return true;
   }
+  NS_LOG_DEBUG("Something went very wrong in mac");
   return false;	//should not be hit.
 }
 

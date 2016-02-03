@@ -78,7 +78,7 @@ public:
   virtual void PowerOff();
   virtual void StatusShift(double);
 
-  inline Time CalcTxTime(int pktsize, std::string * modName = NULL);
+  inline Time CalcTxTime(uint32_t pktsize, std::string * modName = NULL);
   inline int CalcPktSize(double txtime, std::string * modName = NULL);
 
   virtual void SignalCacheCallback(Ptr<Packet> p);
@@ -117,7 +117,7 @@ public:
   virtual inline double GetLambda() { return m_lambda; }
 
   virtual PhyStatus &Status() {return m_status;}
-  virtual void SetPhyStatus(PhyStatus status) { m_status = status; }
+  virtual void SetPhyStatus(PhyStatus status);
 
 protected:
   virtual Ptr<Packet> PrevalidateIncomingPkt(Ptr<Packet> p);
@@ -198,6 +198,8 @@ private:
   Ptr<AquaSimMac> m_mac;
   Ptr<AquaSimEnergyModel> m_eM;
   Ptr<AquaSimNetDevice> m_device;
+
+  uint32_t counter; //Remove...
 
   virtual void Expire(void);
 
