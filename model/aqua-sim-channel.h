@@ -55,6 +55,7 @@ public:
   virtual Ptr<NetDevice> GetDevice (uint32_t i) const;
   uint32_t GetId (void) const;
   virtual uint32_t GetNDevices (void) const;
+  Ptr<AquaSimNoiseGen> GetNoiseGen();
 
 private:
   bool SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp);
@@ -66,7 +67,6 @@ private:
 	//int numNodes_;
 	//MobileNode *xListHead_;
 	//bool sorted_;
-
 
         //void calculatePosition(Node* sender,Node* receiver, Packet* p);
   double Distance(Ptr<AquaSimNetDevice> tdevice, Ptr<AquaSimNetDevice> rdevice);

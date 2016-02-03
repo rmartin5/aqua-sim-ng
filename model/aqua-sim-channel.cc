@@ -127,8 +127,7 @@ AquaSimChannel::Recv(Ptr<Packet> p, Ptr<AquaSimPhy> phy)
 {
   NS_LOG_FUNCTION(this << p << phy);
   NS_ASSERT(p != NULL || phy != NULL);
-  return 1;
-  //return SendUp(p,phy);	//TODO
+  return SendUp(p,phy);	//TODO
 }
 
 bool
@@ -141,7 +140,7 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
   Ptr<AquaSimNetDevice> recver;
   //std::vector<Ptr<AquaSimPhy> > rifp;	//must support multiple recv phy in future
   Ptr<AquaSimPhy> rifp;
-  Ptr<Packet> pCopy;
+  //Ptr<Packet> pCopy;
   double pDelay = 0.0;
   /*
   if(!m_sorted){
@@ -200,7 +199,8 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
 double
 AquaSimChannel::GetPropDelay (Ptr<AquaSimNetDevice> tdevice, Ptr<AquaSimNetDevice> rdevice)
 {
-  std::cout << m_prop->PDelay(GetMobilityModel(tdevice), GetMobilityModel(rdevice)).GetSeconds() << "\n";
+  NS_LOG_DEBUG("Channel Propagation Delay:" << m_prop->PDelay(GetMobilityModel(tdevice), GetMobilityModel(rdevice)).GetSeconds());
+
   return m_prop->PDelay(GetMobilityModel(tdevice), GetMobilityModel(rdevice)).GetSeconds();
 }
    	
@@ -219,6 +219,12 @@ AquaSimChannel::GetMobilityModel(Ptr<AquaSimNetDevice> device)
       NS_LOG_DEBUG("MobilityModel does not exist for device " << device);
     }
   return model;
+}
+
+Ptr<AquaSimNoiseGen>
+AquaSimChannel::GetNoiseGen()
+{
+  return m_noiseGen;
 }
 
 

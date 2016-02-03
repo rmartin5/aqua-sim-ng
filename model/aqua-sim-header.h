@@ -50,12 +50,12 @@ public:
   Address GetDAddr();
   int32_t GetSPort();
   int32_t GetDPort();
-  uint8_t GetErrorFlag();
+  bool GetErrorFlag();
   uint16_t GetUId();
 
   //Packet Stamp Getters:
   double GetTxRange();
-  double GetPt();
+  double GetPt();	//TODO remove or adapt double variables (conversion to uint32 issues)
   double GetPr();
   double GetFreq();
   double GetNoise();
@@ -75,7 +75,7 @@ public:
   void SetDAddr(Address dAddr);
   void SetSPort(int32_t sPort);
   void SetDPort(int32_t dPort);
-  void SetErrorFlag(uint8_t error);
+  void SetErrorFlag(bool error);
   void SetUId(uint16_t uId);
 
   //Packet Stamp Setters:

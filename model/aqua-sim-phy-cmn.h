@@ -119,6 +119,8 @@ public:
   virtual PhyStatus &Status() {return m_status;}
   virtual void SetPhyStatus(PhyStatus status);
 
+  virtual Ptr<AquaSimSignalCache> GetSignalCache();
+
 protected:
   virtual Ptr<Packet> PrevalidateIncomingPkt(Ptr<Packet> p);
   virtual void UpdateTxEnergy(Time txTime, double pT, double pIdle);

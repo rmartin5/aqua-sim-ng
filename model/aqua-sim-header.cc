@@ -60,11 +60,11 @@ AquaSimHeader::Deserialize(Buffer::Iterator start)
   m_errorFlag = i.ReadU8();	//wasted space due to only needing 1 bit
   m_uId = i.ReadNtohU16();
 
-  m_pt = i.ReadU8();
-  m_pr = i.ReadU8();
-  m_txRange = i.ReadNtohU16();
-  m_freq = i.ReadU8();
-  m_noise = i.ReadU8();
+  m_pt = i.ReadU32();
+  m_pr = i.ReadU32();
+  m_txRange = i.ReadU16();
+  m_freq = i.ReadU16();
+  m_noise = i.ReadU16();
 
   return GetSerializedSize();
 }
@@ -78,7 +78,7 @@ AquaSimHeader::GetSerializedSize(void) const
   example can be seen @ main-packet-header.cc*/
 
   //reserved bytes for header
-  return (4 + 1 + 1 + 1 + 2 + 1 + 1 + 2 + 1 + 1);
+  return (4 + 1 + 1 + 1 + 2 + 4 + 4 + 2 + 2 + 2);
 }
 
 void 
@@ -91,17 +91,19 @@ AquaSimHeader::Serialize(Buffer::Iterator start) const
   i.WriteU8(m_errorFlag);
   i.WriteHtonU16(m_uId);
   //src/dst port + address
-  i.WriteU8(m_pt);
-  i.WriteU8(m_pr);
+  i.WriteU32(m_pt);
+  i.WriteU32(m_pr);
   i.WriteU16(m_txRange);
-  i.WriteU8(m_freq);
-  i.WriteU8(m_noise);
+  i.WriteU16(m_freq);
+  i.WriteU16(m_noise);
   //m_modName
 }
 
 void 
 AquaSimHeader::Print(std::ostream &os) const
 {
+  os << "Packet header is  ";
+
   os << "TxTime=" << m_txTime << " Direction=";
 
   if (m_direction == -1)
@@ -119,13 +121,13 @@ AquaSimHeader::Print(std::ostream &os) const
 
   os << " Error=";
 
-  if (m_errorFlag != 0)
+  if (m_errorFlag == 0)
   {
-	  os << "True";
+	  os << "False";
   }
   else
   {
-	  os << "False";
+	  os << "True";
   }
 
   os << " UniqueID=" << m_uId;
@@ -137,6 +139,8 @@ AquaSimHeader::Print(std::ostream &os) const
   os << " Frequency=" << m_freq;
 
   os << " Noise=" << m_noise;
+
+  os << "\n";
 
 }
 
@@ -194,7 +198,7 @@ AquaSimHeader::GetDPort()
   return (m_dst.port);
 }
 
-uint8_t
+bool
 AquaSimHeader::GetErrorFlag(void)
 {
   return m_errorFlag;
@@ -288,7 +292,7 @@ AquaSimHeader::SetDPort(int32_t dPort)
 }
 
 void
-AquaSimHeader::SetErrorFlag(uint8_t error)
+AquaSimHeader::SetErrorFlag(bool error)
 {
   m_errorFlag = error;
 }

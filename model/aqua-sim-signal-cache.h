@@ -77,6 +77,8 @@ public:
   PacketStatus Status(Ptr<Packet> p);
   void SubmitPkt(IncomingPacket* inPkt);
 
+  void SetNoiseGen(Ptr<AquaSimNoiseGen> noise);
+
   friend class PktSubmissionTimer;
 
 protected:
@@ -91,7 +93,7 @@ protected:
   Ptr<AquaSimPhy> m_phy;
   PktSubmissionTimer* m_pktSubTimer;
   Ptr<AquaSimEnergyModel> m_em;
-  Ptr<AquaSimConstNoiseGen> m_noise;
+  Ptr<AquaSimNoiseGen> m_noise;
 
 private:
   /**

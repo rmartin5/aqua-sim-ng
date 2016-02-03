@@ -10,6 +10,7 @@
 #include "ns3/log.h"
 #include "ns3/double.h"
 #include "ns3/uinteger.h"
+#include "ns3/pointer.h"
 
 #include "aqua-sim-header.h"
 #include "aqua-sim-energy-model.h"
@@ -34,7 +35,6 @@ AquaSimPhyCmn::AquaSimPhyCmn(void) :
   m_trigger = 0.45;
   m_status = PHY_IDLE;
   //m_ant = NULL;
-  m_sC = NULL; 
   m_eM = NULL;
   m_channel = NULL;
   m_mac = NULL;
@@ -59,6 +59,8 @@ AquaSimPhyCmn::AquaSimPhyCmn(void) :
   m_modulationName = "default";
   Ptr<AquaSimModulation> mod = CreateObject<AquaSimModulation>();
   AddModulation(mod, "default");
+  m_sC = CreateObject<AquaSimSignalCache>();
+  AttachPhyToSignalCache(m_sC, this);
 
   counter = 0;
 
@@ -137,6 +139,10 @@ AquaSimPhyCmn::GetTypeId(void)
       DoubleValue(0.0),
       MakeDoubleAccessor(&AquaSimPhyCmn::m_pIdle),
       MakeDoubleChecker<double>())
+    .AddAttribute("SignalCache", "Signal cache attached to this node.",
+      PointerValue(),
+      MakePointerAccessor (&AquaSimPhyCmn::m_sC),
+      MakePointerChecker<AquaSimSignalCache>())
     ;
   return tid;
 }
@@ -204,7 +210,7 @@ void
 AquaSimPhyCmn::SetSignalCache(Ptr<AquaSimSignalCache> sC)
 {
   m_sC = sC;
-  AquaSimPhy::AttachPhyToSignalCache(m_sC,this);
+  AttachPhyToSignalCache(m_sC,this);
 }
 
 void
@@ -212,6 +218,12 @@ AquaSimPhyCmn::SetPhyStatus(PhyStatus status)
 {
   NS_LOG_FUNCTION(this);
   m_status = status;
+}
+
+Ptr<AquaSimSignalCache>
+AquaSimPhyCmn::GetSignalCache()
+{
+  return m_sC;
 }
 
 void
@@ -490,6 +502,7 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
   asHeader.SetFreq(m_freq);
   asHeader.SetPt(m_powerLevels[m_ptLevel]);
   asHeader.SetModName(m_modulationName);
+  asHeader.SetErrorFlag(false);
 
   Time txSendDelay = this->CalcTxTime(p->GetSize(), &m_modulationName );
   Simulator::Schedule(txSendDelay, &AquaSimPhyCmn::SetPhyStatus, this, PHY_IDLE);
@@ -499,7 +512,10 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
   * not multiple tranceiver, so we pass the packet to channel_ directly
   * p' uw_txinfo_ carries channel frequency information
   */
+
   p->AddHeader(asHeader);
+
+  asHeader.Print(std::cout);
 
   return m_channel->Recv(p, this);
 }

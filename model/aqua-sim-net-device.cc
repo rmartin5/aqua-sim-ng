@@ -33,6 +33,7 @@
 #include "aqua-sim-mac.h"
 #include "aqua-sim-routing.h"
 #include "aqua-sim-channel.h"
+#include "aqua-sim-signal-cache.h"
 
 namespace ns3 {
 
@@ -239,6 +240,7 @@ AquaSimNetDevice::SetChannel (Ptr<AquaSimChannel> channel)
       if (m_phy != 0)
 	{
 	  m_phy->SetChannel(m_channel);
+	  m_phy->GetSignalCache()->SetNoiseGen(m_channel->GetNoiseGen());
 	}
       CompleteConfig ();
     }

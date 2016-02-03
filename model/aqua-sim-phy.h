@@ -86,6 +86,9 @@ namespace ns3 {
     virtual PhyStatus &Status() = 0;
     virtual void SetPhyStatus(PhyStatus status) = 0;
 
+    virtual Ptr<AquaSimSignalCache> GetSignalCache() = 0;
+
+
     virtual double GetPt() = 0;
     virtual double GetRXThresh() = 0;
     virtual double GetCSThresh() = 0;

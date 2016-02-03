@@ -33,6 +33,7 @@ TypeId
 PktSubmissionTimer::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::PktSubmissionTimer")
+    .SetParent<Object>()
   ;
   return tid;
 }
@@ -50,13 +51,16 @@ PktSubmissionTimer::Expire(void) {
 
 void
 PktSubmissionTimer::AddNewSubmission(IncomingPacket* inPkt) {
+  NS_LOG_FUNCTION(this << inPkt);
+
   AquaSimHeader asHeader;
   (inPkt->packet)->PeekHeader(asHeader);
-  NS_LOG_DEBUG ("txtime=" << asHeader.GetTxTime());
+
   Time endT_ = Time(Simulator::Now().GetSeconds() + Seconds(asHeader.GetTxTime()));
   if (m_waitingList.empty() || m_waitingList.top().endT > endT_) {
-    Simulator::Schedule( endT_ - Simulator::Now(), &PktSubmissionTimer::AddNewSubmission, this, inPkt );
+    Simulator::Schedule( Simulator::Now() - Seconds(asHeader.GetTxTime()), &PktSubmissionTimer::AddNewSubmission, this, inPkt );
   }
+
   m_waitingList.push(PktSubmissionUnit(inPkt, endT_));
 }
 
@@ -69,11 +73,13 @@ PktSubmissionUnit::PktSubmissionUnit(IncomingPacket* inPkt_, Time endT_)
 NS_OBJECT_ENSURE_REGISTERED(AquaSimSignalCache);
 
 AquaSimSignalCache::AquaSimSignalCache() :
-m_pktNum(0), m_totalPS(0.0), m_phy(NULL), m_pktSubTimer(NULL)
+m_pktNum(0), m_totalPS(0.0), m_pktSubTimer(NULL)
 {
   m_head = new IncomingPacket(NULL, INVALID);
   m_pktSubTimer = new PktSubmissionTimer(this);
   status = INVALID;
+
+  m_em = CreateObject<AquaSimEnergyModel>();	//Should be updated in the future.
 }
 
 AquaSimSignalCache::~AquaSimSignalCache() {
@@ -92,7 +98,7 @@ TypeId
 AquaSimSignalCache::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::AquaSimSignalCache")
-	  //.SetParent<Object> ();
+    .SetParent<Object> ();
   ;
   return tid;
 }
@@ -106,10 +112,11 @@ AquaSimSignalCache::AddNewPacket(Ptr<Packet> p){
   */
 
   AquaSimHeader asHeader;
+ // p->RemoveHeader(asHeader);
   p->PeekHeader(asHeader);
-  NS_LOG_DEBUG ("errorFlag=" << asHeader.GetErrorFlag());
+  NS_LOG_DEBUG ("errorFlag=" << asHeader.GetErrorFlag() << " freq:" << asHeader.GetFreq());
 
-  IncomingPacket* inPkt = new IncomingPacket(PeekPointer(p),
+  IncomingPacket* inPkt = new IncomingPacket(p,
 		  asHeader.GetErrorFlag() ? INVALID : RECEPTION);
 
   m_pktSubTimer->AddNewSubmission(inPkt);
@@ -192,6 +199,8 @@ AquaSimSignalCache::Status(Ptr<Packet> p){
 
 void
 AquaSimSignalCache::UpdatePacketStatus(){
+  NS_LOG_FUNCTION(this);
+
   double noise = 0,		//total noise
 	 ps = 0;		//power strength
 	//,SINR = 0; 		//currently not used
@@ -207,5 +216,10 @@ AquaSimSignalCache::UpdatePacketStatus(){
   }
 }
 
+void
+AquaSimSignalCache::SetNoiseGen(Ptr<AquaSimNoiseGen> noise)
+{
+  m_noise = noise;
+}
 
 };  // namespace ns3
