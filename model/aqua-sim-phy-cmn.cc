@@ -62,7 +62,8 @@ AquaSimPhyCmn::AquaSimPhyCmn(void) :
   m_sC = CreateObject<AquaSimSignalCache>();
   AttachPhyToSignalCache(m_sC, this);
 
-  counter = 0;
+  incPktCounter = 0;	//debugging purposes only
+  outPktCounter = 0;
 
   Simulator::Schedule(Time(1.0), &AquaSimPhyCmn::Expire, this);	//start energy drain
 }
@@ -275,6 +276,8 @@ AquaSimPhyCmn::UpdateTxEnergy(Time txTime, double pT, double pIdle) {
 
 void
 AquaSimPhyCmn::UpdateRxEnergy(Time txTime) {
+  NS_LOG_FUNCTION(txTime);
+
   double startTime = Simulator::Now().GetSeconds();
   double endTime = startTime + txTime.GetSeconds();
 
@@ -359,14 +362,15 @@ return p;
 */
 bool
 AquaSimPhyCmn::Recv(Ptr<Packet> p) {  // Handler* h
-  NS_LOG_FUNCTION(this << counter++);
+  NS_LOG_FUNCTION(this << p);
 
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
   //NS_LOG_DEBUG ("direction=" << asHeader.GetDirection());
 
   if (asHeader.GetDirection() == AquaSimHeader::DOWN) {
-    NS_LOG_DEBUG("Phy_Recv DOWN"); //REMOVE
+    NS_LOG_DEBUG("Phy_Recv DOWN. Pkt counter(" << outPktCounter++ << ") on node(" <<
+		 m_device->GetNode() << ")");
     PktTransmit(p);
   }
   else {
@@ -375,7 +379,8 @@ AquaSimPhyCmn::Recv(Ptr<Packet> p) {  // Handler* h
 	      "sending pkt up the stack on default.");
     }
 
-    NS_LOG_DEBUG("Phy_Recv UP"); //REMOVE
+    NS_LOG_DEBUG("Phy_Recv UP. Pkt counter(" << incPktCounter++ << ") on node(" <<
+		 m_device->GetNode() << ")");
     p = PrevalidateIncomingPkt(p);
 
     if (p != NULL) {
@@ -409,7 +414,7 @@ AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p) {
   AquaSimHeader asHeader;
   p->RemoveHeader(asHeader);
   NS_LOG_DEBUG ("TxTime=" << asHeader.GetTxTime());
-  Time txTime = Seconds(asHeader.GetTxTime());
+  Time txTime = asHeader.GetTxTime();
 
   if (m_device->FailureStatus()) {
     NS_LOG_WARN("AquaSimPhyCmn: nodeId=" << m_device->GetNode()->GetId() << " fails!\n");
@@ -418,6 +423,8 @@ AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p) {
   }
 
   if (!MatchFreq(asHeader.GetFreq())) {
+    NS_LOG_WARN("AquaSimPhyCmn: Cannot match freq(" << asHeader.GetFreq() << ") on node(" <<
+		m_device->GetNode() << ")");
     p = 0;
     return NULL;
   }
@@ -435,12 +442,12 @@ AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p) {
     * p still can pass since its signal may affect other packets
     * when this node wake up or start to receive other packets
     */
-    NS_LOG_DEBUG(this << " packet error");
+    NS_LOG_DEBUG(this << "packet error");
     asHeader.SetErrorFlag(true);
   }
 
   else {
-	  Status() = PHY_RECV;
+    Status() = PHY_RECV;
   }
 
   UpdateRxEnergy(txTime);
@@ -475,7 +482,7 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
 
   switch (Status()){
   case PHY_SEND:
-    UpdateTxEnergy(Seconds(asHeader.GetTxTime()), m_ptConsume, m_pIdle);
+    UpdateTxEnergy(asHeader.GetTxTime(), m_ptConsume, m_pIdle);
     break;
   case PHY_IDLE:
     /*

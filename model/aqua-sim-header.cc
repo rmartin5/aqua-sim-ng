@@ -4,6 +4,7 @@
 #include "ns3/header.h"
 #include "ns3/buffer.h"
 #include "ns3/log.h"
+
 #include <iostream>
 
 using namespace ns3;
@@ -54,7 +55,7 @@ uint32_t
 AquaSimHeader::Deserialize(Buffer::Iterator start)
 {
   Buffer::Iterator i = start;
-  m_txTime = i.ReadNtohU32();
+  m_txTime = Seconds ( ( (double) i.ReadU32 ()) / 1000.0 );
   m_direction = i.ReadU8();	//wasted space due to only needing 2 bits
   m_numForwards = i.ReadU8();
   m_errorFlag = i.ReadU8();	//wasted space due to only needing 1 bit
@@ -85,7 +86,7 @@ void
 AquaSimHeader::Serialize(Buffer::Iterator start) const
 {
   Buffer::Iterator i = start;
-  i.WriteHtonU32(m_txTime);
+  i.WriteU32((uint32_t)(m_txTime.GetSeconds() * 1000.0 + 0.5));
   i.WriteU8(m_direction);
   i.WriteU8(m_numForwards);
   i.WriteU8(m_errorFlag);
@@ -144,7 +145,7 @@ AquaSimHeader::Print(std::ostream &os) const
 
 }
 
-double
+Time
 AquaSimHeader::GetTxTime(void)
 {
   return m_txTime;
@@ -244,7 +245,7 @@ AquaSimHeader::GetModName()
 
 
 void
-AquaSimHeader::SetTxTime(double time)
+AquaSimHeader::SetTxTime(Time time)
 {
   m_txTime = time;
 }

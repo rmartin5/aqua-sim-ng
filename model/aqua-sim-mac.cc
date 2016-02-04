@@ -121,13 +121,13 @@ AquaSimMac::HandleIncomingPkt(Ptr<Packet> p) {
   AquaSimHeader asHeader;
   p->RemoveHeader(asHeader);
 
-  double txTime = asHeader.GetTxTime();
+  Time txTime = asHeader.GetTxTime();
   if (Phy()->Status() != PHY_SEND) {
       m_device->SetCarrierSense(true);
   }
   p->AddHeader(asHeader);
 
-  Simulator::Schedule(Seconds(txTime), &AquaSimMac::SendUp, this, p);
+  Simulator::Schedule(txTime, &AquaSimMac::SendUp, this, p);
 }
 
 void

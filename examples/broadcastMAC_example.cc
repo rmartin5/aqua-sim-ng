@@ -33,7 +33,7 @@ main (int argc, char *argv[])
   double simStop = 20; //seconds
   int nodes = 2;
   int sinks = 1;
-  uint32_t m_dataRate = 80;
+  uint32_t m_dataRate = 180;
   uint32_t m_packetSize = 32;
 
   /*

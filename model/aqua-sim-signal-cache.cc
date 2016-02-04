@@ -40,28 +40,43 @@ PktSubmissionTimer::GetTypeId (void)
 
 void
 PktSubmissionTimer::Expire(void) {
+//TODO remove this priority_queue testing below
+  /*
+   std::priority_queue<PktSubmissionUnit> printList = m_waitingList;
+  while(!printList.empty())
+    {
+      std::cout << printList.top().endT.GetSeconds() << "/" << printList.top().inPkt << " ";
+      printList.pop();
+    }
+  std::cout << '\n';
+   */
+
   IncomingPacket* inPkt = m_waitingList.top().inPkt;
   m_waitingList.pop();
 
-  if (!m_waitingList.empty()) {
-    Simulator::Schedule( m_waitingList.top().endT - Simulator::Now(), &PktSubmissionTimer::Expire, this);
-  }
+  NS_LOG_DEBUG("Expire. time:" << Simulator::Now().GetSeconds() << "inPkt:" << inPkt);
+
   m_sC->SubmitPkt(inPkt);
 }
 
 void
 PktSubmissionTimer::AddNewSubmission(IncomingPacket* inPkt) {
-  NS_LOG_FUNCTION(this << inPkt);
-
   AquaSimHeader asHeader;
   (inPkt->packet)->PeekHeader(asHeader);
+  NS_LOG_FUNCTION(this << "incomingPkt:" << inPkt << "txtime:" << asHeader.GetTxTime());
 
-  Time endT_ = Time(Simulator::Now().GetSeconds() + Seconds(asHeader.GetTxTime()));
-  if (m_waitingList.empty() || m_waitingList.top().endT > endT_) {
-    Simulator::Schedule( Simulator::Now() - Seconds(asHeader.GetTxTime()), &PktSubmissionTimer::AddNewSubmission, this, inPkt );
+  /* Figure out exactly what this is doing here... */
+ // if (m_waitingList.empty() || m_waitingList.top().endT > endT_) {
+ //   Simulator::Schedule(Seconds(asHeader.GetTxTime()), &PktSubmissionTimer::AddNewSubmission, this, inPkt);
+  //}
+
+  m_waitingList.push(PktSubmissionUnit(inPkt, asHeader.GetTxTime()));
+
+  if (!m_waitingList.empty())
+  {
+      Simulator::Schedule(asHeader.GetTxTime(), &PktSubmissionTimer::Expire, this);
   }
 
-  m_waitingList.push(PktSubmissionUnit(inPkt, endT_));
 }
 
 
@@ -92,6 +107,11 @@ AquaSimSignalCache::~AquaSimSignalCache() {
   }
 
   m_pktSubTimer = 0;	//Should probably use unref instead...
+  delete m_pktSubTimer;
+  m_head = 0;
+  pos = 0;
+  delete m_head;
+  delete pos;
 }
 
 TypeId
@@ -110,11 +130,10 @@ AquaSimSignalCache::AddNewPacket(Ptr<Packet> p){
   * this packet is invalid and will be considered
   * as noise to other packets only.
   */
-
   AquaSimHeader asHeader;
  // p->RemoveHeader(asHeader);
   p->PeekHeader(asHeader);
-  NS_LOG_DEBUG ("errorFlag=" << asHeader.GetErrorFlag() << " freq:" << asHeader.GetFreq());
+  NS_LOG_FUNCTION(this << "Packet:" << p << "Error flag:" << asHeader.GetErrorFlag());
 
   IncomingPacket* inPkt = new IncomingPacket(p,
 		  asHeader.GetErrorFlag() ? INVALID : RECEPTION);
@@ -153,6 +172,8 @@ AquaSimSignalCache::DeleteIncomingPacket(Ptr<Packet> p){
 
 void
 AquaSimSignalCache::SubmitPkt(IncomingPacket* inPkt) {
+  NS_LOG_FUNCTION(this << inPkt << inPkt->status);
+
   status = inPkt->status;
   Ptr<Packet> p = inPkt->packet;
   DeleteIncomingPacket(p); //object pointed by inPkt is deleted here

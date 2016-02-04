@@ -201,7 +201,8 @@ private:
   Ptr<AquaSimEnergyModel> m_eM;
   Ptr<AquaSimNetDevice> m_device;
 
-  uint32_t counter; //Remove...
+  uint32_t incPktCounter;
+  uint32_t outPktCounter;
 
   virtual void Expire(void);
 

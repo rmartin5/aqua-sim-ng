@@ -141,7 +141,7 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
   //std::vector<Ptr<AquaSimPhy> > rifp;	//must support multiple recv phy in future
   Ptr<AquaSimPhy> rifp;
   //Ptr<Packet> pCopy;
-  double pDelay = 0.0;
+  Time pDelay;
   /*
   if(!m_sorted){
     SortLists();
@@ -163,7 +163,7 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
     p->RemoveHeader(asHeader);
 
     asHeader.SetPr((*recvUnits)[i].pR);
-    asHeader.SetNoise(m_noiseGen->Noise((Simulator::Now() + Seconds(pDelay)), (GetMobilityModel(recver)->GetPosition())));
+    asHeader.SetNoise(m_noiseGen->Noise((Simulator::Now() + pDelay), (GetMobilityModel(recver)->GetPosition())));
     asHeader.SetDirection(AquaSimHeader::UP);
     asHeader.SetTxTime(pDelay);
 
@@ -174,9 +174,9 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
      * in physical layer according to freq and modulation
      */
     NS_LOG_DEBUG ("Channel. NodeS:" << sender->GetNode() << " NodeR:" << recver->GetNode()
-		  << " TxTime:" << Seconds(asHeader.GetTxTime()));
+		  << " TxTime:" << asHeader.GetTxTime());
 
-    Simulator::Schedule(Seconds(pDelay), &AquaSimPhy::Recv, rifp, p);
+    Simulator::Schedule(pDelay, &AquaSimPhy::Recv, rifp, p);
     //Simulator::Schedule(pDelay, recver, &pCopy);		REMOVE
 
     /* FIXME in future support multiple phy with below code.
@@ -196,12 +196,12 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
   return true;	//TODO fix this to make it more accurately check for issues.
 }
 
-double
+Time
 AquaSimChannel::GetPropDelay (Ptr<AquaSimNetDevice> tdevice, Ptr<AquaSimNetDevice> rdevice)
 {
   NS_LOG_DEBUG("Channel Propagation Delay:" << m_prop->PDelay(GetMobilityModel(tdevice), GetMobilityModel(rdevice)).GetSeconds());
 
-  return m_prop->PDelay(GetMobilityModel(tdevice), GetMobilityModel(rdevice)).GetSeconds();
+  return m_prop->PDelay(GetMobilityModel(tdevice), GetMobilityModel(rdevice));
 }
    	
 double
