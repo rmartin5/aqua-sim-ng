@@ -29,6 +29,7 @@ class AquaSimHeader : public Header
 public:
 
   enum dir_t { DOWN = 0, NONE = 1, UP = 2 };
+  enum PacketStatus { RECEPTION = 0, COLLISION = 1, INVALID = 2};
   enum AquaSimMacDemuxPktType{ UWPTYPE_LOC, UWPTYPE_SYNC, UWPTYPE_OTHER };
   
   AquaSimHeader();
@@ -38,12 +39,13 @@ public:
   //Protocol specific access to the header
 
   /***TODO This is clunky and needs to be revamped to match real world headers***/
+  //Could probably combine direction and packet status using std::bitset to utilize uint8_t
+      //icmpv6-header shows a helpful example of header flag handling too
 
   //Getters
   Time GetTxTime();  // tx time for this packet in sec
   uint32_t GetSize();	// simulated packet size
-  uint8_t GetDirection();/* setting all direction of pkts to be downward as default
-						until channel changes it to +1 (UPWARD) */
+  uint8_t GetDirection();/* setting all direction of pkts to be none as default */
   //uint8_t GetAddrType();	//type of next hop addr... not in use currently
   Address GetNextHop();	// next hop for this packet
   uint8_t GetNumForwards();	// how many times this pkt was forwarded
@@ -56,11 +58,12 @@ public:
 
   //Packet Stamp Getters:
   double GetTxRange();
-  double GetPt();	//TODO remove or adapt double variables (conversion to uint32 issues)
+  double GetPt();	//TODO adapt double variables (conversion to uint32 issues) *** See TxTime***
   double GetPr();
   double GetFreq();
   double GetNoise();
   std::string GetModName();
+  uint8_t GetPacketStatus();	// default is INVALID
 
   /*
   * Demux feature needs to be implemented
@@ -86,6 +89,7 @@ public:
   void SetFreq(double freq);
   void SetNoise(double noise);
   void SetModName(std::string modName);
+  void SetPacketStatus(uint8_t status);
 
 
   bool CheckConflict();  //check if parameters conflict
@@ -101,7 +105,7 @@ public:
 private:
   //uint32_t m_data;
   Time m_txTime;
-  uint8_t m_direction;  // direction: 1=down, 2=none, 3=up
+  uint8_t m_direction;  // direction: 0=down, 1=none, 2=up
   //uint8_t m_addrType;
   Address m_nextHop;
   uint8_t m_numForwards;
@@ -123,6 +127,7 @@ private:
   double m_freq;	//central frequency
   double m_noise;	//background noise at the receiver side
   std::string m_modName;
+  uint8_t m_status;  // 0=reception, 1=collision, 2=invalid
 
   /*
   * Demux features needs to be implemented

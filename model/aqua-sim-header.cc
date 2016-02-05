@@ -6,6 +6,8 @@
 #include "ns3/log.h"
 
 #include <iostream>
+#include <bitset>
+
 
 using namespace ns3;
 
@@ -17,10 +19,10 @@ NS_LOG_COMPONENT_DEFINE("AquaSimHeader");
 NS_OBJECT_ENSURE_REGISTERED(AquaSimHeader);
 
 AquaSimHeader::AquaSimHeader(void) :
-    m_txTime(0), m_direction(0), m_nextHop(),
+    m_txTime(0), m_direction(NONE), m_nextHop(),
     m_numForwards(0), m_errorFlag(0), m_uId(-1),
-    m_pt(-1), m_pr(-1),
-    m_txRange(-1), m_freq(-1), m_noise(0)
+    m_pt(-1), m_pr(-1), m_txRange(-1),
+    m_freq(-1), m_noise(0), m_status(INVALID)
 {
   //m_src.addr(Address());
   //m_dst.addr(Address());
@@ -56,7 +58,7 @@ AquaSimHeader::Deserialize(Buffer::Iterator start)
 {
   Buffer::Iterator i = start;
   m_txTime = Seconds ( ( (double) i.ReadU32 ()) / 1000.0 );
-  m_direction = i.ReadU8();	//wasted space due to only needing 2 bits
+  m_direction = i.ReadU8();
   m_numForwards = i.ReadU8();
   m_errorFlag = i.ReadU8();	//wasted space due to only needing 1 bit
   m_uId = i.ReadNtohU16();
@@ -66,6 +68,7 @@ AquaSimHeader::Deserialize(Buffer::Iterator start)
   m_txRange = i.ReadU16();
   m_freq = i.ReadU16();
   m_noise = i.ReadU16();
+  m_status = i.ReadU8();
 
   return GetSerializedSize();
 }
@@ -79,7 +82,7 @@ AquaSimHeader::GetSerializedSize(void) const
   example can be seen @ main-packet-header.cc*/
 
   //reserved bytes for header
-  return (4 + 1 + 1 + 1 + 2 + 4 + 4 + 2 + 2 + 2);
+  return (4 + 1 + 1 + 1 + 2 + 4 + 4 + 2 + 2 + 2 + 1);
 }
 
 void 
@@ -97,6 +100,7 @@ AquaSimHeader::Serialize(Buffer::Iterator start) const
   i.WriteU16(m_txRange);
   i.WriteU16(m_freq);
   i.WriteU16(m_noise);
+  i.WriteU8(m_status);
   //m_modName
 }
 
@@ -107,28 +111,28 @@ AquaSimHeader::Print(std::ostream &os) const
 
   os << "TxTime=" << m_txTime << " Direction=";
 
-  if (m_direction == -1)
+  if (m_direction == DOWN)
   {
-	  os << " DOWN";
+    os << " DOWN";
   }
-  if (m_direction == 0)
+  if (m_direction == NONE)
   {
-	  os << " NONE";
+    os << " NONE";
   }
-  if (m_direction == 1)
+  if (m_direction == UP)
   {
-	  os << " UP";
+    os << " UP";
   }
 
   os << " Error=";
 
   if (m_errorFlag == 0)
   {
-	  os << "False";
+    os << "False";
   }
   else
   {
-	  os << "True";
+    os << "True";
   }
 
   os << " UniqueID=" << m_uId;
@@ -140,6 +144,21 @@ AquaSimHeader::Print(std::ostream &os) const
   os << " Frequency=" << m_freq;
 
   os << " Noise=" << m_noise;
+
+  os << " PacketStatus=";
+
+  if (m_status == RECEPTION)
+    {
+      os << "RECEPTION";
+    }
+  if (m_status == COLLISION)
+    {
+      os << "COLLISION";
+    }
+  if (m_status == INVALID)
+    {
+      os << "INVALID";
+    }
 
   os << "\n";
 
@@ -241,8 +260,11 @@ AquaSimHeader::GetModName()
 {
   return m_modName;
 }
-
-
+uint8_t
+AquaSimHeader::GetPacketStatus()
+{
+  return m_status;
+}
 
 void
 AquaSimHeader::SetTxTime(Time time)
@@ -334,6 +356,12 @@ void
 AquaSimHeader::SetModName(std::string modName)
 {
   m_modName = modName;
+}
+
+void
+AquaSimHeader::SetPacketStatus(uint8_t status)
+{
+  m_status = status;
 }
 
 

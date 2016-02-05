@@ -14,19 +14,18 @@
 #include "aqua-sim-phy.h"
 #include "aqua-sim-energy-model.h"
 #include "aqua-sim-noise-generator.h"
+#include "aqua-sim-header.h"
 
 
 //Aqua Sim Signal Cache
 
 namespace ns3 {
 
-enum PacketStatus{ RECEPTION, COLLISION, INVALID };
-
 struct IncomingPacket{
   Ptr<Packet> packet;
-  enum PacketStatus status;
+  AquaSimHeader::PacketStatus status;
   IncomingPacket* next;
-  IncomingPacket(Ptr<Packet> p, PacketStatus s = INVALID) :
+  IncomingPacket(Ptr<Packet> p, AquaSimHeader::PacketStatus s = AquaSimHeader::INVALID) :
 	  packet(p), status(s), next(NULL) {}
 };
 
@@ -73,8 +72,8 @@ public:
   virtual bool DeleteIncomingPacket(Ptr<Packet>);
   void InvalidateIncomingPacket(void);
   IncomingPacket* Lookup(Ptr<Packet>);
-  PacketStatus status;
-  PacketStatus Status(Ptr<Packet> p);
+  AquaSimHeader::PacketStatus status;
+  AquaSimHeader::PacketStatus Status(Ptr<Packet> p);
   void SubmitPkt(IncomingPacket* inPkt);
 
   void SetNoiseGen(Ptr<AquaSimNoiseGen> noise);

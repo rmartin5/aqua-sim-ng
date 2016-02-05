@@ -90,9 +90,9 @@ NS_OBJECT_ENSURE_REGISTERED(AquaSimSignalCache);
 AquaSimSignalCache::AquaSimSignalCache() :
 m_pktNum(0), m_totalPS(0.0), m_pktSubTimer(NULL)
 {
-  m_head = new IncomingPacket(NULL, INVALID);
+  m_head = new IncomingPacket(NULL, AquaSimHeader::INVALID);
   m_pktSubTimer = new PktSubmissionTimer(this);
-  status = INVALID;
+  status = AquaSimHeader::INVALID;
 
   m_em = CreateObject<AquaSimEnergyModel>();	//Should be updated in the future.
 }
@@ -130,13 +130,14 @@ AquaSimSignalCache::AddNewPacket(Ptr<Packet> p){
   * this packet is invalid and will be considered
   * as noise to other packets only.
   */
+  // TODO is packet collision even really tested or dealt with in this class???
   AquaSimHeader asHeader;
  // p->RemoveHeader(asHeader);
   p->PeekHeader(asHeader);
   NS_LOG_FUNCTION(this << "Packet:" << p << "Error flag:" << asHeader.GetErrorFlag());
 
   IncomingPacket* inPkt = new IncomingPacket(p,
-		  asHeader.GetErrorFlag() ? INVALID : RECEPTION);
+		  asHeader.GetErrorFlag() ? AquaSimHeader::INVALID : AquaSimHeader::RECEPTION);
 
   m_pktSubTimer->AddNewSubmission(inPkt);
 
@@ -166,6 +167,7 @@ AquaSimSignalCache::DeleteIncomingPacket(Ptr<Packet> p){
     ptr = 0;
     return true;
   }
+  NS_LOG_DEBUG("DeleteIncomingPacket: ptr:" << ptr << "ptr(packet) == p?" << (ptr->packet != p));
   return false;
 }
 
@@ -181,7 +183,7 @@ AquaSimSignalCache::SubmitPkt(IncomingPacket* inPkt) {
   * modem has no idea about invalid packets, so release
   * them here
   */
-  if (status == INVALID)
+  if (status == AquaSimHeader::INVALID)
     p = 0;
   else
     m_phy->SignalCacheCallback(p);
@@ -204,17 +206,17 @@ AquaSimSignalCache::InvalidateIncomingPacket(){
   IncomingPacket* ptr = m_head->next;
 
   while (ptr != NULL) {
-    ptr->status = INVALID;
+    ptr->status = AquaSimHeader::INVALID;
     ptr = ptr->next;
   }
 }
 
 
-PacketStatus 
+AquaSimHeader::PacketStatus
 AquaSimSignalCache::Status(Ptr<Packet> p){
   IncomingPacket* ptr = Lookup(p);
 
-  return ptr == NULL ? INVALID : ptr->status;
+  return ptr == NULL ? AquaSimHeader::AquaSimHeader::INVALID : ptr->status;
 }
 
 
@@ -230,10 +232,10 @@ AquaSimSignalCache::UpdatePacketStatus(){
     ps = m_em->GetRxPower();
     noise = m_totalPS - ps;
 
-    if (ptr->status != RECEPTION)
+    if (ptr->status != AquaSimHeader::RECEPTION)
       continue;
 
-    ptr->status = m_phy->Decodable(noise + m_noise->Noise(), ps) ? RECEPTION : INVALID;
+    ptr->status = m_phy->Decodable(noise + m_noise->Noise(), ps) ? AquaSimHeader::RECEPTION : AquaSimHeader::INVALID;
   }
 }
 
