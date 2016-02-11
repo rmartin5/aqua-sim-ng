@@ -102,11 +102,11 @@ AquaSimSignalCache::~AquaSimSignalCache() {
   while (m_head != NULL) {
     m_head = m_head->next;
     pos->packet = 0;
-    pos = 0;		//this is probably memory leakage.
+    pos = 0;
     pos = m_head;
   }
 
-  m_pktSubTimer = 0;	//Should probably use unref instead...
+  m_pktSubTimer = 0;
   delete m_pktSubTimer;
   m_head = 0;
   pos = 0;
@@ -184,7 +184,10 @@ AquaSimSignalCache::SubmitPkt(IncomingPacket* inPkt) {
   * them here
   */
   if (status == AquaSimHeader::INVALID)
+  {
+    NS_LOG_DEBUG("Packet(" << p << ") dropped");
     p = 0;
+  }
   else
     m_phy->SignalCacheCallback(p);
 }

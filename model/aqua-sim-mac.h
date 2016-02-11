@@ -75,7 +75,6 @@ public:
   double GetPreamble(void);
 
   bool Recv(Ptr<Packet> p);	//TODO move to private once non-base MAC classes available
-
 private:
   // to receive packet from upper layer and lower layer
   //we hide this interface and demand derived classes to

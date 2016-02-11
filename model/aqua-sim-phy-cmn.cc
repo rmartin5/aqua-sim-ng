@@ -532,7 +532,7 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
 * but actually go to trace module first
 */
 void
-AquaSimPhyCmn::SendPktUp(Ptr<Packet> p) {	//TODO this should probably be a Callback
+AquaSimPhyCmn::SendPktUp(Ptr<Packet> p) {
   NS_LOG_FUNCTION(this);
 
   if (!m_mac->Recv(p))
@@ -545,6 +545,13 @@ AquaSimPhyCmn::SendPktUp(Ptr<Packet> p) {	//TODO this should probably be a Callb
 void
 AquaSimPhyCmn::SignalCacheCallback(Ptr<Packet> p) {
   NS_LOG_FUNCTION(this << p);
+
+  //TODO check for packet collision here or at signal cache
+
+  AquaSimHeader asHeader;
+  p->RemoveHeader(asHeader);
+  asHeader.SetTxTime(Seconds(0.01));	//arbitrary processing time here
+  p->AddHeader(asHeader);
 
   SendPktUp(p);
 }

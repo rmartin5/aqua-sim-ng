@@ -1,9 +1,11 @@
 //....
 
 #include "aqua-sim-header.h"
+#include "aqua-sim-rmac.h"
 #include "ns3/header.h"
 #include "ns3/buffer.h"
 #include "ns3/log.h"
+#include "ns3/address-utils.h"
 
 #include <iostream>
 #include <bitset>
@@ -22,7 +24,7 @@ AquaSimHeader::AquaSimHeader(void) :
     m_txTime(0), m_direction(NONE), m_nextHop(),
     m_numForwards(0), m_errorFlag(0), m_uId(-1),
     m_pt(-1), m_pr(-1), m_txRange(-1),
-    m_freq(-1), m_noise(0), m_status(INVALID)
+    m_freq(-1), m_noise(0), m_status(INVALID), m_timestamp(0)
 {
   //m_src.addr(Address());
   //m_dst.addr(Address());
@@ -69,6 +71,7 @@ AquaSimHeader::Deserialize(Buffer::Iterator start)
   m_freq = i.ReadU16();
   m_noise = i.ReadU16();
   m_status = i.ReadU8();
+  m_timestamp = Seconds ( ( (double) i.ReadU32 ()) / 1000.0 );
 
   return GetSerializedSize();
 }
@@ -82,7 +85,7 @@ AquaSimHeader::GetSerializedSize(void) const
   example can be seen @ main-packet-header.cc*/
 
   //reserved bytes for header
-  return (4 + 1 + 1 + 1 + 2 + 4 + 4 + 2 + 2 + 2 + 1);
+  return (4 + 1 + 1 + 1 + 2 + 4 + 4 + 2 + 2 + 2 + 1 + 4);
 }
 
 void 
@@ -101,6 +104,7 @@ AquaSimHeader::Serialize(Buffer::Iterator start) const
   i.WriteU16(m_freq);
   i.WriteU16(m_noise);
   i.WriteU8(m_status);
+  i.WriteU32((uint32_t)(m_timestamp.GetSeconds()*1000.0 + 0.5));
   //m_modName
 }
 
@@ -159,6 +163,7 @@ AquaSimHeader::Print(std::ostream &os) const
     {
       os << "INVALID";
     }
+  os << " Timestamp=" << m_timestamp;
 
   os << "\n";
 
@@ -265,6 +270,11 @@ AquaSimHeader::GetPacketStatus()
 {
   return m_status;
 }
+Time
+AquaSimHeader::GetTimeStamp()
+{
+  return m_timestamp;
+}
 
 void
 AquaSimHeader::SetTxTime(Time time)
@@ -364,6 +374,11 @@ AquaSimHeader::SetPacketStatus(uint8_t status)
   m_status = status;
 }
 
+void
+AquaSimHeader::SetTimeStamp(Time timestamp)
+{
+  m_timestamp = timestamp;
+}
 
 bool
 AquaSimHeader::CheckConflict()
@@ -376,4 +391,209 @@ AquaSimHeader::Stamp(Ptr<Packet> p, double pt, double pr)
 {
   m_pt = pt;
   m_pr = pr;
+}
+
+//Class RMacHeader
+
+RMacHeader::RMacHeader()
+{
+  NS_LOG_FUNCTION(this);
+}
+
+RMacHeader::~RMacHeader()
+{
+}
+
+TypeId
+RMacHeader::GetTypeId(void)
+{
+  static TypeId tid = TypeId("ns3::RMacHeader")
+    .SetParent<Header>()
+    .AddConstructor<RMacHeader>()
+  ;
+  return tid;
+}
+
+void
+RMacHeader::SetPtype(uint8_t ptype)
+{
+  m_ptype = ptype;
+}
+void
+RMacHeader::SetPktNum(uint32_t pkNum)
+{
+  m_pkNum = pkNum;
+}
+void
+RMacHeader::SetDataNum(uint32_t dataNum)
+{
+  m_dataNum = dataNum;
+}
+void
+RMacHeader::SetBlockNum(uint8_t blockNum)
+{
+  m_blockNum = blockNum;
+}
+void
+RMacHeader::SetSenderAddr(Address senderAddr)
+{
+  m_senderAddr = senderAddr;
+}
+void
+RMacHeader::SetRecvAddr(Address recvAddr)
+{
+  m_recvAddr = recvAddr;
+}
+void
+RMacHeader::SetSt(double st)
+{
+  m_st = st;
+}
+void
+RMacHeader::SetDuration(double duration)
+{
+  m_duration = duration;
+}
+void
+RMacHeader::SetInterval(double interval)
+{
+  m_interval = interval;
+}
+void
+RMacHeader::SetArrivalTime(Time arrivalTime)
+{
+  m_arrivalTime = arrivalTime;
+}
+void
+RMacHeader::SetTs(double ts)
+{
+  m_ts = ts;
+}
+
+
+uint8_t
+RMacHeader::GetPtype()
+{
+  return m_ptype;
+}
+uint32_t
+RMacHeader::GetPktNum()
+{
+  return m_pkNum;
+}
+uint32_t
+RMacHeader::GetDataNum()
+{
+  return m_dataNum;
+}
+uint8_t
+RMacHeader::GetBlockNum()
+{
+  return m_blockNum;
+}
+Address
+RMacHeader::GetSenderAddr()
+{
+  return m_senderAddr;
+}
+Address
+RMacHeader::GetRecvAddr()
+{
+  return m_recvAddr;
+}
+double
+RMacHeader::GetSt()
+{
+  return m_st;
+}
+double
+RMacHeader::GetDuration()
+{
+  return m_duration;
+}
+double
+RMacHeader::GetInterval()
+{
+  return m_interval;
+}
+Time
+RMacHeader::GetArrivalTime()
+{
+  return m_arrivalTime;
+}
+double
+RMacHeader::GetTs ()
+{
+  return m_ts;
+}
+TypeId
+RMacHeader::GetInstanceTypeId(void) const
+{
+  return GetTypeId();
+}
+
+uint32_t
+RMacHeader::GetSerializedSize(void) const
+{
+  return 1+4+4+1+1+1+4+4+4+4+4;
+}
+
+void
+RMacHeader::Serialize (Buffer::Iterator start) const
+{
+  start.WriteU8 (m_ptype);
+  start.WriteU32 (m_pkNum);
+  start.WriteU32 (m_dataNum);
+  start.WriteU8 (m_blockNum);
+  start.WriteU8 (m_senderAddr.GetLength());
+  start.WriteU8 (m_recvAddr.GetLength());
+  start.WriteU32 ((uint32_t)m_st * 1000.0 + 0.5);
+  start.WriteU32 ((uint32_t)m_duration * 1000.0 + 0.5);
+  start.WriteU32 ((uint32_t)m_interval * 1000.0 + 0.5);
+  start.WriteU32 ((uint32_t)(m_arrivalTime.GetSeconds() * 1000.0 + 0.5));
+  start.WriteU32 ((uint32_t)m_ts * 1000.0 + 0.5);
+
+}
+
+uint32_t
+RMacHeader::Deserialize (Buffer::Iterator start)
+{
+  Buffer::Iterator i = start;
+  m_ptype = i.ReadU8();
+  m_pkNum = i.ReadU32();
+  m_dataNum = i.ReadU32();
+  m_blockNum = i.ReadU8();
+  ReadFrom(i, m_senderAddr,8);	//read 8bit addr
+  ReadFrom(i, m_recvAddr, 8);	//read 8bit addr
+  m_st = ( (double) i.ReadU32 ()) / 1000.0;
+  m_duration = ( (double) i.ReadU32 ()) / 1000.0;
+  m_interval = ( (double) i.ReadU32 ()) / 1000.0;
+  m_arrivalTime = Seconds ( ( (double) i.ReadU32 ()) / 1000.0);
+  m_ts = ( (double) i.ReadU32 ()) / 1000.0;
+
+  return GetSerializedSize();
+}
+
+void
+RMacHeader::Print (std::ostream &os) const
+{
+  os << "RMac Header is ptype=";
+
+  switch(m_ptype)
+  {
+    case ns3::P_DATA: 	os << "DATA"; break;
+    case ns3::P_REV: 	os << "REV"; break;
+    case ns3::P_ACKREV: 	os << "ACKREV"; break;
+    case ns3::P_ND: 		os << "ND"; break;
+    case ns3::P_SACKND: 	os << "SACKND"; break;
+    case ns3::P_ACKDATA: 	os << "ACKDATA"; break;
+    case ns3::P_SYN: 	os << "SYN"; break;
+    default: break;
+  }
+
+  os << " PkNum=" << m_pkNum << " DataNum=" << m_dataNum;
+  os << " BlockNum=" << m_blockNum << " senderAddr=" << m_senderAddr;
+  os << " recvAddr=" << m_recvAddr << " st=" << m_st;
+  os << " Duration=" << m_duration << " Interval=" << m_interval;
+  os << " ArrivalTime=" << m_arrivalTime << " ts=" << m_ts << "\n";
 }

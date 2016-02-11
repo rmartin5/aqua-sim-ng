@@ -9,6 +9,7 @@
 #include "ns3/address.h"
 #include "ns3/header.h"
 #include "ns3/nstime.h"
+//#include "ns3/uan-address.h"	//use this for now.
 
 namespace ns3 {
 
@@ -64,6 +65,7 @@ public:
   double GetNoise();
   std::string GetModName();
   uint8_t GetPacketStatus();	// default is INVALID
+  Time GetTimeStamp();
 
   /*
   * Demux feature needs to be implemented
@@ -77,7 +79,7 @@ public:
   void SetNumForwards(uint8_t numForwards);
   void SetSAddr(Address sAddr);
   void SetDAddr(Address dAddr);
-  void SetSPort(int32_t sPort);
+  void SetSPort(int32_t sPort);	//TODO should be removed...
   void SetDPort(int32_t dPort);
   void SetErrorFlag(bool error);
   void SetUId(uint16_t uId);
@@ -90,7 +92,7 @@ public:
   void SetNoise(double noise);
   void SetModName(std::string modName);
   void SetPacketStatus(uint8_t status);
-
+  void SetTimeStamp(Time timestamp);
 
   bool CheckConflict();  //check if parameters conflict
   void Stamp(Ptr<Packet> p, double pt, double pr);
@@ -128,6 +130,7 @@ private:
   double m_noise;	//background noise at the receiver side
   std::string m_modName;
   uint8_t m_status;  // 0=reception, 1=collision, 2=invalid
+  Time m_timestamp;
 
   /*
   * Demux features needs to be implemented
@@ -135,6 +138,59 @@ private:
   */
 
 }; //class AquaSimHeader
+
+class RMacHeader : public Header
+{
+public:
+  RMacHeader();
+  virtual ~RMacHeader();
+  static TypeId GetTypeId(void);
+
+  void SetPtype(uint8_t ptype);
+  void SetPktNum(uint32_t pkNum);
+  void SetDataNum(uint32_t dataNum);
+  void SetBlockNum(uint8_t blockNum);
+  void SetSenderAddr(Address senderAddr);
+  void SetRecvAddr(Address recvAddr);
+  void SetSt(double st);
+  void SetDuration(double duration);
+  void SetInterval(double interval);
+  void SetArrivalTime(Time arrivalTime);
+  void SetTs(double ts);
+
+  uint8_t GetPtype();
+  uint32_t GetPktNum();
+  uint32_t GetDataNum();
+  uint8_t GetBlockNum();
+  Address GetSenderAddr();
+  Address GetRecvAddr();
+  double GetSt();
+  double GetDuration();
+  double GetInterval();
+  Time GetArrivalTime();
+  double GetTs ();
+
+  //inherited methods
+  virtual uint32_t GetSerializedSize(void) const;
+  virtual void Serialize (Buffer::Iterator start) const;
+  virtual uint32_t Deserialize (Buffer::Iterator start);
+  virtual void Print (std::ostream &os) const;
+  virtual TypeId GetInstanceTypeId(void) const;
+
+private:
+  uint8_t m_ptype;     //packet type
+  uint32_t m_pkNum;    // sequence number
+  uint32_t m_dataNum;
+  uint8_t m_blockNum; // the block num, in real world, one bit is enough
+  Address m_senderAddr;
+  Address m_recvAddr;
+  double m_st; // Timestamp when pkt is generated.
+  double m_duration;
+  double m_interval;
+  Time m_arrivalTime;
+  double m_ts;
+
+}; // class RMacHeader
 
 }  // namespace ns3
 
