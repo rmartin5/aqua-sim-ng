@@ -15,15 +15,14 @@ namespace ns3 {
 
 class Packet;
 
-/**
- *  Aqua-Sim Header
- */
-
-
 struct addr_t {
   Address addr;
   int32_t port;
 };
+
+/**
+ *  Aqua-Sim Header
+ */
 
 class AquaSimHeader : public Header
 {
@@ -139,6 +138,11 @@ private:
 
 }; //class AquaSimHeader
 
+
+/**
+ *  RMac Header
+ */
+
 class RMacHeader : public Header
 {
 public:
@@ -191,6 +195,41 @@ private:
   double m_ts;
 
 }; // class RMacHeader
+
+
+/**
+ *  Aloha Header
+ */
+
+class AlohaHeader : public Header
+{
+  enum PacketType {
+    DATA,
+    ACK
+  } packet_type;
+
+public:
+  AlohaHeader();
+  virtual ~AlohaHeader();
+  static TypeId GetTypeId(void);
+
+  static int size();
+
+  void SetSA(Address sa);
+  void SetDA(Address da);
+  Address GetSA();
+  Address GetDA();
+
+  //inherited methods
+  virtual uint32_t GetSerializedSize(void) const;
+  virtual void Serialize (Buffer::Iterator start) const;
+  virtual uint32_t Deserialize (Buffer::Iterator start);
+  virtual void Print (std::ostream &os) const;
+  virtual TypeId GetInstanceTypeId(void) const;
+private:
+  Address SA;
+  Address DA;
+};  // class AlohaHeader
 
 }  // namespace ns3
 

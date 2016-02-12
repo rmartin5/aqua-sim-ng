@@ -597,3 +597,82 @@ RMacHeader::Print (std::ostream &os) const
   os << " Duration=" << m_duration << " Interval=" << m_interval;
   os << " ArrivalTime=" << m_arrivalTime << " ts=" << m_ts << "\n";
 }
+
+
+/*
+ * AlohaHeader
+ */
+AlohaHeader::AlohaHeader()
+{
+}
+
+AlohaHeader::~AlohaHeader()
+{
+}
+
+TypeId
+AlohaHeader::GetTypeId()
+{
+  static TypeId tid = TypeId("ns3::AlohaHeader")
+    .SetParent<Header>()
+    .AddConstructor<AlohaHeader>()
+  ;
+  return tid;
+}
+
+int
+AlohaHeader::size()
+{
+  return sizeof(Address)*2 + 1; /*for packet_type*/
+}
+void
+AlohaHeader::SetSA(Address sa)
+{
+  SA = sa;
+}
+void
+AlohaHeader::SetDA(Address da)
+{
+  DA = da;
+}
+Address
+AlohaHeader::GetSA()
+{
+  return SA;
+}
+Address
+AlohaHeader::GetDA()
+{
+  return DA;
+}
+
+uint32_t
+AlohaHeader::GetSerializedSize(void) const
+{
+  return 1+1;
+}
+void
+AlohaHeader::Serialize (Buffer::Iterator start) const
+{
+  start.WriteU8 (SA.GetLength());
+  start.WriteU8 (DA.GetLength());
+}
+uint32_t
+AlohaHeader::Deserialize (Buffer::Iterator start)
+{
+  Buffer::Iterator i = start;
+  ReadFrom(i, SA,8);	//read 8bit addr
+  ReadFrom(i, DA, 8);	//read 8bit addr
+
+  return GetSerializedSize();
+}
+void
+AlohaHeader::Print (std::ostream &os) const
+{
+  os << "Aloha Header: SendAddress=" << SA << ", DestAddress=" << DA << "\n";
+}
+TypeId
+AlohaHeader::GetInstanceTypeId(void) const
+{
+  return GetTypeId();
+}

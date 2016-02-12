@@ -22,6 +22,8 @@ in the next period interval
 #include "ns3/random-variable-stream.h"
 #include "ns3/address.h"
 //#include "ns3/uan-address.h"  //use this for now.
+#include "ns3/double.h"
+#include "ns3/integer.h"
 
 #include "aqua-sim-rmac.h"
 #include "aqua-sim-rmac-buffer.h"
@@ -126,9 +128,68 @@ AquaSimRMac::GetTypeId()
   static TypeId tid = TypeId("ns3::AquaSimRMac")
     .SetParent<AquaSimMac>()
     .AddConstructor<AquaSimRMac>()
+    .AddAttribute ("BitRate", "Bit rate of MAC layer.",
+      DoubleValue(1.0e4),
+      MakeDoubleAccessor(&AquaSimRMac::m_bitRate),
+      MakeDoubleChecker<double>())
+    .AddAttribute ("EncodingEfficiency", "Ratio of encoding",
+      DoubleValue(1),
+      MakeDoubleAccessor(&AquaSimRMac::m_encodingEfficiency),
+      MakeDoubleChecker<double>())
+    .AddAttribute ("NDWindow", "Window to send ND",
+      DoubleValue(1),
+      MakeDoubleAccessor(&AquaSimRMac::m_NDwindow),
+      MakeDoubleChecker<double>())
+    .AddAttribute ("ACKNDWindow", "Window to send ACK_ND",
+      DoubleValue(1),
+      MakeDoubleAccessor(&AquaSimRMac::m_ackNDwindow),
+      MakeDoubleChecker<double>())
+    .AddAttribute ("PhaseOneWindow", "Time for latency detection",
+      DoubleValue(3),
+      MakeDoubleAccessor(&AquaSimRMac::m_phaseOneWindow),
+      MakeDoubleChecker<double>())
+    .AddAttribute ("PhaseTwoWindow", "Time for SYN announcement",
+      DoubleValue(1),
+      MakeDoubleAccessor(&AquaSimRMac::m_phaseTwoWindow),
+      MakeDoubleChecker<double>())
+    .AddAttribute ("PhaseTwoInterval", "Interval between windows of phase two",
+      DoubleValue(0.5),
+      MakeDoubleAccessor(&AquaSimRMac::m_phaseTwoInterval),
+      MakeDoubleChecker<double>())
+    .AddAttribute ("IntervalPhase2Phase3", "Interval between windows of phase 2 and 3",
+      DoubleValue(1),
+      MakeDoubleAccessor(&AquaSimRMac::m_intervalPhase2Phase3),
+      MakeDoubleChecker<double>())
+    .AddAttribute ("Duration", "Duration of duty cycle",
+      DoubleValue(0.1),
+      MakeDoubleAccessor(&AquaSimRMac::m_duration),
+      MakeDoubleChecker<double>())
+    .AddAttribute ("PhyOverhead", "The overhead caused by Phy layer.",
+      IntegerValue(8),
+      MakeIntegerAccessor(&AquaSimRMac::m_phyOverhead),
+      MakeIntegerChecker<int>())
+    .AddAttribute ("LargePacketSize", "Size of a large packet (bits)",
+      IntegerValue(480),
+      MakeIntegerAccessor(&AquaSimRMac::m_largePacketSize),
+      MakeIntegerChecker<int>())
+    .AddAttribute ("ShortPacketSize", "Size of a short packet (bits)",
+      IntegerValue(40),
+      MakeIntegerAccessor(&AquaSimRMac::m_shortPacketSize),
+      MakeIntegerChecker<int>())
+    .AddAttribute ("PhaseOneCycle", "Number of cycles in phase one",
+      IntegerValue(4),
+      MakeIntegerAccessor(&AquaSimRMac::m_phaseOneCycle),
+      MakeIntegerChecker<int>())
+    .AddAttribute ("PhaseTwoCycle", "Number of cycles in phase two",
+      IntegerValue(2),
+      MakeIntegerAccessor(&AquaSimRMac::m_phaseTwoCycle),
+      MakeIntegerChecker<int>())
+    .AddAttribute ("TransmissionTimeError", "Guardian Time",
+      DoubleValue(0.0001),
+      MakeDoubleAccessor(&AquaSimRMac::m_transmissionTimeError),
+      MakeDoubleChecker<double>())
   ;
   return tid;
-  //TODO
 }
 
 void
