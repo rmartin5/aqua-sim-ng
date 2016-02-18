@@ -14,6 +14,7 @@
 #include "ns3/timer.h"
 #include "ns3/address.h"
 #include "ns3/packet.h"
+#include "ns3/integer.h"
 
 namespace ns3 {
 
@@ -39,6 +40,25 @@ AquaSimFama::AquaSimFama(): FamaStatus(PASSIVE), m_NDPeriod(4.0), m_maxBurst(1),
   Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   Simulator::Schedule(Seconds(m_rand->GetValue(0.0,m_NDPeriod)+0.000001), &AquaSimFama::NDTimerExpire, this);
 }
+
+AquaSimFama::~AquaSimFama()
+{
+}
+
+TypeId
+AquaSimFama::GetTypeId(void)
+{
+  static TypeId tid = TypeId("ns3::AquaSimFama")
+      .SetParent<AquaSimMac>()
+      .AddConstructor<AquaSimFama>()
+      .AddAttribute("MaxBurst", "The maximum number of packet burst. default is 1",
+	IntegerValue(1),
+	MakeIntegerAccessor (&AquaSimFama::m_maxBurst),
+	MakeIntegerChecker<AquaSimFama>())
+    ;
+  return tid;
+}
+
 
 void
 AquaSimFama::NDTimerExpire()
