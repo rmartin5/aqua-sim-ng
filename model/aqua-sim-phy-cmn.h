@@ -79,7 +79,7 @@ public:
   virtual void StatusShift(double);
 
   inline Time CalcTxTime(uint32_t pktsize, std::string * modName = NULL);
-  inline int CalcPktSize(double txtime, std::string * modName = NULL);
+  inline double CalcPktSize(double txtime, std::string * modName = NULL);
 
   virtual void SignalCacheCallback(Ptr<Packet> p);
   virtual bool Recv(Ptr<Packet> p);

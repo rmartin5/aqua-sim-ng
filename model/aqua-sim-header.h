@@ -231,6 +231,43 @@ private:
   Address DA;
 };  // class AlohaHeader
 
+
+/**
+ *  FAMA Header
+ */
+    //this is almost identical to AlohaHeader and could probably be condensed.
+class FamaHeader : public Header
+{
+  enum PacketType {
+    RTS,	//the previous forwarder thinks this is DATA-ACK
+    CTS,
+    FAMA_DATA,
+    ND		//neighbor discovery. need know neighbors, so it can be used as next hop.
+  } packet_type;
+
+public:
+  FamaHeader();
+  virtual ~FamaHeader();
+  static TypeId GetTypeId(void);
+
+  static int size();
+
+  void SetSA(Address sa);
+  void SetDA(Address da);
+  Address GetSA();
+  Address GetDA();
+
+  //inherited methods
+  virtual uint32_t GetSerializedSize(void) const;
+  virtual void Serialize (Buffer::Iterator start) const;
+  virtual uint32_t Deserialize (Buffer::Iterator start);
+  virtual void Print (std::ostream &os) const;
+  virtual TypeId GetInstanceTypeId(void) const;
+private:
+  Address SA;
+  Address DA;
+};  // class FamaHeader
+
 }  // namespace ns3
 
 #endif /* AQUA_SIM_HEADER_H */

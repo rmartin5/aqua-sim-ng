@@ -676,3 +676,83 @@ AlohaHeader::GetInstanceTypeId(void) const
 {
   return GetTypeId();
 }
+
+
+
+/*
+ * FamaHeader
+ */
+FamaHeader::FamaHeader()
+{
+}
+
+FamaHeader::~FamaHeader()
+{
+}
+
+TypeId
+FamaHeader::GetTypeId()
+{
+  static TypeId tid = TypeId("ns3::FamaHeader")
+    .SetParent<Header>()
+    .AddConstructor<FamaHeader>()
+  ;
+  return tid;
+}
+
+int
+FamaHeader::size()
+{
+  return sizeof(Address)*4 + 1; /*for packet_type*/
+}
+void
+FamaHeader::SetSA(Address sa)
+{
+  SA = sa;
+}
+void
+FamaHeader::SetDA(Address da)
+{
+  DA = da;
+}
+Address
+FamaHeader::GetSA()
+{
+  return SA;
+}
+Address
+FamaHeader::GetDA()
+{
+  return DA;
+}
+
+uint32_t
+FamaHeader::GetSerializedSize(void) const
+{
+  return 1+1;
+}
+void
+FamaHeader::Serialize (Buffer::Iterator start) const
+{
+  start.WriteU8 (SA.GetLength());
+  start.WriteU8 (DA.GetLength());
+}
+uint32_t
+FamaHeader::Deserialize (Buffer::Iterator start)
+{
+  Buffer::Iterator i = start;
+  ReadFrom(i, SA,8);	//read 8bit addr
+  ReadFrom(i, DA, 8);	//read 8bit addr
+
+  return GetSerializedSize();
+}
+void
+FamaHeader::Print (std::ostream &os) const
+{
+  os << "FAMA Header: SendAddress=" << SA << ", DestAddress=" << DA << "\n";
+}
+TypeId
+FamaHeader::GetInstanceTypeId(void) const
+{
+  return GetTypeId();
+}

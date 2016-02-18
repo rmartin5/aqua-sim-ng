@@ -686,7 +686,7 @@ AquaSimPhyCmn::CalcTxTime (uint32_t pktSize, std::string * modName)
       + Time::FromInteger(Preamble(), Time::S);
 }
 
-int
+double
 AquaSimPhyCmn::CalcPktSize (double txTime, std::string * modName)
 {
   return Modulation(modName)->PktSize (txTime - Preamble());

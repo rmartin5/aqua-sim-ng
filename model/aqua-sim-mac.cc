@@ -206,7 +206,7 @@ AquaSimMac::GetTxTime(Ptr<Packet> pkt, std::string * modName) {
   return GetTxTime(pkt->GetSize(), modName);
 }
 
-int
+double
 AquaSimMac::GetSizeByTxTime(double txTime, std::string * modName) {
   return Phy()->CalcPktSize(txTime, modName);
 }

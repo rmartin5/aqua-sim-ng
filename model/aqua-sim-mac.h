@@ -68,7 +68,7 @@ public:
 
   Time GetTxTime(int pktLen, std::string * modName = NULL);
   Time GetTxTime(Ptr<Packet> pkt, std::string * modName = NULL);
-  int  GetSizeByTxTime(double txTime, std::string * modName = NULL); //get packet size by txtime
+  double  GetSizeByTxTime(double txTime, std::string * modName = NULL); //get packet size by txtime
   // The sending process can stop receiving process and change the transmission
   // status of the node since underwatermac is half-duplex
 

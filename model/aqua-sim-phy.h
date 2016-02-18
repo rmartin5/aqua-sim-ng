@@ -76,7 +76,7 @@ namespace ns3 {
     virtual void StatusShift(double x) = 0; //Necessary?????
 
     virtual Time CalcTxTime(uint32_t pktsize, std::string * modName = NULL) = 0;
-    virtual int CalcPktSize(double txtime, std::string * modName = NULL) = 0;
+    virtual double CalcPktSize(double txtime, std::string * modName = NULL) = 0;
 
     virtual void SignalCacheCallback(Ptr<Packet> p) = 0;
     virtual bool Recv(Ptr<Packet> p) = 0;
