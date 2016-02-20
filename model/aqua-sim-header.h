@@ -286,6 +286,46 @@ private:
   Address DA;
 };  // class FamaHeader
 
+
+/**
+ *  COPE-MAC Header
+ */
+//this is almost identical to AlohaHeader and could probably be condensed.
+class CopeHeader : public Header
+{
+  enum PacketType {
+    COPE_ND,
+    COPE_ND_REPLY,
+    MULTI_REV,
+    MULTI_REV_ACK,
+    MULTI_DATA_ACK
+  } packet_type;
+
+public:
+  CopeHeader();
+  virtual ~CopeHeader();
+  static TypeId GetTypeId(void);
+
+  uint32_t size();
+
+  void SetSA(Address sa);
+  void SetDA(Address da);
+  Address GetSA();
+  Address GetDA();
+
+  //inherited methods
+  virtual uint32_t GetSerializedSize(void) const;
+  virtual void Serialize (Buffer::Iterator start) const;
+  virtual uint32_t Deserialize (Buffer::Iterator start);
+  virtual void Print (std::ostream &os) const;
+  virtual TypeId GetInstanceTypeId(void) const;
+private:
+  int m_size;
+  Address SA;
+  Address DA;
+};  // class CopeHeader
+
+
 }  // namespace ns3
 
 #endif /* AQUA_SIM_HEADER_H */

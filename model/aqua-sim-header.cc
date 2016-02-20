@@ -774,3 +774,92 @@ FamaHeader::GetInstanceTypeId(void) const
 {
   return GetTypeId();
 }
+
+
+
+/*
+ * CopeHeader
+ */
+CopeHeader::CopeHeader()
+{
+}
+
+CopeHeader::~CopeHeader()
+{
+}
+
+TypeId
+CopeHeader::GetTypeId()
+{
+  static TypeId tid = TypeId("ns3::CopeHeader")
+    .SetParent<Header>()
+    .AddConstructor<CopeHeader>()
+  ;
+  return tid;
+}
+
+uint32_t
+CopeHeader::size()
+{
+  return GetSerializedSize(); //return m_size;
+}
+void
+CopeHeader::SetSA(Address sa)
+{
+  SA = sa;
+}
+void
+CopeHeader::SetDA(Address da)
+{
+  DA = da;
+}
+Address
+CopeHeader::GetSA()
+{
+  return SA;
+}
+Address
+CopeHeader::GetDA()
+{
+  return DA;
+}
+
+uint32_t
+CopeHeader::GetSerializedSize(void) const
+{
+  return 1+1;
+}
+void
+CopeHeader::Serialize (Buffer::Iterator start) const
+{
+  start.WriteU8 (SA.GetLength());
+  start.WriteU8 (DA.GetLength());
+}
+uint32_t
+CopeHeader::Deserialize (Buffer::Iterator start)
+{
+  Buffer::Iterator i = start;
+  ReadFrom(i, SA,8);	//read 8bit addr
+  ReadFrom(i, DA, 8);	//read 8bit addr
+
+  return GetSerializedSize();
+}
+void
+CopeHeader::Print (std::ostream &os) const
+{
+  os << "COPE-MAC Header: packet_type=";
+  switch(packet_type) {
+    case COPE_ND: os << "COPE_ND"; break;
+    case COPE_ND_REPLY: os << "COPE_ND_REPLY"; break;
+    case MULTI_REV: os << "MULTI_REV"; break;
+    case MULTI_REV_ACK: os << "MULTI_REV_ACK"; break;
+    case MULTI_DATA_ACK: os << "MULTI_DATA_ACK"; break;
+    default: break;
+  }
+  os << ", SenderAddress=" << SA << ", DestAddress=" << DA << "\n";
+}
+TypeId
+CopeHeader::GetInstanceTypeId(void) const
+{
+  return GetTypeId();
+}

@@ -325,7 +325,7 @@ AquaSimFama::MakeND()
   FamaHeader FamaH;
 
   //asheader->size() = 2*sizeof(nsaddr_t)+1;
-  asHeader.SetTxTime(Seconds(GetSizeByTxTime(asHeader.GetSize())));
+  asHeader.SetTxTime(GetTxTime(asHeader.GetSize()));
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);
   //asheader->ptype() = PT_FAMA;
