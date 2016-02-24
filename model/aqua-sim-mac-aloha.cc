@@ -31,6 +31,9 @@
 
 namespace ns3{
 
+NS_LOG_COMPONENT_DEFINE("AquaSimAloha");
+NS_OBJECT_ENSURE_REGISTERED(AquaSimAloha);
+
 /*===========================AquaSimAlohaAckRetry Timer===========================*/
 long AquaSimAlohaAckRetry::m_idGenerator = 0;
 
@@ -57,23 +60,23 @@ AquaSimAloha::GetTypeId(void)
       .AddAttribute("Persistent", "Persistence of sending data packets",
 	DoubleValue(1.0),
 	MakeDoubleAccessor (&AquaSimAloha::m_persistent),
-	MakeDoubleChecker<AquaSimAloha>())
+	MakeDoubleChecker<double>())
       .AddAttribute("AckOn", "If acknowledgement is on",
 	IntegerValue(1),
 	MakeIntegerAccessor (&AquaSimAloha::m_AckOn),
-	MakeIntegerChecker<AquaSimAloha>())
+	MakeIntegerChecker<int>())
       .AddAttribute("MinBackoff", "Minimum back off time",
 	DoubleValue(0.0),
 	MakeDoubleAccessor (&AquaSimAloha::m_minBackoff),
-	MakeDoubleChecker<AquaSimAloha>())
+	MakeDoubleChecker<double>())
       .AddAttribute("MaxBackoff", "Maximum back off time",
 	DoubleValue(1.5),
 	MakeDoubleAccessor (&AquaSimAloha::m_maxBackoff),
-	MakeDoubleChecker<AquaSimAloha>())
+	MakeDoubleChecker<double>())
       .AddAttribute("WaitAckTime", "Acknowledgement wait time (seconds)",
 	DoubleValue(0.03),
 	MakeDoubleAccessor (&AquaSimAloha::m_waitACKTime),
-	MakeDoubleChecker<AquaSimAloha>())
+	MakeDoubleChecker<double>())
     ;
   return tid;
 }
@@ -82,7 +85,7 @@ AquaSimAloha::GetTypeId(void)
 void AquaSimAloha::DoBackoff()
 {
   NS_LOG_FUNCTION(this);
-  Time BackoffTime=m_rand(m_minBackoff,m_maxBackoff);
+  Time BackoffTime=Seconds(m_rand->GetValue(m_minBackoff,m_maxBackoff));
   m_boCounter++;
   if (m_boCounter < MAXIMUMCOUNTER)
     {
@@ -148,12 +151,13 @@ void AquaSimAloha::TxProcess(Ptr<Packet> pkt)
   Time time;
   if( Simulator::Now().GetDouble() > 500 )	//why?
     time = Seconds(Simulator::Now());
-  alohaH.packet_type = AlohaHeader::DATA;
-  alohaH.SA = m_device->GetAddress();
+  alohaH.SetPType(AlohaHeader::DATA);
+  alohaH.SetSA(m_device->GetAddress());
 
-  if(asHeader.GetNextHop() == (0xffffffff))  //IP_BROADCAST
+  //TODO fix all broadcasts throughout this file.
+  if(0 /*asHeader.GetNextHop() == 0xffffffff*/)  //IP_BROADCAST
     {
-      alohaH.SetDA(Address(0xffffffff));	//MAC_BROADCAST
+      ;//alohaH.SetDA(Address(0xffffffff));	//MAC_BROADCAST
     }
   else {
       alohaH.SetDA(asHeader.GetNextHop());
@@ -174,7 +178,7 @@ void AquaSimAloha::TxProcess(Ptr<Packet> pkt)
 
 void AquaSimAloha::SendDataPkt()
 {
-  double P = m_rand(0,1);
+  double P = m_rand->GetValue(0,1);
   Ptr<Packet> tmp = PktQ_.front();
   AquaSimHeader asHeader;
   tmp->PeekHeader(asHeader);
@@ -217,9 +221,9 @@ void AquaSimAloha::SendPkt(Ptr<Packet> pkt)
       asHeader.SetDirection(AquaSimHeader::DOWN);	//already set...
 
       //ACK doesn't affect the status, only process DATA here
-      if (alohaH.packet_type == AlohaHeader::DATA) {
+      if (alohaH.GetPType() == AlohaHeader::DATA) {
 	//must be a DATA packet, so setup wait ack timer
-	if ((alohaH.GetDA() != (0xffffffff)) && m_AckOn) {	//MAC_BROADCAST
+	if (/*(alohaH.GetDA() != (0xffffffff)) &&*/ m_AckOn) {	//MAC_BROADCAST
 	  ALOHA_Status = WAIT_ACK;
 	  m_waitACKTimer = Simulator::Schedule((Seconds(m_waitACKTime)+txtime),&AquaSimAloha::DoBackoff, this);
 	}
@@ -242,7 +246,7 @@ void AquaSimAloha::SendPkt(Ptr<Packet> pkt)
 
     case RECV:
       NS_LOG_INFO("SendPkt: RECV-SEND collision!!!");
-      if( alohaH.packet_type == AlohaHeader::ACK) {
+      if( alohaH.GetPType() == AlohaHeader::ACK) {
 	pkt->AddHeader(asHeader);
 	RetryACK(pkt);
       }
@@ -255,7 +259,7 @@ void AquaSimAloha::SendPkt(Ptr<Packet> pkt)
     default:
     //status is SEND
       NS_LOG_INFO("SendPkt: node " << m_device->GetNode() << " send data too fast");
-      if( alohaH.packet_type == AlohaHeader::ACK ) {
+      if( alohaH.GetPType() == AlohaHeader::ACK ) {
 	pkt->AddHeader(asHeader);
 	RetryACK(pkt);
       }
@@ -287,7 +291,7 @@ void AquaSimAloha::RecvProcess(Ptr<Packet> pkt)
     return;
   }
 
-  if( alohaH.packet_type == AlohaHeader::ACK ) {
+  if( alohaH.GetPType() == AlohaHeader::ACK ) {
     //if get ACK after WaitACKTimer, ignore ACK
     if( recver == m_device->GetAddress() && ALOHA_Status == WAIT_ACK) {
 	m_waitACKTimer.Cancel();
@@ -298,12 +302,12 @@ void AquaSimAloha::RecvProcess(Ptr<Packet> pkt)
 	ProcessPassive();
     }
   }
-  else if(alohaH.packet_type == AlohaHeader::DATA) {
+  else if(alohaH.GetPType() == AlohaHeader::DATA) {
     //process Data packet
-    if( recver == m_device->GetAddress() || recver == Address(0xffffffff) ) {	//MAC_BROADCAST
+    if( recver == m_device->GetAddress() /*|| recver == Address(0xffffffff)*/ ) {	//MAC_BROADCAST
 	//size() -= alohaH.size();
 	SendUp(pkt->Copy());
-	if ( m_AckOn && (recver != Address(0xffffffff)))	//MAC_BROADCAST
+	if ( m_AckOn /*&& (recver != Address(0xffffffff))*/)	//MAC_BROADCAST
 	    ReplyACK(pkt->Copy());
 	else
 	    ProcessPassive();
@@ -337,7 +341,7 @@ Ptr<Packet> AquaSimAloha::MakeACK(Address Data_Sender)
   asHeader.SetNextHop(Data_Sender);
   //ptype = PT_ALOHA;
 
-  alohaH.packet_type = AlohaHeader::ACK;
+  alohaH.SetPType(AlohaHeader::ACK);
   alohaH.SetSA(m_device->GetAddress());
   alohaH.SetDA(Data_Sender);
 

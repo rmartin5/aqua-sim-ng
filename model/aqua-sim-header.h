@@ -222,12 +222,12 @@ private:
 
 class AlohaHeader : public Header
 {
+public:
   enum PacketType {
     DATA,
     ACK
   } packet_type;
 
-public:
   AlohaHeader();
   virtual ~AlohaHeader();
   static TypeId GetTypeId(void);
@@ -236,8 +236,10 @@ public:
 
   void SetSA(Address sa);
   void SetDA(Address da);
+  void SetPType(uint8_t pType);
   Address GetSA();
   Address GetDA();
+  uint8_t GetPType();	//Remove Set/Get pType and go directly to public variable??
 
   //inherited methods
   virtual uint32_t GetSerializedSize(void) const;
@@ -248,6 +250,7 @@ public:
 private:
   Address SA;
   Address DA;
+  uint8_t m_pType;
 };  // class AlohaHeader
 
 

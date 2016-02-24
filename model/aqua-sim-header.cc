@@ -653,6 +653,11 @@ AlohaHeader::SetDA(Address da)
 {
   DA = da;
 }
+void
+AlohaHeader::SetPType(uint8_t pType)
+{
+  m_pType = pType;
+}
 Address
 AlohaHeader::GetSA()
 {
@@ -663,17 +668,23 @@ AlohaHeader::GetDA()
 {
   return DA;
 }
+uint8_t
+AlohaHeader::GetPType()
+{
+  return m_pType;
+}
 
 uint32_t
 AlohaHeader::GetSerializedSize(void) const
 {
-  return 1+1;
+  return 1+1+1;
 }
 void
 AlohaHeader::Serialize (Buffer::Iterator start) const
 {
   start.WriteU8 (SA.GetLength());
   start.WriteU8 (DA.GetLength());
+  start.WriteU8 (m_pType);
 }
 uint32_t
 AlohaHeader::Deserialize (Buffer::Iterator start)
@@ -681,13 +692,20 @@ AlohaHeader::Deserialize (Buffer::Iterator start)
   Buffer::Iterator i = start;
   ReadFrom(i, SA,8);	//read 8bit addr
   ReadFrom(i, DA, 8);	//read 8bit addr
+  m_pType = i.ReadU8();
 
   return GetSerializedSize();
 }
 void
 AlohaHeader::Print (std::ostream &os) const
 {
-  os << "Aloha Header: SendAddress=" << SA << ", DestAddress=" << DA << "\n";
+  os << "Aloha Header: SendAddress=" << SA << ", DestAddress=" << DA << ", PacketType=";
+  switch(m_pType)
+  {
+    case DATA: os << "DATA"; break;
+    case ACK: os << "ACK"; break;
+  }
+  os << "\n";
 }
 TypeId
 AlohaHeader::GetInstanceTypeId(void) const
