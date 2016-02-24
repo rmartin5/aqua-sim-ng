@@ -61,6 +61,7 @@
 #include <deque>
 #include <set>
 #include <map>
+#include <list>
 
 #define GOAL_CALLBACK_DELAY	0.001
 
@@ -256,9 +257,9 @@ private:
 
 public:
 	TimeSchedQueue(Time MinInterval, Time BigIntervalLen);
-	SchedElem* insert(Time BeginTime, Time EndTime, bool IsRecvSlot=false);
-	SchedElem* insert(SchedElem* e);
-	void remove(SchedElem* e);
+	SchedElem* Insert(Time BeginTime, Time EndTime, bool IsRecvSlot=false);
+	SchedElem* Insert(SchedElem* e);
+	void Remove(SchedElem* e);
 	//return an available start time for sending packet
 	Time GetAvailableTime(Time EarliestTime, Time SlotLen, bool BigInterval = false);
 	//true for no collision

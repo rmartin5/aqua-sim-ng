@@ -255,7 +255,8 @@ AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Ti
 	ash.SetErrorFlag(false);
 	ash.SetNextHop((Address)0xffffffff); //MAC_BROADCAST
   // ash size() = goalReqh->size(m_backoffType)+(NSADDR_T_SIZE*DataPktSet.size())/8+1;
-	ash.SetTxTime(GetTxTime(goalReqh.size(m_backoffType)+(sizeof(Address)*DataPktSet.size())/8+1));
+        //sizeof(Address) = 10 in this case.
+	ash.SetTxTime(GetTxTime(goalReqh.size(m_backoffType)+(10*DataPktSet.size())/8+1));
 	//ash->addr_type() = NS_AF_ILINK;
 	ash.SetTimeStamp(Simulator::Now());
 
@@ -1221,3 +1222,183 @@ AquaSimGoal::JitterStartTime(Time Txtime)
 }
 
 } // namespace ns3
+
+
+
+//---------------------------------------------------------------------
+SchedElem::SchedElem(Time BeginTime_, Time EndTime_, bool IsRecvSlot_)
+{
+	BeginTime = BeginTime_;
+	EndTime = EndTime_;
+	IsRecvSlot = IsRecvSlot_;
+}
+
+//---------------------------------------------------------------------
+SchedElem::SchedElem(SchedElem& e)
+{
+	BeginTime = e.BeginTime;
+	EndTime = e.EndTime;
+}
+
+
+//---------------------------------------------------------------------
+TimeSchedQueue::TimeSchedQueue(Time MinInterval, Time BigIntervalLen)
+{
+	m_minInterval = MinInterval;
+	m_bigIntervalLen = BigIntervalLen;
+}
+
+//---------------------------------------------------------------------
+SchedElem*
+TimeSchedQueue::Insert(SchedElem *e)
+{
+	list<SchedElem*>::iterator pos = SchedQ_.begin();
+	while( pos != SchedQ_.end() ) {
+
+		if( (*pos)->BeginTime < e->BeginTime )
+			break;
+
+		pos++;
+	}
+
+	if( pos == SchedQ_.begin() ) {
+		SchedQ_.push_front(e);
+	}
+	else if( pos == SchedQ_.end() ) {
+		SchedQ_.push_back(e);
+	}
+	else{
+		SchedQ_.insert(pos, e);
+	}
+
+	return e;
+}
+
+
+//---------------------------------------------------------------------
+SchedElem*
+TimeSchedQueue::Insert(Time BeginTime, Time EndTime, bool IsRecvSlot)
+{
+	SchedElem* e = new SchedElem(BeginTime, EndTime, IsRecvSlot);
+	return Insert(e);
+}
+
+
+//---------------------------------------------------------------------
+void
+TimeSchedQueue::Remove(SchedElem *e)
+{
+	SchedQ_.remove(e);
+	delete e;
+}
+
+
+//---------------------------------------------------------------------
+Time
+TimeSchedQueue::GetAvailableTime(Time EarliestTime, Time SlotLen, bool BigInterval)
+{
+	/*
+	 * how to select the sending time is critical
+	 * random in the availabe time interval
+	 */
+	ClearExpiredElems();
+	Time MinStartInterval = Seconds(0.1);
+	Time Interval = Seconds(0.0);
+	if( BigInterval ) {
+		Interval = m_bigIntervalLen;	//Big Interval is for DATA packet.
+		MinStartInterval = 0.0;		//DATA packet does not need to Jitter the start time.
+	}
+	else {
+		Interval = m_minInterval;
+	}
+
+	Time LowerBeginTime = EarliestTime;
+	Time UpperBeginTime = Seconds(-1.0);   //infinite;
+	list<SchedElem*>::iterator pos = SchedQ_.begin();
+
+
+	while( pos != SchedQ_.end() ) {
+		while( pos!=SchedQ_.end() && (*pos)->IsRecvSlot ) {
+			pos++;
+		}
+
+		if( pos == SchedQ_.end() ) {
+			break;
+		}
+
+		if( (*pos)->BeginTime - LowerBeginTime > SlotLen+Interval+MinStartInterval ) {
+			break;
+		}
+		else {
+			LowerBeginTime = max((*pos)->EndTime, LowerBeginTime);
+		}
+		pos++;
+	}
+
+	UpperBeginTime = LowerBeginTime + MinStartInterval;
+
+  Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable> ();
+  return rand->GetValue(LowerBeginTime, UpperBeginTime);
+}
+
+
+//---------------------------------------------------------------------
+bool
+TimeSchedQueue::CheckCollision(Time BeginTime, Time EndTime)
+{
+	ClearExpiredElems();
+
+	list<SchedElem*>::iterator pos = SchedQ_.begin();
+	BeginTime -= m_minInterval;   //consider the guard time
+	EndTime += m_minInterval;
+
+	if( SchedQ_.empty() ) {
+		return true;
+	}
+	else {
+		while( pos != SchedQ_.end() ) {
+			if( (BeginTime < (*pos)->BeginTime && EndTime > (*pos)->BeginTime)
+				|| (BeginTime<(*pos)->EndTime && EndTime > (*pos)->EndTime ) ) {
+				return false;
+			}
+			else {
+				pos++;
+			}
+		}
+		return true;
+	}
+}
+
+
+//---------------------------------------------------------------------
+void
+TimeSchedQueue::ClearExpiredElems()
+{
+	SchedElem* e = NULL;
+	while( !SchedQ_.empty() ) {
+		e = SchedQ_.front();
+		if( e->EndTime + m_minInterval < NOW )
+		{
+			SchedQ_.pop_front();
+			delete e;
+			e = NULL;
+		}
+		else
+			break;
+	}
+}
+
+
+//---------------------------------------------------------------------
+void
+TimeSchedQueue::Print(char* filename)
+{
+	FILE* stream = fopen(filename, "a");
+	list<SchedElem*>::iterator pos = SchedQ_.begin();
+	while( pos != SchedQ_.end() ) {
+		fprintf(stream, "(%f, %f)\t", (*pos)->BeginTime, (*pos)->EndTime);
+		pos++;
+	}
+	fprintf(stream, "\n");
+	fclose(stream);
+}
