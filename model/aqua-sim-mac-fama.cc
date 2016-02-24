@@ -19,12 +19,12 @@
  */
 
 #include "aqua-sim-mac-fama.h"
+#include "aqua-sim-header.h"
 //include vbf once created.
 
 #include "ns3/log.h"
 #include "ns3/simulator.h"
 #include "ns3/nstime.h"
-#include "ns3/timer.h"
 #include "ns3/address.h"
 #include "ns3/packet.h"
 #include "ns3/integer.h"
@@ -37,9 +37,9 @@ NS_OBJECT_ENSURE_REGISTERED(AquaSimFama);
 
 AquaSimFama::AquaSimFama(): FamaStatus(PASSIVE), m_NDPeriod(4.0), m_maxBurst(1),
 		m_dataPktInterval(0.00001), m_estimateError(0.001),m_dataPktSize(1600),
-		m_neighborId(0), m_bitRate(1.0e4), m_famaNDCounter(4),
+		m_neighborId(0), m_bitRate(1.0e4), m_waitCTSTimer(Timer::CANCEL_ON_DESTROY),
 		m_backoffTimer(Timer::CANCEL_ON_DESTROY), m_remoteTimer(Timer::CANCEL_ON_DESTROY),
-		m_remoteExpireTime(-1), m_waitCTSTimer(Timer::CANCEL_ON_DESTROY)
+		m_remoteExpireTime(-1), m_famaNDCounter(4)
 		//, backoff_timer(this), status_handler(this), NDTimer(this),
 		//WaitCTSTimer(this),DataBackoffTimer(this),RemoteTimer(this), CallBack_Handler(this)
 {
@@ -48,7 +48,7 @@ AquaSimFama::AquaSimFama(): FamaStatus(PASSIVE), m_NDPeriod(4.0), m_maxBurst(1),
   m_RTSTxTime = m_maxPropDelay;
   m_CTSTxTime = m_RTSTxTime + 2*m_maxPropDelay;
 
-  m_maxDataTxTime = m_dataPktSize/m_bitRate;  //1600bits/10kbps
+  m_maxDataTxTime = MilliSeconds(m_dataPktSize/m_bitRate);  //1600bits/10kbps
 
   Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   Simulator::Schedule(Seconds(m_rand->GetValue(0.0,m_NDPeriod)+0.000001), &AquaSimFama::NDTimerExpire, this);
@@ -67,7 +67,7 @@ AquaSimFama::GetTypeId(void)
       .AddAttribute("MaxBurst", "The maximum number of packet burst. default is 1",
 	IntegerValue(1),
 	MakeIntegerAccessor (&AquaSimFama::m_maxBurst),
-	MakeIntegerChecker<AquaSimFama>())
+	MakeIntegerChecker<int>())
     ;
   return tid;
 }
@@ -152,9 +152,9 @@ AquaSimFama::TxProcess(Ptr<Packet> pkt)
 
   //vbh->target_id.addr_ = asheader next_hop();
 
-  FamaH.packet_type=FamaHeader::FAMA_DATA;
-  FamaH.SA = m_device->GetAddress();
-  FamaH.DA = asHeader.GetNextHop();
+  FamaH.SetPType(FamaHeader::FAMA_DATA);
+  FamaH.SetSA(m_device->GetAddress());
+  FamaH.SetDA(asHeader.GetNextHop());
 
   pkt->AddHeader(asHeader);
   pkt->AddHeader(FamaH);
@@ -190,13 +190,13 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
       DoRemote(2*m_maxPropDelay+m_estimateError);
   } else if( m_remoteTimer.IsRunning() ) {
       m_remoteTimer.Cancel();
-      m_remoteExpireTime = -1;
+      m_remoteExpireTime = Seconds(-1);
   }
 
   /*ND is not a part of AquaSimFama. We just want to use it to get next hop
    *So we do not care wether it collides with others
    */
-  if( /*(asheader->ptype()==PT_FAMA)&& */(FamaH.packet_type==FamaHeader::ND) ) {
+  if( /*(asheader->ptype()==PT_FAMA)&& */(FamaH.GetPType()==FamaHeader::ND) ) {
       ProcessND(pkt);
       pkt=0;
       return;
@@ -218,7 +218,7 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
   if( m_waitCTSTimer.IsRunning() ) {
 	  //printf("%f: node %d receive RTS\n", NOW, index_);
       m_waitCTSTimer.Cancel();
-      if( /*(cmh->ptype() == PT_FAMA )&&*/(FamaH.packet_type==FamaHeader::CTS)
+      if( /*(cmh->ptype() == PT_FAMA )&&*/(FamaH.GetPType()==FamaHeader::CTS)
 	      && (asHeader.GetNextHop() == m_device->GetAddress())) {
 	  //receiving the CTS
 	  SendDataPkt();
@@ -232,7 +232,7 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
 
 
   if( /*cmh->ptype() == PT_FAMA*/ true /*place holder*/ ) {
-      switch( FamaH.packet_type ) {
+      switch( FamaH.GetPType() ) {
 	case FamaHeader::RTS:
 	  //printf("%f: node %d receive RTS\n", NOW, index_);
 	  if( dst == m_device->GetAddress() ) {
@@ -329,11 +329,11 @@ AquaSimFama::MakeND()
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);
   //asheader->ptype() = PT_FAMA;
-  asHeader.SetNextHop(Address(0xffffffff));  //MAC_BROADCAST;
+  //TODO asHeader.SetNextHop(Address(0xffffffff));  //MAC_BROADCAST;
 
-  FamaH.packet_type = FamaHeader::ND;
-  FamaH.SA = m_device->GetAddress();
-  FamaH.DA = Address(0xffffffff);  //MAC_BROADCAST;
+  FamaH.SetPType(FamaHeader::ND);
+  FamaH.SetSA(m_device->GetAddress());
+  //TODO FamaH.SetDA(Address(0xffffffff));  //MAC_BROADCAST;
 
   pkt->AddHeader(asHeader);
   pkt->AddHeader(FamaH);
@@ -367,9 +367,9 @@ AquaSimFama::MakeRTS(Address Recver)
   //asheader->ptype() = PT_FAMA;
   asHeader.SetNextHop(Recver);
 
-  FamaH.packet_type = FamaHeader::RTS;
-  FamaH.SA = m_device->GetAddress();
-  FamaH.DA = Recver;
+  FamaH.SetPType(FamaHeader::RTS);
+  FamaH.SetSA(m_device->GetAddress());
+  FamaH.SetDA(Recver);
 
   pkt->AddHeader(asHeader);
   pkt->AddHeader(FamaH);
@@ -418,9 +418,9 @@ AquaSimFama::MakeCTS(Address RTS_Sender)
   //asheader->ptype() = PT_FAMA;
   asHeader.SetNextHop(RTS_Sender);
 
-  FamaH.packet_type = FamaHeader::CTS;
-  FamaH.SA = m_device->GetAddress();
-  FamaH.DA = RTS_Sender;
+  FamaH.SetPType(FamaHeader::CTS);
+  FamaH.SetSA(m_device->GetAddress());
+  FamaH.SetDA(RTS_Sender);
 
   pkt->AddHeader(asHeader);
   pkt->AddHeader(FamaH);
@@ -443,7 +443,7 @@ AquaSimFama::CarrierDected()
 void
 AquaSimFama::DoBackoff()
 {
-  Time backoffTime = m_rand->GetValue(0.0,10*m_RTSTxTime.GetDouble());
+  Time backoffTime = MilliSeconds(m_rand->GetValue(0.0,10 * m_RTSTxTime.ToDouble(Time::MS)));
   FamaStatus = BACKOFF;
   if( m_backoffTimer.IsRunning() ) {
       m_backoffTimer.Cancel();

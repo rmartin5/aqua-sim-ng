@@ -257,6 +257,7 @@ private:
     //this is almost identical to AlohaHeader and could probably be condensed.
 class FamaHeader : public Header
 {
+public:
   enum PacketType {
     RTS,	//the previous forwarder thinks this is DATA-ACK
     CTS,
@@ -264,7 +265,6 @@ class FamaHeader : public Header
     ND		//neighbor discovery. need know neighbors, so it can be used as next hop.
   } packet_type;
 
-public:
   FamaHeader();
   virtual ~FamaHeader();
   static TypeId GetTypeId(void);
@@ -273,8 +273,10 @@ public:
 
   void SetSA(Address sa);
   void SetDA(Address da);
+  void SetPType(uint8_t pType);
   Address GetSA();
   Address GetDA();
+  uint8_t GetPType();	//Remove Set/Get pType and go directly to public variable??
 
   //inherited methods
   virtual uint32_t GetSerializedSize(void) const;
@@ -285,6 +287,7 @@ public:
 private:
   Address SA;
   Address DA;
+  uint8_t m_pType;
 };  // class FamaHeader
 
 

@@ -28,6 +28,7 @@ def build(bld):
        # 'model/aqua-sim-sink.cc',
         'model/aqua-sim-sinr-checker.cc',
         'helper/aqua-sim-helper.cc',
+        'model/aqua-sim-mac-fama.cc',
         ]
 
     module_test = bld.create_ns3_module_test_library('aqua-sim-ng')
@@ -58,6 +59,7 @@ def build(bld):
        # 'model/aqua-sim-sink.h',
         'model/aqua-sim-sinr-checker.h',
         'helper/aqua-sim-helper.h',
+        'model/aqua-sim-mac-fama.h',
         ]
 
     if bld.env.ENABLE_EXAMPLES:

@@ -23,6 +23,7 @@
 
 #include "ns3/random-variable-stream.h"
 #include "aqua-sim-mac.h"
+#include "ns3/timer.h"
 
 #include <queue>
 #include <vector>
@@ -34,7 +35,6 @@ namespace ns3{
 class Time;
 class Packet;
 class Address;
-class Timer;
 
 class AquaSimFama: public AquaSimMac {
 public:

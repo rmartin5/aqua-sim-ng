@@ -733,6 +733,11 @@ FamaHeader::SetDA(Address da)
 {
   DA = da;
 }
+void
+FamaHeader::SetPType(uint8_t pType)
+{
+  m_pType = pType;
+}
 Address
 FamaHeader::GetSA()
 {
@@ -743,17 +748,23 @@ FamaHeader::GetDA()
 {
   return DA;
 }
+uint8_t
+FamaHeader::GetPType()
+{
+  return m_pType;
+}
 
 uint32_t
 FamaHeader::GetSerializedSize(void) const
 {
-  return 1+1;
+  return 1+1+1;
 }
 void
 FamaHeader::Serialize (Buffer::Iterator start) const
 {
   start.WriteU8 (SA.GetLength());
   start.WriteU8 (DA.GetLength());
+  start.WriteU8 (m_pType);
 }
 uint32_t
 FamaHeader::Deserialize (Buffer::Iterator start)
@@ -761,13 +772,22 @@ FamaHeader::Deserialize (Buffer::Iterator start)
   Buffer::Iterator i = start;
   ReadFrom(i, SA,8);	//read 8bit addr
   ReadFrom(i, DA, 8);	//read 8bit addr
+  m_pType = i.ReadU8();
 
   return GetSerializedSize();
 }
 void
 FamaHeader::Print (std::ostream &os) const
 {
-  os << "FAMA Header: SendAddress=" << SA << ", DestAddress=" << DA << "\n";
+  os << "FAMA Header: SendAddress=" << SA << ", DestAddress=" << DA << ", PacketType=";
+  switch(m_pType)
+  {
+    case RTS: os << "RTS"; break;
+    case CTS: os << "CTS"; break;
+    case FAMA_DATA: os << "FAMA_DATA"; break;
+    case ND: os << "ND"; break;
+  }
+  os << "\n";
 }
 TypeId
 FamaHeader::GetInstanceTypeId(void) const
