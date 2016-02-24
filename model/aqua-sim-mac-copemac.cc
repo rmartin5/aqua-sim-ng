@@ -260,8 +260,8 @@ RevQueues::UpdateStatus(int RevID, RevType new_type)
       }
 
       if( pos->m_sendTimer.GetDelay().IsZero() && send_time > 0.0) {
-	  pos->m_sendTimer.SetDelay(send_time);
 	  pos->m_sendTimer.SetFunction(&mac_->PreSendPkt, pos->m_sendTimerPkt);
+    pos->m_sendTimer.Schedule(send_time);
       }
       return;
     }
@@ -941,8 +941,8 @@ AquaSimCopeMac::ProcessMultiRev(Ptr<Packet> pkt)
 	data += sizeof(Address);
 
 	if( RevAckAccumTimer.IsExpired() ) {
-	    RevAckAccumTimer.SetDelay(m_revAckAccumTime);
 	    RevAckAccumTimer.SetFunction(&AquaSimCopeMac::RevAckAccumTimerExpire,this);
+      RevAckAccumTimer.Schedule(m_revAckAccumTime);
 	}
 
 	RevReq* tmp = new RevReq();
@@ -1138,8 +1138,8 @@ AquaSimCopeMac::RecordDataPkt(Ptr<Packet> pkt)
   m_sucDataNum[ch.GetSA()]++;
   // startAckTimer
   if( DataAckAccumTimer.IsExpired() ) {
-      DataAckAccumTimer.SetDelay(m_dataAckAccumTime);
       DataAckAccumTimer.SetFunction(&AquaSimCopeMac::DataAckAccumTimerExpire,this);
+      DataAckAccumTimer.Schedule(m_dataAckAccumTime);
   }
 }
 
@@ -1308,8 +1308,8 @@ void
 AquaSimCopeMac::CtrlPktInsert(Ptr<Packet> ctrl_p, Time delay)
 {
   Ptr<Timer> tmp = new Timer(Timer::CANCEL_ON_DESTROY);
-  tmp->SetDelay(delay);
   tmp->SetFunction(&AquaSimCopeMac::SendPkt,ctrl_p);
+  tmp->Schedule(delay);
   m_ctrlQ.push(tmp);
 }
 

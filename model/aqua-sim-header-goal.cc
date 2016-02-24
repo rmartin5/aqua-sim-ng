@@ -46,22 +46,22 @@ AquaSimGoalReqHeader::GetTypeId()
 }
 
 uint32_t
-AquaSimGoalReqHeader::size(BackoffTime type)
+AquaSimGoalReqHeader::size(BackoffType type)
 {
-	int hdrSize = 10*2 + 4*8;
+  int hdrSize = 10*2 + 4*8;
 
-	switch( type ) {
-		case VBF:
-			hdrSize += 96;
-			break;
-		case HH_VBF:
-			hdrSize += 144;
-			break;
-		default:
-			;
-	}
+  switch( type ) {
+    case VBF:
+      hdrSize += 96;
+      break;
+    case HH_VBF:
+      hdrSize += 144;
+      break;
+    default:
+      ;
+  }
 
-	return hdrSize/8+1;
+  return hdrSize/8+1;
 }
 void
 AquaSimGoalReqHeader::SetSA(Address sa)
@@ -96,7 +96,7 @@ AquaSimGoalReqHeader::SetReqID(uint8_t reqid)
 void
 AquaSimGoalReqHeader::SetSenderPos(Vector3D senderPos)
 {
-  Senderpos = senderPos;
+  SenderPos = senderPos;
 }
 void
 AquaSimGoalReqHeader::SetSinkPos(Vector3D sinkPos)
@@ -115,7 +115,7 @@ AquaSimGoalReqHeader::GetSA()
   return SA;
 }
 Address
-AquaSimGoalReqHeader::GetRa()
+AquaSimGoalReqHeader::GetRA()
 {
   return RA;
 }
@@ -137,7 +137,7 @@ AquaSimGoalReqHeader::GetTxTime()
 uint8_t
 AquaSimGoalReqHeader::GetReqId()
 {
-  return m_ReqID
+  return m_ReqID;
 }
 Vector3D
 AquaSimGoalReqHeader::GetSenderPos()
@@ -239,9 +239,9 @@ AquaSimGoalRepHeader::GetTypeId()
 }
 
 uint32_t
-AquaSimGoalRepHeader::size(BackoffTime type)
+AquaSimGoalRepHeader::size(BackoffType type)
 {
-	return 15; //bytes
+  return 15; //bytes
 }
 void
 AquaSimGoalRepHeader::SetSA(Address sa)
@@ -301,7 +301,7 @@ AquaSimGoalRepHeader::GetTxTime()
 uint8_t
 AquaSimGoalRepHeader::GetReqId()
 {
-  return m_ReqID
+  return m_ReqID;
 }
 Time
 AquaSimGoalRepHeader::GetBackoffTime()
@@ -355,7 +355,7 @@ AquaSimGoalRepHeader::Print (std::ostream &os) const
   os << "GOAL Rep Header: SenderAddress=" << SA << ", RecvAddress=" << RA <<
         ", SendTime=" << m_SendTime << ", TxTime=" << m_TxTime <<
         ", ReqId=" << m_ReqID << ", BackoffTime=" << m_BackoffTime <<
-        ", SenderPos=" << SenderPos.x << "," << SenderPos.y << "," << SenderPos.z << "\n";
+        ", ReplyerPos=" << ReplyerPos.x << "," << ReplyerPos.y << "," << ReplyerPos.z << "\n";
 }
 TypeId
 AquaSimGoalRepHeader::GetInstanceTypeId(void) const
@@ -384,9 +384,9 @@ AquaSimGoalAckHeader::GetTypeId()
 }
 
 uint32_t
-AquaSimGoalAckHeader::size(BackoffTime type)
+AquaSimGoalAckHeader::size(BackoffType type)
 {
-	return 4; //bytes
+  return 4; //bytes
 }
 void
 AquaSimGoalAckHeader::SetSA(Address sa)
@@ -427,7 +427,7 @@ AquaSimGoalAckHeader::GetPush()
 uint8_t
 AquaSimGoalAckHeader::GetReqId()
 {
-  return m_ReqID
+  return m_ReqID;
 }
 
 uint32_t

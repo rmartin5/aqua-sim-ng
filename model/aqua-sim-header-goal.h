@@ -22,22 +22,12 @@
 #define AQUA_SIM_HEADER_GOAL_H
 
 #include "ns3/vector.h"
-
-
-
-#include <string>
-#include <iostream>
-
-#include "ns3/address.h"
 #include "ns3/header.h"
+#include "ns3/address.h"
 #include "ns3/nstime.h"
 
-
-#include <packet.h>
-#include <random.h>
-#include <timer-handler.h>
-
-#include <list>
+//#include <string>
+//#include <iostream>
 
 #define NSADDR_T_SIZE 10
 
@@ -72,7 +62,7 @@ public:
   Address GetDA();
   Time GetSendTime();
   Time GetTxTime();
-  uint8_t GetReqId();
+  uint8_t GetReqID();
   Vector3D GetSenderPos();
   Vector3D GetSinkPos();
   Vector3D GetSourcePos();
@@ -121,7 +111,7 @@ public:
   Address GetRA();
   Time GetSendTime();
   Time GetTxTime();
-  uint8_t GetReqId();
+  uint8_t GetReqID();
   Time GetBackoffTime();
   Vector3D GetReplyerPos();
 
@@ -162,13 +152,13 @@ public:
 
   void SetSA(Address sa);
   void SetRA(Address ra);
-  bool SetPush(bool push);
+  void SetPush(bool push);
   void SetReqID(uint8_t reqid);
 
   Address GetSA();
   Address GetRA();
   bool GetPush();
-  uint8_t GetReqId();
+  uint8_t GetReqID();
 
   //inherited methods
   virtual uint32_t GetSerializedSize(void) const;

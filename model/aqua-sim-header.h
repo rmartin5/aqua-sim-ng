@@ -49,7 +49,8 @@ public:
   enum dir_t { DOWN = 0, NONE = 1, UP = 2 };
   enum PacketStatus { RECEPTION = 0, COLLISION = 1, INVALID = 2};
   enum AquaSimMacDemuxPktType{ UWPTYPE_LOC, UWPTYPE_SYNC, UWPTYPE_OTHER };
-  
+  //PACKET TYPE.
+
   AquaSimHeader();
   virtual ~AquaSimHeader();
   static TypeId GetTypeId(void);
@@ -130,7 +131,7 @@ private:
   uint8_t m_numForwards;
   addr_t m_src;
   addr_t m_dst;
-  uint8_t m_errorFlag;	
+  uint8_t m_errorFlag;
   uint16_t m_uId;
 
 
