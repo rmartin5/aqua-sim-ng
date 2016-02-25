@@ -851,6 +851,11 @@ CopeHeader::SetDA(Address da)
 {
   DA = da;
 }
+void
+CopeHeader::SetPType(uint8_t pType)
+{
+  m_pType = pType;
+}
 Address
 CopeHeader::GetSA()
 {
@@ -861,17 +866,23 @@ CopeHeader::GetDA()
 {
   return DA;
 }
+uint8_t
+CopeHeader::GetPType()
+{
+  return m_pType;
+}
 
 uint32_t
 CopeHeader::GetSerializedSize(void) const
 {
-  return 1+1;
+  return 1+1+1;
 }
 void
 CopeHeader::Serialize (Buffer::Iterator start) const
 {
   start.WriteU8 (SA.GetLength());
   start.WriteU8 (DA.GetLength());
+  start.WriteU8 (m_pType);
 }
 uint32_t
 CopeHeader::Deserialize (Buffer::Iterator start)
@@ -879,6 +890,7 @@ CopeHeader::Deserialize (Buffer::Iterator start)
   Buffer::Iterator i = start;
   ReadFrom(i, SA,8);	//read 8bit addr
   ReadFrom(i, DA, 8);	//read 8bit addr
+  m_pType = i.ReadU8();
 
   return GetSerializedSize();
 }
@@ -886,7 +898,7 @@ void
 CopeHeader::Print (std::ostream &os) const
 {
   os << "COPE-MAC Header: packet_type=";
-  switch(packet_type) {
+  switch(m_pType) {
     case COPE_ND: os << "COPE_ND"; break;
     case COPE_ND_REPLY: os << "COPE_ND_REPLY"; break;
     case MULTI_REV: os << "MULTI_REV"; break;

@@ -330,7 +330,7 @@ void AquaSimAloha::ReplyACK(Ptr<Packet> pkt)//sendACK
 
 Ptr<Packet> AquaSimAloha::MakeACK(Address Data_Sender)
 {
-  Ptr<Packet> pkt = Ptr<Packet>();
+  Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
   AlohaHeader alohaH;
 

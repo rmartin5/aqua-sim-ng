@@ -30,6 +30,7 @@ def build(bld):
         'helper/aqua-sim-helper.cc',
         'model/aqua-sim-mac-fama.cc',
         'model/aqua-sim-mac-aloha.cc',
+        'model/aqua-sim-mac-copemac.cc',
         ]
 
     module_test = bld.create_ns3_module_test_library('aqua-sim-ng')
@@ -62,6 +63,7 @@ def build(bld):
         'helper/aqua-sim-helper.h',
         'model/aqua-sim-mac-fama.h',
         'model/aqua-sim-mac-aloha.h',
+        'model/aqua-sim-mac-copemac.h',
         ]
 
     if bld.env.ENABLE_EXAMPLES:

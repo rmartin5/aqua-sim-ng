@@ -232,7 +232,7 @@ Ptr<Packet>
 AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Time TxTime)
 {
 	//m_device->UpdatePosition();  //out of date.
-	Ptr<Packet> pkt = Ptr<Packet>();
+	Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader ash;
 	AlohaHeader mach;
   AquaSimGoalReqHeader goalReqh;
@@ -263,7 +263,7 @@ AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Ti
   mach.SetDA(goalReqh.GetRA());
   mach.SetSA(m_device->GetAddress());
 
-  Ptr<Packet> tempPacket = Ptr<Packet>(DataPktSet.size(),sizeof(uint));
+  Ptr<Packet> tempPacket = Create<Packet>(DataPktSet.size(),sizeof(uint));
   pkt->AddAtEnd(tempPacket);
 
   AquaSimHeader ashLocal;
@@ -271,7 +271,7 @@ AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Ti
 	for( std::set<Ptr<Packet> >::iterator pos = DataPktSet.begin();
 		pos != DataPktSet.end(); pos++) {
 	    pos->m_ptr->PeekHeader(ashLocal);
-      Ptr<Packet> tempPacket = Ptr<Packet>(ashLocal.GetUId,sizeof(int));
+      Ptr<Packet> tempPacket = Create<Packet>(ashLocal.GetUId,sizeof(int));
       pkt->AddAtEnd(tempPacket);
 	}
 
@@ -293,7 +293,7 @@ AquaSimGoal::ProcessReqPkt(Ptr<Packet> ReqPkt)
 
 	AquaSimGoal_AckTimeoutTimer* AckTimeoutTimer = NULL;
 	std::set<AquaSimGoal_AckTimeoutTimer*>::iterator pos;
-	Ptr<Packet> pkt = Ptr<Packet>();
+	Ptr<Packet> pkt = Create<Packet>();
 
 	std::set<int> DuplicatedPktSet;
 	std::set<int> AvailablePktSet;
@@ -428,7 +428,7 @@ AquaSimGoal::MakeRepPkt(Ptr<Packet> ReqPkt, Time BackoffTime)
 	//m_device->UpdatePosition();  //out of date
   AquaSimGoalReqHeader reqPktHeader;
   ReqPkt->PeekHeader(reqPktHeader);
-	Ptr<Packet> pkt = Ptr<Packet>();
+	Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader ash;
   AlohaHeader mach; //TODO update this.
   AquaSimGoalRepHeader repH;
@@ -689,7 +689,7 @@ AquaSimGoal::ProcessDataPkt(Ptr<Packet> DataPkt)
 Ptr<Packet>
 AquaSimGoal::MakeAckPkt(std::set<int> AckSet, bool PSH,  int ReqID)
 {
-	Ptr<Packet> pkt = Ptr<Packet>();
+	Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader ash;
   AlohaHeader mach;   //TODO change this...
   AquaSimGoalAckHeader goalAckh;
@@ -711,12 +711,12 @@ AquaSimGoal::MakeAckPkt(std::set<int> AckSet, bool PSH,  int ReqID)
 	mach.SetDA(goalAckh.GetRA());
 	mach.SetSA(goalAckh.GetSA());
 
-  Ptr<Packet> tempPacket = Ptr<Packet>(AckSet.size(),sizeof(uint));
+  Ptr<Packet> tempPacket = Create<Packet>(AckSet.size(),sizeof(uint));
   pkt->AddAtEnd(tempPacket);
 
 	for( std::set<int>::iterator pos=AckSet.begin();
 		pos != AckSet.end(); pos++)   {
-      Ptr<Packet> tempPacket = Ptr<Packet>(*pos,sizeof(int));
+      Ptr<Packet> tempPacket = Create<Packet>(*pos,sizeof(int));
       pkt->AddAtEnd(tempPacket);
 	}
 

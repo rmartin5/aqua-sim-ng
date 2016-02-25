@@ -300,6 +300,7 @@ private:
 //this is almost identical to AlohaHeader and could probably be condensed.
 class CopeHeader : public Header
 {
+public:
   enum PacketType {
     COPE_ND,
     COPE_ND_REPLY,
@@ -308,7 +309,6 @@ class CopeHeader : public Header
     MULTI_DATA_ACK
   } packet_type;
 
-public:
   CopeHeader();
   virtual ~CopeHeader();
   static TypeId GetTypeId(void);
@@ -317,8 +317,10 @@ public:
 
   void SetSA(Address sa);
   void SetDA(Address da);
+  void SetPType(uint8_t pType);
   Address GetSA();
   Address GetDA();
+  uint8_t GetPType();	//Remove Set/Get pType and go directly to public variable??
 
   //inherited methods
   virtual uint32_t GetSerializedSize(void) const;
@@ -330,6 +332,7 @@ private:
   int m_size;
   Address SA;
   Address DA;
+  uint8_t m_pType;
 };  // class CopeHeader
 
 

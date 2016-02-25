@@ -45,7 +45,7 @@
 #define BACKOFF_DELAY_ERROR	1
 #define	MAX_INTERVAL		1
 #define SEND_DELAY		0.001
-#define MAXIMUMCOUNTER		6
+#define COPEMAC_MAXIMUMCOUNTER	6
 
 namespace ns3{
 
@@ -123,6 +123,22 @@ struct DataAck{
   int SeqNum;
 };
 
+//---------------------------------------------------
+class PktSendTimer: public Timer{
+public:
+  PktSendTimer(Ptr<AquaSimCopeMac> mac, Ptr<Packet> pkt): Timer() {
+      m_mac = mac;
+      m_pkt = pkt;
+  }
+  virtual ~PktSendTimer();
+  static TypeId GetTypeId(void);
+  void PktSendTimerExpire();
+
+protected:
+  Ptr<AquaSimCopeMac> m_mac;
+  Ptr<Packet> m_pkt;
+};
+
 
 enum RevType {
   PRE_REV,	//the interval is in reserved in REV Request
@@ -141,8 +157,7 @@ struct RevElem{
 
 
   //node may reserve time for itself to send out packet, this timer is used to send packet
-  Timer m_sendTimer;
-  Ptr<Packet> m_sendTimerPkt;
+  PktSendTimer* m_sendTimer;
   RevElem*	next;
   RevElem();
   RevElem(int RevID_, Time StartTime_,
@@ -151,13 +166,14 @@ struct RevElem{
 };
 
 
-class RevQueues{
+class RevQueues : public Object{
 private:
   RevElem* Head_;
   Ptr<AquaSimCopeMac> mac_;
 public:
   RevQueues(Ptr<AquaSimCopeMac> mac);
   ~RevQueues();
+  static TypeId GetTypeId(void);
   /*
    * If [startTime, EndTime] overlaps with some
    * existing reservation time interval,
@@ -184,11 +200,12 @@ struct NDRecord{
 };
 
 
-class AckWaitTimer: Timer{
+class AckWaitTimer: public Timer {
 public:
-  AckWaitTimer() {}
+  AckWaitTimer():Timer() {}
   Ptr<Packet> m_pkt;
   Ptr<AquaSimCopeMac> m_mac;
+  Timer m_ackWaitTimer;
 };
 
 
@@ -197,12 +214,13 @@ public:
   AquaSimCopeMac();
   ~AquaSimCopeMac();
   static TypeId GetTypeId(void);
+
   // to process the incoming packet
-  virtual void RecvProcess(Ptr<Packet> pkt);
+  void RecvProcess(Ptr<Packet> pkt);
   // to process the outgoing packet
-  virtual void TxProcess(Ptr<Packet> pkt);
+  void TxProcess(Ptr<Packet> pkt);
 protected:
-  void PreSendPkt(Ptr<Packet> pkt, Time delay=0.0001);  //send out the packet after delay
+  void PreSendPkt(Ptr<Packet> pkt, Time delay=Seconds(0.0001));  //send out the packet after delay
   void SendPkt(Ptr<Packet> pkt);
   void Start();
   //int	round2Slot(Time time);  //round the time to the slot sequence num since now
@@ -290,7 +308,7 @@ private:
   std::map<int, AckWaitTimer> m_AckWaitingList; //stores the packet is (prepared to) sent out but not receive the ack yet.
 
   Time m_ackTimeOut;
-  std::queue<Ptr<Timer> > m_ctrlQ;
+  std::queue<Timer> m_ctrlQ;
   int m_pktSize;
   int m_isParallel;
   int m_NDProcessMaxTimes; //the maximum times of delay measurement
@@ -299,6 +317,7 @@ private:
   Ptr<UniformRandomVariable> m_rand;
 
   friend class RevQueues;
+  friend class PktSendTimer;
   friend class AckWaitTimer;
 
 };  // class AquaSimCopeMac

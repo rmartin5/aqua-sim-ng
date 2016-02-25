@@ -19,6 +19,7 @@
  */
 
 #include "aqua-sim-mac-copemac.h"
+#include "aqua-sim-header.h"
 //#include "vbf/vectorbasedforward.h"
 
 #include "ns3/log.h"
@@ -27,27 +28,6 @@
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE("AquaSimCopeMac");
-NS_OBJECT_ENSURE_REGISTERED(AquaSimCopeMac);
-
-
-
-void AquaSimCopeMac::BackoffHandler(Ptr<Packet> pkt)
-{
-  m_backoffCounter++;
-  if(m_backoffCounter < MAXIMUMCOUNTER) {
-      TxProcess(pkt);
-      pkt=0;
-  }
-  else
-    {
-      m_backoffCounter=0; //clear
-      NS_LOG_INFO("BackoffHandler: too many backoffs");
-      /*if( mac_->drop_ )
-	      mac_->drop_->recv(pkt_, "Backoff too many times");
-      else*/
-      pkt=0;
-    }
-}
 
 
 
@@ -103,9 +83,11 @@ PktWareHouse::DeletePkt(Address Recver, int SeqNum)
 
 
 /**********************RevQueues******************************************/
+NS_OBJECT_ENSURE_REGISTERED(RevQueues);
+
 RevElem::RevElem()
 {
-  m_sendTimer(Timer::CANCEL_ON_DESTROY);
+  m_sendTimer = NULL;
   next = NULL;
 }
 
@@ -114,21 +96,56 @@ RevElem::RevElem(int RevID_, Time StartTime_, Time EndTime_,
 	StartTime(StartTime_), EndTime(EndTime_),
 	Reservor(Reservor_), rev_type(rev_type_), RevID(RevID_)
 {
-  m_sendTimer(Timer::CANCEL_ON_DESTROY);
+  m_sendTimer = NULL;
   next = NULL;
 }
 
 RevElem::~RevElem()
 {
-  if( m_sendTimer.IsRunning() ) {
-      m_sendTimer.Cancel();
+  if( m_sendTimer != NULL ) {
+      if( m_sendTimer->IsRunning() ) {
+	  m_sendTimer->Cancel();
+      }
+      delete m_sendTimer;
+      m_sendTimer = NULL;
   }
 }
+
+NS_OBJECT_ENSURE_REGISTERED(PktSendTimer);
+
+PktSendTimer::~PktSendTimer()
+{
+}
+
+void
+PktSendTimer::PktSendTimerExpire()
+{
+  m_mac->PreSendPkt(m_pkt);
+}
+
+TypeId
+PktSendTimer::GetTypeId(void)
+{
+  static TypeId tid = TypeId("ns3::PktSendTimer")
+      ;
+  return tid;
+}
+
+
+TypeId
+RevQueues::GetTypeId(void)
+{
+  static TypeId tid = TypeId("ns3::RevQueues")
+    ;
+  return tid;
+}
+
 
 
 RevQueues::RevQueues(Ptr<AquaSimCopeMac> mac): mac_(mac)
 {
   Head_ = NULL;
+  //m_sendTimer =
 }
 
 
@@ -167,8 +184,7 @@ RevQueues::Push(int RevID, Time StartTime, Time EndTime,
   RevElem* tmp = new RevElem(RevID, StartTime, EndTime, Reservor, rev_type);
 
   if( pkt != NULL ) {
-      tmp->m_sendTimer = new Timer(Timer::CANCEL_ON_DESTROY);
-      tmp->m_sendTimerPkt = pkt;
+      tmp->m_sendTimer = new PktSendTimer(mac_, pkt);
   }
 
   if( Head_ == NULL ) {
@@ -259,9 +275,11 @@ RevQueues::UpdateStatus(int RevID, RevType new_type)
 	  return;
       }
 
-      if( pos->m_sendTimer.GetDelay().IsZero() && send_time > 0.0) {
-	  pos->m_sendTimer.SetFunction(&mac_->PreSendPkt, pos->m_sendTimerPkt);
-    pos->m_sendTimer.Schedule(send_time);
+      if( send_time > 0.0 && pos->m_sendTimer != NULL) {
+	  /*TODO this needs to be fixed to reschedule timer. Can't seem to figure out this error.
+	  pos->m_sendTimer->SetFunction(&PktSendTimer::PktSendTimerExpire);
+	  pos->m_sendTimer->Schedule(send_time);
+	  */
       }
       return;
     }
@@ -272,20 +290,25 @@ RevQueues::UpdateStatus(int RevID, RevType new_type)
 void
 RevQueues::PrintRevQueue()
 {
+
   RevElem* pos = Head_;
-  char file_name[30];
+  /*char file_name[30];
   strcpy(file_name, "schedule_");
   file_name[strlen(file_name)+1] = '\0';
-  file_name[strlen(file_name)] = char(mac_->m_device->GetNode()+'0');
+  file_name[strlen(file_name)] = char(mac_->index_+'0');
   FILE* stream = fopen(file_name, "a");
-
+  */
   while( pos != NULL ) {
-    fprintf(stream, "node(%d): %d[%f:%f] type:%d\t", pos->Reservor,
-	    pos->RevID, pos->StartTime, pos->EndTime, pos->rev_type);
+      NS_LOG_INFO("PrintRevQueue: Node(" << pos->Reservor << "): " <<
+		  pos->RevID << "[" << pos->StartTime << ":" <<
+		  pos->EndTime << "] type:" << pos->rev_type);
+    //fprintf(stream, "node(%d): %d[%f:%f] type:%d\t", pos->Reservor,
+	//    pos->RevID, pos->StartTime, pos->EndTime, pos->rev_type);
     pos = pos->next;
   }
-  fprintf(stream, "\n");
+  /*fprintf(stream, "\n");
   fclose(stream);
+  */
 }
 
 Time
@@ -304,7 +327,7 @@ RevQueues::GetValidStartTime(Time Interval, Time SinceTime)
   Lowerbound = now;
 
   if( pos == NULL ) {
-      return SinceTime + 0.0001 - Simulator::Now();
+      return SinceTime + Seconds(0.0001) - Simulator::Now();
   }
   else {
       Upperbound = pos->StartTime;
@@ -319,22 +342,44 @@ RevQueues::GetValidStartTime(Time Interval, Time SinceTime)
       Upperbound = pos->StartTime;
   }
 
-  return Lowerbound + 0.0001 - Simulator::Now();
+  return Lowerbound + Seconds(0.0001) - Simulator::Now();
 }
 
 
 /**********************COPEMac*************************************/
+NS_OBJECT_ENSURE_REGISTERED(AquaSimCopeMac);
+
+
+void AquaSimCopeMac::BackoffHandler(Ptr<Packet> pkt)
+{
+  m_backoffCounter++;
+  if(m_backoffCounter < COPEMAC_MAXIMUMCOUNTER) {
+      TxProcess(pkt);
+      pkt=0;
+  }
+  else
+    {
+      m_backoffCounter=0; //clear
+      NS_LOG_INFO("BackoffHandler: too many backoffs");
+      /*if( mac_->drop_ )
+	      mac_->drop_->recv(pkt_, "Backoff too many times");
+      else*/
+      pkt=0;
+    }
+}
+
 int AquaSimCopeMac::RevID = 0;
 AquaSimCopeMac::AquaSimCopeMac():
+    DataSendTimer(Timer::CANCEL_ON_DESTROY),
+    RevAckAccumTimer(Timer::CANCEL_ON_DESTROY),
+    DataAckAccumTimer(Timer::CANCEL_ON_DESTROY),
     m_NDInterval(6),m_dataAccuPeriod(10),m_revAckAccumTime(1),
     m_dataAckAccumTime(1), m_RevQ(this), m_nextHop(0),
     m_neighborId(0), m_majorIntervalLB(2),/* MajorIntervalUB(3),IntervalStep(0.1),*/
     m_dataStartTime(15), m_guardTime(0.01),m_NDWin(2.0),
     m_NDReplyWin(2.0), m_ackTimeOut(10),
-    m_pktSize(200), m_isParallel(1), m_NDProcessMaxTimes(3),
-    DataSendTimer(Timer::CANCEL_ON_DESTROY), m_backoffCounter(0),
-    RevAckAccumTimer(Timer::CANCEL_ON_DESTROY),
-    DataAckAccumTimer(Timer::CANCEL_ON_DESTROY)
+    m_pktSize(200), m_isParallel(1), m_NDProcessMaxTimes(3), m_backoffCounter(0)
+
 {
   Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 
@@ -342,14 +387,19 @@ AquaSimCopeMac::AquaSimCopeMac():
   Simulator::Schedule(Seconds(0.001), &AquaSimCopeMac::Start, this);
 }
 
+AquaSimCopeMac::~AquaSimCopeMac()
+{
+}
+
+
 void
 AquaSimCopeMac::Start()
 {
   m_device->SetTransmissionStatus(NIDLE);
 
-  m_dataStartTime = 3*m_NDInterval + 7;
+  m_dataStartTime = Seconds(3*m_NDInterval + 7);
   Time MaxRTT = Seconds(2*1000/1500.0);
-  m_ackTimeOut = m_revAckAccumTime + m_dataAckAccumTime + 2*MaxRTT + 5; //5 is time error
+  m_ackTimeOut = m_revAckAccumTime + m_dataAckAccumTime + 2*MaxRTT + Seconds(5); //5 is time error
 
   Simulator::Schedule(m_dataAccuPeriod+Seconds(m_rand->GetValue()),&AquaSimCopeMac::DataSendTimerExpire,this);
   //Random::seed_heuristically();
@@ -392,7 +442,7 @@ AquaSimCopeMac::GetTypeId(void)
      .AddAttribute("IsParallel", "Is parallel (default is 0).",
 	IntegerValue(0),
 	MakeIntegerAccessor (&AquaSimCopeMac::m_isParallel),
-	MakeIntegerChecker<AquaSimCopeMac>())
+	MakeIntegerChecker<int>())
     ;
   return tid;
 }
@@ -457,9 +507,10 @@ AquaSimCopeMac::RecvProcess(Ptr<Packet> pkt)
     return;
   }
 
-  if( dst == m_device->GetAddress() || dst == (Address)0xffffffff) {  //MAC_BROADCAST
+  //TODO fix broadcast throughout this file
+  if( dst == m_device->GetAddress() /*|| dst == (Address)0xffffffff*/) {  //MAC_BROADCAST
       if( /*cmh->ptype() == PT_OTMAN*/ 1 /* placeholder */ ) {
-	  switch( ch.packet_type ) {
+	  switch( ch.GetPType() ) {
 	      case CopeHeader::COPE_ND:
 		  ProcessND(pkt);
 		  break;
@@ -496,8 +547,8 @@ AquaSimCopeMac::RecvProcess(Ptr<Packet> pkt)
 void
 AquaSimCopeMac::PreSendPkt(Ptr<Packet> pkt, Time delay)
 {
-  if( delay < 0 )
-      delay = 0.0001;
+  if( delay.IsNegative() )
+      delay = Seconds(0.0001);
   AquaSimHeader ash;
   pkt->RemoveHeader(ash);
   ash.SetDirection(AquaSimHeader::DOWN);
@@ -553,22 +604,22 @@ AquaSimCopeMac::MakeND()
   AquaSimHeader ash;
   CopeHeader ch;
 
-  ch.packet_type = CopeHeader::COPE_ND;
-  ch.SetDA((Address)0xffffffff);	//MAC_BROADCAST
+  ch.SetPType(CopeHeader::COPE_ND);
+  ch.SetDA(Address()/*(Address)0xffffffff*/);	//MAC_BROADCAST
   ch.SetSA(m_device->GetAddress());
   //hdr_o->hdr.ndh.send_time_ = NOW;
 
   //ash size() = ch->size();
-  ash.SetNextHop((Address)0xffffffff);	//MAC_BROADCAST
+  ash.SetNextHop(Address()/*(Address)0xffffffff*/);	//MAC_BROADCAST
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash->addr_type()=NS_AF_ILINK;
   //ash->ptype() = PT_OTMAN;
 
   //fill the neighbors that this node already knows the delay
     //empty packet will suffice
-  Ptr<Packet> pkt = Ptr<Packet>();
+  Ptr<Packet> pkt = Create<Packet>();
   //uint data_size = sizeof(uint)+ sizeof(Address)*m_propDelays.size();
-  //Ptr<Packet> pkt = Ptr<Packet>(data_size);
+  //Ptr<Packet> pkt = Create<Packet>(data_size);
   //ash->size() += data_size;
 
   //Not necessary.
@@ -576,10 +627,12 @@ AquaSimCopeMac::MakeND()
   //*(uint*)walk = m_propDelays.size();
   //walk += sizeof(uint);
 
+  uint8_t *data = new uint8_t[Address::MAX_SIZE];
   for( std::map<Address, Time>::iterator pos=m_propDelays.begin();
    pos != m_propDelays.end(); pos++)
   {
-      Ptr<Packet> tempPacket = Ptr<Packet>(pos->first,sizeof(Address));
+      (pos->first).CopyTo(data);
+      Ptr<Packet> tempPacket = Create<Packet>(data,Address::MAX_SIZE);
       pkt->AddAtEnd(tempPacket);
 	  //*((Address*)walk) = pos->first;
 	  //walk += sizeof(Address);
@@ -633,16 +686,16 @@ AquaSimCopeMac::MakeNDReply()
       return NULL;
   }
 
-  Ptr<Packet> pkt = Ptr<Packet>();
+  Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader ash;
   CopeHeader ch;
 
-  ch.packet_type = CopeHeader::COPE_ND_REPLY;
+  ch.SetPType(CopeHeader::COPE_ND_REPLY);
   //hdr_o->hdr.nd_reply_h.nd_send_time_ = m_ndDepartNeighborTime[NDSender];
   //hdr_o->hdr.nd_reply_h.delay_at_receiver = NOW - m_ndReceiveTime[NDSender];
 
   //ash->size() = ch->size();
-  ash.SetNextHop((Address)0xffffffff);	//MAC_BROADCAST
+  ash.SetNextHop(Address()/*(Address)0xffffffff*/);	//MAC_BROADCAST
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash->addr_type()=NS_AF_ILINK;
   //ash->ptype() = PT_OTMAN;
@@ -652,18 +705,21 @@ AquaSimCopeMac::MakeNDReply()
   //pkt->allocdata( data_size);
   //cmh->size() += data_size;
   //unsigned char* walk = (unsigned char*)pkt->accessdata();
-  //*(uint*)walk = m_PendingND.size();
-  //walk += sizeof(uint);
+  uint32_t size = (2*sizeof(Time)+sizeof(Address))*m_PendingND.size();
+  uint8_t *data = new uint8_t[size];
+  *(uint*)data = m_PendingND.size();
+  data += sizeof(uint);
   for( std::map<Address, NDRecord>::iterator pos = m_PendingND.begin();
 	  pos != m_PendingND.end(); pos++) {
-      uint8_t data;
-      (Address*)data = pos->first;
-      (Time*)data =pos->second.nd_sendtime;
-      (Time*)data =pos->second.nd_recvtime;
-	//TODO check this and all other payload adjustments in this file.
-      Ptr<Packet> tempPacket = Ptr<Packet>(data,sizeof(Address)+2*sizeof(Time));
-      pkt->AddAtEnd(tempPacket);
+	*(Address*)data = pos->first;
+	data += sizeof(Address);
+	*(Time*)data = pos->second.nd_sendtime;
+	data += sizeof(Time);
+	*(Time*)data = pos->second.nd_recvtime;
+	data += sizeof(Time);
   }
+  Ptr<Packet> tempPacket = Create<Packet>(data,size);
+  pkt->AddAtEnd(tempPacket);
 
   ch.SetDA(ash.GetNextHop());
   ch.SetSA(m_device->GetAddress());
@@ -699,9 +755,9 @@ AquaSimCopeMac::ProcessNDReply(Ptr<Packet> pkt)
   for( uint i=0; i<rec_num; i++) {
       if( (*(Address*)data) == m_device->GetAddress() ) {
 	  data += sizeof(Address);
-	  tmp.nd_sendtime = (Time*)data;
+	  tmp.nd_sendtime = *(Time*)data;
 	  data += sizeof(Time);
-	  tmp.nd_recvtime = (Time*)data;
+	  tmp.nd_recvtime = *(Time*)data;
 	  data += sizeof(Time);
 	  m_propDelays[ch.GetSA()] = ((Simulator::Now()-tmp.nd_sendtime) -
 		  (ash.GetTimeStamp()-tmp.nd_recvtime-ash.GetTxTime()))/2.0;
@@ -751,15 +807,15 @@ Ptr<Packet>
 AquaSimCopeMac::MakeMultiRev()
 {
   //m_RevQ.printRevQueue();
-  Ptr<Packet> pkt = Ptr<Packet>();
+  Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader ash;
   CopeHeader ch;
 
-  ch.packet_type = CopeHeader::MULTI_REV;
-  ch.SetDA((Address)0xffffffff);	//MAC_BROADCAST
+  ch.SetPType(CopeHeader::MULTI_REV);
+  ch.SetDA(Address()/*(Address)0xffffffff*/);	//MAC_BROADCAST
   ch.SetSA(m_device->GetAddress());
 
-  ash.SetNextHop((Address)0xffffffff);	//MAC_BROADCAST
+  ash.SetNextHop(Address()/*(Address)0xffffffff*/);	//MAC_BROADCAST
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash->addr_type()=NS_AF_ILINK;
   //ash->ptype() = PT_OTMAN;
@@ -793,16 +849,15 @@ AquaSimCopeMac::MakeMultiRev()
       rev_num = 1;
   }
 
-
-  uint8_t data;
-  uint32_t size;
+  uint32_t size = sizeof(uint)+ sizeof(Time)+ (sizeof(Address)+sizeof(Time)*3+sizeof(int)*2)*rev_num;
+  uint8_t *data = new uint8_t[size];
 
   //pkt->allocdata( sizeof(uint)+ sizeof(Time)+ (sizeof(Address)+sizeof(Time)*3+sizeof(int)*2)*rev_num);
   //unsigned char* walk = (unsigned char*)pkt->accessdata();
   *(uint*)data = rev_num;
-  size += sizeof(uint);
+  data += sizeof(uint);
   *(Time*)data = Simulator::Now();   //record the time when filling the packet
-  size += sizeof(Time);
+  data += sizeof(Time);
 
 
   PktElem* tmp;
@@ -817,7 +872,7 @@ AquaSimCopeMac::MakeMultiRev()
       if( pos->second.head != NULL ) {
 
 	  *((Address*)data) = pos->first;
-	  size += sizeof(Address);
+	  data += sizeof(Address);
 	  tmp = pos->second.head;
 
 	  Ptr<Packet> TmpPkt = pos->second.head->pkt_->Copy();
@@ -863,20 +918,20 @@ AquaSimCopeMac::MakeMultiRev()
 				  m_device->GetAddress(), PRE_REV, TmpPkt->Copy());
 
 	  *(Time*)data = PktLen_;   //already includes m_guardTime
-	  size += sizeof(Time);
+	  data += sizeof(Time);
 	  *(int*)data = RevID;
-	  size += sizeof(int);
+	  data += sizeof(int);
 	  *(Time*)data = MajorInterval;
-	  size += sizeof(Time);
+	  data += sizeof(Time);
 
 	  RevID++;
 	  m_RevQ.Push(RevID, Simulator::Now()+BackupInterval,
 		      Simulator::Now()+BackupInterval+PktLen_,
 		      m_device->GetAddress(), PRE_REV, TmpPkt);
 	  *(int*)data = RevID;
-	  size += sizeof(int);
+	  data += sizeof(int);
 	  *(Time*)data = BackupInterval;   //this is the backup time slot. One of the 10 slots after major slot
-	  size += sizeof(Time);
+	  data += sizeof(Time);
 
 
 	  //remove the packet from PacketWH_ and insert it into
@@ -900,7 +955,7 @@ AquaSimCopeMac::MakeMultiRev()
   m_neighborId = (m_neighborId+1)%m_propDelays.size();
   //m_RevQ.printRevQueue();
 
-  Ptr<Packet> tempPacket = Ptr<Packet>(data,size);
+  Ptr<Packet> tempPacket = Create<Packet>(data,size);
   pkt->AddAtEnd(tempPacket);
   pkt->AddHeader(ash);
   pkt->AddHeader(ch);
@@ -937,7 +992,7 @@ AquaSimCopeMac::ProcessMultiRev(Ptr<Packet> pkt)
 
   Time PktLen_;
   for(uint i=0; i<rev_num; i++) {
-    if( *((Address*)data) == m_device->GetNode() ) {
+    if( *((Address*)data) == m_device->GetAddress() ) {
 	data += sizeof(Address);
 
 	if( RevAckAccumTimer.IsExpired() ) {
@@ -984,8 +1039,8 @@ AquaSimCopeMac::ProcessMultiRev(Ptr<Packet> pkt)
 	    }
 	    else {
 		//give a wrong rev time interval, so the requestor will know both are wrong
-		tmp->StartTime = -1.0;
-		tmp->EndTime = -1.0;
+		tmp->StartTime = Seconds(-1);
+		tmp->EndTime = Seconds(-1);
 	    }
 
 	}
@@ -1015,42 +1070,43 @@ Ptr<Packet>
 AquaSimCopeMac::MakeMultiRevAck()
 {
   //overhear neighbors rev
-  Ptr<Packet> pkt = Ptr<Packet>();
+  Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader ash;
   CopeHeader ch;
 
-  ch.packet_type = CopeHeader::MULTI_REV_ACK;
-  ch.SetDA((Address)0xffffffff);	//MAC_BROADCAST
+  ch.SetPType(CopeHeader::MULTI_REV_ACK);
+  ch.SetDA(Address()/*(Address)0xffffffff*/);	//MAC_BROADCAST
   ch.SetSA(m_device->GetAddress());
 
-  ash.SetNextHop((Address)0xffffffff);	//MAC_BROADCAST
+  ash.SetNextHop(Address()/*(Address)0xffffffff*/);	//MAC_BROADCAST
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash->addr_type()=NS_AF_ILINK;
   //ash->ptype() = PT_OTMAN;
 
-  uint8_t data;
-  uint32_t size;
+
+  uint32_t size = sizeof(uint)+ sizeof(Time)+ (sizeof(Address)+2*sizeof(int)+2*sizeof(Time))*m_pendingRevs.size();
+  uint8_t *data = new uint8_t[size];
 
   //pkt->allocdata( sizeof(uint)+ sizeof(Time)+ (sizeof(Address)+2*sizeof(int)+2*sizeof(Time))*m_pendingRevs.size() );
   //unsigned char* walk = (unsigned char*)pkt->accessdata();
   *(uint*)data = m_pendingRevs.size();
-  size += sizeof(uint);
+  data += sizeof(uint);
   *(Time*)data = Simulator::Now();
-  size += sizeof(Time);
+  data += sizeof(Time);
 
   for( std::vector<RevReq*>::iterator pos=m_pendingRevs.begin();
 	      pos != m_pendingRevs.end(); pos++)
   {
       *(Address*)data = (*pos)->requestor;  //ack to whom
-      size += sizeof(Address);
+      data += sizeof(Address);
       *(Time*)data = (*pos)->StartTime - Simulator::Now();
-      size += sizeof(Time);
+      data += sizeof(Time);
       *(Time*)data = (*pos)->EndTime - Simulator::Now();
-      size += sizeof(Time);
+      data += sizeof(Time);
       *(int*)data = (*pos)->acceptedRevID;
-      size += sizeof(int);
+      data += sizeof(int);
       *(int*)data = (*pos)->rejectedRevID;
-      size += sizeof(int);
+      data += sizeof(int);
   }
 
   //schedule the rev req.
@@ -1058,7 +1114,7 @@ AquaSimCopeMac::MakeMultiRevAck()
   //ch->size() = (m_pendingRevs.size()*(10+10+6+4))/8;
   //ash->size() = (m_pendingRevs.size()*(8+10+6+4))/8;
 
-  Ptr<Packet> tempPacket = Ptr<Packet>(data,size);
+  Ptr<Packet> tempPacket = Create<Packet>(data,size);
   pkt->AddAtEnd(tempPacket);
   pkt->AddHeader(ash);
   pkt->AddHeader(ch);
@@ -1147,15 +1203,15 @@ AquaSimCopeMac::RecordDataPkt(Ptr<Packet> pkt)
 Ptr<Packet>
 AquaSimCopeMac::MakeDataAck()
 {
-  Ptr<Packet> pkt = Ptr<Packet>();
+  Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader ash;
   CopeHeader ch;
 
-  ch.packet_type = CopeHeader::MULTI_DATA_ACK;
-  ch.SetDA((Address)0xffffffff);	//MAC_BROADCAST
+  ch.SetPType(CopeHeader::MULTI_DATA_ACK);
+  ch.SetDA(Address()/*(Address)0xffffffff*/);	//MAC_BROADCAST
   ch.SetSA(m_device->GetAddress());
 
-  ash.SetNextHop((Address)0xffffffff);	//MAC_BROADCAST
+  ash.SetNextHop(Address()/*(Address)0xffffffff*/);	//MAC_BROADCAST
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash->addr_type()=NS_AF_ILINK;
   //ash->ptype() = PT_OTMAN;
@@ -1165,25 +1221,26 @@ AquaSimCopeMac::MakeDataAck()
   //ch->size() = DataAckNum*((10+10)/8);
   //ash->size() = DataAckNum*((10+10)/8);
 
-  uint8_t data;
-  uint32_t size;
+
+  uint32_t size = sizeof(uint)+DataAckNum*(sizeof(Address)+sizeof(int));
+  uint8_t *data = new uint8_t[size];
 
   //pkt->allocdata(sizeof(uint)+DataAckNum*(sizeof(Address)+sizeof(int)));
   //unsigned char* walk = (unsigned char*)pkt->accessdata();
   *(uint*)data = DataAckNum;
-  size += sizeof(uint);
+  data += sizeof(uint);
 
 
   for(std::vector<DataAck*>::iterator pos = m_pendingDataAcks.begin();
 	  pos != m_pendingDataAcks.end(); pos++ )
   {
       *(Address*)data = (*pos)->Sender;
-      size += sizeof(Address);
+      data += sizeof(Address);
       *(int*)data = (*pos)->SeqNum;
-      size += sizeof(int);
+      data += sizeof(int);
   }
 
-  Ptr<Packet> tempPacket = Ptr<Packet>(data,size);
+  Ptr<Packet> tempPacket = Create<Packet>(data,size);
   pkt->AddAtEnd(tempPacket);
   pkt->AddHeader(ash);
   pkt->AddHeader(ch);
@@ -1219,8 +1276,8 @@ AquaSimCopeMac::ProcessDataAck(Ptr<Packet> pkt)
 	  data += sizeof(int);	*/
 	  pkt_id = (*(int*)data);
 	  if( m_AckWaitingList.count(pkt_id) != 0 ) {
-	      if( m_AckWaitingList[pkt_id].IsRunning()) {
-		  m_AckWaitingList[pkt_id].Cancel();
+	      if( m_AckWaitingList[pkt_id].m_ackWaitTimer.IsRunning() ) {
+		  m_AckWaitingList[pkt_id].m_ackWaitTimer.Cancel();
 	      }
 	      if( m_AckWaitingList[pkt_id].m_pkt!= NULL ) {
 		  m_AckWaitingList[pkt_id].m_pkt=0;
@@ -1290,7 +1347,9 @@ AquaSimCopeMac::InsertAckWaitingList(Ptr<Packet> p, Time delay)
   int uid_ = ash.GetUId();
   m_AckWaitingList[uid_].m_mac = this;
   m_AckWaitingList[uid_].m_pkt = p;
-  Simulator::Schedule(delay, &AquaSimCopeMac::AckWaitTimerExpire,this,m_AckWaitingList[uid_].m_pkt);
+  //TODO fix this to ensure reschedule...
+  //m_AckWaitingList[uid_].m_ackWaitTimer.SetFunction(&AquaSimCopeMac::AckWaitTimerExpire,m_AckWaitingList[uid_].m_pkt);
+  //m_AckWaitingList[uid_].m_ackWaitTimer.Schedule(delay);
   //m_AckWaitingList[uid_].resched(delay);
 }
 
@@ -1307,34 +1366,37 @@ AquaSimCopeMac::AckWaitTimerExpire(Ptr<Packet> pkt)
 void
 AquaSimCopeMac::CtrlPktInsert(Ptr<Packet> ctrl_p, Time delay)
 {
-  Ptr<Timer> tmp = new Timer(Timer::CANCEL_ON_DESTROY);
-  tmp->SetFunction(&AquaSimCopeMac::SendPkt,ctrl_p);
-  tmp->Schedule(delay);
-  m_ctrlQ.push(tmp);
+  Simulator::Schedule(delay,&AquaSimCopeMac::SendPkt,this,ctrl_p);	//current work around...
+
+  /*Timer tmp = Timer (Timer::CANCEL_ON_DESTROY);
+  tmp.SetFunction(&AquaSimCopeMac::SendPkt);
+  tmp.SetArguments(ctrl_p);
+  tmp.Schedule(delay);
+  m_ctrlQ.push(tmp);*/
 }
 
 void
 AquaSimCopeMac::ClearExpiredElem()
 {
-  Ptr<Timer> tmp;
-  while( (m_ctrlQ.size() >0) && ((m_ctrlQ.front())->IsExpired()) ) {
+  Timer tmp;
+  while( (m_ctrlQ.size() >0) && ((m_ctrlQ.front()).IsExpired()) ) {
       tmp = m_ctrlQ.front();
       m_ctrlQ.pop();
-      delete tmp;
+      tmp.Remove();
   }
 }
 
 void
 AquaSimCopeMac::PrintDelayTable()
 {
-  FILE* stream = fopen("distance", "a");
+  //FILE* stream = fopen("distance", "a");
 
   std::map<Address, Time>::iterator pos=m_propDelays.begin();
   for(;pos != m_propDelays.end(); pos++) {
-	  fprintf(stream, "%f\n", pos->second*1500);
+      NS_LOG_INFO("PrintDelayTable: " << pos->second*1500);
   }
 
-  fclose(stream);
+  //fclose(stream);
 }
 
 void

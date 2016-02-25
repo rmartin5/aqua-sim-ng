@@ -844,7 +844,7 @@ AquaSimRMac::GenerateACKRev(int receiver, int intended_receiver, double duration
 {
   NS_LOG_FUNCTION(this << m_device->GetNode());
 
-  Ptr<Packet> pkt = Ptr<Packet>();
+  Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
   RMacHeader rHeader;
 
@@ -1362,7 +1362,7 @@ AquaSimRMac::MakeReservation()
   double it=CalculateOffset(dt);
   double t2=DetermineSendingTime(receiver_addr);
 
-  Ptr<Packet> pkt = Ptr<Packet>();
+  Ptr<Packet> pkt = Create<Packet>();
   RMacHeader rHeader;
 
   asHeader.SetNextHop((Address)receiver_addr);
@@ -1757,7 +1757,7 @@ AquaSimRMac::InitPhaseTwo(){
 Ptr<Packet>
 AquaSimRMac::GenerateSYN()
 {
-  Ptr<Packet> pkt = Ptr<Packet>();
+  Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
   RMacHeader rHeader;
 
@@ -1784,7 +1784,7 @@ AquaSimRMac::GenerateSYN()
 void
 AquaSimRMac::SendSYN()
 {
-  Ptr<Packet> pkt = Ptr<Packet>();
+  Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
   RMacHeader rHeader;
 
@@ -1833,7 +1833,7 @@ void
 AquaSimRMac::SendND(int pkt_size)
 {
   NS_LOG_FUNCTION(this << Seconds(Simulator::Now()));
-  Ptr<Packet> pkt = Ptr<Packet>();
+  Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
   RMacHeader rHeader;
 
@@ -1867,7 +1867,7 @@ AquaSimRMac::SendShortAckND()
 
   while(m_arrivalTableIndex>0)
     {
-      Ptr<Packet> pkt = Ptr<Packet>();
+      Ptr<Packet> pkt = Create<Packet>();
       AquaSimHeader asHeader;
       RMacHeader rHeader;
 
@@ -2414,7 +2414,7 @@ AquaSimRMac::ScheduleACKData(int data_sender)
       return;
     }
 
-  Ptr<Packet> pkt = Ptr<Packet>(sizeof(m_bitMap));
+  Ptr<Packet> pkt = Create<Packet>(sizeof(m_bitMap));
   AquaSimHeader asHeader;
   RMacHeader rHeader;
 

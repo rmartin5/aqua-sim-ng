@@ -320,7 +320,7 @@ AquaSimFama::ProcessDataBackoffTimer()
 Ptr<Packet>
 AquaSimFama::MakeND()
 {
-  Ptr<Packet> pkt = Ptr<Packet>();
+  Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
   FamaHeader FamaH;
 
@@ -356,7 +356,7 @@ AquaSimFama::MakeRTS(Address Recver)
 {
   NS_LOG_FUNCTION(this);
 
-  Ptr<Packet> pkt = Ptr<Packet>();
+  Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
   FamaHeader FamaH;
 
@@ -407,7 +407,7 @@ Ptr<Packet>
 AquaSimFama::MakeCTS(Address RTS_Sender)
 {
   NS_LOG_FUNCTION(this << RTS_Sender);
-  Ptr<Packet> pkt = Ptr<Packet>();
+  Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
   FamaHeader FamaH;
 
