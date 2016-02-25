@@ -21,12 +21,14 @@
 #include "aqua-sim-header-goal.h"
 
 #include "ns3/log.h"
+#include "ns3/address-utils.h"
+#include "ns3/address.h"
 
 using namespace ns3;
 
 
 NS_LOG_COMPONENT_DEFINE("AquaSimGoalHeader");
-NS_OBJECT_ENSURE_REGISTERED("AquaSimGoalReqHeader");
+NS_OBJECT_ENSURE_REGISTERED(AquaSimGoalReqHeader);
 
 AquaSimGoalReqHeader::AquaSimGoalReqHeader()
 {
@@ -135,7 +137,7 @@ AquaSimGoalReqHeader::GetTxTime()
   return m_TxTime;
 }
 uint8_t
-AquaSimGoalReqHeader::GetReqId()
+AquaSimGoalReqHeader::GetReqID()
 {
   return m_ReqID;
 }
@@ -184,12 +186,12 @@ uint32_t
 AquaSimGoalReqHeader::Deserialize (Buffer::Iterator start)
 {
   Buffer::Iterator i = start;
-  ReadFrom(i, SA,8);	//read 8bit addr
+  ReadFrom(i, SA, 8);	//read 8bit addr
   ReadFrom(i, RA, 8); //read 8bit addr
   ReadFrom(i, DA, 8);	//read 8bit addr
   m_SendTime = Seconds ( ( (double) i.ReadU32()) / 1000.0 );
   m_TxTime = Seconds ( ( (double) i.ReadU32()) / 1000.0 );
-  m_ReqID = i.ReadU8;
+  m_ReqID = i.ReadU8();
   //Messy...
   SenderPos.x = ( (double) i.ReadU16() ) / 1000.0;
   SenderPos.y = ( (double) i.ReadU16() ) / 1000.0;
@@ -219,7 +221,7 @@ AquaSimGoalReqHeader::GetInstanceTypeId(void) const
 }
 
 
-NS_OBJECT_ENSURE_REGISTERED("AquaSimGoalRepHeader");
+NS_OBJECT_ENSURE_REGISTERED(AquaSimGoalRepHeader);
 
 AquaSimGoalRepHeader::AquaSimGoalRepHeader()
 {
@@ -299,7 +301,7 @@ AquaSimGoalRepHeader::GetTxTime()
   return m_TxTime;
 }
 uint8_t
-AquaSimGoalRepHeader::GetReqId()
+AquaSimGoalRepHeader::GetReqID()
 {
   return m_ReqID;
 }
@@ -341,7 +343,7 @@ AquaSimGoalRepHeader::Deserialize (Buffer::Iterator start)
   ReadFrom(i, RA, 8);	//read 8bit addr
   m_SendTime = Seconds ( ( (double) i.ReadU32()) / 1000.0 );
   m_TxTime = Seconds ( ( (double) i.ReadU32()) / 1000.0 );
-  m_ReqID = i.ReadU8;
+  m_ReqID = i.ReadU8();
   m_BackoffTime = Seconds ( ( (double) i.ReadU32()) / 1000.0 );
   ReplyerPos.x = ( (double) i.ReadU16() ) / 1000.0;
   ReplyerPos.y = ( (double) i.ReadU16() ) / 1000.0;
@@ -364,7 +366,7 @@ AquaSimGoalRepHeader::GetInstanceTypeId(void) const
 }
 
 
-NS_OBJECT_ENSURE_REGISTERED("AquaSimGoalAckHeader");
+NS_OBJECT_ENSURE_REGISTERED(AquaSimGoalAckHeader);
 
 AquaSimGoalAckHeader::AquaSimGoalAckHeader()
 {
@@ -425,7 +427,7 @@ AquaSimGoalAckHeader::GetPush()
   return m_Push;
 }
 uint8_t
-AquaSimGoalAckHeader::GetReqId()
+AquaSimGoalAckHeader::GetReqID()
 {
   return m_ReqID;
 }
@@ -449,8 +451,8 @@ AquaSimGoalAckHeader::Deserialize (Buffer::Iterator start)
   Buffer::Iterator i = start;
   ReadFrom(i, SA,8);	//read 8bit addr
   ReadFrom(i, RA, 8);	//read 8bit addr
-  m_Push = i.ReadU8;
-  m_ReqID = i.ReadU8;
+  m_Push = i.ReadU8();
+  m_ReqID = i.ReadU8();
 
   return GetSerializedSize();
 }

@@ -13,6 +13,7 @@ def build(bld):
         'model/aqua-sim-energy-model.cc',
         'model/aqua-sim-hash-table.cc',
         'model/aqua-sim-header.cc',
+        'model/aqua-sim-header-goal.cc',
         'model/aqua-sim-mac.cc',
        #    'model/aqua-sim-mobility-pattern.cc',
         'model/aqua-sim-modulation.cc',
@@ -31,6 +32,7 @@ def build(bld):
         'model/aqua-sim-mac-fama.cc',
         'model/aqua-sim-mac-aloha.cc',
         'model/aqua-sim-mac-copemac.cc',
+        'model/aqua-sim-mac-goal.cc',
         ]
 
     module_test = bld.create_ns3_module_test_library('aqua-sim-ng')
@@ -45,6 +47,7 @@ def build(bld):
         'model/aqua-sim-energy-model.h',
         'model/aqua-sim-hash-table.h',
         'model/aqua-sim-header.h',
+        'model/aqua-sim-header-goal.h',
         'model/aqua-sim-mac.h',
        #    'model/aqua-sim-mobility-pattern.h',
         'model/aqua-sim-modulation.h',
@@ -64,6 +67,7 @@ def build(bld):
         'model/aqua-sim-mac-fama.h',
         'model/aqua-sim-mac-aloha.h',
         'model/aqua-sim-mac-copemac.h',
+        'model/aqua-sim-mac-goal.h',
         ]
 
     if bld.env.ENABLE_EXAMPLES:

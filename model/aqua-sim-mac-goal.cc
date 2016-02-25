@@ -19,8 +19,12 @@
  */
 
 #include "aqua-sim-mac-goal.h"
+#include "aqua-sim-header.h"
 
 #include "ns3/log.h"
+#include "ns3/integer.h"
+#include "ns3/mobility-model.h"
+
 
 //#include "vbf/vectorbasedforward.h"
 
@@ -80,20 +84,27 @@ void AquaSimGoal_NxtRoundTimer::expire()
 
 //---------------------------------------------------------------------
 AquaSimGoal::AquaSimGoal(): m_maxBurst(1), m_dataPktInterval(0.0001), m_guardTime(0.05),
-	m_estimateError(0.005), m_TSQ(0.01, 1), m_maxRetransTimes(6), m_sinkSeq(0),
-	m_qsPktNum(0), m_recvedListAliveTime(100.0), m_nxtRoundMaxWaitTime(1.0),
-	SinkAccumAckTimer(this), m_nxtRoundTimer(this)
+	m_TSQ(Seconds(0.01), Seconds(1)), m_maxRetransTimes(6),
+	SinkAccumAckTimer(this), m_sinkSeq(0), m_qsPktNum(0),
+	m_nxtRoundTimer(this)
 {
+	m_estimateError=Seconds(0.005);
+	m_recvedListAliveTime = Seconds(100.0);
+	m_nxtRoundMaxWaitTime = Seconds(1.0);
 	m_propSpeed = 1500.0;
 	m_isForwarding = false;
 	m_txRadius = 3000.0; //static for now... UnderwaterChannel::Transmit_distance();
-	m_maxDelay = m_txRadius/m_propSpeed;
+	m_maxDelay = Seconds(m_txRadius/m_propSpeed);
 	m_pipeWidth = 100.0;
 	//m_dataPktSize = 300;   //Byte
 	m_backoffType = VBF;
 
-	m_maxBackoffTime = 4*m_maxDelay+m_VBF_MaxDelay*1.5+2;
+	m_maxBackoffTime = 4*m_maxDelay+m_VBF_MaxDelay*1.5+Seconds(2);
   Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
+}
+
+AquaSimGoal::~AquaSimGoal()
+{
 }
 
 TypeId
@@ -105,7 +116,7 @@ AquaSimGoal::GetTypeId(void)
       .AddAttribute("MaxBurst", "The maximum number of packets sent in one burst. default is 5",
 	IntegerValue(5),
 	MakeIntegerAccessor (&AquaSimGoal::m_maxBurst),
-	MakeIntegerChecker<AquaSimGoal>())
+	MakeIntegerChecker<int>())
       .AddAttribute("VBFMaxDelay", "Max delay for VBF.",
 	TimeValue(Seconds(2.0)),
 	MakeTimeAccessor (&AquaSimGoal::m_VBF_MaxDelay),
@@ -113,7 +124,7 @@ AquaSimGoal::GetTypeId(void)
       .AddAttribute("MaxRetxTimes", "Max retry times.",
 	IntegerValue(6),
 	MakeIntegerAccessor (&AquaSimGoal::m_maxRetransTimes),
-	MakeIntegerChecker<AquaSimGoal>())
+	MakeIntegerChecker<int>())
     ;
   return tid;
 }
@@ -151,9 +162,10 @@ void AquaSimGoal::RecvProcess(Ptr<Packet> pkt)
 	}
 
   //TODO general packet type needs to be supported
-  /*
-	if( dst == m_device->GetAddress() || dst == Address(0xffffffff) ) {  //MAC_BROADCAST;
-		switch(cmh->ptype() ) {
+	//TODO fix broadcast throughout this file.
+
+	if( dst == m_device->GetAddress() /*|| dst == Address(0xffffffff)*/ ) {  //MAC_BROADCAST;
+ /*		switch(cmh->ptype() ) {
 		case PT_GOAL_REQ:                               //req is broadcasted, it is also data-ack
 			ProcessReqPkt(pkt);          //both for me and overhear
 			break;
@@ -173,8 +185,8 @@ void AquaSimGoal::RecvProcess(Ptr<Packet> pkt)
 			return;
 			;
 		}
-
-	} */
+*/
+	}
 	/*packet to other nodes*/
 	//else if( cmh->ptype() == PT_GOAL_REP ) {
 		/*based on other's ack, reserve
@@ -236,15 +248,16 @@ AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Ti
   AquaSimHeader ash;
 	AlohaHeader mach;
   AquaSimGoalReqHeader goalReqh;
-	Ptr<Packet> DataPkt = (DataPktSet.begin());
+	Ptr<Packet> DataPkt = *(DataPktSet.begin());
 	//hdr_uwvb* vbh = hdr_uwvb::access(DataPkt);
+	  Ptr<MobilityModel> model = m_device->GetNode()->GetObject<MobilityModel>();
 
-	goalReqh.SetRA((Address)0xffffffff); //MAC_BROADCAST;
+	goalReqh.SetRA(Address()/*(Address)0xffffffff*/); //MAC_BROADCAST;
   goalReqh.SetSA(m_device->GetAddress());
 	//goalReqh.SetDA(vbh->target_id.addr_);  //sink address
 	m_reqPktSeq++;
   goalReqh.SetReqID(m_reqPktSeq);
-  goalReqh.SetSenderPos(m_device->GetMobility()->GetPosition());
+  goalReqh.SetSenderPos(model->GetPosition());
 	goalReqh.SetSendTime(DataSendTime-Simulator::Now());
 	goalReqh.SetTxTime(TxTime);
 	//goalReqh.SetSinkPos.setValue(vbh->info.tx, vbh->info.ty, vbh->info.tz);
@@ -253,7 +266,7 @@ AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Ti
 	//ash ptype() = PT_GOAL_REQ;
 	ash.SetDirection(AquaSimHeader::DOWN);
 	ash.SetErrorFlag(false);
-	ash.SetNextHop((Address)0xffffffff); //MAC_BROADCAST
+	ash.SetNextHop(Address()/*(Address)0xffffffff*/); //MAC_BROADCAST
   // ash size() = goalReqh->size(m_backoffType)+(NSADDR_T_SIZE*DataPktSet.size())/8+1;
         //sizeof(Address) = 10 in this case.
 	ash.SetTxTime(GetTxTime(goalReqh.size(m_backoffType)+(10*DataPktSet.size())/8+1));
@@ -263,18 +276,21 @@ AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Ti
   mach.SetDA(goalReqh.GetRA());
   mach.SetSA(m_device->GetAddress());
 
-  Ptr<Packet> tempPacket = Create<Packet>(DataPktSet.size(),sizeof(uint));
-  pkt->AddAtEnd(tempPacket);
+  uint32_t size = sizeof(uint)+sizeof(int)*DataPktSet.size();
+  uint8_t *data = new uint8_t[size];
+  *((uint*)data) = DataPktSet.size();
+  data += sizeof(uint);
 
   AquaSimHeader ashLocal;
 
 	for( std::set<Ptr<Packet> >::iterator pos = DataPktSet.begin();
 		pos != DataPktSet.end(); pos++) {
-	    pos->m_ptr->PeekHeader(ashLocal);
-      Ptr<Packet> tempPacket = Create<Packet>(ashLocal.GetUId,sizeof(int));
-      pkt->AddAtEnd(tempPacket);
+	    (*pos)->PeekHeader(ashLocal);
+	    *((int*)data) = ashLocal.GetUId();
+	    data += sizeof(int);
 	}
-
+  Ptr<Packet> tempPacket = Create<Packet>(data,size);
+  pkt->AddAtEnd(tempPacket);
   pkt->AddHeader(ash);
   pkt->AddHeader(mach);
   pkt->AddHeader(goalReqh);
@@ -324,7 +340,7 @@ AquaSimGoal::ProcessReqPkt(Ptr<Packet> ReqPkt)
     AckPkt->PeekHeader(ash);
 		Time Txtime = GetTxTime(ash.GetSize());
 		Time SendTime = m_TSQ.GetAvailableTime(Simulator::Now(), Txtime);
-		m_TSQ.insert(SendTime, SendTime+Txtime);
+		m_TSQ.Insert(SendTime, SendTime+Txtime);
 		PreSendPkt(AckPkt, SendTime-Simulator::Now());
 	}
 
@@ -399,16 +415,16 @@ AquaSimGoal::ProcessReqPkt(Ptr<Packet> ReqPkt)
                             JitterStartTime(RepPktTxtime),RepPktTxtime );
 			SchedElem* SE = new SchedElem(RepSendTime, RepSendTime+RepPktTxtime);
 			//reserve the sending interval for Rep packet
-			m_TSQ.insert(SE);
+			m_TSQ.Insert(SE);
 
 			backofftimer->ReqPkt() = ReqPkt->Copy();
 			backofftimer->SetSE(SE);
 			backofftimer->BackoffTime() = BackoffTimeLen;
-      backofftimer->SetFunction(&AquaSimGoal_BackoffTimer::expire,this);
-      backofftimer->Schedule(RepSendTime-Simulator::Now());
+			backofftimer->SetFunction(&ns3::AquaSimGoal_BackoffTimer::expire,backofftimer);
+			backofftimer->Schedule(RepSendTime-Simulator::Now());
 			m_backoffTimerSet.insert(backofftimer);
 			//avoid send-recv collision or recv-recv collision at this node
-			m_TSQ.insert(Simulator::Now()+goalReqh.GetSendTime(),
+			m_TSQ.Insert(Simulator::Now()+goalReqh.GetSendTime(),
 				     Simulator::Now()+goalReqh.GetSendTime()+goalReqh.GetTxTime());
 			return;
 		}
@@ -416,7 +432,7 @@ AquaSimGoal::ProcessReqPkt(Ptr<Packet> ReqPkt)
 
 	//reserve time slot for receiving data packet
 	//avoid recv-recv collision at this node
-	m_TSQ.insert(Simulator::Now()+goalReqh.GetSendTime(), Simulator::Now()+
+	m_TSQ.Insert(Simulator::Now()+goalReqh.GetSendTime(), Simulator::Now()+
                         goalReqh.GetSendTime()+goalReqh.GetTxTime(), true);
 }
 
@@ -432,11 +448,13 @@ AquaSimGoal::MakeRepPkt(Ptr<Packet> ReqPkt, Time BackoffTime)
   AquaSimHeader ash;
   AlohaHeader mach; //TODO update this.
   AquaSimGoalRepHeader repH;
+  Ptr<MobilityModel> model = m_device->GetNode()->GetObject<MobilityModel>();
+
 
 	repH.SetSA(m_device->GetAddress());
 	repH.SetRA(reqPktHeader.GetSA());
 	repH.SetReqID(reqPktHeader.GetReqID());
-	repH.ReplyerPos(m_device->GetMobility()->GetPosition());
+	repH.SetReplyerPos(model->GetPosition());
 	repH.SetSendTime(reqPktHeader.GetSendTime());	//update this item when being sent out
 	repH.SetBackoffTime(BackoffTime);
 
@@ -474,7 +492,7 @@ AquaSimGoal::ProcessRepPkt(Ptr<Packet> RepPkt)
 			if( repH.GetBackoffTime() < (*pos)->MinBackoffTime() ) {
 				(*pos)->NxtHop() = repH.GetSA();
 				(*pos)->MinBackoffTime() = repH.GetBackoffTime();
-				(*pos)->GotRep() = true;
+				(*pos)->SetRep(true);
 			}
 			break;
 		}
@@ -525,10 +543,11 @@ AquaSimGoal::ProcessOverhearedRepPkt(Ptr<Packet> RepPkt)
   AquaSimHeader ash;
   RepPkt->PeekHeader(ash);
 	//m_device->UpdatePosition();  //out of date
-  ThisNode = m_device->GetMobility()->GetPosition();
-	Time PropDelay = Dist(ThisNode, repH.GetReplyerPos())/m_propSpeed;
+  Ptr<MobilityModel> model = m_device->GetNode()->GetObject<MobilityModel>();
+  ThisNode = model->GetPosition();
+	Time PropDelay = Seconds(Dist(ThisNode, repH.GetReplyerPos())/m_propSpeed);
 	Time BeginTime = Simulator::Now() + (repH.GetSendTime() - 2*PropDelay-ash.GetTxTime() );
-	m_TSQ.insert(BeginTime-m_guardTime, BeginTime+repH.GetTxTime()+m_guardTime);
+	m_TSQ.Insert(BeginTime-m_guardTime, BeginTime+repH.GetTxTime()+m_guardTime);
 
 }
 
@@ -542,10 +561,10 @@ AquaSimGoal::PrepareDataPkts()
   AquaSimGoalReqHeader reqH;
   AquaSimHeader ash;
 
-	int		SinkAddr = -1;
-	Time DataTxTime = 0.0;
-	Time DataSendTime = 0.0;
-	Time ReqSendTime = 0.0;
+	//int		SinkAddr = -1;  //not used.
+	Time DataTxTime = Seconds(0);
+	Time DataSendTime = Seconds(0);
+	Time ReqSendTime = Seconds(0);
 	Time ReqPktTxTime = GetTxTime(reqH.size(m_backoffType));
 	Ptr<Packet> pkt;
 	Ptr<Packet> ReqPkt;
@@ -585,23 +604,23 @@ AquaSimGoal::PrepareDataPkts()
 	ReqPktTxTime = GetTxTime(ashLocal.GetSize());
 
 	ReqSendTime = m_TSQ.GetAvailableTime(Simulator::Now()+JitterStartTime(ReqPktTxTime), ReqPktTxTime);
-	m_TSQ.insert(ReqSendTime, ReqSendTime+ReqPktTxTime); //reserve time slot for sending REQ
+	m_TSQ.Insert(ReqSendTime, ReqSendTime+ReqPktTxTime); //reserve time slot for sending REQ
 
 	//reserve time slot for sending DATA
 	DataSendTime = m_TSQ.GetAvailableTime(Simulator::Now()+m_maxBackoffTime+2*m_maxDelay+m_estimateError, DataTxTime, true);
-	DataSendTimer->SetSE( m_TSQ.insert(DataSendTime, DataSendTime+DataTxTime) );
+	DataSendTimer->SetSE( m_TSQ.Insert(DataSendTime, DataSendTime+DataTxTime) );
 
   ReqPkt->PeekHeader(reqH);
-	DataSendTimer->ReqID() = reqH.GetReqID();
+	DataSendTimer->SetReqID(reqH.GetReqID());
 	DataSendTimer->TxTime() = DataTxTime;
-	DataSendTimer->MinBackoffTime() = 100000.0;
-	DataSendTimer->GotRep() = false;
+	DataSendTimer->MinBackoffTime() = Seconds(100000.0);
+	DataSendTimer->SetRep(false);
 
 	//send REQ
 	PreSendPkt(ReqPkt, ReqSendTime-Simulator::Now());
 
-  DataSendTimer->SetFunction(&AquaSimGoalDataSendTimer::expire,this);
-  DataSendTimer->Schedule(DataSendTime - Simulator::Now());
+	DataSendTimer->SetFunction(&AquaSimGoalDataSendTimer::expire,DataSendTimer);
+	DataSendTimer->Schedule(DataSendTime - Simulator::Now());
 	m_dataSendTimerSet.insert(DataSendTimer);
 }
 
@@ -610,7 +629,7 @@ void
 AquaSimGoal::SendDataPkts(std::set<Ptr<Packet> > DataPktSet, Address NxtHop, Time TxTime)
 {
 	std::set<Ptr<Packet> >::iterator pos = DataPktSet.begin();
-	Time DelayTime = 0.00001;  //the delay of sending data packet
+	Time DelayTime = Seconds(0.00001);  //the delay of sending data packet
   AquaSimHeader ash;
   AlohaHeader mach;   //TODO change.
 	AquaSimGoal_AckTimeoutTimer* AckTimeoutTimer = new AquaSimGoal_AckTimeoutTimer(this);
@@ -632,7 +651,7 @@ AquaSimGoal::SendDataPkts(std::set<Ptr<Packet> > DataPktSet, Address NxtHop, Tim
 		pos++;
 	}
 
-  AckTimeoutTimer->SetFunction(&AquaSimGoal_AckTimeoutTimer::expire, this);
+  AckTimeoutTimer->SetFunction(&AquaSimGoal_AckTimeoutTimer::expire, AckTimeoutTimer);
   AckTimeoutTimer->Schedule(2*m_maxDelay+TxTime+this->m_nxtRoundMaxWaitTime+m_estimateError+MilliSeconds(0.5));
 	m_ackTimeoutTimerSet.insert(AckTimeoutTimer);
 }
@@ -665,7 +684,7 @@ AquaSimGoal::ProcessDataPkt(Ptr<Packet> DataPkt)
 			SinkAccumAckTimer.Cancel();
 		}
 
-    SinkAccumAckTimer.SetFunction(&AquaSimGoal_SinkAccumAckTimer::expire,this);
+    SinkAccumAckTimer.SetFunction(&AquaSimGoal_SinkAccumAckTimer::expire,&SinkAccumAckTimer);
     SinkAccumAckTimer.Schedule(ash.GetTxTime()+ m_dataPktInterval*2);
 		SinkAccumAckTimer.AckSet().insert( ash.GetUId() );
 
@@ -695,7 +714,7 @@ AquaSimGoal::MakeAckPkt(std::set<int> AckSet, bool PSH,  int ReqID)
   AquaSimGoalAckHeader goalAckh;
 
 	goalAckh.SetSA(m_device->GetAddress());
-	goalAckh.SetRA((Address)0xffffffff);  //MAC_BROADCAST
+	goalAckh.SetRA(Address()/*(Address)0xffffffff*/);  //MAC_BROADCAST
 	goalAckh.SetPush(PSH);
 	if( PSH ) {
 		goalAckh.SetReqID(ReqID);
@@ -711,19 +730,23 @@ AquaSimGoal::MakeAckPkt(std::set<int> AckSet, bool PSH,  int ReqID)
 	mach.SetDA(goalAckh.GetRA());
 	mach.SetSA(goalAckh.GetSA());
 
-  Ptr<Packet> tempPacket = Create<Packet>(AckSet.size(),sizeof(uint));
-  pkt->AddAtEnd(tempPacket);
+	uint32_t size = sizeof(int)*AckSet.size()+sizeof(uint);
+	uint8_t *data = new uint8_t[size];
+
+	*((uint*)data) = AckSet.size();
+	data += sizeof(uint);
 
 	for( std::set<int>::iterator pos=AckSet.begin();
 		pos != AckSet.end(); pos++)   {
-      Ptr<Packet> tempPacket = Create<Packet>(*pos,sizeof(int));
-      pkt->AddAtEnd(tempPacket);
+	    *((int*)data) = *pos;
+	    data += sizeof(int);
 	}
-
+  Ptr<Packet> tempPacket = Create<Packet>(data,size);
+  pkt->AddAtEnd(tempPacket);
   pkt->AddHeader(goalAckh);
   pkt->AddHeader(ash);
   pkt->AddHeader(mach);
-	return pkt;
+  return pkt;
 }
 
 //---------------------------------------------------------------------
@@ -833,7 +856,7 @@ AquaSimGoal::ProcessPSHAckPkt(Ptr<Packet> AckPkt)
 			if( DataSendTimer->IsRunning() ) {
 				DataSendTimer->Cancel();
 			}
-			m_TSQ.remove(DataSendTimer->SE());
+			m_TSQ.Remove(DataSendTimer->SE());
 
 			m_dataSendTimerSet.erase(DataSendTimer);
 			delete DataSendTimer;
@@ -861,15 +884,17 @@ AquaSimGoal::Insert2PktQs(Ptr<Packet> DataPkt, bool FrontPush)
 		return;
 	}
 	else {
-		ash.SetNumForwards(ash.GetNumForwards()++); //bit awkward.
+	    uint8_t tmp = ash.GetNumForwards();
+	    tmp++;
+	    ash.SetNumForwards(tmp);	//bit awkward.
     DataPkt->AddHeader(ash);
 	}
-
+	/* vbh not implemented yet
 	if( FrontPush )
-    ;//[vbh->target_id.addr_].Q_.push_front(DataPkt);
+	  //[vbh->target_id.addr_].Q_.push_front(DataPkt);
 	else
-		;//m_PktQs[vbh->target_id.addr_].Q_.push_back(DataPkt);
-
+	  //m_PktQs[vbh->target_id.addr_].Q_.push_back(DataPkt);
+	*/
 	m_qsPktNum++;
 
 	GotoNxtRound();
@@ -940,7 +965,7 @@ AquaSimGoal::ProcessSinkAccumAckTimeout()
   AckPkt->PeekHeader(ash);
 	Time AckTxtime = GetTxTime(ash.GetSize());
 	Time AckSendTime = m_TSQ.GetAvailableTime(Simulator::Now()+JitterStartTime(AckTxtime), AckTxtime);
-	m_TSQ.insert(AckSendTime, AckSendTime+AckTxtime);
+	m_TSQ.Insert(AckSendTime, AckSendTime+AckTxtime);
 	PreSendPkt(AckPkt, AckSendTime-Simulator::Now());
 }
 
@@ -972,7 +997,7 @@ AquaSimGoal::ProcessAckTimeout(AquaSimGoal_AckTimeoutTimer *AckTimeoutTimer)
 	//m_ackTimeoutTimerSet.erase(AckTimeoutTimer);
 	//delete AckTimeoutTimer;
 
-	std::map<int, Ptr<Packet>>::iterator pos = AckTimeoutTimer->PktSet().begin();
+	std::map<int, Ptr<Packet> >::iterator pos = AckTimeoutTimer->PktSet().begin();
 	while( pos != AckTimeoutTimer->PktSet().end() ) {
 		Insert2PktQs(pos->second, true);
 		pos++;
@@ -1018,7 +1043,7 @@ AquaSimGoal::PreSendPkt(Ptr<Packet> pkt, Time delay)
 {
 	AquaSimGoal_PreSendTimer* PreSendTimer = new AquaSimGoal_PreSendTimer(this);
 	PreSendTimer->Pkt() = pkt;
-  PreSendTimer->SetFunction(&AquaSimGoal_PreSendTimer::expire,this);
+  PreSendTimer->SetFunction(&AquaSimGoal_PreSendTimer::expire,PreSendTimer);
   PreSendTimer->Schedule(delay);
 	m_preSendTimerSet.insert(PreSendTimer);
 }
@@ -1133,7 +1158,8 @@ AquaSimGoal::GetVBFbackoffTime(Vector3D Source, Vector3D Sender, Vector3D Sink)
 	double alpha = 0.0;
 	Vector3D ThisNode;
 	//m_device->UpdatePosition();  //out of date
-	ThisNode = m_device->GetMobility()->GetPosition();
+	  Ptr<MobilityModel> model = m_device->GetNode()->GetObject<MobilityModel>();
+	ThisNode = model->GetPosition();
 
 	if( Dist(Sender, Sink) < Dist(ThisNode, Sink) )
 		return -1.0;
@@ -1164,7 +1190,8 @@ AquaSimGoal::DistToLine(Vector3D LinePoint1, Vector3D LinePoint2)
 {
   Vector3D ThisNode;
   //m_device->UpdatePosition();  //out of date
-  ThisNode = m_device->GetMobility()->GetPosition();
+  Ptr<MobilityModel> model = m_device->GetNode()->GetObject<MobilityModel>();
+  ThisNode = model->GetPosition();
 	double P1ThisNodeDist = Dist(LinePoint1, ThisNode);
 	double P1P2Dist = Dist(LinePoint1, LinePoint2);
 	double ThisNodeP2Dist = Dist(ThisNode, LinePoint2);
@@ -1207,7 +1234,7 @@ AquaSimGoal::GotoNxtRound()
 
 	m_isForwarding = true;
 
-  m_nxtRoundTimer.SetFunction(&AquaSimGoal_NxtRoundTimer::expire, this);
+  m_nxtRoundTimer.SetFunction(&AquaSimGoal_NxtRoundTimer::expire, &m_nxtRoundTimer);
   m_nxtRoundTimer.Schedule(FemtoSeconds(m_rand->GetValue(0.0,m_nxtRoundMaxWaitTime.ToDouble(Time::S) ) ) );
 }
 
@@ -1226,7 +1253,7 @@ AquaSimGoal::JitterStartTime(Time Txtime)
 
 
 //---------------------------------------------------------------------
-SchedElem::SchedElem(Time BeginTime_, Time EndTime_, bool IsRecvSlot_)
+ns3::SchedElem::SchedElem(Time BeginTime_, Time EndTime_, bool IsRecvSlot_)
 {
 	BeginTime = BeginTime_;
 	EndTime = EndTime_;
@@ -1234,7 +1261,7 @@ SchedElem::SchedElem(Time BeginTime_, Time EndTime_, bool IsRecvSlot_)
 }
 
 //---------------------------------------------------------------------
-SchedElem::SchedElem(SchedElem& e)
+ns3::SchedElem::SchedElem(SchedElem& e)
 {
 	BeginTime = e.BeginTime;
 	EndTime = e.EndTime;
@@ -1242,18 +1269,18 @@ SchedElem::SchedElem(SchedElem& e)
 
 
 //---------------------------------------------------------------------
-TimeSchedQueue::TimeSchedQueue(Time MinInterval, Time BigIntervalLen)
+ns3::TimeSchedQueue::TimeSchedQueue(Time MinInterval, Time BigIntervalLen)
 {
 	m_minInterval = MinInterval;
 	m_bigIntervalLen = BigIntervalLen;
 }
 
 //---------------------------------------------------------------------
-SchedElem*
-TimeSchedQueue::Insert(SchedElem *e)
+ns3::SchedElem*
+ns3::TimeSchedQueue::Insert(SchedElem *e)
 {
-	list<SchedElem*>::iterator pos = SchedQ_.begin();
-	while( pos != SchedQ_.end() ) {
+	std::list<SchedElem*>::iterator pos = m_SchedQ.begin();
+	while( pos != m_SchedQ.end() ) {
 
 		if( (*pos)->BeginTime < e->BeginTime )
 			break;
@@ -1261,14 +1288,14 @@ TimeSchedQueue::Insert(SchedElem *e)
 		pos++;
 	}
 
-	if( pos == SchedQ_.begin() ) {
-		SchedQ_.push_front(e);
+	if( pos == m_SchedQ.begin() ) {
+		m_SchedQ.push_front(e);
 	}
-	else if( pos == SchedQ_.end() ) {
-		SchedQ_.push_back(e);
+	else if( pos == m_SchedQ.end() ) {
+		m_SchedQ.push_back(e);
 	}
 	else{
-		SchedQ_.insert(pos, e);
+		m_SchedQ.insert(pos, e);
 	}
 
 	return e;
@@ -1276,8 +1303,8 @@ TimeSchedQueue::Insert(SchedElem *e)
 
 
 //---------------------------------------------------------------------
-SchedElem*
-TimeSchedQueue::Insert(Time BeginTime, Time EndTime, bool IsRecvSlot)
+ns3::SchedElem*
+ns3::TimeSchedQueue::Insert(Time BeginTime, Time EndTime, bool IsRecvSlot)
 {
 	SchedElem* e = new SchedElem(BeginTime, EndTime, IsRecvSlot);
 	return Insert(e);
@@ -1286,16 +1313,16 @@ TimeSchedQueue::Insert(Time BeginTime, Time EndTime, bool IsRecvSlot)
 
 //---------------------------------------------------------------------
 void
-TimeSchedQueue::Remove(SchedElem *e)
+ns3::TimeSchedQueue::Remove(SchedElem *e)
 {
-	SchedQ_.remove(e);
+	m_SchedQ.remove(e);
 	delete e;
 }
 
 
 //---------------------------------------------------------------------
-Time
-TimeSchedQueue::GetAvailableTime(Time EarliestTime, Time SlotLen, bool BigInterval)
+ns3::Time
+ns3::TimeSchedQueue::GetAvailableTime(Time EarliestTime, Time SlotLen, bool BigInterval)
 {
 	/*
 	 * how to select the sending time is critical
@@ -1306,7 +1333,7 @@ TimeSchedQueue::GetAvailableTime(Time EarliestTime, Time SlotLen, bool BigInterv
 	Time Interval = Seconds(0.0);
 	if( BigInterval ) {
 		Interval = m_bigIntervalLen;	//Big Interval is for DATA packet.
-		MinStartInterval = 0.0;		//DATA packet does not need to Jitter the start time.
+		MinStartInterval = Seconds(0);		//DATA packet does not need to Jitter the start time.
 	}
 	else {
 		Interval = m_minInterval;
@@ -1314,15 +1341,15 @@ TimeSchedQueue::GetAvailableTime(Time EarliestTime, Time SlotLen, bool BigInterv
 
 	Time LowerBeginTime = EarliestTime;
 	Time UpperBeginTime = Seconds(-1.0);   //infinite;
-	list<SchedElem*>::iterator pos = SchedQ_.begin();
+	std::list<SchedElem*>::iterator pos = m_SchedQ.begin();
 
 
-	while( pos != SchedQ_.end() ) {
-		while( pos!=SchedQ_.end() && (*pos)->IsRecvSlot ) {
+	while( pos != m_SchedQ.end() ) {
+		while( pos!=m_SchedQ.end() && (*pos)->IsRecvSlot ) {
 			pos++;
 		}
 
-		if( pos == SchedQ_.end() ) {
+		if( pos == m_SchedQ.end() ) {
 			break;
 		}
 
@@ -1330,7 +1357,7 @@ TimeSchedQueue::GetAvailableTime(Time EarliestTime, Time SlotLen, bool BigInterv
 			break;
 		}
 		else {
-			LowerBeginTime = max((*pos)->EndTime, LowerBeginTime);
+			LowerBeginTime = std::max((*pos)->EndTime, LowerBeginTime);
 		}
 		pos++;
 	}
@@ -1338,25 +1365,25 @@ TimeSchedQueue::GetAvailableTime(Time EarliestTime, Time SlotLen, bool BigInterv
 	UpperBeginTime = LowerBeginTime + MinStartInterval;
 
   Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable> ();
-  return rand->GetValue(LowerBeginTime, UpperBeginTime);
+  return MilliSeconds(rand->GetValue(LowerBeginTime.ToDouble(Time::MS), UpperBeginTime.ToDouble(Time::MS)));
 }
 
 
 //---------------------------------------------------------------------
 bool
-TimeSchedQueue::CheckCollision(Time BeginTime, Time EndTime)
+ns3::TimeSchedQueue::CheckCollision(Time BeginTime, Time EndTime)
 {
 	ClearExpiredElems();
 
-	list<SchedElem*>::iterator pos = SchedQ_.begin();
+	std::list<SchedElem*>::iterator pos = m_SchedQ.begin();
 	BeginTime -= m_minInterval;   //consider the guard time
 	EndTime += m_minInterval;
 
-	if( SchedQ_.empty() ) {
+	if( m_SchedQ.empty() ) {
 		return true;
 	}
 	else {
-		while( pos != SchedQ_.end() ) {
+		while( pos != m_SchedQ.end() ) {
 			if( (BeginTime < (*pos)->BeginTime && EndTime > (*pos)->BeginTime)
 				|| (BeginTime<(*pos)->EndTime && EndTime > (*pos)->EndTime ) ) {
 				return false;
@@ -1372,14 +1399,14 @@ TimeSchedQueue::CheckCollision(Time BeginTime, Time EndTime)
 
 //---------------------------------------------------------------------
 void
-TimeSchedQueue::ClearExpiredElems()
+ns3::TimeSchedQueue::ClearExpiredElems()
 {
 	SchedElem* e = NULL;
-	while( !SchedQ_.empty() ) {
-		e = SchedQ_.front();
-		if( e->EndTime + m_minInterval < NOW )
+	while( !m_SchedQ.empty() ) {
+		e = m_SchedQ.front();
+		if( e->EndTime + m_minInterval < Simulator::Now() )
 		{
-			SchedQ_.pop_front();
+			m_SchedQ.pop_front();
 			delete e;
 			e = NULL;
 		}
@@ -1391,14 +1418,16 @@ TimeSchedQueue::ClearExpiredElems()
 
 //---------------------------------------------------------------------
 void
-TimeSchedQueue::Print(char* filename)
+ns3::TimeSchedQueue::Print(char* filename)
 {
-	FILE* stream = fopen(filename, "a");
-	list<SchedElem*>::iterator pos = SchedQ_.begin();
-	while( pos != SchedQ_.end() ) {
-		fprintf(stream, "(%f, %f)\t", (*pos)->BeginTime, (*pos)->EndTime);
-		pos++;
+	//FILE* stream = fopen(filename, "a");
+	std::list<SchedElem*>::iterator pos = m_SchedQ.begin();
+	while( pos != m_SchedQ.end() ) {
+	    std::cout << "Print(" << (*pos)->BeginTime << ", " << (*pos)->EndTime << ")\t";
+		//fprintf(stream, "(%f, %f)\t", (*pos)->BeginTime, (*pos)->EndTime);
+	    pos++;
 	}
-	fprintf(stream, "\n");
-	fclose(stream);
+	std::cout << "\n";
+	//fprintf(stream, "\n");
+	//fclose(stream);
 }

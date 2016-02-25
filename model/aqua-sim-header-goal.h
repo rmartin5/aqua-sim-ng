@@ -35,8 +35,8 @@ namespace ns3 {
 
 //using implicit ACK.
 enum BackoffType{
-	VBF,
-	HH_VBF
+      VBF,
+      HH_VBF
 };
 
 class AquaSimGoalReqHeader : public Header {

@@ -276,10 +276,9 @@ RevQueues::UpdateStatus(int RevID, RevType new_type)
       }
 
       if( send_time > 0.0 && pos->m_sendTimer != NULL) {
-	  /*TODO this needs to be fixed to reschedule timer. Can't seem to figure out this error.
-	  pos->m_sendTimer->SetFunction(&PktSendTimer::PktSendTimerExpire);
+	  pos->m_sendTimer->SetFunction(&PktSendTimer::PktSendTimerExpire,pos->m_sendTimer);
 	  pos->m_sendTimer->Schedule(send_time);
-	  */
+
       }
       return;
     }
@@ -1347,10 +1346,9 @@ AquaSimCopeMac::InsertAckWaitingList(Ptr<Packet> p, Time delay)
   int uid_ = ash.GetUId();
   m_AckWaitingList[uid_].m_mac = this;
   m_AckWaitingList[uid_].m_pkt = p;
-  //TODO fix this to ensure reschedule...
-  //m_AckWaitingList[uid_].m_ackWaitTimer.SetFunction(&AquaSimCopeMac::AckWaitTimerExpire,m_AckWaitingList[uid_].m_pkt);
-  //m_AckWaitingList[uid_].m_ackWaitTimer.Schedule(delay);
-  //m_AckWaitingList[uid_].resched(delay);
+  m_AckWaitingList[uid_].m_ackWaitTimer.SetFunction(&AquaSimCopeMac::AckWaitTimerExpire,this);
+  m_AckWaitingList[uid_].m_ackWaitTimer.SetArguments(m_AckWaitingList[uid_].m_pkt);
+  m_AckWaitingList[uid_].m_ackWaitTimer.Schedule(delay);
 }
 
 

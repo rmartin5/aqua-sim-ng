@@ -57,6 +57,7 @@
 #include "ns3/address.h"
 
 #include "aqua-sim-mac.h"
+#include "aqua-sim-header-goal.h"
 
 #include <deque>
 #include <set>
@@ -78,6 +79,14 @@ struct AquaSimGoal_PktQ{
 	}
 };
 
+struct SchedElem{
+	Time BeginTime;
+	Time EndTime;
+	bool IsRecvSlot;
+	SchedElem(Time BeginTime_, Time EndTime_, bool IsRecvSlot_=false);
+	SchedElem(SchedElem& e);
+};
+
 //---------------------------------------------------------------------
 class AquaSimGoal_PreSendTimer: public Timer{
 public:
@@ -92,6 +101,7 @@ protected:
 	AquaSimGoal*		mac_;
 	Ptr<Packet>		m_pkt;
 	void expire();
+	friend class AquaSimGoal;
 };
 
 //---------------------------------------------------------------------
@@ -113,12 +123,14 @@ public:
 	void SetSE(SchedElem* SE) {
 		m_SE = SE;
 	}
+
 protected:
 	AquaSimGoal*		mac_;
 	Ptr<Packet>		m_ReqPkt;
 	SchedElem*	m_SE;
 	Time		m_BackoffTime;
 	void expire();
+	friend class AquaSimGoal;
 };
 
 
@@ -144,6 +156,7 @@ protected:
 	//Ptr<Packet>		pkt_;
 	//Time		SendTime_;  //the time when this packet will be sent out
 	void expire();
+	friend class AquaSimGoal;
 };
 
 //---------------------------------------------------------------------
@@ -155,14 +168,15 @@ public:
 protected:
 	AquaSimGoal*		mac_;
 	void expire();
+	friend class AquaSimGoal;
 };
 
 //---------------------------------------------------------------------
 class AquaSimGoalDataSendTimer: public Timer{
 public:
 	AquaSimGoalDataSendTimer(AquaSimGoal* mac): Timer(), mac_(mac) {
-		m_MinBackoffTime = 100000000.0;
-		m_NxtHop = -1;
+		m_MinBackoffTime = Seconds(100000000);
+		m_NxtHop = Address();
 		m_GotRep = false;
 	}
 
@@ -185,9 +199,15 @@ public:
 	int ReqID() {
 		return m_ReqID;
 	}
+	void SetReqID(int reqID) {
+	  m_ReqID = reqID;
+	}
 
 	bool GotRep() {
 		return m_GotRep;
+	}
+	void SetRep( bool gotRep) {
+	  m_GotRep = gotRep;
 	}
 
 	SchedElem* SE() {
@@ -209,8 +229,8 @@ protected:
 
 	int			m_ReqID;
 	bool		m_GotRep;
-
 	void expire();
+	friend class AquaSimGoal;
 };
 
 
@@ -231,21 +251,14 @@ protected:
 	AquaSimGoal*		mac_;
 	std::set<int>	m_AckSet;
 	void expire();
+
+	friend class AquaSimGoal;
 };
 
 //---------------------------------------------------------------------
 struct RecvedInfo{
 	Address	Sender;
 	Time		RecvTime;
-};
-
-
-struct SchedElem{
-	Time BeginTime;
-	Time EndTime;
-	bool IsRecvSlot;
-	SchedElem(Time BeginTime_, Time EndTime_, bool IsRecvSlot_=false);
-	SchedElem(SchedElem& e);
 };
 
 
@@ -303,7 +316,7 @@ private:
 	/*
 	 * which kind of backoff function of existing routing protocol is used, such as HH-VBF
 	 */
-	BackoffType					m_backoffType;
+	BackoffType	m_backoffType;
 	AquaSimGoal_SinkAccumAckTimer		SinkAccumAckTimer;
 	Time						m_maxBackoffTime;		//the max time for waiting for the reply packet
 
@@ -335,7 +348,7 @@ private:
 	void PurifyRecvedList();
 
 
-	void PreSendPkt(Ptr<Packet> pkt, Time delay=0.000001);  //default delay should be 0, but I am afraid it is stored as a minus value
+	void PreSendPkt(Ptr<Packet> pkt, Time delay=Seconds(0.000001));  //default delay should be 0, but I am afraid it is stored as a minus value
 	void SendoutPkt(Ptr<Packet> pkt);
 
 	void PrepareDataPkts();
