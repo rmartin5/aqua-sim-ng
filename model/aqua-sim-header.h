@@ -336,6 +336,45 @@ private:
 };  // class CopeHeader
 
 
+/**
+ *  Slotted FAMA Header
+ */
+ //this is almost identical to AlohaHeader and could probably be condensed.
+ class SFamaHeader : public Header
+ {
+ public:
+   enum PacketType {
+    SFAMA_RTS,
+ 		SFAMA_CTS,
+ 		SFAMA_DATA,
+ 		SFAMA_ACK
+   } packet_type;
+
+   SFamaHeader();
+   virtual ~SFamaHeader();
+   static TypeId GetTypeId(void);
+
+   static int GetSize(enum PacketType pType);
+
+   void SetPType(uint8_t pType);
+   void SetSlotNum(uint16_t slotNum);
+   uint8_t GetPType();	//Remove Set/Get pType and go directly to public variable??
+   uint16_t GetSlotNum();
+
+   //inherited methods
+   virtual uint32_t GetSerializedSize(void) const;
+   virtual void Serialize (Buffer::Iterator start) const;
+   virtual uint32_t Deserialize (Buffer::Iterator start);
+   virtual void Print (std::ostream &os) const;
+   virtual TypeId GetInstanceTypeId(void) const;
+ private:
+   //Address SA;
+   //Address DA;
+   uint8_t m_pType;
+   uint16_t	m_slotNum;  //the number of slots required for transmitting the DATA packet
+
+ };  // class SFamaHeader
+
 }  // namespace ns3
 
 #endif /* AQUA_SIM_HEADER_H */

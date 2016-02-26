@@ -73,7 +73,7 @@ AquaSimHeader::GetInstanceTypeId(void) const
   return GetTypeId();
 }
 
-uint32_t 
+uint32_t
 AquaSimHeader::Deserialize(Buffer::Iterator start)
 {
   Buffer::Iterator i = start;
@@ -106,7 +106,7 @@ AquaSimHeader::GetSerializedSize(void) const
   return (4 + 1 + 1 + 1 + 2 + 4 + 4 + 2 + 2 + 2 + 1 + 4);
 }
 
-void 
+void
 AquaSimHeader::Serialize(Buffer::Iterator start) const
 {
   Buffer::Iterator i = start;
@@ -126,7 +126,7 @@ AquaSimHeader::Serialize(Buffer::Iterator start) const
   //m_modName
 }
 
-void 
+void
 AquaSimHeader::Print(std::ostream &os) const
 {
   os << "Packet header is  ";
@@ -229,13 +229,13 @@ AquaSimHeader::GetDAddr(void)
   return (m_dst.addr);
 }
 
-int32_t 
+int32_t
 AquaSimHeader::GetSPort()
 {
   return (m_src.port);
 }
 
-int32_t 
+int32_t
 AquaSimHeader::GetDPort()
 {
   return (m_dst.port);
@@ -910,6 +910,99 @@ CopeHeader::Print (std::ostream &os) const
 }
 TypeId
 CopeHeader::GetInstanceTypeId(void) const
+{
+  return GetTypeId();
+}
+
+
+/*
+ * SFamaHeader
+ */
+SFamaHeader::SFamaHeader()
+{
+}
+
+SFamaHeader::~SFamaHeader()
+{
+}
+
+TypeId
+SFamaHeader::GetTypeId()
+{
+  static TypeId tid = TypeId("ns3::SFamaHeader")
+    .SetParent<Header>()
+    .AddConstructor<SFamaHeader>()
+  ;
+  return tid;
+}
+
+int
+SFamaHeader::GetSize(enum PacketType pType)
+{
+  int pkt_size = 2*sizeof(Address); //source and destination addr in hdr_mac
+
+  if( pType == SFAMA_RTS || pType == SFAMA_CTS ) {
+    pkt_size += sizeof(uint16_t)+1; //size of packet_type and slotnum
+  }
+
+  return pkt_size;
+}
+void
+SFamaHeader::SetPType(uint8_t pType)
+{
+  m_pType = pType;
+}
+void
+SFamaHeader::SetSlotNum(uint16_t slotNum)
+{
+  m_slotNum = slotNum;
+}
+uint8_t
+SFamaHeader::GetPType()
+{
+  return m_pType;
+}
+uint16_t
+SFamaHeader::GetSlotNum()
+{
+  return m_slotNum;
+}
+
+uint32_t
+SFamaHeader::GetSerializedSize(void) const
+{
+  return 1+2;
+}
+void
+SFamaHeader::Serialize (Buffer::Iterator start) const
+{
+  start.WriteU8 (m_pType);
+  start.WriteU16 (m_slotNum);
+}
+uint32_t
+SFamaHeader::Deserialize (Buffer::Iterator start)
+{
+  Buffer::Iterator i = start;
+  m_pType = i.ReadU8();
+  m_slotNum = i.ReadU16();
+
+  return GetSerializedSize();
+}
+void
+SFamaHeader::Print (std::ostream &os) const
+{
+  os << "Slotted FAMA Header: packet_type=";
+  switch(m_pType) {
+    case SFAMA_RTS: os << "SFAMA_RTS"; break;
+    case SFAMA_CTS: os << "SFAMA_CTS"; break;
+    case SFAMA_DATA: os << "SFAMA_DATA"; break;
+    case SFAMA_ACK: os << "SFAMA_ACK"; break;
+    default: break;
+  }
+  os << ", SlotNum=" << m_slotNum << "\n";
+}
+TypeId
+SFamaHeader::GetInstanceTypeId(void) const
 {
   return GetTypeId();
 }

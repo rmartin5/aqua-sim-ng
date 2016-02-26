@@ -33,6 +33,7 @@ def build(bld):
         'model/aqua-sim-mac-aloha.cc',
         'model/aqua-sim-mac-copemac.cc',
         'model/aqua-sim-mac-goal.cc',
+        'model/aqua-sim-mac-sfama.cc',
         ]
 
     module_test = bld.create_ns3_module_test_library('aqua-sim-ng')
@@ -68,10 +69,10 @@ def build(bld):
         'model/aqua-sim-mac-aloha.h',
         'model/aqua-sim-mac-copemac.h',
         'model/aqua-sim-mac-goal.h',
+        'model/aqua-sim-mac-sfama.h',
         ]
 
     if bld.env.ENABLE_EXAMPLES:
         bld.recurse('examples')
 
     bld.ns3_python_bindings()
-
