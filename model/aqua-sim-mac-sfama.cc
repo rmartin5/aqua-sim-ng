@@ -23,6 +23,8 @@
 
 #include "ns3/log.h"
 #include "ns3/simulator.h"
+#include "ns3/double.h"
+#include "ns3/integer.h"
 
 namespace ns3 {
 
@@ -62,14 +64,14 @@ AquaSimSFama::AquaSimSFama():m_status(IDLE_WAIT), m_guardTime(0.00001),
   m_backoffTimer(this), m_datasendTimer(this)
 {
   m_slotNumHandler = 0;
-  //TODO add to typeid once created.
-  //bind("guard_time_", &guard_time_);
-	//bind("m_maxBackoffSlots", &m_maxBackoffSlots);
-	//bind("m_maxBurst", &m_maxBurst);
 
   Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 
   Simulator::Schedule(Seconds(0.05) /*callback delay*/, &AquaSimSFama::InitSlotLen, this);
+}
+
+AquaSimSFama::~AquaSimSFama()
+{
 }
 
 TypeId
@@ -78,10 +80,18 @@ AquaSimSFama::GetTypeId(void)
   static TypeId tid = TypeId("ns3::AquaSimSFama")
     .SetParent<AquaSimMac>()
     .AddConstructor<AquaSimSFama>()
-    //.AddAttribute("MaxBurst", "The maximum number of packet burst. default is 1",
-     // IntegerValue(1),
-	//    MakeIntegerAccessor (&AquaSimFama::m_maxBurst),
-      //MakeIntegerChecker<int>())
+    .AddAttribute("GuardTime", "The guard time in double. Default is 0.00001",
+      DoubleValue(0.00001),
+      MakeDoubleAccessor(&AquaSimSFama::m_guardTime),
+      MakeDoubleChecker<double>())
+    .AddAttribute("MaxBackoffSlots", "The maximum number of backoff slots. default is 4",
+      IntegerValue(4),
+      MakeIntegerAccessor (&AquaSimSFama::m_maxBackoffSlots),
+      MakeIntegerChecker<int>())
+    .AddAttribute("MaxBurst", "The maximum number of packets in the train. Default is 1",
+      IntegerValue(1),
+      MakeIntegerAccessor(&AquaSimSFama::m_maxBurst),
+      MakeIntegerChecker<int>())
     ;
   return tid;
 }
@@ -313,7 +323,7 @@ AquaSimSFama::ProcessRTS(Ptr<Packet> rts_pkt)
 				SetStatus(WAIT_SEND_CTS);
 				//reply a cts
 				m_waitSendTimer.m_pkt = MakeCTS(mach.GetSA(), SFAMAh.GetSlotNum());
-        m_waitSendTimer.SetFunction(&AquaSimSFama_Wait_Send_Timer::expire,m_waitSendTimer);
+        m_waitSendTimer.SetFunction(&AquaSimSFama_Wait_Send_Timer::expire,&m_waitSendTimer);
         m_waitSendTimer.Schedule(Seconds(time2comingslot));
 		}
 	}
@@ -325,7 +335,7 @@ AquaSimSFama::ProcessRTS(Ptr<Packet> rts_pkt)
 		StopTimers();
 		SetStatus(BACKOFF);
 
-    m_backoffTimer.SetFunction(&AquaSimSFama_Backoff_Timer::expire,m_backoffTimer);
+    m_backoffTimer.SetFunction(&AquaSimSFama_Backoff_Timer::expire,&m_backoffTimer);
     m_backoffTimer.Schedule(Seconds(backoff_time));
 	}
 }
@@ -347,7 +357,7 @@ AquaSimSFama::ProcessCTS(Ptr<Packet> cts_pkt)
 		SetStatus(WAIT_SEND_DATA);
 		//send the packet
 		m_waitSendTimer.m_pkt = NULL;
-    m_waitSendTimer.SetFunction(&AquaSimSFama_Wait_Send_Timer::expire,m_waitSendTimer);
+    m_waitSendTimer.SetFunction(&AquaSimSFama_Wait_Send_Timer::expire,&m_waitSendTimer);
     m_waitSendTimer.Schedule(Seconds(time2comingslot));
 
 		double wait_time = (1+SFAMAh.GetSlotNum())*m_slotLen+time2comingslot;
@@ -355,7 +365,7 @@ AquaSimSFama::ProcessCTS(Ptr<Packet> cts_pkt)
 			wait_time += m_slotLen;
 		}
 
-    m_waitReplyTimer.SetFunction(&AquaSimSFama_Wait_Reply_Timer::expire,m_waitReplyTimer);
+    m_waitReplyTimer.SetFunction(&AquaSimSFama_Wait_Reply_Timer::expire,&m_waitReplyTimer);
     m_waitReplyTimer.Schedule(Seconds(wait_time));
 	}
 	else {
@@ -366,7 +376,7 @@ AquaSimSFama::ProcessCTS(Ptr<Packet> cts_pkt)
 		StopTimers();
 		SetStatus(BACKOFF);
 
-    m_backoffTimer.SetFunction(&AquaSimSFama_Backoff_Timer::expire,m_backoffTimer);
+    m_backoffTimer.SetFunction(&AquaSimSFama_Backoff_Timer::expire,&m_backoffTimer);
     m_backoffTimer.Schedule(Seconds(backoff_time));
 	}
 
@@ -384,7 +394,7 @@ AquaSimSFama::ProcessDATA(Ptr<Packet> data_pkt)
 		SetStatus(WAIT_SEND_ACK);
 
 		m_waitSendTimer.m_pkt = MakeACK(mach.GetSA());
-    m_waitSendTimer.SetFunction(&AquaSimSFama_Wait_Send_Timer::expire,m_waitSendTimer);
+    m_waitSendTimer.SetFunction(&AquaSimSFama_Wait_Send_Timer::expire,&m_waitSendTimer);
     m_waitSendTimer.Schedule(Seconds(GetTime2ComingSlot(Simulator::Now().ToDouble(Time::S))));
 
 		/*send packet to upper layer*/
@@ -403,7 +413,7 @@ AquaSimSFama::ProcessDATA(Ptr<Packet> data_pkt)
 		StopTimers();
 		SetStatus(BACKOFF);
 
-    m_backoffTimer.SetFunction(&AquaSimSFama_Backoff_Timer::expire,m_backoffTimer);
+    m_backoffTimer.SetFunction(&AquaSimSFama_Backoff_Timer::expire,&m_backoffTimer);
     m_backoffTimer.Schedule(Seconds(backoff_time));
 	}
 }
@@ -575,7 +585,7 @@ AquaSimSFama::ScheduleRTS(Address recver, int slot_num)
 	double backoff_time = RandBackoffSlots()*m_slotLen+GetTime2ComingSlot(Simulator::Now().ToDouble(Time::S));
 	SetStatus(WAIT_SEND_RTS);
 	m_waitSendTimer.m_pkt = MakeRTS(recver, slot_num);
-  m_waitSendTimer.SetFunction(&AquaSimSFama_Wait_Send_Timer::expire,m_waitSendTimer);
+  m_waitSendTimer.SetFunction(&AquaSimSFama_Wait_Send_Timer::expire,&m_waitSendTimer);
   m_waitSendTimer.Schedule(Seconds(backoff_time));
 }
 
@@ -686,7 +696,7 @@ AquaSimSFama::StatusProcess(int slotnum)
 // 	}
 
 	//if( ! status_handler.is_ack() ) {
-  m_waitReplyTimer.SetFunction(&AquaSimSFama_Wait_Reply_Timer::expire,m_waitReplyTimer);
+  m_waitReplyTimer.SetFunction(&AquaSimSFama_Wait_Reply_Timer::expire,&m_waitReplyTimer);
   m_waitReplyTimer.Schedule(Seconds(m_slotLen*slotnum+GetTime2ComingSlot(Simulator::Now().ToDouble(Time::S))));
 	//}
 	/*else {
@@ -707,7 +717,7 @@ void
 AquaSimSFama::WaitSendTimerProcess(Ptr<Packet> pkt)
 {
 	if( NULL == pkt ) {
-    m_datasendTimer.SetFunction(&AquaSimSFama_DataSend_Timer::expire,m_datasendTimer);
+    m_datasendTimer.SetFunction(&AquaSimSFama_DataSend_Timer::expire,&m_datasendTimer);
     m_datasendTimer.Schedule(Seconds(0.00001));
 	}
 	else {
@@ -726,11 +736,11 @@ AquaSimSFama::WaitReplyTimerProcess(bool directcall)
 	#endif  //AquaSimSFama_DEBUG
 	if( directcall ) {
 		SetStatus(BACKOFF_FAIR);
-    m_backoffTimer.SetFunction(&AquaSimSFama_Backoff_Timer::expire,m_backoffTimer);
+    m_backoffTimer.SetFunction(&AquaSimSFama_Backoff_Timer::expire,&m_backoffTimer);
     m_backoffTimer.Schedule(Seconds(GetTime2ComingSlot(Simulator::Now().ToDouble(Time::S))));
 	} else {
 		SetStatus(BACKOFF);
-    m_backoffTimer.SetFunction(&AquaSimSFama_Backoff_Timer::expire,m_backoffTimer);
+    m_backoffTimer.SetFunction(&AquaSimSFama_Backoff_Timer::expire,&m_backoffTimer);
     m_backoffTimer.Schedule(Seconds(backoff_time));
 	}
 
@@ -756,7 +766,7 @@ AquaSimSFama::DataSendTimerProcess()
 
 		SendDataPkt(pkt->Copy());
 
-    m_datasendTimer.SetFunction(&AquaSimSFama_DataSend_Timer::expire,m_datasendTimer);
+    m_datasendTimer.SetFunction(&AquaSimSFama_DataSend_Timer::expire,&m_datasendTimer);
     m_datasendTimer.Schedule(Seconds(m_dataSendingInterval)+txtime);
 	}
 	else {
