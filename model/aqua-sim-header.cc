@@ -1006,3 +1006,71 @@ SFamaHeader::GetInstanceTypeId(void) const
 {
   return GetTypeId();
 }
+
+
+
+/*
+ * UwanSyncHeader
+ */
+UwanSyncHeader::UwanSyncHeader()
+{
+}
+
+UwanSyncHeader::~UwanSyncHeader()
+{
+}
+
+TypeId
+UwanSyncHeader::GetTypeId()
+{
+  static TypeId tid = TypeId("ns3::UwanSyncHeader")
+    .SetParent<Header>()
+    .AddConstructor<UwanSyncHeader>()
+  ;
+  return tid;
+}
+
+int
+UwanSyncHeader::GetSize()
+{
+  return 8*sizeof(Time);
+}
+void
+UwanSyncHeader::SetCyclePeriod(double cyclePeriod)
+{
+  m_cyclePeriod = cyclePeriod;
+}
+double
+UwanSyncHeader::GetCyclePeriod()
+{
+  return m_cyclePeriod;
+}
+
+uint32_t
+UwanSyncHeader::GetSerializedSize(void) const
+{
+  return 4;
+}
+void
+UwanSyncHeader::Serialize (Buffer::Iterator start) const
+{
+  start.WriteU32 ((uint32_t)m_cyclePeriod * 1000.0 + 0.5);
+}
+uint32_t
+UwanSyncHeader::Deserialize (Buffer::Iterator start)
+{
+  Buffer::Iterator i = start;
+  m_cyclePeriod = ( (double) i.ReadU32 ()) / 1000.0;
+
+  return GetSerializedSize();
+}
+void
+UwanSyncHeader::Print (std::ostream &os) const
+{
+  os << "UWAN SYNC Header: cyclePeriod=" << m_cyclePeriod << "\n";
+}
+TypeId
+UwanSyncHeader::GetInstanceTypeId(void) const
+{
+  return GetTypeId();
+}

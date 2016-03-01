@@ -375,6 +375,32 @@ private:
 
  };  // class SFamaHeader
 
+
+ /**
+  *  UWAN SYNC Header
+  */
+  //this is almost identical to AlohaHeader and could probably be condensed.
+  class UwanSyncHeader : public Header
+  {
+  public:
+    UwanSyncHeader();
+    virtual ~UwanSyncHeader();
+    static TypeId GetTypeId(void);
+
+    double GetCyclePeriod();
+    static int GetSize();
+    void SetCyclePeriod(double cyclePeriod);
+
+    //inherited methods
+    virtual uint32_t GetSerializedSize(void) const;
+    virtual void Serialize (Buffer::Iterator start) const;
+    virtual uint32_t Deserialize (Buffer::Iterator start);
+    virtual void Print (std::ostream &os) const;
+    virtual TypeId GetInstanceTypeId(void) const;
+  private:
+    double m_cyclePeriod;
+  };  // class UwanSyncHeader
+
 }  // namespace ns3
 
 #endif /* AQUA_SIM_HEADER_H */
