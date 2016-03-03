@@ -40,7 +40,7 @@ TransmissionBuffer::GetTypeId()
 
 void
 TransmissionBuffer::AddNewPacket(Ptr<Packet> p){
-  buffer_cell* t2;
+  //buffer_cell* t2;  //unused
   buffer_cell* t1=new buffer_cell;
 
   t1->packet=p;
@@ -61,8 +61,8 @@ TransmissionBuffer::AddNewPacket(Ptr<Packet> p){
 
 Ptr<Packet>
 TransmissionBuffer::head(){
-  buffer_cell* t1;
-  buffer_cell* t2;
+  //buffer_cell* t1;  //unused
+  //buffer_cell* t2;  //unused
   Ptr<Packet> p;
 
   if(!head_) return NULL;

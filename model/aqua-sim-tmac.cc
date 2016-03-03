@@ -19,9 +19,14 @@
  */
 
 #include "aqua-sim-tmac.h"
+//#include "vbf/vectorbasedforward.h"
+
 #include "ns3/nstime.h"
 #include "ns3/log.h"
-//#include "vbf/vectorbasedforward.h"
+#include "ns3/double.h"
+#include "ns3/integer.h"
+#include "ns3/simulator.h"
+#include "aqua-sim-header.h"
 
 namespace ns3 {
 
@@ -61,7 +66,7 @@ AquaSimTMac::TStatusHandler_SetStatus(TransmissionStatus status)
 void
 AquaSimTMac::TNDHandler()
 {
-  m_cycleStartTime=Simulator::Simulator::Now()();
+  m_cycleStartTime=Simulator::Now().ToDouble(Time::S);
   SendND(m_shortPacketSize);
 }
 
@@ -339,7 +344,7 @@ AquaSimTMac::GenerateSYN()
   AquaSimHeader ash;
 
   //ash.size()=m_shortPacketSize;
-  ash.SetNextHop((Address)0xffffffff);   //MAC_BROADCAST
+  ash.SetNextHop(Address()/*(Address)0xffffffff*/);   //MAC_BROADCAST
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash.addr_type()=NS_AF_ILINK;
   //ash.ptype_=PT_RMAC;
@@ -366,7 +371,7 @@ AquaSimTMac::SendSYN()
   AquaSimHeader ash;
 
   //ash.size()=m_shortPacketSize;
-  ash.SetNextHop((Address)0xffffffff);   //MAC_BROADCAST
+  ash.SetNextHop(Address()/*(Address)0xffffffff*/);   //MAC_BROADCAST
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash.addr_type()=NS_AF_ILINK;
   //ash.ptype_=PT_TMAC;
@@ -412,7 +417,7 @@ AquaSimTMac::SendND(int pkt_size)
   //  printf("old size is %d\n",cmh->size());
   //ash.size()=pkt_size;
 
-  ash.SetNextHop((Address)0xffffffff);   //MAC_BROADCAST
+  ash.SetNextHop(Address()/*(Address)0xffffffff*/);   //MAC_BROADCAST
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash.addr_type()=NS_AF_ILINK;
   //ash.ptype_=PT_TMAC;
@@ -507,7 +512,7 @@ AquaSimTMac::ProcessShortACKNDPacket(Ptr<Packet> pkt)
   pkt->PeekHeader(ash);
 
   //ash.size()=m_shortPacketSize;
-  ash.SetNextHop((Address)0xffffffff);   //MAC_BROADCAST
+  ash.SetNextHop(Address()/*(Address)0xffffffff*/);   //MAC_BROADCAST
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash.addr_type()=NS_AF_ILINK;
   //ash.ptype_=PT_TMAC;
@@ -1715,7 +1720,8 @@ AquaSimTMac::TxCTS(Ptr<Packet> p)
 	double l=CheckLatency(m_shortLatencyTable, receiver_addr);
 	double t=2.2*l+m_minBackoffWindow*2+m_maxShortPacketTransmissionTime
 	          +m_maxLargePacketTransmissionTime;
-	double t1=m_transmissionTimeError+ctsh.GetDuration;
+  //         unused
+	//double t1=m_transmissionTimeError+ctsh.GetDuration();
 
 	for (int i=0; i<MAXIMUM_BUFFER; i++) m_bitMap[i]=0;
 
@@ -1794,7 +1800,7 @@ AquaSimTMac::ProcessNDPacket(Ptr<Packet> pkt)
 	}
 	m_arrivalTable[m_arrivalTableIndex].node_addr=sender;
 	m_arrivalTable[m_arrivalTableIndex].arrival_time=Simulator::Now().ToDouble(Time::S);
-	m_arrivalTable[m_arrivalTableIndex].sending_time=ash.GetTimeStamp();
+	m_arrivalTable[m_arrivalTableIndex].sending_time=ash.GetTimeStamp().ToDouble(Time::S);
 	m_arrivalTableIndex++;
   pkt=0;
 	return;
@@ -2076,7 +2082,8 @@ AquaSimTMac::TxData(Address receiver)
 		            " is in state MAC_TRANSMISSION");
 
 		// double l=CheckLatency(m_shortLatencyTable, receiver);
-		double dt=((m_largePacketSize*m_encodingEfficiency+m_phyOverhead)/m_bitRate)+m_transmissionTimeError;
+    //    unused
+		//double dt=((m_largePacketSize*m_encodingEfficiency+m_phyOverhead)/m_bitRate)+m_transmissionTimeError;
 		// double t=2.1*m_maxPropagationTime+m_transmissionTimeError+dt;
 		double t=2.0*m_maxPropagationTime+2.0*m_minBackoffWindow+(2+m_numData)*m_maxLargePacketTransmissionTime;
 
@@ -2121,10 +2128,10 @@ AquaSimTMac::TxProcess(Ptr<Packet> pkt)
 {
 	//hdr_uwvb* hdr=HDR_UWVB(pkt);
   NS_LOG_FUNCTION(this << m_device->GetAddress());
-	if (m_device->GetHopStatus) {
+	if (m_device->GetHopStatus() != 0) {
     AquaSimHeader ash;
     pkt->RemoveHeader(ash);
-		ash.SetNextHop((Address)m_device->m_nextHop);
+		ash.SetNextHop(Address()/*m_device->GetNextHop()*/);  //TODO
 		ash.SetErrorFlag(false);// set off the error status;
     pkt->AddHeader(ash);
 		// printf("AquaSimTMac:TxProcess: node %d set next hop to %d\n",index_,cmh->next_hop());
@@ -2161,7 +2168,7 @@ AquaSimTMac::RecvProcess(Ptr<Packet> pkt)
             " gets a packet from node " << receiver_addr <<
             " at " << Seconds(Simulator::Now()));
 
-	if(dst==(Address)0xffffffff) { //MAC_BROADCAST
+	if(dst==Address()/*(Address)0xffffffff*/) { //MAC_BROADCAST
 		if (ptype==PT_ND) ProcessNDPacket(pkt); //this is ND packet
 		if (ptype==PT_SYN) ProcessSYN(pkt);
 		return;
