@@ -20,6 +20,7 @@
 
 #include "aqua-sim-header.h"
 #include "aqua-sim-rmac.h"
+#include "aqua-sim-tmac.h"
 #include "ns3/header.h"
 #include "ns3/buffer.h"
 #include "ns3/log.h"
@@ -1071,6 +1072,189 @@ UwanSyncHeader::Print (std::ostream &os) const
 }
 TypeId
 UwanSyncHeader::GetInstanceTypeId(void) const
+{
+  return GetTypeId();
+}
+
+
+TMacHeader::TMacHeader()
+{
+}
+TMacHeader::~TMacHeader()
+{
+}
+TypeId
+TMacHeader::GetTypeId()
+{
+  static TypeId tid = TypeId("ns3::TMacHeader")
+    .SetParent<Header>()
+    .AddConstructor<TMacHeader>()
+  ;
+  return tid;
+}
+
+uint8_t
+TMacHeader::GetPtype()
+{
+  return m_ptype;
+}
+uint32_t
+TMacHeader::GetPkNum()
+{
+  return m_pkNum;
+}
+uint32_t
+TMacHeader::GetDataNum()
+{
+  return m_dataNum;
+}
+Address
+TMacHeader::GetSenderAddr()
+{
+  return m_senderAddr;
+}
+Address
+TMacHeader::GetReceiverAddr()
+{
+  return m_receiverAddr;
+}
+double
+TMacHeader::GetST()
+{
+  return m_st;
+}
+double
+TMacHeader::GetTS()
+{
+  return m_ts;
+}
+double
+TMacHeader::GetDuration()
+{
+  return m_duration;
+}
+double
+TMacHeader::GetInterval()
+{
+  return m_interval;
+}
+double
+TMacHeader::GetArrivalTime()
+{
+  return m_arrivalTime;
+}
+
+void
+TMacHeader::SetPtype(uint8_t ptype)
+{
+  m_ptype = ptype;
+}
+void
+TMacHeader::SetPkNum(uint32_t pkNum)
+{
+  m_pkNum = pkNum;
+}
+void
+TMacHeader::SetDataNum(uint32_t dataNum)
+{
+  m_dataNum = dataNum;
+}
+void
+TMacHeader::SetSenderAddr(Address senderAddr)
+{
+  m_senderAddr = senderAddr;
+}
+void
+TMacHeader::SetReceiverAddr(Address receiverAddr)
+{
+  m_receiverAddr = receiverAddr;
+}
+void
+TMacHeader::SetST(double st)
+{
+  m_st = st;
+}
+void
+TMacHeader::SetTS(double ts)
+{
+  m_ts = ts;
+}
+void
+TMacHeader::SetDuration(double durable)
+{
+  m_duration = durable;
+}
+void
+TMacHeader::SetInterval(double interval)
+{
+  m_interval = interval;
+}
+void
+TMacHeader::SetArrivalTime(double arrivalTime)
+{
+  m_arrivalTime = arrivalTime;
+}
+
+uint32_t
+TMacHeader::GetSerializedSize(void) const
+{
+  return 1+4+4+1+1+4+4+4+4+4;
+}
+void
+TMacHeader::Serialize (Buffer::Iterator start) const
+{
+  start.WriteU8 (m_ptype);
+  start.WriteU32 (m_pkNum);
+  start.WriteU32 (m_dataNum);
+  start.WriteU8 (m_senderAddr.GetLength());
+  start.WriteU8 (m_receiverAddr.GetLength());
+  start.WriteU32 ((uint32_t)m_st * 1000.0 + 0.5);
+  start.WriteU32 ((uint32_t)m_ts * 1000.0 + 0.5);
+  start.WriteU32 ((uint32_t)m_duration * 1000.0 + 0.5);
+  start.WriteU32 ((uint32_t)m_interval * 1000.0 + 0.5);
+  start.WriteU32 ((uint32_t)m_arrivalTime * 1000.0 + 0.5);
+
+}
+uint32_t
+TMacHeader::Deserialize (Buffer::Iterator start)
+{
+  Buffer::Iterator i = start;
+  m_ptype = i.ReadU8();
+  m_pkNum = i.ReadU32();
+  m_dataNum = i.ReadU32();
+  ReadFrom(i, m_senderAddr,8);	//read 8bit addr
+  ReadFrom(i, m_receiverAddr, 8);	//read 8bit addr
+  m_st = ( (double) i.ReadU32 ()) / 1000.0;
+  m_ts = ( (double) i.ReadU32 ()) / 1000.0;
+  m_duration = ( (double) i.ReadU32 ()) / 1000.0;
+  m_interval = ( (double) i.ReadU32 ()) / 1000.0;
+  m_arrivalTime = ( (double) i.ReadU32 ()) / 1000.0;
+
+  return GetSerializedSize();
+}
+void
+TMacHeader::Print (std::ostream &os) const
+{
+  os << "TMac Header: ptype=";
+  switch(m_ptype)
+  {
+    case ns3::PT_DATA: 	os << "DATA"; break;
+    case ns3::PT_RTS: 	os << "RTS"; break;
+    case ns3::PT_CTS: 	os << "CTS"; break;
+    case ns3::PT_ND: 		os << "ND"; break;
+    case ns3::PT_SACKND: 	os << "SACKND"; break;
+    case ns3::PT_ACKDATA: 	os << "ACKDATA"; break;
+    case ns3::PT_SYN: 	os << "SYN"; break;
+    default: break;
+  }
+  os << " PkNum=" << m_pkNum << " DataNum=" << m_dataNum;
+  os << " senderAddr=" << m_senderAddr << " recvAddr=" << m_receiverAddr;
+  os << " st=" << m_st << " ts=" << m_ts;
+  os << " Duration=" << m_duration << " Interval=" << m_interval;
+  os << " ArrivalTime=" << m_arrivalTime << "\n";
+}
+TypeId
+TMacHeader::GetInstanceTypeId(void) const
 {
   return GetTypeId();
 }

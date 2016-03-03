@@ -104,7 +104,7 @@ AquaSimRMac::AquaSimRMac()
   m_NDBackoffWindow=0;
   m_NDBackoffCounter=0;
 
-  for(int i=0;i<TABLE_SIZE;i++){
+  for(int i=0;i<R_TABLE_SIZE;i++){
 
     next_available_table[i].node_addr=-1;
     next_available_table[i].required_time=0;
@@ -119,7 +119,7 @@ AquaSimRMac::AquaSimRMac()
   }
 
   m_arrivalTableIndex=0;
-  for(int i=0;i<TABLE_SIZE;i++)
+  for(int i=0;i<R_TABLE_SIZE;i++)
     arrival_table[i].node_addr=-1;
 
   m_theta=m_transmissionTimeError/10.0;
@@ -331,7 +331,7 @@ AquaSimRMac:: InsertReservedTimeTable(int sender_addr, double start_time, double
 {
   NS_LOG_FUNCTION(m_device->GetNode() << Seconds(Simulator::Now()));
 
-  if(m_reservedTimeTableIndex>=TABLE_SIZE)
+  if(m_reservedTimeTableIndex>=R_TABLE_SIZE)
     {
       NS_LOG_DEBUG("AquaSimRMac:InsertReservedTimeTable: the reservedTimeTable is full");
       return;
@@ -447,13 +447,13 @@ AquaSimRMac::PrintTable()
 {
   NS_LOG_FUNCTION(this << m_device->GetNode());
 
-  for (int i=0;i<TABLE_SIZE;i++)
+  for (int i=0;i<R_TABLE_SIZE;i++)
     {
       NS_LOG_DEBUG("PrintTable(ShortLatency) Node Addr:" << short_latency_table[i].node_addr <<
 		   " and short latency:" << short_latency_table[i].latency);
     }
 
-  for (int i=0;i<TABLE_SIZE;i++)
+  for (int i=0;i<R_TABLE_SIZE;i++)
     {
       NS_LOG_DEBUG("PrintTable(PeriodTable) Node Addr:" << period_table[i].node_addr <<
 		   " and difference:" << period_table[i].difference);
@@ -619,7 +619,7 @@ AquaSimRMac::CancelReservation()
 {
   NS_LOG_FUNCTION(this << m_device->GetNode());
 
-  for (int i=0;i<TABLE_SIZE;i++)
+  for (int i=0;i<R_TABLE_SIZE;i++)
     {
       reservation_table[i].node_addr=-1;
     }
@@ -716,7 +716,7 @@ AquaSimRMac::ScheduleACKREV(int receiver, double duration, double offset)
   NS_LOG_INFO("AquaSimRMac:ScheduleACKRev: Node:" << m_device->GetNode() <<
 	      " is scheduling ackrev, duration:" << duration <<
 	      ", interval:" << offset);
-  while ((period_table[i].node_addr!=-1)&&(i<TABLE_SIZE))
+  while ((period_table[i].node_addr!=-1)&&(i<R_TABLE_SIZE))
     {
       if (period_table[i].node_addr!=receiver)
 	{
@@ -981,7 +981,7 @@ void
 AquaSimRMac::ResetReservationTable()
 {
   NS_LOG_FUNCTION(this << m_device->GetNode());
-  for(int i=0;i<TABLE_SIZE;i++)
+  for(int i=0;i<R_TABLE_SIZE;i++)
     {
       reservation_table[i].node_addr=-1;
       reservation_table[i].required_time=0.0;
@@ -1121,7 +1121,7 @@ AquaSimRMac::Wakeup()
   m_cycleStartTime=Simulator::Now().GetDouble();
 
   /*
-  for(int i=0;i<TABLE_SIZE;i++){
+  for(int i=0;i<R_TABLE_SIZE;i++){
     reservation_table[i].node_addr=-1;
   }
   reservation_table_index=0;
@@ -1143,7 +1143,7 @@ AquaSimRMac::Wakeup()
 void
 AquaSimRMac::ResetReservation()
 {
-  for(int i=0;i<TABLE_SIZE;i++)
+  for(int i=0;i<R_TABLE_SIZE;i++)
     {
       reservation_table[i].node_addr=-1;
     }
@@ -1404,9 +1404,9 @@ AquaSimRMac::CalculateOffset(double dt)
   double offset=0.0;
   double ack_window=m_maxShortPacketTransmissiontime;
   double elapsed_time=Simulator::Now().GetDouble()-m_cycleStartTime;
-  struct period_record table[TABLE_SIZE];
+  struct period_record table[R_TABLE_SIZE];
 
-  for(int i=0;i<TABLE_SIZE;i++)
+  for(int i=0;i<R_TABLE_SIZE;i++)
     {
       table[i].node_addr=period_table[i].node_addr;
       double l=CheckLatency(short_latency_table, table[i].node_addr)
@@ -1417,7 +1417,7 @@ AquaSimRMac::CalculateOffset(double dt)
     }
   SortPeriodTable(table);
 
-  for (int i=0;i<TABLE_SIZE;i++)
+  for (int i=0;i<R_TABLE_SIZE;i++)
     {
       NS_LOG_DEBUG("Node Addr:" << table[i].node_addr <<
 		   " and difference:" << table[i].difference);
@@ -1470,9 +1470,9 @@ AquaSimRMac::CalculateOffset(double dt)
 double
 AquaSimRMac::DetermineSendingTime(int receiver_addr)
 {
-  struct period_record table[TABLE_SIZE];
+  struct period_record table[R_TABLE_SIZE];
 
-  for(int i=0;i<TABLE_SIZE;i++)
+  for(int i=0;i<R_TABLE_SIZE;i++)
     {
       table[i].node_addr=period_table[i].node_addr;
       double l=CheckLatency(short_latency_table, table[i].node_addr)
@@ -1587,12 +1587,12 @@ AquaSimRMac::CheckLatency(latency_record* table,int addr)
   int i=0;
   double d=0.0;
 
-  while((table[i].node_addr!=addr)&&(i<TABLE_SIZE))
+  while((table[i].node_addr!=addr)&&(i<R_TABLE_SIZE))
     {
       //printf("node addr is%d and latency is%f\n",table[i].node_addr,table[i].latency);
       i++;
     }
-  if (i==TABLE_SIZE) return d;
+  if (i==R_TABLE_SIZE) return d;
   else return table[i].latency;
 }
 
@@ -1605,9 +1605,9 @@ AquaSimRMac::CheckDifference(period_record* table,int addr)
   int i=0;
   double d=-0.0;
 
-  while((table[i].node_addr!=addr)&&(i<TABLE_SIZE))i++;
+  while((table[i].node_addr!=addr)&&(i<R_TABLE_SIZE))i++;
 
-  if (i==TABLE_SIZE) return d;
+  if (i==R_TABLE_SIZE) return d;
   else return table[i].difference;
 }
 
@@ -1917,7 +1917,7 @@ AquaSimRMac::SendShortAckND()
     }
 
   m_arrivalTableIndex=0;
-  for(int i=0;i<TABLE_SIZE;i++)
+  for(int i=0;i<R_TABLE_SIZE;i++)
     arrival_table[i].node_addr=-1;
 }
 
@@ -2307,7 +2307,7 @@ AquaSimRMac::ProcessRevPacket(Ptr<Packet> pkt)
 
   if (m_macStatus==RMAC_IDLE)
     {
-      if(m_reservationTableIndex <TABLE_SIZE)
+      if(m_reservationTableIndex <R_TABLE_SIZE)
 	{
 	  reservation_table[m_reservationTableIndex].node_addr=sender_addr;
 	  reservation_table[m_reservationTableIndex].required_time=dt;
@@ -2337,7 +2337,7 @@ AquaSimRMac::ProcessNDPacket(Ptr<Packet> pkt)
 
   int sender=(int)rHeader.GetSenderAddr();
   double time=Simulator::Now().GetDouble;
-  if(m_arrivalTableIndex>=TABLE_SIZE)
+  if(m_arrivalTableIndex>=R_TABLE_SIZE)
     {
       NS_LOG_INFO("AquaSimRMac:ProcessNDPacket arrival table is full");
       pkt=0;
@@ -2564,7 +2564,7 @@ AquaSimRMac::ProcessShortACKNDPacket(Ptr<Packet> pkt)
 
   pkt=0;
 
-  for (int i=0;i<TABLE_SIZE;i++)
+  for (int i=0;i<R_TABLE_SIZE;i++)
     {
       if (short_latency_table[i].node_addr==sender)
 	{
@@ -2579,7 +2579,7 @@ AquaSimRMac::ProcessShortACKNDPacket(Ptr<Packet> pkt)
 
   if(newone)
     {
-      if(m_shortLatencyTableIndex>=TABLE_SIZE)
+      if(m_shortLatencyTableIndex>=R_TABLE_SIZE)
         {
 	  NS_LOG_INFO("AquaSimRMac:ProcessNDPacket: arrival table is full");
 	  return;
@@ -2615,7 +2615,7 @@ AquaSimRMac::ProcessSYN(Ptr<Packet> pkt)
   pkt=0;
 
   double t1=-1.0;
-  for (int i=0;i<TABLE_SIZE;i++)
+  for (int i=0;i<R_TABLE_SIZE;i++)
     if (short_latency_table[i].node_addr==sender)
       t1=short_latency_table[i].latency;
 
@@ -2643,7 +2643,7 @@ AquaSimRMac::ProcessSYN(Ptr<Packet> pkt)
 
   if(d<0) d=d+m_periodInterval;
 
-  for (int i=0;i<TABLE_SIZE;i++)
+  for (int i=0;i<R_TABLE_SIZE;i++)
     if (period_table[i].node_addr==sender)
       {
 	 period_table[i].difference=d;
@@ -2654,7 +2654,7 @@ AquaSimRMac::ProcessSYN(Ptr<Packet> pkt)
 
   if(newone)
     {
-      if(m_periodTableIndex>=TABLE_SIZE)
+      if(m_periodTableIndex>=R_TABLE_SIZE)
         {
 	  printf("rmac:ProcessSYN:period_table is full\n");
 	  return;

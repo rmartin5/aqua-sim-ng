@@ -27,7 +27,7 @@
 #include "ns3/event-id.h"
 
 
-#define TABLE_SIZE 20 // the size of delay table
+#define R_TABLE_SIZE 20 // the size of delay table
 #define MAXIMUMBACKOFF 4 // the maximum times of backoffs
 #define BACKOFF 1 //deleted later, used by TxProcess
 
@@ -188,7 +188,7 @@ struct hdr_ack_nd{
         int sender_addr;  //original sender' address
          double ts;// sending time of the ND in sender's clock
   double arrival_time; //arrival time of ND in  the receiver's clock
-       //  struct  time_record table[TABLE_SIZE]; // delay table
+       //  struct  time_record table[R_TABLE_SIZE]; // delay table
 
 	static int offset_;
   	inline static int& offset() { return offset_; }
@@ -277,14 +277,14 @@ public:
 
   double m_cycleStartTime; // the beginning time of this cycle;
   TransmissionBuffer m_txBuffer;
-  struct time_record arrival_table[TABLE_SIZE];
-  struct forbidden_time_record reserved_time_table[TABLE_SIZE];
-  //struct latency_record large_latency_table[TABLE_SIZE];
-  struct latency_record short_latency_table[TABLE_SIZE];
-  struct period_record  period_table[TABLE_SIZE];
-  struct reservation_record reservation_table[TABLE_SIZE];
-  struct reservation_record next_available_table[TABLE_SIZE];
-  struct ackdata_record ackdata_table[TABLE_SIZE];
+  struct time_record arrival_table[R_TABLE_SIZE];
+  struct forbidden_time_record reserved_time_table[R_TABLE_SIZE];
+  //struct latency_record large_latency_table[R_TABLE_SIZE];
+  struct latency_record short_latency_table[R_TABLE_SIZE];
+  struct period_record  period_table[R_TABLE_SIZE];
+  struct reservation_record reservation_table[R_TABLE_SIZE];
+  struct reservation_record next_available_table[R_TABLE_SIZE];
+  struct ackdata_record ackdata_table[R_TABLE_SIZE];
   struct buffer_cell * ack_rev_pt;// pointer to the link of ack_rev
 
   void InitPhaseOne(double NDwindow, double ackNDwindow, double phaseOneWindow);

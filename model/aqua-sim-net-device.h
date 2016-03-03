@@ -61,7 +61,7 @@ class AquaSimNetDevice : public NetDevice
 public:
   AquaSimNetDevice ();
   ~AquaSimNetDevice ();
-  static TypeId GetTypeId (void);  
+  static TypeId GetTypeId (void);
 
   //attach
   void ConnectLayers(void);
@@ -70,13 +70,13 @@ public:
   void SetRouting (Ptr<AquaSimRouting> routing);
   void SetChannel (Ptr<AquaSimChannel> channel);
   //void SetApp (Ptr<AquaSimApp> app);
-  
+
   Ptr<AquaSimPhy> GetPhy (void);
   Ptr<AquaSimMac> GetMac (void);
   Ptr<AquaSimRouting> GetRouting (void);
   //Ptr<AquaSimApp> GetApp (void);
-        //Not currently implemented  
-  
+        //Not currently implemented
+
   virtual void DoDispose (void);
   virtual void DoInitialize (void);
 
@@ -149,6 +149,8 @@ public:
   int m_setHopStatus;
   int m_sinkStatus;
 
+  int GetHopStatus();
+
   //void UpdatePosition(void);  // UpdatePosition() out of date... should be using ns3's mobility module
   bool IsMoving(void);
   Ptr<AquaSimEnergyModel> EnergyModel(void) {return m_energyModel; }
@@ -158,9 +160,9 @@ protected:
   void GenerateFailure(void);
 
 private:
-  
+
   void CompleteConfig (void);
-  
+
   Ptr<AquaSimPhy> m_phy;
   Ptr<AquaSimMac> m_mac;
   Ptr<AquaSimRouting> m_routing;

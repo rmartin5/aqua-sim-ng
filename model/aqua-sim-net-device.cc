@@ -494,4 +494,10 @@ AquaSimNetDevice::SupportsSendFrom (void) const
   return false;
 }
 
+int
+AquaSimNetDevice::GetHopStatus()
+{
+  return m_setHopStatus;
+}
+
 }  // namespace ns3

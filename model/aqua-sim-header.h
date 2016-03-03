@@ -401,6 +401,59 @@ private:
     double m_cyclePeriod;
   };  // class UwanSyncHeader
 
+/**
+*  TMAC Header
+*/
+class TMacHeader : public Header
+{
+public:
+  TMacHeader();
+  virtual ~TMacHeader();
+  static TypeId GetTypeId(void);
+
+  //Getters
+  uint8_t GetPtype();
+  uint32_t GetPkNum();
+  uint32_t GetDataNum();
+  Address GetSenderAddr();
+  Address GetReceiverAddr();
+  double GetST();
+  double GetTS();
+  double GetDuration();
+  double GetInterval();
+  double GetArrivalTime();
+
+  //Setters
+  void SetPtype(uint8_t ptype);
+  void SetPkNum(uint32_t pkNum);
+  void SetDataNum(uint32_t dataNum);
+  void SetSenderAddr(Address senderAddr);
+  void SetReceiverAddr(Address receiverAddr);
+  void SetST(double st);
+  void SetTS(double ts);
+  void SetDuration(double durable);
+  void SetInterval(double interval);
+  void SetArrivalTime(double arrivalTime);
+
+  //inherited methods
+  virtual uint32_t GetSerializedSize(void) const;
+  virtual void Serialize (Buffer::Iterator start) const;
+  virtual uint32_t Deserialize (Buffer::Iterator start);
+  virtual void Print (std::ostream &os) const;
+  virtual TypeId GetInstanceTypeId(void) const;
+private:
+  uint8_t m_ptype;     //packet type
+  uint32_t m_pkNum;    // sequence number
+  uint32_t m_dataNum; //too big?
+  Address m_senderAddr;  //original sender' address
+  Address m_receiverAddr;
+  double m_st;           // Timestamp when pkt is generated.
+  double m_ts;
+  double m_duration;
+  double m_interval;
+  double m_arrivalTime;
+};  // class TMacHeader
+
 }  // namespace ns3
 
 #endif /* AQUA_SIM_HEADER_H */
