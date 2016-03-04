@@ -20,6 +20,7 @@
 
 
 #include "aqua-sim-mac-aloha.h"
+#include "aqua-sim-pt-tag.h"
 
 #include "ns3/packet.h"
 #include "ns3/log.h"
@@ -333,13 +334,14 @@ Ptr<Packet> AquaSimAloha::MakeACK(Address Data_Sender)
   Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
   AlohaHeader alohaH;
+	AquaSimPtTag ptag;
 
   //size() += alohaH.size();
   asHeader.SetTxTime(GetTxTime(asHeader.GetSerializedSize() + alohaH.GetSerializedSize()));
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);
   asHeader.SetNextHop(Data_Sender);
-  //ptype = PT_ALOHA;
+	ptag.SetPacketType(AquaSimPtTag::PT_UWALOHA);
 
   alohaH.SetPType(AlohaHeader::ACK);
   alohaH.SetSA(m_device->GetAddress());
@@ -347,7 +349,7 @@ Ptr<Packet> AquaSimAloha::MakeACK(Address Data_Sender)
 
   pkt->AddHeader(asHeader);
   pkt->AddHeader(alohaH);
-
+	pkt->AddPacketTag(ptag);
   return pkt;
 }
 

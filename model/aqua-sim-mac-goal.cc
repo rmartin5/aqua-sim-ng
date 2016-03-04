@@ -20,6 +20,7 @@
 
 #include "aqua-sim-mac-goal.h"
 #include "aqua-sim-header.h"
+#include "aqua-sim-pt-tag.h"
 
 #include "ns3/log.h"
 #include "ns3/integer.h"
@@ -144,9 +145,11 @@ void AquaSimGoal::RecvProcess(Ptr<Packet> pkt)
 	AquaSimHeader ash;
 	AlohaHeader mach; //TODO change all AlohaHeader's here to a base case header for mac.
   AquaSimGoalAckHeader goalAckh;
+	AquaSimPtTag ptag;
 	pkt->PeekHeader(ash);
 	pkt->PeekHeader(mach);
   pkt->PeekHeader(goalAckh);
+	pkt->PeekPacketTag(ptag);
 
 	Address dst = mach.GetDA();
 
@@ -161,18 +164,17 @@ void AquaSimGoal::RecvProcess(Ptr<Packet> pkt)
 		return;
 	}
 
-  //TODO general packet type needs to be supported
 	//TODO fix broadcast throughout this file.
 
 	if( dst == m_device->GetAddress() /*|| dst == Address(0xffffffff)*/ ) {  //MAC_BROADCAST;
- /*		switch(cmh->ptype() ) {
-		case PT_GOAL_REQ:                               //req is broadcasted, it is also data-ack
+ 		switch(ptag.GetPacketType() ) {
+		case AquaSimPtTag::PT_GOAL_REQ:                               //req is broadcasted, it is also data-ack
 			ProcessReqPkt(pkt);          //both for me and overhear
 			break;
-		case PT_GOAL_REP:                               //unicast, but other's should overhear
+		case AquaSimPtTag::PT_GOAL_REP:                               //unicast, but other's should overhear
 			ProcessRepPkt(pkt);
 			break;
-		case PT_GOAL_ACK:
+		case AquaSimPtTag::PT_GOAL_ACK:
 			if( goalAckh.GetPush() )
 				ProcessPSHAckPkt(pkt);
 			else
@@ -185,15 +187,15 @@ void AquaSimGoal::RecvProcess(Ptr<Packet> pkt)
 			return;
 			;
 		}
-*/
+
 	}
 	/*packet to other nodes*/
-	//else if( cmh->ptype() == PT_GOAL_REP ) {
+	else if( ptag.GetPacketType() == AquaSimPtTag::PT_GOAL_REP ) {
 		/*based on other's ack, reserve
 		   timeslot to avoid receive-receive collision*/
-		/*ProcessOverhearedRepPkt(pkt);
+		ProcessOverhearedRepPkt(pkt);
 	}
-  */
+
 
   pkt=0;
 }
@@ -248,6 +250,7 @@ AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Ti
   AquaSimHeader ash;
 	AlohaHeader mach;
   AquaSimGoalReqHeader goalReqh;
+	AquaSimPtTag ptag;
 	Ptr<Packet> DataPkt = *(DataPktSet.begin());
 	//hdr_uwvb* vbh = hdr_uwvb::access(DataPkt);
 	  Ptr<MobilityModel> model = m_device->GetNode()->GetObject<MobilityModel>();
@@ -263,7 +266,7 @@ AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Ti
 	//goalReqh.SetSinkPos.setValue(vbh->info.tx, vbh->info.ty, vbh->info.tz);
 	//goalReqh.SetSourcePos.setValue(vbh->info.ox, vbh->info.oy, vbh->info.oz);
 
-	//ash ptype() = PT_GOAL_REQ;
+	ptag.SetPacketType(AquaSimPtTag::PT_GOAL_REQ);
 	ash.SetDirection(AquaSimHeader::DOWN);
 	ash.SetErrorFlag(false);
 	ash.SetNextHop(Address()/*(Address)0xffffffff*/); //MAC_BROADCAST
@@ -294,6 +297,7 @@ AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Ti
   pkt->AddHeader(ash);
   pkt->AddHeader(mach);
   pkt->AddHeader(goalReqh);
+	pkt->AddPacketTag(ptag);
 	return pkt;
 }
 
@@ -448,6 +452,7 @@ AquaSimGoal::MakeRepPkt(Ptr<Packet> ReqPkt, Time BackoffTime)
   AquaSimHeader ash;
   AlohaHeader mach; //TODO update this.
   AquaSimGoalRepHeader repH;
+	AquaSimPtTag ptag;
   Ptr<MobilityModel> model = m_device->GetNode()->GetObject<MobilityModel>();
 
 
@@ -459,7 +464,7 @@ AquaSimGoal::MakeRepPkt(Ptr<Packet> ReqPkt, Time BackoffTime)
 	repH.SetBackoffTime(BackoffTime);
 
 	ash.SetDirection(AquaSimHeader::DOWN);
-	//ash.ptype() = PT_GOAL_REP;
+	ptag.SetPacketType(AquaSimPtTag::PT_GOAL_REP);
 	ash.SetErrorFlag(false);
 	ash.SetNextHop(repH.GetRA());			//reply the sender of request pkt
 	//ash.size() = hdr_GOAL_rep::size(m_backoffType);
@@ -472,6 +477,7 @@ AquaSimGoal::MakeRepPkt(Ptr<Packet> ReqPkt, Time BackoffTime)
   pkt->AddHeader(ash);
   pkt->AddHeader(mach);
   pkt->AddHeader(repH);
+	pkt->AddPacketTag(ptag);
 	return pkt;
 }
 
@@ -712,6 +718,7 @@ AquaSimGoal::MakeAckPkt(std::set<int> AckSet, bool PSH,  int ReqID)
   AquaSimHeader ash;
   AlohaHeader mach;   //TODO change this...
   AquaSimGoalAckHeader goalAckh;
+	AquaSimPtTag ptag;
 
 	goalAckh.SetSA(m_device->GetAddress());
 	goalAckh.SetRA(Address()/*(Address)0xffffffff*/);  //MAC_BROADCAST
@@ -720,7 +727,7 @@ AquaSimGoal::MakeAckPkt(std::set<int> AckSet, bool PSH,  int ReqID)
 		goalAckh.SetReqID(ReqID);
 	}
 
-	//ash.ptype() = PT_GOAL_ACK;
+	ptag.SetPacketType(AquaSimPtTag::PT_GOAL_ACK);
 	ash.SetDirection(AquaSimHeader::DOWN);
 	ash.SetErrorFlag(false);
 	ash.SetNextHop(goalAckh.GetRA());   //reply the sender of request pkt
@@ -746,6 +753,7 @@ AquaSimGoal::MakeAckPkt(std::set<int> AckSet, bool PSH,  int ReqID)
   pkt->AddHeader(goalAckh);
   pkt->AddHeader(ash);
   pkt->AddHeader(mach);
+	pkt->AddPacketTag(ptag);
   return pkt;
 }
 
@@ -1054,7 +1062,9 @@ void
 AquaSimGoal::SendoutPkt(Ptr<Packet> pkt)
 {
   AquaSimHeader ash;
+	AquaSimPtTag ptag;
   pkt->RemoveHeader(ash);
+	pkt->PeekPacketTag(ptag);
 
 	ash.SetTxTime(GetTxTime(ash.GetSize()));
 
@@ -1070,23 +1080,30 @@ AquaSimGoal::SendoutPkt(Ptr<Packet> pkt)
 			InterruptRecv(txtime.ToDouble(Time::S));
 		case NIDLE:
 			m_device->SetTransmissionStatus(SEND);
-      //TODO support packet type within common as header.
-      /*switch( cmh->ptype() ) {
-				case PT_GOAL_REQ:
+      switch( ptag.GetPacketType() ) {
+				case AquaSimPtTag::PT_GOAL_REQ:
 					{
-						hdr_GOAL_req* vmq = hdr_GOAL_req::access(pkt);
-						vmq->SendTime_ -= Simulator::Now() - cmh->timestamp();
+						AquaSimGoalReqHeader goalReqh;
+						pkt->RemoveHeader(goalReqh);
+
+						Time temp = goalReqh.GetSendTime() - (Simulator::Now() - ash.GetTimeStamp());
+						goalReqh.SetSendTime(temp);
+						pkt->AddHeader(goalReqh);
 					}
 					break;
-				case PT_GOAL_REP:
+				case AquaSimPtTag::PT_GOAL_REP:
 					{
-						hdr_GOAL_rep* vmp = hdr_GOAL_rep::access(pkt);
-						vmp->SendTime_ -= Simulator::Now() - cmh->timestamp();
+						AquaSimGoalRepHeader goalReph;
+						pkt->RemoveHeader(goalReph);
+
+						Time temp = goalReph.GetSendTime() - (Simulator::Now() - ash.GetTimeStamp());
+						goalReph.SetSendTime(temp);
+						pkt->AddHeader(goalReph);;
 					}
 					break;
 				default:
 					;
-			}*/
+			}
 
 			ash.SetTimeStamp(Simulator::Now());
 			ash.SetDirection(AquaSimHeader::DOWN);

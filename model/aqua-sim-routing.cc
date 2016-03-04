@@ -18,7 +18,6 @@
  * Author: Robert Martin <robert.martin@engr.uconn.edu>
  */
 
-#include "ns3/address.h"
 #include "ns3/log.h"
 #include "ns3/attribute.h"
 #include "ns3/simulator.h"
@@ -150,7 +149,7 @@ AquaSimRouting::SendDown(Ptr<Packet> p, const Address &nextHop, Time delay)
   //NS_LOG_DEBUG("Pktsize=" << header.GetSize());
   if(header.GetUId() == -1) header.SetUId(1);
   header.SetDirection(AquaSimHeader::DOWN);
-  header.SetNextHop(nextHop);
+  header.SetNextHop(AquaSimAddress::ConvertFrom(nextHop));
   p->AddHeader(header);
 
   //trace here...

@@ -20,6 +20,7 @@
 
 #include "aqua-sim-mac-sfama.h"
 #include "aqua-sim-header.h"
+#include "aqua-sim-pt-tag.h"
 
 #include "ns3/log.h"
 #include "ns3/simulator.h"
@@ -190,12 +191,13 @@ AquaSimSFama::MakeRTS(Address recver, int slot_num)
   AquaSimHeader ash;
   SFamaHeader SFAMAh;
   AlohaHeader mach;   //TODO change this...
+	AquaSimPtTag ptag;
 
 	//ash->size() = hdr_SFAMA::getSize(hdr_SFAMA::SFAMA_RTS);
 	ash.SetTxTime(GetTxTime(SFAMAh.GetSize(SFamaHeader::SFAMA_RTS)) );
 	ash.SetErrorFlag(false);
 	ash.SetDirection(AquaSimHeader::DOWN);
-	//ash->ptype() = PT_SFAMA;
+	ptag.SetPacketType(AquaSimPtTag::PT_SFAMA);
 
 	mach.SetSA(m_device->GetAddress());
 	mach.SetDA(recver);
@@ -210,6 +212,7 @@ AquaSimSFama::MakeRTS(Address recver, int slot_num)
   rts_pkt->AddHeader(ash);
   rts_pkt->AddHeader(SFAMAh);
   rts_pkt->AddHeader(mach);
+	rts_pkt->AddPacketTag(ptag);
 	return rts_pkt;
 }
 
@@ -221,12 +224,13 @@ AquaSimSFama::MakeCTS(Address rts_sender, int slot_num)
   AquaSimHeader ash;
   SFamaHeader SFAMAh;
   AlohaHeader mach;   //TODO change this...
+	AquaSimPtTag ptag;
 
 	//ash->size() = hdr_SFAMA::getSize(hdr_SFAMA::SFAMA_CTS);
 	ash.SetTxTime(GetTxTime(SFAMAh.GetSize(SFamaHeader::SFAMA_CTS)) );
 	ash.SetErrorFlag(false);
 	ash.SetDirection(AquaSimHeader::DOWN);
-	//ash->ptype() = PT_SFAMA;
+	ptag.SetPacketType(AquaSimPtTag::PT_SFAMA);
 
 	mach.SetSA(m_device->GetAddress());
 	mach.SetDA(rts_sender);
@@ -241,6 +245,7 @@ AquaSimSFama::MakeCTS(Address rts_sender, int slot_num)
 	cts_pkt->AddHeader(ash);
 	cts_pkt->AddHeader(SFAMAh);
 	cts_pkt->AddHeader(mach);
+	cts_pkt->AddPacketTag(ptag);
 	return cts_pkt;
 }
 
@@ -281,12 +286,13 @@ AquaSimSFama::MakeACK(Address data_sender)
   AquaSimHeader ash;
   SFamaHeader SFAMAh;
   AlohaHeader mach;   //TODO change this...
+	AquaSimPtTag ptag;
 
   //ash->size() = hdr_SFAMA::getSize(hdr_SFAMA::SFAMA_ACK);
   ash.SetTxTime(GetTxTime(SFAMAh.GetSize(SFamaHeader::SFAMA_ACK)) );
   ash.SetErrorFlag(false);
   ash.SetDirection(AquaSimHeader::DOWN);
-	//ash->ptype() = PT_SFAMA;
+	ptag.SetPacketType(AquaSimPtTag::PT_SFAMA);
 
   mach.SetSA(m_device->GetAddress());
   mach.SetDA(data_sender);
@@ -298,6 +304,7 @@ AquaSimSFama::MakeACK(Address data_sender)
   ack_pkt->AddHeader(ash);
   ack_pkt->AddHeader(SFAMAh);
   ack_pkt->AddHeader(mach);
+	ack_pkt->AddPacketTag(ptag);
 	return ack_pkt;
 }
 

@@ -20,6 +20,7 @@
 
 #include "aqua-sim-mac-copemac.h"
 #include "aqua-sim-header.h"
+#include "aqua-sim-pt-tag.h"
 //#include "vbf/vectorbasedforward.h"
 
 #include "ns3/log.h"
@@ -489,8 +490,10 @@ AquaSimCopeMac::RecvProcess(Ptr<Packet> pkt)
 {
   AquaSimHeader ash;
   CopeHeader ch;
+  AquaSimPtTag ptag;
   pkt->PeekHeader(ash);
   pkt->PeekHeader(ch);
+  pkt->PeekPacketTag(ptag);
 
   Address dst = ch.GetDA();
   //Address src = ch.GetSA();
@@ -508,7 +511,7 @@ AquaSimCopeMac::RecvProcess(Ptr<Packet> pkt)
 
   //TODO fix broadcast throughout this file
   if( dst == m_device->GetAddress() /*|| dst == (Address)0xffffffff*/) {  //MAC_BROADCAST
-      if( /*cmh->ptype() == PT_OTMAN*/ 1 /* placeholder */ ) {
+      if( ptag.GetPacketType() == AquaSimPtTag::PT_OTMAN ) {
 	  switch( ch.GetPType() ) {
 	      case CopeHeader::COPE_ND:
 		  ProcessND(pkt);
@@ -602,6 +605,7 @@ AquaSimCopeMac::MakeND()
 {
   AquaSimHeader ash;
   CopeHeader ch;
+  AquaSimPtTag ptag;
 
   ch.SetPType(CopeHeader::COPE_ND);
   ch.SetDA(Address()/*(Address)0xffffffff*/);	//MAC_BROADCAST
@@ -612,7 +616,7 @@ AquaSimCopeMac::MakeND()
   ash.SetNextHop(Address()/*(Address)0xffffffff*/);	//MAC_BROADCAST
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash->addr_type()=NS_AF_ILINK;
-  //ash->ptype() = PT_OTMAN;
+  ptag.SetPacketType(AquaSimPtTag::PT_OTMAN);
 
   //fill the neighbors that this node already knows the delay
     //empty packet will suffice
@@ -640,6 +644,7 @@ AquaSimCopeMac::MakeND()
 
   pkt->AddHeader(ash);
   pkt->AddHeader(ch);
+  pkt->AddPacketTag(ptag);
   return pkt;
 }
 
@@ -688,6 +693,7 @@ AquaSimCopeMac::MakeNDReply()
   Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader ash;
   CopeHeader ch;
+  AquaSimPtTag ptag;
 
   ch.SetPType(CopeHeader::COPE_ND_REPLY);
   //hdr_o->hdr.nd_reply_h.nd_send_time_ = m_ndDepartNeighborTime[NDSender];
@@ -697,8 +703,7 @@ AquaSimCopeMac::MakeNDReply()
   ash.SetNextHop(Address()/*(Address)0xffffffff*/);	//MAC_BROADCAST
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash->addr_type()=NS_AF_ILINK;
-  //ash->ptype() = PT_OTMAN;
-
+  ptag.SetPacketType(AquaSimPtTag::PT_OTMAN);
 
   //uint data_size = sizeof(uint) + (2*sizeof(Time)+sizeof(Address))*m_PendingND.size();
   //pkt->allocdata( data_size);
@@ -725,6 +730,7 @@ AquaSimCopeMac::MakeNDReply()
 
   pkt->AddHeader(ash);
   pkt->AddHeader(ch);
+  pkt->AddPacketTag(ptag);
 
   ProcessNDReply(pkt);
 
@@ -809,6 +815,7 @@ AquaSimCopeMac::MakeMultiRev()
   Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader ash;
   CopeHeader ch;
+  AquaSimPtTag ptag;
 
   ch.SetPType(CopeHeader::MULTI_REV);
   ch.SetDA(Address()/*(Address)0xffffffff*/);	//MAC_BROADCAST
@@ -817,8 +824,7 @@ AquaSimCopeMac::MakeMultiRev()
   ash.SetNextHop(Address()/*(Address)0xffffffff*/);	//MAC_BROADCAST
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash->addr_type()=NS_AF_ILINK;
-  //ash->ptype() = PT_OTMAN;
-
+  ptag.SetPacketType(AquaSimPtTag::PT_OTMAN);
 
   uint rev_num = 0;
   std::map<Address, PktList>::iterator pos;
@@ -958,6 +964,7 @@ AquaSimCopeMac::MakeMultiRev()
   pkt->AddAtEnd(tempPacket);
   pkt->AddHeader(ash);
   pkt->AddHeader(ch);
+  pkt->AddPacketTag(ptag);
 
   return pkt;
 }
@@ -1072,6 +1079,7 @@ AquaSimCopeMac::MakeMultiRevAck()
   Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader ash;
   CopeHeader ch;
+  AquaSimPtTag ptag;
 
   ch.SetPType(CopeHeader::MULTI_REV_ACK);
   ch.SetDA(Address()/*(Address)0xffffffff*/);	//MAC_BROADCAST
@@ -1080,7 +1088,7 @@ AquaSimCopeMac::MakeMultiRevAck()
   ash.SetNextHop(Address()/*(Address)0xffffffff*/);	//MAC_BROADCAST
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash->addr_type()=NS_AF_ILINK;
-  //ash->ptype() = PT_OTMAN;
+  ptag.SetPacketType(AquaSimPtTag::PT_OTMAN);
 
 
   uint32_t size = sizeof(uint)+ sizeof(Time)+ (sizeof(Address)+2*sizeof(int)+2*sizeof(Time))*m_pendingRevs.size();
@@ -1117,6 +1125,7 @@ AquaSimCopeMac::MakeMultiRevAck()
   pkt->AddAtEnd(tempPacket);
   pkt->AddHeader(ash);
   pkt->AddHeader(ch);
+  pkt->AddPacketTag(ptag);
   return pkt;
 }
 
@@ -1205,6 +1214,7 @@ AquaSimCopeMac::MakeDataAck()
   Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader ash;
   CopeHeader ch;
+  AquaSimPtTag ptag;
 
   ch.SetPType(CopeHeader::MULTI_DATA_ACK);
   ch.SetDA(Address()/*(Address)0xffffffff*/);	//MAC_BROADCAST
@@ -1213,7 +1223,7 @@ AquaSimCopeMac::MakeDataAck()
   ash.SetNextHop(Address()/*(Address)0xffffffff*/);	//MAC_BROADCAST
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash->addr_type()=NS_AF_ILINK;
-  //ash->ptype() = PT_OTMAN;
+  ptag.SetPacketType(AquaSimPtTag::PT_OTMAN);
 
   uint DataAckNum = m_pendingDataAcks.size();
 
@@ -1243,6 +1253,7 @@ AquaSimCopeMac::MakeDataAck()
   pkt->AddAtEnd(tempPacket);
   pkt->AddHeader(ash);
   pkt->AddHeader(ch);
+  pkt->AddPacketTag(ptag);
   return pkt;
 }
 

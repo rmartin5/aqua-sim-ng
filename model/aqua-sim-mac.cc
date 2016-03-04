@@ -24,7 +24,7 @@
 
 #include "ns3/log.h"
 #include "ns3/pointer.h"
-#include "ns3/address.h"
+#include "ns3/aqua-sim-address.h"
 #include "ns3/ptr.h"
 #include "ns3/simulator.h"
 
@@ -90,7 +90,7 @@ AquaSimMac::SetRouting(Ptr<AquaSimRouting> rout){
 }
 
 void
-AquaSimMac::SetAddress(Address addr)
+AquaSimMac::SetAddress(AquaSimAddress addr)
 {
   NS_LOG_FUNCTION(this << addr);
   m_address = addr;
@@ -109,7 +109,7 @@ AquaSimMac::TxProcess(Ptr<Packet> p){
 }
 
 void
-AquaSimMac::SetForwardUpCallback(Callback<void, const Address&> upCallback)
+AquaSimMac::SetForwardUpCallback(Callback<void, const AquaSimAddress&> upCallback)
 {
   //not currently used.
   m_callback = upCallback;
@@ -132,7 +132,7 @@ AquaSimMac::SendDown(Ptr<Packet> p)	//TODO remove this is redundant
 }
 
 void
-AquaSimMac::HandleIncomingPkt(Ptr<Packet> p) { 	
+AquaSimMac::HandleIncomingPkt(Ptr<Packet> p) {
   NS_LOG_FUNCTION(this);
 
   //m_recvChannel->AddNewPacket(p);

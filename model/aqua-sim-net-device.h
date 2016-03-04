@@ -29,6 +29,7 @@
 #include "ns3/packet.h"
 //#include "ns3/address.h"      //could be updated to support own unique address type for uwsn
 
+#include "aqua-sim-address.h"
 #include "aqua-sim-phy.h"
 #include "aqua-sim-mac.h"
 #include "aqua-sim-energy-model.h"
@@ -45,10 +46,7 @@ namespace ns3 {
 
 enum TransmissionStatus{SLEEP, NIDLE, SEND, RECV, NSTATUS };
 
-class Address;
 class Channel;
-class Ipv4Address;
-class Ipv6Address;
 class PromiscReceiveCallback;
 class MobilityModel;
 
@@ -150,6 +148,7 @@ public:
   int m_sinkStatus;
 
   int GetHopStatus();
+  int GetNextHop();
 
   //void UpdatePosition(void);  // UpdatePosition() out of date... should be using ns3's mobility module
   bool IsMoving(void);

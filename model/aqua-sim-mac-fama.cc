@@ -20,6 +20,7 @@
 
 #include "aqua-sim-mac-fama.h"
 #include "aqua-sim-header.h"
+#include "aqua-sim-pt-tag.h"
 //include vbf once created.
 
 #include "ns3/log.h"
@@ -137,18 +138,20 @@ AquaSimFama::TxProcess(Ptr<Packet> pkt)
   AquaSimHeader asHeader;
   //vbf header
   FamaHeader FamaH;
+	AquaSimPtTag ptag;
   pkt->RemoveHeader(asHeader);
   pkt->RemoveHeader(FamaH);
+	pkt->RemovePacketTag(ptag);
 
   //size() = m_dataPktSize;
   asHeader.SetTxTime(m_maxDataTxTime);
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);
-  //UpperLayerPktType = cmh->ptype();
+  //UpperLayerPktType = ptag.GetPacketType();
 
   asHeader.SetNextHop(NeighborList[m_neighborId]);
   m_neighborId = (m_neighborId+1)%NeighborList.size();
-  //asheader ptype() = PT_FAMA;
+	ptag.SetPacketType(AquaSimPtTag::PT_FAMA);
 
   //vbh->target_id.addr_ = asheader next_hop();
 
@@ -158,6 +161,7 @@ AquaSimFama::TxProcess(Ptr<Packet> pkt)
 
   pkt->AddHeader(asHeader);
   pkt->AddHeader(FamaH);
+	pkt->AddPacketTag(ptag);
   PktQ.push(pkt);
 
   //fill the next hop when sending out the packet;
@@ -179,8 +183,10 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
 {
   AquaSimHeader asHeader;
   FamaHeader FamaH;
+	AquaSimPtTag ptag;
   pkt->PeekHeader(asHeader);
   pkt->PeekHeader(FamaH);
+	pkt->PeekPacketTag(ptag);
   Address dst = FamaH.GetDA();
 
 
@@ -196,7 +202,7 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
   /*ND is not a part of AquaSimFama. We just want to use it to get next hop
    *So we do not care wether it collides with others
    */
-  if( /*(asheader->ptype()==PT_FAMA)&& */(FamaH.GetPType()==FamaHeader::ND) ) {
+  if( ( ptag.GetPacketType() == AquaSimPtTag::PT_FAMA)&& (FamaH.GetPType()==FamaHeader::ND) ) {
       ProcessND(pkt);
       pkt=0;
       return;
@@ -218,7 +224,7 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
   if( m_waitCTSTimer.IsRunning() ) {
 	  //printf("%f: node %d receive RTS\n", NOW, index_);
       m_waitCTSTimer.Cancel();
-      if( /*(cmh->ptype() == PT_FAMA )&&*/(FamaH.GetPType()==FamaHeader::CTS)
+      if(( ptag.GetPacketType() == AquaSimPtTag::PT_FAMA )&&(FamaH.GetPType()==FamaHeader::CTS)
 	      && (asHeader.GetNextHop() == m_device->GetAddress())) {
 	  //receiving the CTS
 	  SendDataPkt();
@@ -231,7 +237,7 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
   }
 
 
-  if( /*cmh->ptype() == PT_FAMA*/ true /*place holder*/ ) {
+  if( ptag.GetPacketType() == AquaSimPtTag::PT_FAMA ) {
       switch( FamaH.GetPType() ) {
 	case FamaHeader::RTS:
 	  //printf("%f: node %d receive RTS\n", NOW, index_);
@@ -250,7 +256,7 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
 	  //printf("%f: node %d receive DATA\n", NOW, index_);
 	  //process Data packet
 	  if( dst == m_device->GetAddress() ) {
-	      //asheader->ptype() = UpperLayerPktType;
+	      //ptag.SetPacketType(UpperLayerPktType);
 	    	SendUp(pkt);
 	    	return;
 	  }
@@ -323,12 +329,13 @@ AquaSimFama::MakeND()
   Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
   FamaHeader FamaH;
+	AquaSimPtTag ptag;
 
   //asheader->size() = 2*sizeof(nsaddr_t)+1;
   asHeader.SetTxTime(GetTxTime(asHeader.GetSize()));
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);
-  //asheader->ptype() = PT_FAMA;
+	ptag.SetPacketType(AquaSimPtTag::PT_FAMA);
   //TODO asHeader.SetNextHop(Address(0xffffffff));  //MAC_BROADCAST;
 
   FamaH.SetPType(FamaHeader::ND);
@@ -337,6 +344,7 @@ AquaSimFama::MakeND()
 
   pkt->AddHeader(asHeader);
   pkt->AddHeader(FamaH);
+	pkt->AddPacketTag(ptag);
   return pkt;
 }
 
@@ -359,12 +367,13 @@ AquaSimFama::MakeRTS(Address Recver)
   Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
   FamaHeader FamaH;
+	AquaSimPtTag ptag;
 
   //asheader->size() = GetSizeByTxTime(m_RTSTxTime);
   asHeader.SetTxTime(m_RTSTxTime);
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);
-  //asheader->ptype() = PT_FAMA;
+	ptag.SetPacketType(AquaSimPtTag::PT_FAMA);
   asHeader.SetNextHop(Recver);
 
   FamaH.SetPType(FamaHeader::RTS);
@@ -373,6 +382,7 @@ AquaSimFama::MakeRTS(Address Recver)
 
   pkt->AddHeader(asHeader);
   pkt->AddHeader(FamaH);
+	pkt->AddPacketTag(ptag);
   return pkt;
 }
 
@@ -410,12 +420,13 @@ AquaSimFama::MakeCTS(Address RTS_Sender)
   Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
   FamaHeader FamaH;
+	AquaSimPtTag ptag;
 
   //asheader->size() = GetSizeByTxTime(m_CTSTxTime);
   asHeader.SetTxTime(m_CTSTxTime);
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);
-  //asheader->ptype() = PT_FAMA;
+	ptag.SetPacketType(AquaSimPtTag::PT_FAMA);
   asHeader.SetNextHop(RTS_Sender);
 
   FamaH.SetPType(FamaHeader::CTS);
@@ -424,6 +435,7 @@ AquaSimFama::MakeCTS(Address RTS_Sender)
 
   pkt->AddHeader(asHeader);
   pkt->AddHeader(FamaH);
+	pkt->AddPacketTag(ptag);
   return pkt;
 }
 

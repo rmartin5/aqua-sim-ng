@@ -25,6 +25,7 @@
 #include <iostream>
 
 #include "ns3/address.h"
+#include "ns3/uan-address.h"
 #include "ns3/header.h"
 #include "ns3/nstime.h"
 //#include "ns3/uan-address.h"	//use this for now.

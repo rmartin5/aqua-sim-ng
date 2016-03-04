@@ -42,7 +42,7 @@ NS_OBJECT_ENSURE_REGISTERED (AquaSimNetDevice);
 
 AquaSimNetDevice::AquaSimNetDevice ()
   : NetDevice(),
-    m_nextHop(-10),
+    m_nextHop(1), //-10?
     m_setHopStatus(0),
     m_sinkStatus(0),
     m_transStatus(NIDLE),
@@ -352,7 +352,7 @@ AquaSimNetDevice::AddLinkChangeCallback (Callback< void > callback)
 Address
 AquaSimNetDevice::GetAddress (void) const
 {
-  NS_LOG_DEBUG(this << "Not implemented on mac yet");
+  NS_LOG_DEBUG(this);
   return m_mac->GetAddress();
 }
 
@@ -459,7 +459,7 @@ AquaSimNetDevice::SendFrom (Ptr< Packet > packet, const Address &source, const A
 void
 AquaSimNetDevice::SetAddress (Address address)
 {
-  m_mac->SetAddress(address);
+  m_mac->SetAddress(AquaSimAddress::ConvertFrom(address));
 }
 
 void
@@ -498,6 +498,12 @@ int
 AquaSimNetDevice::GetHopStatus()
 {
   return m_setHopStatus;
+}
+
+int
+AquaSimNetDevice::GetNextHop()
+{
+  return m_nextHop;
 }
 
 }  // namespace ns3

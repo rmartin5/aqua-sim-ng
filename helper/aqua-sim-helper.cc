@@ -26,7 +26,7 @@
 #include "ns3/aqua-sim-net-device.h"
 #include "ns3/aqua-sim-propagation.h"
 #include "ns3/aqua-sim-noise-generator.h"
-#include "ns3/uan-address.h"
+#include "ns3/aqua-sim-address.h"
 #include "ns3/application.h"
 
 #include "aqua-sim-helper.h"
@@ -232,6 +232,8 @@ AquaSimHelper::Create(Ptr<Node> node, Ptr<AquaSimNetDevice> device)
   device->SetRouting(routing);
   device->ConnectLayers();
 
+  device->SetAddress(AquaSimAddress::Allocate());
+
   NS_ASSERT(m_channel);
   device->SetChannel(m_channel);
 
@@ -245,4 +247,3 @@ AquaSimHelper::Create(Ptr<Node> node, Ptr<AquaSimNetDevice> device)
 }
 
 }  //namespace ns3
-

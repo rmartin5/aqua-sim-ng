@@ -9,6 +9,8 @@ def configure(conf):
 def build(bld):
     module = bld.create_ns3_module('aqua-sim-ng', ['network', 'energy', 'mobility'])
     module.source = [
+        'model/aqua-sim-address.cc',
+        'model/aqua-sim-pt-tag.cc',
         'model/aqua-sim-channel.cc',
         'model/aqua-sim-energy-model.cc',
         'model/aqua-sim-hash-table.cc',
@@ -48,6 +50,8 @@ def build(bld):
     headers = bld(features='ns3header')
     headers.module = 'aqua-sim-ng'
     headers.source = [
+        'model/aqua-sim-address.h',
+        'model/aqua-sim-pt-tag.h',
         'model/aqua-sim-channel.h',
         'model/aqua-sim-energy-model.h',
         'model/aqua-sim-hash-table.h',

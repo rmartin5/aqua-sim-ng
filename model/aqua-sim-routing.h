@@ -28,6 +28,7 @@
 //#include "ns3/ipv4-routing-protocol.h"
 //#include "ns3/ipv4-static-routing.h"
 
+#include "aqua-sim-address.h"
 #include "aqua-sim-mac.h"
 #include "aqua-sim-net-device.h"
 
@@ -36,8 +37,8 @@ namespace ns3 {
 class Packet;
 
 class AquaSimRouting : public Object
-{	
-public:	
+{
+public:
 /*define common commands for underwater routing protocols*/
   static TypeId GetTypeId(void);
   AquaSimRouting(void);
@@ -64,7 +65,7 @@ protected:
   virtual bool AmISrc(const Ptr<Packet> p);
   virtual void SendPacket(Ptr<Packet> p);
 protected:
-  Address m_myAddr;  //the ip address of this node
+  AquaSimAddress m_myAddr;  //the ip address of this node
   Ptr<AquaSimNetDevice> m_device;
   //Ptr<Trace> m_traceTarget;       // Trace Target	TODO need to initiate tracing
   //NsObject *ll;			//pointer to link layer object

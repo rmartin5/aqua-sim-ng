@@ -20,6 +20,7 @@
 
 #include "aqua-sim-mac-uwan.h"
 #include "aqua-sim-header.h"
+#include "aqua-sim-pt-tag.h"
 //#include "vbf/vectorbasedforward.h"
 
 #include "ns3/double.h"
@@ -193,6 +194,7 @@ AquaSimUwan::MakeSYNCPkt(Time CyclePeriod, Address Recver)
   UwanSyncHeader hdr_s;
   AquaSimHeader ash;
   AlohaHeader mach;   //TODO change this...
+  AquaSimPtTag ptag;
 
 	hdr_s.SetCyclePeriod(CyclePeriod.ToDouble(Time::S));
 
@@ -200,7 +202,7 @@ AquaSimUwan::MakeSYNCPkt(Time CyclePeriod, Address Recver)
   ash.SetNextHop(Recver);  //the sent packet??
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash.addr_type()=NS_AF_ILINK;
-  //ash.ptype()=PT_UWAN_SYNC;
+  ptag.SetPacketType(AquaSimPtTag::PT_UWAN_SYNC);
 
 	mach.SetDA(Recver);
 	mach.SetSA(m_device->GetAddress());
@@ -208,6 +210,7 @@ AquaSimUwan::MakeSYNCPkt(Time CyclePeriod, Address Recver)
   p->AddHeader(hdr_s);
   p->AddHeader(ash);
   p->AddHeader(mach);
+  p->AddPacketTag(ptag);
 	return p;
 }
 
@@ -358,6 +361,8 @@ AquaSimUwan::RecvProcess(Ptr<Packet> p)
   UwanSyncHeader SYNC_h;
   AquaSimHeader ash;
   AlohaHeader mach;   //TODO change this...
+  AquaSimPtTag ptag;
+  p->PeekPacketTag(ptag);
   p->PeekHeader(ash);
   p->PeekHeader(mach);
   p->RemoveHeader(SYNC_h);
@@ -383,7 +388,8 @@ AquaSimUwan::RecvProcess(Ptr<Packet> p)
   p->AddHeader(SYNC_h);
 
   //TODO fix this.
-	if( /*ash.ptype() == PT_UWAN_HELLO || ash.ptype() == PT_UWAN_SYNC*/ false ) {
+	if( (ptag.GetPacketType() == AquaSimPtTag::PT_UWAN_HELLO) ||
+        (ptag.GetPacketType() == AquaSimPtTag::PT_UWAN_SYNC) ) {
 		//the process to hello packet is same to SYNC packet
 		m_wakeSchQueue.Push(Seconds(SYNC_h.GetCyclePeriod())+Simulator::Now(), src,
                           Seconds(SYNC_h.GetCyclePeriod()));
@@ -559,6 +565,7 @@ AquaSimUwan::ProcessMissingList(uint8_t *data, Address src)
       UwanSyncHeader hdr_s;
       AquaSimHeader ash;
       AlohaHeader mach;   //TODO change this...
+      AquaSimPtTag ptag;
 
       hdr_s.SetCyclePeriod(m_nextCyclePeriod.ToDouble(Time::S) -
 			     Simulator::Now().ToDouble(Time::S) );
@@ -566,7 +573,7 @@ AquaSimUwan::ProcessMissingList(uint8_t *data, Address src)
 			ash.SetNextHop(src);
       ash.SetDirection(AquaSimHeader::DOWN);
       //ash.addr_type()=NS_AF_ILINK;
-      //ash.ptype()=PT_UWAN_HELLO;
+      ptag.SetPacketType(AquaSimPtTag::PT_UWAN_HELLO);
 			//ash.size() = hdr_s.GetSize();
 
       mach.SetDA(src);
@@ -575,6 +582,7 @@ AquaSimUwan::ProcessMissingList(uint8_t *data, Address src)
       p->AddHeader(ash);
       p->AddHeader(mach);
       p->AddHeader(hdr_s);
+      p->AddPacketTag(ptag);
 			//rand the sending slot and then send out
       double randHelloDelay = m_rand->GetValue(0,10)*m_helloTxLen.ToDouble(Time::S);
 			SendFrame(p, true, Seconds(randHelloDelay));   //hello should be delayed!!!!!!
