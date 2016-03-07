@@ -34,6 +34,7 @@
 #include "aqua-sim-routing.h"
 #include "aqua-sim-channel.h"
 #include "aqua-sim-signal-cache.h"
+#include "aqua-sim-address.h"
 
 namespace ns3 {
 
@@ -432,7 +433,7 @@ AquaSimNetDevice::Send (Ptr< Packet > packet, const Address &dest, uint16_t prot
   if(m_routing)
     {//Note : https://www.nsnam.org/docs/release/3.24/doxygen/uan-mac-cw_8cc_source.html#l00123
       NS_LOG_DEBUG("Routing SendDown hit");
-      return m_routing->SendDown(packet, dest, Seconds(0));
+      return m_routing->SendDown(packet, AquaSimAddress::ConvertFrom(dest), Seconds(0));
     }
   if (m_mac)
     {

@@ -28,12 +28,13 @@
 
 #include "ns3/random-variable-stream.h"
 #include "ns3/packet.h"
-#include "ns3/address.h"
 #include "ns3/simulator.h"
 #include "ns3/nstime.h"
 #include "ns3/timer.h"
 
+
 #include "aqua-sim-mac.h"
+#include "aqua-sim-address.h"
 
 #include <map>
 #include <vector>
@@ -86,7 +87,7 @@ class AquaSimCopeMac;
 class PktWareHouse{
   friend class AquaSimCopeMac;
 private:
-  std::map<Address, PktList> Queues;
+  std::map<AquaSimAddress, PktList> Queues;
   int m_cachedPktNum;
   bool m_locked;
 public:
@@ -104,14 +105,14 @@ public:
   //	m_locked = false;
   //}
   void	Insert2PktQs(Ptr<Packet> p);
-  bool	DeletePkt(Address Recver, int SeqNum);
+  bool	DeletePkt(AquaSimAddress Recver, int SeqNum);
 };
 
 
 //----------------------------------------------------
 //cache the reservation request
 struct RevReq{
-  Address requestor;
+  AquaSimAddress requestor;
   int acceptedRevID;  //if acceptedRevID and rejectedRevID is not succesive, both are rejected
   int rejectedRevID;
   Time StartTime;
@@ -119,7 +120,7 @@ struct RevReq{
 };
 
 struct DataAck{
-  Address Sender;
+  AquaSimAddress Sender;
   int SeqNum;
 };
 
@@ -151,7 +152,7 @@ enum RevType {
 struct RevElem{
   Time		StartTime;
   Time		EndTime;
-  Address	Reservor;   //reserve for which node
+  AquaSimAddress	Reservor;   //reserve for which node
   RevType	rev_type;
   int		RevID;
 
@@ -161,7 +162,7 @@ struct RevElem{
   RevElem*	next;
   RevElem();
   RevElem(int RevID_, Time StartTime_,
-	  Time EndTime_, Address Reservor_, RevType rev_type_);
+	  Time EndTime_, AquaSimAddress Reservor_, RevType rev_type_);
   ~RevElem();
 };
 
@@ -181,7 +182,7 @@ public:
    * Otherwise, insert successfully and return true.
    * If force is true, it will not check availability
    */
-  bool Push(int RevID, Time StartTime, Time EndTime, Address Reservor,
+  bool Push(int RevID, Time StartTime, Time EndTime, AquaSimAddress Reservor,
 	  RevType rev_type, Ptr<Packet> pkt);
   void ClearExpired(Time ExpireTime);
   bool CheckAvailability(Time StartTime, Time EndTime, RevType rev_type);
@@ -225,10 +226,10 @@ protected:
   void Start();
   //int	round2Slot(Time time);  //round the time to the slot sequence num since now
   //Time Slot2Time(int SlotNum, Time BaseTime = Simulator::Now());
-  //Time Round2RecverSlotBegin(Time time, Address recver);
+  //Time Round2RecverSlotBegin(Time time, AquaSimAddress recver);
 
   void StartHandShake();
-  Time Map2OwnTime(Time SenderTime, Address Sender); //map time SenderTime on sender to the time on this node
+  Time Map2OwnTime(Time SenderTime, AquaSimAddress Sender); //map time SenderTime on sender to the time on this node
 
   void RecordDataPkt(Ptr<Packet> pkt);
   //process control packets.
@@ -281,12 +282,12 @@ private:
   //Time TimeSlotLen_;
   PktWareHouse m_PktWH;
 
-  std::map<Address, Time> m_propDelays;  //the propagation delay to neighbors
-  std::map<Address, Time> m_ndReceiveTime;   //the time when receives ND packet
-  std::map<Address, Time> m_ndDepartNeighborTime;    //the time when neighbor send ND to this node
+  std::map<AquaSimAddress, Time> m_propDelays;  //the propagation delay to neighbors
+  std::map<AquaSimAddress, Time> m_ndReceiveTime;   //the time when receives ND packet
+  std::map<AquaSimAddress, Time> m_ndDepartNeighborTime;    //the time when neighbor send ND to this node
   std::vector<RevReq*> m_pendingRevs;  //all pending revs are stored here. Schedule it before sending ack
   std::vector<DataAck*> m_pendingDataAcks;
-  std::map<Address, int> m_sucDataNum;   //result is here
+  std::map<AquaSimAddress, int> m_sucDataNum;   //result is here
 
   RevQueues m_RevQ;
   uint m_nextHop;
@@ -303,7 +304,7 @@ private:
   Time m_guardTime;
   double m_NDWin;
   Time m_NDReplyWin;
-  std::map<Address, NDRecord> m_PendingND;
+  std::map<AquaSimAddress, NDRecord> m_PendingND;
 
   std::map<int, AckWaitTimer> m_AckWaitingList; //stores the packet is (prepared to) sent out but not receive the ack yet.
 

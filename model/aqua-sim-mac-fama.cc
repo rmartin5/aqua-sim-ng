@@ -21,12 +21,12 @@
 #include "aqua-sim-mac-fama.h"
 #include "aqua-sim-header.h"
 #include "aqua-sim-pt-tag.h"
+#include "aqua-sim-address.h"
 //include vbf once created.
 
 #include "ns3/log.h"
 #include "ns3/simulator.h"
 #include "ns3/nstime.h"
-#include "ns3/address.h"
 #include "ns3/packet.h"
 #include "ns3/integer.h"
 
@@ -156,7 +156,7 @@ AquaSimFama::TxProcess(Ptr<Packet> pkt)
   //vbh->target_id.addr_ = asheader next_hop();
 
   FamaH.SetPType(FamaHeader::FAMA_DATA);
-  FamaH.SetSA(m_device->GetAddress());
+  FamaH.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
   FamaH.SetDA(asHeader.GetNextHop());
 
   pkt->AddHeader(asHeader);
@@ -187,7 +187,7 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
   pkt->PeekHeader(asHeader);
   pkt->PeekHeader(FamaH);
 	pkt->PeekPacketTag(ptag);
-  Address dst = FamaH.GetDA();
+  AquaSimAddress dst = FamaH.GetDA();
 
 
 
@@ -278,7 +278,7 @@ AquaSimFama::SendDataPkt()
 
   AquaSimHeader asHeader;
   PktQ.front()->PeekHeader(asHeader);
-  Address recver = asHeader.GetNextHop();
+  AquaSimAddress recver = asHeader.GetNextHop();
   Ptr<Packet> tmp;
   for(int i=0; i<PktQ_Size && SentPkt<m_maxBurst; i++) {
     tmp = PktQ.front();
@@ -336,11 +336,11 @@ AquaSimFama::MakeND()
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);
 	ptag.SetPacketType(AquaSimPtTag::PT_FAMA);
-  //TODO asHeader.SetNextHop(Address(0xffffffff));  //MAC_BROADCAST;
+  asHeader.SetNextHop(AquaSimAddress::GetBroadcast());
 
   FamaH.SetPType(FamaHeader::ND);
-  FamaH.SetSA(m_device->GetAddress());
-  //TODO FamaH.SetDA(Address(0xffffffff));  //MAC_BROADCAST;
+  FamaH.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
+  FamaH.SetDA(AquaSimAddress::GetBroadcast());
 
   pkt->AddHeader(asHeader);
   pkt->AddHeader(FamaH);
@@ -360,7 +360,7 @@ AquaSimFama::ProcessND(Ptr<Packet> pkt)
 
 
 Ptr<Packet>
-AquaSimFama::MakeRTS(Address Recver)
+AquaSimFama::MakeRTS(AquaSimAddress Recver)
 {
   NS_LOG_FUNCTION(this);
 
@@ -377,7 +377,7 @@ AquaSimFama::MakeRTS(Address Recver)
   asHeader.SetNextHop(Recver);
 
   FamaH.SetPType(FamaHeader::RTS);
-  FamaH.SetSA(m_device->GetAddress());
+  FamaH.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
   FamaH.SetDA(Recver);
 
   pkt->AddHeader(asHeader);
@@ -414,7 +414,7 @@ AquaSimFama::ProcessRTS(Ptr<Packet> pkt)
 
 
 Ptr<Packet>
-AquaSimFama::MakeCTS(Address RTS_Sender)
+AquaSimFama::MakeCTS(AquaSimAddress RTS_Sender)
 {
   NS_LOG_FUNCTION(this << RTS_Sender);
   Ptr<Packet> pkt = Create<Packet>();
@@ -430,7 +430,7 @@ AquaSimFama::MakeCTS(Address RTS_Sender)
   asHeader.SetNextHop(RTS_Sender);
 
   FamaH.SetPType(FamaHeader::CTS);
-  FamaH.SetSA(m_device->GetAddress());
+  FamaH.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
   FamaH.SetDA(RTS_Sender);
 
   pkt->AddHeader(asHeader);

@@ -21,6 +21,7 @@
 #include "aqua-sim-header.h"
 #include "aqua-sim-rmac.h"
 #include "aqua-sim-tmac.h"
+#include "aqua-sim-address.h"
 #include "ns3/header.h"
 #include "ns3/buffer.h"
 #include "ns3/log.h"
@@ -80,7 +81,10 @@ AquaSimHeader::Deserialize(Buffer::Iterator start)
   Buffer::Iterator i = start;
   m_txTime = Seconds ( ( (double) i.ReadU32 ()) / 1000.0 );
   m_direction = i.ReadU8();
+  m_nextHop = (AquaSimAddress) i.ReadU8();
   m_numForwards = i.ReadU8();
+  m_src.addr = (AquaSimAddress) i.ReadU8();
+  m_dst.addr = (AquaSimAddress) i.ReadU8();
   m_errorFlag = i.ReadU8();	//wasted space due to only needing 1 bit
   m_uId = i.ReadNtohU16();
 
@@ -104,7 +108,7 @@ AquaSimHeader::GetSerializedSize(void) const
   example can be seen @ main-packet-header.cc*/
 
   //reserved bytes for header
-  return (4 + 1 + 1 + 1 + 2 + 4 + 4 + 2 + 2 + 2 + 1 + 4);
+  return (4 + 1 + 1 + 1 +1+1+ 1 + 2 + 4 + 4 + 2 + 2 + 2 + 1 + 4);
 }
 
 void
@@ -113,10 +117,13 @@ AquaSimHeader::Serialize(Buffer::Iterator start) const
   Buffer::Iterator i = start;
   i.WriteU32((uint32_t)(m_txTime.GetSeconds() * 1000.0 + 0.5));
   i.WriteU8(m_direction);
+  i.WriteU8(m_nextHop.GetAsInt());
   i.WriteU8(m_numForwards);
+  i.WriteU8(m_src.addr.GetAsInt());
+  i.WriteU8(m_dst.addr.GetAsInt());
   i.WriteU8(m_errorFlag);
   i.WriteHtonU16(m_uId);
-  //src/dst port + address
+  //src/dst port
   i.WriteU32(m_pt);
   i.WriteU32(m_pr);
   i.WriteU16(m_txRange);
@@ -131,61 +138,30 @@ void
 AquaSimHeader::Print(std::ostream &os) const
 {
   os << "Packet header is  ";
-
   os << "TxTime=" << m_txTime << " Direction=";
-
-  if (m_direction == DOWN)
-  {
-    os << " DOWN";
+  switch (m_direction){
+    case DOWN:  os << " DOWN"; break;
+    case NONE:  os << " NONE"; break;
+    case UP:    os << " UP";   break;
   }
-  if (m_direction == NONE)
-  {
-    os << " NONE";
-  }
-  if (m_direction == UP)
-  {
-    os << " UP";
-  }
-
   os << " Error=";
-
-  if (m_errorFlag == 0)
-  {
-    os << "False";
-  }
-  else
-  {
-    os << "True";
-  }
+  if (m_errorFlag == 0) {os << "False";}
+  else  {os << "True"; }
 
   os << " UniqueID=" << m_uId;
-
   os << " Tx Power=" << m_pt << " Rx Power=" << m_pr;
-
   os << " Trans Range=" << m_txRange;
-
   os << " Frequency=" << m_freq;
-
   os << " Noise=" << m_noise;
-
   os << " PacketStatus=";
 
-  if (m_status == RECEPTION)
-    {
-      os << "RECEPTION";
-    }
-  if (m_status == COLLISION)
-    {
-      os << "COLLISION";
-    }
-  if (m_status == INVALID)
-    {
-      os << "INVALID";
-    }
+  switch (m_status) {
+    case RECEPTION: os << "RECEPTION"; break;
+    case COLLISION: os << "COLLISION"; break;
+    case INVALID:   os << "INVALID";   break;
+  }
   os << " Timestamp=" << m_timestamp;
-
-  os << "\n";
-
+  os << " SenderAddr=" << m_src.addr << " DestAddr=" << m_dst.addr << "\n";
 }
 
 Time
@@ -206,7 +182,7 @@ AquaSimHeader::GetDirection(void)
   return m_direction;
 }
 
-Address
+AquaSimAddress
 AquaSimHeader::GetNextHop(void)
 {
   return m_nextHop;
@@ -218,16 +194,16 @@ AquaSimHeader::GetNumForwards(void)
   return m_numForwards;
 }
 
-Address
+AquaSimAddress
 AquaSimHeader::GetSAddr(void)
 {
-  return (m_src.addr);
+  return m_src.addr;
 }
 
-Address
+AquaSimAddress
 AquaSimHeader::GetDAddr(void)
 {
-  return (m_dst.addr);
+  return m_dst.addr;
 }
 
 int32_t
@@ -308,7 +284,7 @@ AquaSimHeader::SetDirection(uint8_t direction)
 }
 
 void
-AquaSimHeader::SetNextHop(Address nextHop)
+AquaSimHeader::SetNextHop(AquaSimAddress nextHop)
 {
   m_nextHop = nextHop;
 }
@@ -320,13 +296,13 @@ AquaSimHeader::SetNumForwards(uint8_t numForwards)
 }
 
 void
-AquaSimHeader::SetSAddr(Address sAddr)
+AquaSimHeader::SetSAddr(AquaSimAddress sAddr)
 {
   m_src.addr = sAddr;
 }
 
 void
-AquaSimHeader::SetDAddr(Address dAddr)
+AquaSimHeader::SetDAddr(AquaSimAddress dAddr)
 {
   m_dst.addr = dAddr;
 }
@@ -642,15 +618,15 @@ AlohaHeader::GetTypeId()
 int
 AlohaHeader::size()
 {
-  return sizeof(Address)*2 + 1; /*for packet_type*/
+  return sizeof(AquaSimAddress)*2 + 1; /*for packet_type*/
 }
 void
-AlohaHeader::SetSA(Address sa)
+AlohaHeader::SetSA(AquaSimAddress sa)
 {
   SA = sa;
 }
 void
-AlohaHeader::SetDA(Address da)
+AlohaHeader::SetDA(AquaSimAddress da)
 {
   DA = da;
 }
@@ -659,12 +635,12 @@ AlohaHeader::SetPType(uint8_t pType)
 {
   m_pType = pType;
 }
-Address
+AquaSimAddress
 AlohaHeader::GetSA()
 {
   return SA;
 }
-Address
+AquaSimAddress
 AlohaHeader::GetDA()
 {
   return DA;
@@ -683,16 +659,20 @@ AlohaHeader::GetSerializedSize(void) const
 void
 AlohaHeader::Serialize (Buffer::Iterator start) const
 {
-  start.WriteU8 (SA.GetLength());
-  start.WriteU8 (DA.GetLength());
+  start.WriteU8 (SA.GetAsInt());
+  start.WriteU8 (DA.GetAsInt());
+  //start.WriteU8 (SA.GetLength());
+  //start.WriteU8 (DA.GetLength());
   start.WriteU8 (m_pType);
 }
 uint32_t
 AlohaHeader::Deserialize (Buffer::Iterator start)
 {
   Buffer::Iterator i = start;
-  ReadFrom(i, SA,8);	//read 8bit addr
-  ReadFrom(i, DA, 8);	//read 8bit addr
+  SA = (AquaSimAddress) i.ReadU8();
+  DA = (AquaSimAddress) i.ReadU8();
+  //ReadFrom(i, SA,8);	//read 8bit addr
+  //ReadFrom(i, DA, 8);	//read 8bit addr
   m_pType = i.ReadU8();
 
   return GetSerializedSize();
@@ -740,15 +720,15 @@ FamaHeader::GetTypeId()
 int
 FamaHeader::size()
 {
-  return sizeof(Address)*4 + 1; /*for packet_type*/
+  return sizeof(AquaSimAddress)*4 + 1; /*for packet_type*/
 }
 void
-FamaHeader::SetSA(Address sa)
+FamaHeader::SetSA(AquaSimAddress sa)
 {
   SA = sa;
 }
 void
-FamaHeader::SetDA(Address da)
+FamaHeader::SetDA(AquaSimAddress da)
 {
   DA = da;
 }
@@ -757,12 +737,12 @@ FamaHeader::SetPType(uint8_t pType)
 {
   m_pType = pType;
 }
-Address
+AquaSimAddress
 FamaHeader::GetSA()
 {
   return SA;
 }
-Address
+AquaSimAddress
 FamaHeader::GetDA()
 {
   return DA;
@@ -781,16 +761,20 @@ FamaHeader::GetSerializedSize(void) const
 void
 FamaHeader::Serialize (Buffer::Iterator start) const
 {
-  start.WriteU8 (SA.GetLength());
-  start.WriteU8 (DA.GetLength());
+  start.WriteU8 (SA.GetAsInt());
+  start.WriteU8 (DA.GetAsInt());
+  //start.WriteU8 (SA.GetLength());
+  //start.WriteU8 (DA.GetLength());
   start.WriteU8 (m_pType);
 }
 uint32_t
 FamaHeader::Deserialize (Buffer::Iterator start)
 {
   Buffer::Iterator i = start;
-  ReadFrom(i, SA,8);	//read 8bit addr
-  ReadFrom(i, DA, 8);	//read 8bit addr
+  SA = (AquaSimAddress) i.ReadU8();
+  DA = (AquaSimAddress) i.ReadU8();
+  //ReadFrom(i, SA,8);	//read 8bit addr
+  //ReadFrom(i, DA, 8);	//read 8bit addr
   m_pType = i.ReadU8();
 
   return GetSerializedSize();
@@ -843,12 +827,12 @@ CopeHeader::size()
   return GetSerializedSize(); //return m_size;
 }
 void
-CopeHeader::SetSA(Address sa)
+CopeHeader::SetSA(AquaSimAddress sa)
 {
   SA = sa;
 }
 void
-CopeHeader::SetDA(Address da)
+CopeHeader::SetDA(AquaSimAddress da)
 {
   DA = da;
 }
@@ -857,12 +841,12 @@ CopeHeader::SetPType(uint8_t pType)
 {
   m_pType = pType;
 }
-Address
+AquaSimAddress
 CopeHeader::GetSA()
 {
   return SA;
 }
-Address
+AquaSimAddress
 CopeHeader::GetDA()
 {
   return DA;
@@ -881,16 +865,20 @@ CopeHeader::GetSerializedSize(void) const
 void
 CopeHeader::Serialize (Buffer::Iterator start) const
 {
-  start.WriteU8 (SA.GetLength());
-  start.WriteU8 (DA.GetLength());
+  start.WriteU8 (SA.GetAsInt());
+  start.WriteU8 (DA.GetAsInt());
+  //start.WriteU8 (SA.GetLength());
+  //start.WriteU8 (DA.GetLength());
   start.WriteU8 (m_pType);
 }
 uint32_t
 CopeHeader::Deserialize (Buffer::Iterator start)
 {
   Buffer::Iterator i = start;
-  ReadFrom(i, SA,8);	//read 8bit addr
-  ReadFrom(i, DA, 8);	//read 8bit addr
+  SA = (AquaSimAddress) i.ReadU8();
+  DA = (AquaSimAddress) i.ReadU8();
+  //ReadFrom(i, SA,8);	//read 8bit addr
+  //ReadFrom(i, DA, 8);	//read 8bit addr
   m_pType = i.ReadU8();
 
   return GetSerializedSize();

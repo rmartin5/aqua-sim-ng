@@ -34,7 +34,7 @@ namespace ns3{
 
 class Time;
 class Packet;
-class Address;
+class AquaSimAddress;
 
 class AquaSimFama: public AquaSimMac {
 public:
@@ -76,7 +76,7 @@ protected:
 
 
   std::queue<Ptr<Packet> > PktQ;
-  std::vector<Address> NeighborList;
+  std::vector<AquaSimAddress> NeighborList;
 
   Timer m_waitCTSTimer;
   Timer m_backoffTimer;
@@ -87,8 +87,8 @@ protected:
 
 
   Ptr<Packet> MakeND(); //broadcast
-  Ptr<Packet> MakeRTS(Address Recver);
-  Ptr<Packet> MakeCTS(Address RTS_Sender);
+  Ptr<Packet> MakeRTS(AquaSimAddress Recver);
+  Ptr<Packet> MakeCTS(AquaSimAddress RTS_Sender);
 
   void ProcessND(Ptr<Packet> pkt);
   void ProcessRTS(Ptr<Packet> pkt);

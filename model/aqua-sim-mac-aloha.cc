@@ -153,12 +153,11 @@ void AquaSimAloha::TxProcess(Ptr<Packet> pkt)
   if( Simulator::Now().GetDouble() > 500 )	//why?
     time = Seconds(Simulator::Now());
   alohaH.SetPType(AlohaHeader::DATA);
-  alohaH.SetSA(m_device->GetAddress());
+	alohaH.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 
-  //TODO fix all broadcasts throughout this file.
-  if(0 /*asHeader.GetNextHop() == 0xffffffff*/)  //IP_BROADCAST
+  if(asHeader.GetNextHop() == AquaSimAddress::GetBroadcast() )
     {
-      ;//alohaH.SetDA(Address(0xffffffff));	//MAC_BROADCAST
+			alohaH.SetDA(AquaSimAddress::GetBroadcast());
     }
   else {
       alohaH.SetDA(asHeader.GetNextHop());
@@ -183,7 +182,7 @@ void AquaSimAloha::SendDataPkt()
   Ptr<Packet> tmp = PktQ_.front();
   AquaSimHeader asHeader;
   tmp->PeekHeader(asHeader);
-  Address recver = asHeader.GetNextHop();
+  AquaSimAddress recver = asHeader.GetNextHop();
 
   ALOHA_Status = SEND_DATA;
 
@@ -224,7 +223,7 @@ void AquaSimAloha::SendPkt(Ptr<Packet> pkt)
       //ACK doesn't affect the status, only process DATA here
       if (alohaH.GetPType() == AlohaHeader::DATA) {
 	//must be a DATA packet, so setup wait ack timer
-	if (/*(alohaH.GetDA() != (0xffffffff)) &&*/ m_AckOn) {	//MAC_BROADCAST
+	if ((alohaH.GetDA() != AquaSimAddress::GetBroadcast()) && m_AckOn) {
 	  ALOHA_Status = WAIT_ACK;
 	  m_waitACKTimer = Simulator::Schedule((Seconds(m_waitACKTime)+txtime),&AquaSimAloha::DoBackoff, this);
 	}
@@ -277,7 +276,7 @@ void AquaSimAloha::RecvProcess(Ptr<Packet> pkt)
   pkt->PeekHeader(asHeader);
   pkt->PeekHeader(alohaH);
 
-  Address recver = alohaH.GetDA();
+  AquaSimAddress recver = alohaH.GetDA();
 
   if( asHeader.GetErrorFlag() )
   {
@@ -305,10 +304,10 @@ void AquaSimAloha::RecvProcess(Ptr<Packet> pkt)
   }
   else if(alohaH.GetPType() == AlohaHeader::DATA) {
     //process Data packet
-    if( recver == m_device->GetAddress() /*|| recver == Address(0xffffffff)*/ ) {	//MAC_BROADCAST
+    if( recver == m_device->GetAddress() || recver == AquaSimAddress::GetBroadcast() ) {
 	//size() -= alohaH.size();
 	SendUp(pkt->Copy());
-	if ( m_AckOn /*&& (recver != Address(0xffffffff))*/)	//MAC_BROADCAST
+	if ( m_AckOn && (recver != AquaSimAddress::GetBroadcast()))	
 	    ReplyACK(pkt->Copy());
 	else
 	    ProcessPassive();
@@ -322,14 +321,14 @@ void AquaSimAloha::ReplyACK(Ptr<Packet> pkt)//sendACK
 {
   AlohaHeader alohaH;
   pkt->PeekHeader(alohaH);
-  Address Data_Sender = alohaH.GetSA();
+  AquaSimAddress Data_Sender = alohaH.GetSA();
 
   SendPkt(MakeACK(Data_Sender));
   m_boCounter=0;
   pkt=0;
 }
 
-Ptr<Packet> AquaSimAloha::MakeACK(Address Data_Sender)
+Ptr<Packet> AquaSimAloha::MakeACK(AquaSimAddress Data_Sender)
 {
   Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
@@ -344,7 +343,7 @@ Ptr<Packet> AquaSimAloha::MakeACK(Address Data_Sender)
 	ptag.SetPacketType(AquaSimPtTag::PT_UWALOHA);
 
   alohaH.SetPType(AlohaHeader::ACK);
-  alohaH.SetSA(m_device->GetAddress());
+  alohaH.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
   alohaH.SetDA(Data_Sender);
 
   pkt->AddHeader(asHeader);

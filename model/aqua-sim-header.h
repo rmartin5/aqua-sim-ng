@@ -25,18 +25,19 @@
 #include <iostream>
 
 #include "ns3/address.h"
-#include "ns3/uan-address.h"
 #include "ns3/header.h"
 #include "ns3/nstime.h"
 //#include "ns3/uan-address.h"	//use this for now.
+
+#include "aqua-sim-address.h"
 
 namespace ns3 {
 
 class Packet;
 
 struct addr_t {
-  Address addr;
-  int32_t port;
+  AquaSimAddress addr;
+  int32_t port;   /* Currently not used */
 };
 
 /**
@@ -67,10 +68,10 @@ public:
   uint32_t GetSize();	// simulated packet size
   uint8_t GetDirection();/* setting all direction of pkts to be none as default */
   //uint8_t GetAddrType();	//type of next hop addr... not in use currently
-  Address GetNextHop();	// next hop for this packet
+  AquaSimAddress GetNextHop();	// next hop for this packet
   uint8_t GetNumForwards();	// how many times this pkt was forwarded
-  Address GetSAddr();
-  Address GetDAddr();
+  AquaSimAddress GetSAddr();
+  AquaSimAddress GetDAddr();
   int32_t GetSPort();
   int32_t GetDPort();
   bool GetErrorFlag();
@@ -94,10 +95,10 @@ public:
   //Setters
   void SetTxTime(Time time);
   void SetDirection(uint8_t direction);
-  void SetNextHop(Address nextHop);
+  void SetNextHop(AquaSimAddress nextHop);
   void SetNumForwards(uint8_t numForwards);
-  void SetSAddr(Address sAddr);
-  void SetDAddr(Address dAddr);
+  void SetSAddr(AquaSimAddress sAddr);
+  void SetDAddr(AquaSimAddress dAddr);
   void SetSPort(int32_t sPort);	//TODO should be removed...
   void SetDPort(int32_t dPort);
   void SetErrorFlag(bool error);
@@ -128,7 +129,7 @@ private:
   Time m_txTime;
   uint8_t m_direction;  // direction: 0=down, 1=none, 2=up
   //uint8_t m_addrType;
-  Address m_nextHop;
+  AquaSimAddress m_nextHop;
   uint8_t m_numForwards;
   addr_t m_src;
   addr_t m_dst;
@@ -235,11 +236,11 @@ public:
 
   static int size();
 
-  void SetSA(Address sa);
-  void SetDA(Address da);
+  void SetSA(AquaSimAddress sa);
+  void SetDA(AquaSimAddress da);
   void SetPType(uint8_t pType);
-  Address GetSA();
-  Address GetDA();
+  AquaSimAddress GetSA();
+  AquaSimAddress GetDA();
   uint8_t GetPType();	//Remove Set/Get pType and go directly to public variable??
 
   //inherited methods
@@ -249,8 +250,8 @@ public:
   virtual void Print (std::ostream &os) const;
   virtual TypeId GetInstanceTypeId(void) const;
 private:
-  Address SA;
-  Address DA;
+  AquaSimAddress SA;
+  AquaSimAddress DA;
   uint8_t m_pType;
 };  // class AlohaHeader
 
@@ -275,11 +276,11 @@ public:
 
   static int size();
 
-  void SetSA(Address sa);
-  void SetDA(Address da);
+  void SetSA(AquaSimAddress sa);
+  void SetDA(AquaSimAddress da);
   void SetPType(uint8_t pType);
-  Address GetSA();
-  Address GetDA();
+  AquaSimAddress GetSA();
+  AquaSimAddress GetDA();
   uint8_t GetPType();	//Remove Set/Get pType and go directly to public variable??
 
   //inherited methods
@@ -289,8 +290,8 @@ public:
   virtual void Print (std::ostream &os) const;
   virtual TypeId GetInstanceTypeId(void) const;
 private:
-  Address SA;
-  Address DA;
+  AquaSimAddress SA;
+  AquaSimAddress DA;
   uint8_t m_pType;
 };  // class FamaHeader
 
@@ -316,11 +317,11 @@ public:
 
   uint32_t size();
 
-  void SetSA(Address sa);
-  void SetDA(Address da);
+  void SetSA(AquaSimAddress sa);
+  void SetDA(AquaSimAddress da);
   void SetPType(uint8_t pType);
-  Address GetSA();
-  Address GetDA();
+  AquaSimAddress GetSA();
+  AquaSimAddress GetDA();
   uint8_t GetPType();	//Remove Set/Get pType and go directly to public variable??
 
   //inherited methods
@@ -331,8 +332,8 @@ public:
   virtual TypeId GetInstanceTypeId(void) const;
 private:
   int m_size;
-  Address SA;
-  Address DA;
+  AquaSimAddress SA;
+  AquaSimAddress DA;
   uint8_t m_pType;
 };  // class CopeHeader
 

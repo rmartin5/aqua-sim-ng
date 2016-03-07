@@ -37,7 +37,7 @@ NS_LOG_COMPONENT_DEFINE("AquaSimRouting");
 NS_OBJECT_ENSURE_REGISTERED(AquaSimRouting);
 
 
-TypeId 
+TypeId
 AquaSimRouting::GetTypeId(void)
 {
   static TypeId tid = TypeId("ns3::AquaSimRouting")
@@ -141,7 +141,7 @@ AquaSimRouting::SendDown(Ptr<Packet> p, const Address &nextHop, Time delay)
   NS_LOG_FUNCTION(this << p << nextHop << delay);
   NS_ASSERT(p != NULL);
 
-
+  AquaSimAddress next = AquaSimAddress::ConvertFrom(nextHop);
   //add header to packet
   AquaSimHeader header;
   p->RemoveHeader(header);
@@ -149,7 +149,7 @@ AquaSimRouting::SendDown(Ptr<Packet> p, const Address &nextHop, Time delay)
   //NS_LOG_DEBUG("Pktsize=" << header.GetSize());
   if(header.GetUId() == -1) header.SetUId(1);
   header.SetDirection(AquaSimHeader::DOWN);
-  header.SetNextHop(AquaSimAddress::ConvertFrom(nextHop));
+  header.SetNextHop(next);
   p->AddHeader(header);
 
   //trace here...
@@ -194,7 +194,7 @@ AquaSimRouting::SendPacket(Ptr<Packet> p)
   * */
 
 bool
-AquaSimRouting::IsDeadLoop(Ptr<Packet> p) 
+AquaSimRouting::IsDeadLoop(Ptr<Packet> p)
 {
   NS_LOG_FUNCTION(this);
   AquaSimHeader asHeader;
@@ -212,7 +212,7 @@ AquaSimRouting::IsDeadLoop(Ptr<Packet> p)
   * @return		true for yes, false for no
   * */
 bool
-AquaSimRouting::AmISrc(const Ptr<Packet> p) 
+AquaSimRouting::AmISrc(const Ptr<Packet> p)
 {
   NS_LOG_FUNCTION(this);
   AquaSimHeader asHeader;
@@ -228,7 +228,7 @@ AquaSimRouting::AmISrc(const Ptr<Packet> p)
   * @return		true for yes, false for no
   * */
 bool
-AquaSimRouting::AmIDst(const Ptr<Packet> p) 
+AquaSimRouting::AmIDst(const Ptr<Packet> p)
 {
   NS_LOG_FUNCTION(this);
   AquaSimHeader asHeader;
@@ -245,13 +245,13 @@ AquaSimRouting::AmIDst(const Ptr<Packet> p)
   * @return		true for yes, false for no
   * */
 bool
-AquaSimRouting::AmINextHop(const Ptr<Packet> p) 
+AquaSimRouting::AmINextHop(const Ptr<Packet> p)
 {
   NS_LOG_FUNCTION(this);
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
   NS_LOG_DEBUG ("NextHop=" << asHeader.GetNextHop());
-  return ((asHeader.GetNextHop() == m_myAddr)|| ( asHeader.GetNextHop().IsInvalid() ));
+  return ((asHeader.GetNextHop() == m_myAddr)|| ( asHeader.GetNextHop() == AquaSimAddress::GetBroadcast() ));
 }
 
 

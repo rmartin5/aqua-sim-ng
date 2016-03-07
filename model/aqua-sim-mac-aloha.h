@@ -41,7 +41,7 @@
 namespace ns3 {
 
 class AquaSimAloha;
-class Address;
+class AquaSimAddress;
 
 class AquaSimAlohaAckRetry : public Timer
 {
@@ -114,7 +114,7 @@ protected:
   EventId m_callbackEvent;
   EventId m_waitACKTimer;
 
-  Ptr<Packet> MakeACK(Address RTS_Sender);
+  Ptr<Packet> MakeACK(AquaSimAddress RTS_Sender);
 
   void	ReplyACK(Ptr<Packet> pkt);
 
