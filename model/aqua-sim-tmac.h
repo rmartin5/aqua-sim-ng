@@ -24,8 +24,8 @@
 #include "aqua-sim-mac.h"
 #include "aqua-sim-rmac-buffer.h"
 #include "aqua-sim-net-device.h"
+#include "aqua-sim-address.h"
 
-#include "ns3/address.h"
 #include "ns3/random-variable-stream.h"
 #include "ns3/event-id.h"
 #include "ns3/packet.h"
@@ -71,7 +71,7 @@ enum TMAC_STATUS{
 
 
 struct t_time_record{
-  Address node_addr;// the address of the node
+  AquaSimAddress node_addr;// the address of the node
   double arrival_time;// the time to receive the ND packet from the node
   double sending_time; // the sending time of ND in local clock
 };
@@ -80,7 +80,7 @@ struct t_time_record{
 
 
 struct t_period_record{
-  Address node_addr;// the address of the node
+  AquaSimAddress node_addr;// the address of the node
   double difference;// the difference with my period
   double duration; // duration of duty cycle
   double last_update_time; // the time last updated
@@ -89,7 +89,7 @@ struct t_period_record{
 
 
 struct t_silence_record {
-  Address node_addr;// the address of the node
+  AquaSimAddress node_addr;// the address of the node
   double start_time;// the start time of the silence
   double duration; // duration of duty cycle
   int  confirm_id; // silence is confirmed
@@ -97,7 +97,7 @@ struct t_silence_record {
 
 
 struct t_latency_record{
-  Address node_addr;      // the address of the node
+  AquaSimAddress node_addr;      // the address of the node
   double latency;    // the propagation latency with that node
   double sumLatency;// the sum of latency
   int num;         // number of ACKND packets
@@ -128,7 +128,7 @@ public:
   int m_periodTableIndex;
   int m_silenceTableIndex;
 
-  Address m_dataSender; // address of the data sender
+  AquaSimAddress m_dataSender; // address of the data sender
   int m_bitMap[MAXIMUM_BUFFER]; // in real world, this is supposed to use bit map to indicate the lost of packet
 // these two variables are used to set next hop
 // SetHopStatus=1 then set next hop using next_hop
@@ -155,9 +155,9 @@ public:
 
 // bool overhearData;
   int m_rtsTimeoutNum;
-  Address m_transmissionAddr;
+  AquaSimAddress m_transmissionAddr;
   double m_tBackoffWindow;
-  Address m_rtsRecvAddr;
+  AquaSimAddress m_rtsRecvAddr;
   int m_ctsNum;
   Ptr<UniformRandomVariable> m_rand;
 
@@ -201,14 +201,14 @@ public:
 
   void InitializeSilenceTable();
   void DeleteSilenceTable(int);
-  void ConfirmSilenceTable(Address, double);
-  void DeleteSilenceRecord(Address);
-  void DataUpdateSilenceTable(Address);
-  void InsertSilenceTable(Address, double);
+  void ConfirmSilenceTable(AquaSimAddress, double);
+  void DeleteSilenceRecord(AquaSimAddress);
+  void DataUpdateSilenceTable(AquaSimAddress);
+  void InsertSilenceTable(AquaSimAddress, double);
   void CleanSilenceTable();
 
 
-  Ptr<Packet> GenerateCTS(Address,double);
+  Ptr<Packet> GenerateCTS(AquaSimAddress,double);
   void ProcessACKDataPacket(Ptr<Packet>);
   void ClearTxBuffer();
   void Wakeup();
@@ -227,14 +227,14 @@ public:
   void SendSYN();
   bool NewData(); // ture if there exist data needed to send, false otherwise
 
-  void TxRTS(Ptr<Packet> pkt,Address receiver_addr);
-  double CheckLatency(t_latency_record*,Address);
-  double CheckDifference(t_period_record*,Address);
+  void TxRTS(Ptr<Packet> pkt,AquaSimAddress receiver_addr);
+  double CheckLatency(t_latency_record*,AquaSimAddress);
+  double CheckDifference(t_period_record*,AquaSimAddress);
 
   void MarkBitMap(int);
 
 
-  void TxData(Address);
+  void TxData(AquaSimAddress);
   void PrintTable();
   void ResumeTxProcess();
 

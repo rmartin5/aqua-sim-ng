@@ -34,12 +34,12 @@ def build(bld):
         'model/aqua-sim-mac-fama.cc',
         'model/aqua-sim-mac-aloha.cc',
         'model/aqua-sim-mac-copemac.cc',
-        #'model/aqua-sim-mac-goal.cc',
-        #'model/aqua-sim-mac-sfama.cc',
-        #'model/aqua-sim-mac-uwan.cc',
+        'model/aqua-sim-mac-goal.cc',
+        'model/aqua-sim-mac-sfama.cc',
+        'model/aqua-sim-mac-uwan.cc',
         #'model/aqua-sim-rmac.cc',
-        #'model/aqua-sim-rmac-buffer.cc',
-        #'model/aqua-sim-tmac.cc',
+        'model/aqua-sim-rmac-buffer.cc',
+        'model/aqua-sim-tmac.cc',
         ]
 
     module_test = bld.create_ns3_module_test_library('aqua-sim-ng')
@@ -76,12 +76,12 @@ def build(bld):
         'model/aqua-sim-mac-fama.h',
         'model/aqua-sim-mac-aloha.h',
         'model/aqua-sim-mac-copemac.h',
-        #'model/aqua-sim-mac-goal.h',
-        #'model/aqua-sim-mac-sfama.h',
-        #'model/aqua-sim-mac-uwan.h',
+        'model/aqua-sim-mac-goal.h',
+        'model/aqua-sim-mac-sfama.h',
+        'model/aqua-sim-mac-uwan.h',
         #'model/aqua-sim-rmac.h',
-        #'model/aqua-sim-rmac-buffer.h',
-        #'model/aqua-sim-tmac.h',
+        'model/aqua-sim-rmac-buffer.h',
+        'model/aqua-sim-tmac.h',
         ]
 
     if bld.env.ENABLE_EXAMPLES:

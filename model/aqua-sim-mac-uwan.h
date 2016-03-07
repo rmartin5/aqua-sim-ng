@@ -23,8 +23,8 @@
 
 #include "ns3/timer.h"
 #include "ns3/nstime.h"
-#include "ns3/address.h"
 
+#include "aqua-sim-address.h"
 #include "aqua-sim-mac.h"
 
 #include <set>
@@ -63,11 +63,11 @@ protected:
 struct ScheduleTime {
 	ScheduleTime* next_;
 	Time		SendTime_;
-	Address	nodeId_;  //with this field, we can determine that which node will send packet.
+	AquaSimAddress	nodeId_;  //with this field, we can determine that which node will send packet.
 	AquaSimUwan_WakeTimer	timer_;  //necessary
 	//Ptr<Packet>  pkt_;    //the packet this node should send out
 
-	ScheduleTime(Time SendTime, Address node_id, Ptr<AquaSimUwan> mac):
+	ScheduleTime(Time SendTime, AquaSimAddress node_id, Ptr<AquaSimUwan> mac):
 			next_(NULL), SendTime_(SendTime), nodeId_(node_id), timer_(mac, this) {
 	}
 
@@ -90,7 +90,7 @@ private:
 	Ptr<AquaSimUwan> m_mac;
 public:
 	ScheduleQueue(Ptr<AquaSimUwan> mac): m_mac(mac) {
-		m_head = new ScheduleTime(Seconds(0), Address(), NULL);
+		m_head = new ScheduleTime(Seconds(0), AquaSimAddress(), NULL);
 	}
 
 	~ScheduleQueue() {
@@ -105,13 +105,13 @@ public:
 	static TypeId GetTypeId(void);
 
 public:
-	void Push(Time SendTime, Address node_id, Time Interval);  //first parameter is the time when sending next packet, the last one is the time interval between current time and sending time
+	void Push(Time SendTime, AquaSimAddress node_id, Time Interval);  //first parameter is the time when sending next packet, the last one is the time interval between current time and sending time
 	ScheduleTime* Top();		//NULL is returned if the queue is empty
 	void Pop();
 	bool CheckGuardTime(Time SendTime, Time GuardTime, Time MaxTxTime); //the efficiency is too low, I prefer to use the function below
 	Time GetAvailableSendTime(Time StartTime, Time OriginalSchedule, Time GuardTime, Time MaxTxTime);
 	void ClearExpired(Time CurTime);
-	void Print(Time GuardTime, Time MaxTxTime, bool IsMe, Address index);
+	void Print(Time GuardTime, Time MaxTxTime, bool IsMe, AquaSimAddress index);
 };
 
 
@@ -202,26 +202,26 @@ protected:
 	AquaSimUwan_SleepTimer		m_sleepTimer;
 	AquaSimUwan_StartTimer		m_startTimer;
 
-	Ptr<Packet> MakeSYNCPkt(Time CyclePeriod, Address Recver = Address() /*TODO MAC_BROADCAST*/); //perhaps CyclePeriod is not required
+	Ptr<Packet> MakeSYNCPkt(Time CyclePeriod, AquaSimAddress Recver = AquaSimAddress() /*TODO MAC_BROADCAST*/); //perhaps CyclePeriod is not required
 	Ptr<Packet> FillMissingList(Ptr<Packet> p);
 	Ptr<Packet> FillSYNCHdr(Ptr<Packet> p, Time CyclePeriod);
 
-	void	Wakeup(Address node_id);  //perhaps I should calculate the energy consumption in these two functions
+	void	Wakeup(AquaSimAddress node_id);  //perhaps I should calculate the energy consumption in these two functions
 	void	Sleep();
 	void	SendoutPkt(Time NextCyclePeriod);
 	//bool	setWakeupTimer(); //if the node still need to keep wake, return false.
 	void	SetSleepTimer(Time Interval);     //keep awake for To, and then fall sleep
 	void	Start();	//initilize NexCyclePeriod_ and the sleep timer, sendout first SYNC pkt
 	Time	GenNxCyclePeriod();   //I want to use normal distribution
-	void	ProcessMissingList(uint8_t *data, Address src);
+	void	ProcessMissingList(uint8_t *data, AquaSimAddress src);
 	void	SYNCSchedule(bool initial = false);
 
 	void	SendInfo();
 
 
 private:
-	std::set<Address> m_CL;				//contact list
-	std::set<Address> m_neighbors;		//neighbor list.
+	std::set<AquaSimAddress> m_CL;				//contact list
+	std::set<AquaSimAddress> m_neighbors;		//neighbor list.
 	/*the difference between m_CL and m_neighbors is the Missing list*/
 	Time  m_nextCyclePeriod;		//next sending cycle
 	Time  m_avgCyclePeriod;

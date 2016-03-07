@@ -143,18 +143,18 @@ AquaSimTMac::AquaSimTMac()
  for(int i=0;i<T_TABLE_SIZE;i++){
 
 
-    m_shortLatencyTable[i].node_addr=Address();
+    m_shortLatencyTable[i].node_addr=AquaSimAddress();
     m_shortLatencyTable[i].num=0;
     m_shortLatencyTable[i].last_update_time=0.0;
 
-    m_periodTable[i].node_addr=Address();
+    m_periodTable[i].node_addr=AquaSimAddress();
     m_periodTable[i].difference=0.0;
     m_periodTable[i].last_update_time=0.0;
   }
 
     m_arrivalTableIndex=0;
   for(int i=0;i<T_TABLE_SIZE;i++)
-    m_arrivalTable[i].node_addr=Address();
+    m_arrivalTable[i].node_addr=AquaSimAddress();
 
 
    m_maxShortPacketTransmissionTime=((1.0*m_shortPacketSize)/m_bitRate)*(1+m_transmissionTimeError);
@@ -346,14 +346,14 @@ AquaSimTMac::GenerateSYN()
   AquaSimPtTag ptag;
 
   //ash.size()=m_shortPacketSize;
-  ash.SetNextHop(Address()/*(Address)0xffffffff*/);   //MAC_BROADCAST
+  ash.SetNextHop(AquaSimAddress::GetBroadcast());
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash.addr_type()=NS_AF_ILINK;
   ptag.SetPacketType(AquaSimPtTag::PT_TMAC);
 
   synh.SetPtype(PT_SYN);
   synh.SetPkNum(m_numSend);
-  synh.SetSenderAddr(m_device->GetAddress());
+  synh.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
   synh.SetDuration(m_duration);
   m_numSend++;
 
@@ -375,14 +375,14 @@ AquaSimTMac::SendSYN()
   AquaSimPtTag ptag;
 
   //ash.size()=m_shortPacketSize;
-  ash.SetNextHop(Address()/*(Address)0xffffffff*/);   //MAC_BROADCAST
+  ash.SetNextHop(AquaSimAddress::GetBroadcast());
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash.addr_type()=NS_AF_ILINK;
   ptag.SetPacketType(AquaSimPtTag::PT_TMAC);
 
   synh.SetPtype(PT_SYN);
   synh.SetPkNum(m_numSend);
-  synh.SetSenderAddr(m_device->GetAddress());
+  synh.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
   synh.SetDuration(m_duration);
   m_numSend++;
 
@@ -422,22 +422,22 @@ AquaSimTMac::SendND(int pkt_size)
   //  printf("old size is %d\n",cmh->size());
   //ash.size()=pkt_size;
 
-  ash.SetNextHop(Address()/*(Address)0xffffffff*/);   //MAC_BROADCAST
+  ash.SetNextHop(AquaSimAddress::GetBroadcast());
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash.addr_type()=NS_AF_ILINK;
   ptag.SetPacketType(AquaSimPtTag::PT_TMAC);
 
   ndh.SetPtype(PT_ND);
   ndh.SetPkNum(m_numSend);
-  ndh.SetSenderAddr(m_device->GetAddress());
+  ndh.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
   m_numSend++;
 
   pkt->AddHeader(ndh);
   pkt->AddHeader(ash);
   pkt->AddPacketTag(ptag);
 
-  // iph->src_.addr_=node_->address();
-  // iph->dst_.addr_=node_->address();
+  // iph->src_.addr_=node_->AquaSimAddress();
+  // iph->dst_.addr_=node_->AquaSimAddress();
   //iph->dst_.port_=255;
 
   NS_LOG_INFO("SendND:node(" << m_device->GetNode() <<
@@ -462,7 +462,7 @@ AquaSimTMac::SendShortAckND()
 
       ackndh.SetPtype(PT_SACKND);
       ackndh.SetPkNum(m_numSend);
-      ackndh.SetSenderAddr(m_device->GetAddress());
+      ackndh.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
       m_numSend++;
 
       int index1=-1;
@@ -470,7 +470,7 @@ AquaSimTMac::SendShortAckND()
       double t2=-0.1;
       double t1=-0.1;
 
-      Address receiver=m_arrivalTable[index1].node_addr;
+      AquaSimAddress receiver=m_arrivalTable[index1].node_addr;
       t2=m_arrivalTable[index1].arrival_time;
       t1=m_arrivalTable[index1].sending_time;
 
@@ -503,7 +503,7 @@ AquaSimTMac::SendShortAckND()
 
   m_arrivalTableIndex=0;
   for(int i=0;i<T_TABLE_SIZE;i++)
-    m_arrivalTable[i].node_addr=Address();
+    m_arrivalTable[i].node_addr=AquaSimAddress();
 
   return;
 }
@@ -522,22 +522,22 @@ AquaSimTMac::ProcessShortACKNDPacket(Ptr<Packet> pkt)
   pkt->RemovePacketTag(ptag);
 
   //ash.size()=m_shortPacketSize;
-  ash.SetNextHop(Address()/*(Address)0xffffffff*/);   //MAC_BROADCAST
+  ash.SetNextHop(AquaSimAddress::GetBroadcast());
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash.addr_type()=NS_AF_ILINK;
   ptag.SetPacketType(AquaSimPtTag::PT_TMAC);
 
   ackndh.SetPtype(PT_SYN);
   ackndh.SetPkNum(m_numSend);
-  ackndh.SetSenderAddr(m_device->GetAddress());
+  ackndh.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
   ackndh.SetDuration(m_duration);
   m_numSend++;
 
 
-  Address sender=ackndh.GetSenderAddr();
+  AquaSimAddress sender=ackndh.GetSenderAddr();
   double t4=Simulator::Now().ToDouble(Time::S);
   double t3=ash.GetTimeStamp().ToDouble(Time::S);
-  Address myaddr=m_device->GetAddress();
+  AquaSimAddress myaddr=AquaSimAddress::ConvertFrom(m_device->GetAddress()) ;
 
   double t2=ackndh.GetArrivalTime();
   double t1=ackndh.GetTS();
@@ -594,7 +594,7 @@ AquaSimTMac::ProcessSYN(Ptr<Packet> pkt)
   pkt->PeekHeader(synh);
   //hdr_cmn* cmh=HDR_CMN(pkt);
 
-  Address sender=synh.GetSenderAddr();
+  AquaSimAddress sender=synh.GetSenderAddr();
   double interval=synh.GetInterval();
   double tduration=synh.GetDuration();
   pkt=0;
@@ -1082,7 +1082,7 @@ AquaSimTMac::CleanSilenceTable()
 
 		if ( (m_silenceTable[i].confirm_id==0) ||
 		    ((st+du<=Simulator::Simulator::Now().ToDouble(Time::S)) &&
-			(m_silenceTable[i].node_addr!=Address()) ))
+			(m_silenceTable[i].node_addr!=AquaSimAddress()) ))
 		{
 			NS_LOG_INFO("CleanSilence: node " << m_device->GetAddress() <<
 			    " clears the silence record...");
@@ -1109,7 +1109,7 @@ AquaSimTMac::DeleteSilenceTable(int index)
 }
 
 void
-AquaSimTMac::DeleteSilenceRecord(Address node_addr)
+AquaSimTMac::DeleteSilenceRecord(AquaSimAddress node_addr)
 {
 	int index=-1;
 	for(int i=0; i<m_silenceTableIndex; i++)
@@ -1126,7 +1126,7 @@ AquaSimTMac::InitializeSilenceTable()
 {
   for(int i=0;i<T_TABLE_SIZE;i++)
     {
-      m_silenceTable[i].node_addr=Address();
+      m_silenceTable[i].node_addr=AquaSimAddress();
       m_silenceTable[i].start_time=0;
       m_silenceTable[i].duration=0;
       m_silenceTable[i].confirm_id=0;
@@ -1137,7 +1137,7 @@ AquaSimTMac::InitializeSilenceTable()
 
 
 void
-AquaSimTMac::ConfirmSilenceTable(Address sender_addr, double duration)
+AquaSimTMac::ConfirmSilenceTable(AquaSimAddress sender_addr, double duration)
 {
 	int index=-1;
 	for(int i=0; i<m_silenceTableIndex; i++)
@@ -1153,7 +1153,7 @@ AquaSimTMac::ConfirmSilenceTable(Address sender_addr, double duration)
 }
 
 void
-AquaSimTMac::DataUpdateSilenceTable(Address sender_addr)
+AquaSimTMac::DataUpdateSilenceTable(AquaSimAddress sender_addr)
 {
   NS_LOG_FUNCTION(this << m_device->GetAddress());
 
@@ -1193,14 +1193,14 @@ AquaSimTMac::SendRTS()
   AquaSimHeader ash;
   p->RemoveHeader(rtsh);
   p->PeekHeader(ash);
-	Address receiver_addr=ash.GetNextHop();
+	AquaSimAddress receiver_addr=ash.GetNextHop();
 
 	m_txbuffer.LockBuffer();
 	int num=m_txbuffer.num_of_packet;
 
   NS_LOG_INFO("SendRTS: node " << m_device->GetAddress() << " local m_txbuffer");
 
-	//Address sender_addr=m_device->GetAddress();
+	//AquaSimAddress sender_addr=AquaSimAddress::ConvertFrom(m_device->GetAddress()) ;
 	double l=CheckLatency(m_shortLatencyTable,receiver_addr);
 	double du=num*(((m_largePacketSize*m_encodingEfficiency+m_phyOverhead)/m_bitRate)+m_transmissionTimeError);
 	double dt=3.1*l+m_maxPropagationTime+du*2+m_maxPropagationTime-m_maxShortPacketTransmissionTime;
@@ -1219,7 +1219,7 @@ AquaSimTMac::SendRTS()
   rtsh.SetPtype(PT_RTS);
   rtsh.SetPkNum(m_numSend);
   rtsh.SetDuration(dt);
-  rtsh.SetSenderAddr(m_device->GetAddress());
+  rtsh.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
   rtsh.SetReceiverAddr(receiver_addr);
   m_numSend++;
 
@@ -1247,7 +1247,7 @@ AquaSimTMac::SendRTS()
 }
 
 void
-AquaSimTMac::TxRTS(Ptr<Packet> pkt,Address receiver_addr)
+AquaSimTMac::TxRTS(Ptr<Packet> pkt,AquaSimAddress receiver_addr)
 {
   NS_LOG_FUNCTION(this << m_device->GetAddress() << Seconds(Simulator::Now()));
 
@@ -1321,7 +1321,7 @@ AquaSimTMac::TxRTS(Ptr<Packet> pkt,Address receiver_addr)
 
 
 double
-AquaSimTMac::CheckLatency(t_latency_record* table,Address addr)
+AquaSimTMac::CheckLatency(t_latency_record* table,AquaSimAddress addr)
 {
 	int i=0;
 	double d=0.0;
@@ -1337,7 +1337,7 @@ AquaSimTMac::CheckLatency(t_latency_record* table,Address addr)
 
 
 double
-AquaSimTMac:: CheckDifference(t_period_record* table,Address addr)
+AquaSimTMac:: CheckDifference(t_period_record* table,AquaSimAddress addr)
 {
 	int i=0;
 	double d=-0.0;
@@ -1358,8 +1358,8 @@ AquaSimTMac::ProcessCTSPacket(Ptr<Packet> pkt)
   pkt->PeekHeader(ctsh);
 	//hdr_cmn* cmh=HDR_CMN(pkt);
 
-	Address sender_addr=ctsh.GetSenderAddr();
-	Address receiver_addr=ctsh.GetReceiverAddr();
+	AquaSimAddress sender_addr=ctsh.GetSenderAddr();
+	AquaSimAddress receiver_addr=ctsh.GetReceiverAddr();
 	double dt=ctsh.GetDuration();
 	double l=CheckLatency(m_shortLatencyTable,sender_addr);
 	double t=dt-2*l;
@@ -1458,7 +1458,7 @@ AquaSimTMac::ProcessACKDataPacket(Ptr<Packet> pkt)
   pkt->PeekHeader(ash);
 	//hdr_tmac* ackh=HDR_TMAC(pkt);
 
-	Address dst=ash.GetNextHop();
+	AquaSimAddress dst=ash.GetNextHop();
 
 	if(dst!=m_device->GetAddress()) {
 		pkt=0;
@@ -1527,8 +1527,8 @@ AquaSimTMac::ProcessRTSPacket(Ptr<Packet> pkt)
   pkt->PeekHeader(rtsh);
   pkt->PeekHeader(ash);
 
-	Address sender_addr=rtsh.GetSenderAddr();
-	Address receiver_addr=ash.GetNextHop();
+	AquaSimAddress sender_addr=rtsh.GetSenderAddr();
+	AquaSimAddress receiver_addr=ash.GetNextHop();
 
 	double l=CheckLatency(m_shortLatencyTable, sender_addr);
 	double duration=rtsh.GetDuration();
@@ -1629,7 +1629,7 @@ AquaSimTMac::ProcessRTSPacket(Ptr<Packet> pkt)
 }
 
 void
-AquaSimTMac:: InsertSilenceTable(Address sender_addr,double duration)
+AquaSimTMac:: InsertSilenceTable(AquaSimAddress sender_addr,double duration)
 {
 	int index=-1;
 	for(int i=0; i<m_silenceTableIndex; i++)
@@ -1662,7 +1662,7 @@ AquaSimTMac:: InsertSilenceTable(Address sender_addr,double duration)
 
 
 Ptr<Packet>
-AquaSimTMac::GenerateCTS(Address receiver_addr, double duration)
+AquaSimTMac::GenerateCTS(AquaSimAddress receiver_addr, double duration)
 {
   NS_LOG_FUNCTION(this << m_device->GetAddress());
 
@@ -1678,7 +1678,7 @@ AquaSimTMac::GenerateCTS(Address receiver_addr, double duration)
 
   ctsh.SetPtype(PT_CTS);
   ctsh.SetPkNum(m_numSend);
-  ctsh.SetSenderAddr(m_device->GetAddress());
+  ctsh.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
   ctsh.SetReceiverAddr(receiver_addr);
   ctsh.SetDuration(m_duration);
   m_numSend++;
@@ -1728,7 +1728,7 @@ AquaSimTMac::TxCTS(Ptr<Packet> p)
 	/**m_encodingEfficiency+m_phyOverhead)/m_bitRate;*/
 
 	Time txtime=ash.GetTxTime();
-	Address receiver_addr=ash.GetNextHop();
+	AquaSimAddress receiver_addr=ash.GetNextHop();
 
 
 	double l=CheckLatency(m_shortLatencyTable, receiver_addr);
@@ -1806,7 +1806,7 @@ AquaSimTMac::ProcessNDPacket(Ptr<Packet> pkt)
   pkt->PeekHeader(ndh);
   pkt->PeekHeader(ash);
 
-	Address sender=ndh.GetSenderAddr();
+	AquaSimAddress sender=ndh.GetSenderAddr();
 	if(m_arrivalTableIndex>=T_TABLE_SIZE) {
     NS_LOG_INFO("ProcessNDPacket:m_arrivalTable is full\n");
 		pkt=0;
@@ -1832,7 +1832,7 @@ AquaSimTMac::ProcessDataPacket(Ptr<Packet> pkt)
 	pkt->PeekHeader(tmach);
 	pkt->PeekHeader(ash);
 
-	Address dst=ash.GetNextHop();
+	AquaSimAddress dst=ash.GetNextHop();
 	m_dataSender=tmach.GetSenderAddr();
 	int num=tmach.GetDataNum();
 
@@ -1880,7 +1880,7 @@ AquaSimTMac::SendACKPacket()
 {
 	NS_LOG_FUNCTION(this << m_device->GetAddress() << Seconds(Simulator::Now()));
 
-	if(m_dataSender.IsInvalid()) {
+	if(m_dataSender.GetAsInt() < 0) {
 		NS_LOG_INFO("ScheduleACKData: invalid sender address");
 		return;
 	}
@@ -1913,7 +1913,7 @@ AquaSimTMac::SendACKPacket()
 
   revh.SetPtype(PT_ACKDATA);
   revh.SetPkNum(m_numSend);
-  revh.SetSenderAddr(m_device->GetAddress());
+  revh.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
   m_numSend++;
 
   pkt->AddHeader(revh);
@@ -2003,7 +2003,7 @@ different versions.
 */
 
 void
-AquaSimTMac::TxData(Address receiver)
+AquaSimTMac::TxData(AquaSimAddress receiver)
 {
   NS_LOG_FUNCTION(this << m_device->GetAddress() << Seconds(Simulator::Now()));
 
@@ -2038,7 +2038,7 @@ AquaSimTMac::TxData(Address receiver)
 	     datah,sizeof(hdr_tmac),hdr2,sizeof(hdr_uwvb));
 	 */
 	datah.SetPtype(PT_DATA);
-  datah.SetSenderAddr(m_device->GetAddress());
+  datah.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
   datah.SetPkNum(m_numSend);
   datah.SetDataNum(m_numData);
 	m_numSend++;
@@ -2150,7 +2150,7 @@ AquaSimTMac::TxProcess(Ptr<Packet> pkt)
 	if (m_device->GetHopStatus() != 0) {
     AquaSimHeader ash;
     pkt->RemoveHeader(ash);
-		ash.SetNextHop(Address()/*m_device->GetNextHop()*/);  //TODO
+		ash.SetNextHop(AquaSimAddress(m_device->GetNextHop()) );
 		ash.SetErrorFlag(false);// set off the error status;
     pkt->AddHeader(ash);
 		// printf("AquaSimTMac:TxProcess: node %d set next hop to %d\n",index_,cmh->next_hop());
@@ -2172,9 +2172,9 @@ AquaSimTMac::RecvProcess(Ptr<Packet> pkt)
   AquaSimHeader ash;
   pkt->PeekHeader(tmac);
   pkt->PeekHeader(ash);
-	Address dst=ash.GetNextHop();
+	AquaSimAddress dst=ash.GetNextHop();
 	int ptype=tmac.GetPtype();
-	Address receiver_addr=tmac.GetSenderAddr();
+	AquaSimAddress receiver_addr=tmac.GetSenderAddr();
 
 	if(ash.GetErrorFlag())
 	{
@@ -2187,7 +2187,7 @@ AquaSimTMac::RecvProcess(Ptr<Packet> pkt)
             " gets a packet from node " << receiver_addr <<
             " at " << Seconds(Simulator::Now()));
 
-	if(dst==Address()/*(Address)0xffffffff*/) { //MAC_BROADCAST
+	if(dst==AquaSimAddress::GetBroadcast()) {
 		if (ptype==PT_ND) ProcessNDPacket(pkt); //this is ND packet
 		if (ptype==PT_SYN) ProcessSYN(pkt);
 		return;

@@ -23,8 +23,9 @@
 
 #include "ns3/vector.h"
 #include "ns3/header.h"
-#include "ns3/address.h"
 #include "ns3/nstime.h"
+
+#include "aqua-sim-address.h"
 
 //#include <string>
 //#include <iostream>
@@ -47,9 +48,9 @@ public:
 
   static uint32_t size(BackoffType type);
 
-  void SetSA(Address sa);
-  void SetRA(Address ra);
-  void SetDA(Address da);
+  void SetSA(AquaSimAddress sa);
+  void SetRA(AquaSimAddress ra);
+  void SetDA(AquaSimAddress da);
   void SetSendTime(Time sendtime);
   void SetTxTime(Time txtime);
   void SetReqID(uint8_t reqid);
@@ -57,9 +58,9 @@ public:
   void SetSinkPos(Vector3D sinkPos);
   void SetSourcePos(Vector3D sourcePos);
 
-  Address GetSA();
-  Address GetRA();
-  Address GetDA();
+  AquaSimAddress GetSA();
+  AquaSimAddress GetRA();
+  AquaSimAddress GetDA();
   Time GetSendTime();
   Time GetTxTime();
   uint8_t GetReqID();
@@ -75,9 +76,9 @@ public:
   virtual TypeId GetInstanceTypeId(void) const;
 
 private:
-  Address SA;	//source address        //use 10 bits
-  Address RA; //receiver address      //use 10 bits
-  Address DA;	//destination address   //use 10 bits  //not useful, so it is not counted in size
+  AquaSimAddress SA;	//source address        //use 10 bits
+  AquaSimAddress RA; //receiver address      //use 10 bits
+  AquaSimAddress DA;	//destination address   //use 10 bits  //not useful, so it is not counted in size
   Time		m_SendTime;						//use 2 bytes
   Time		m_TxTime;						//use 1 byte
   uint8_t			m_ReqID;							//use 1 byte
@@ -99,16 +100,16 @@ public:
 
   static uint32_t size(BackoffType type);
 
-  void SetSA(Address sa);
-  void SetRA(Address ra);
+  void SetSA(AquaSimAddress sa);
+  void SetRA(AquaSimAddress ra);
   void SetSendTime(Time sendtime);
   void SetTxTime(Time txtime);
   void SetReqID(uint8_t reqid);
   void SetBackoffTime(Time backoffTime);
   void SetReplyerPos(Vector3D replyerPos);
 
-  Address GetSA();
-  Address GetRA();
+  AquaSimAddress GetSA();
+  AquaSimAddress GetRA();
   Time GetSendTime();
   Time GetTxTime();
   uint8_t GetReqID();
@@ -123,8 +124,8 @@ public:
   virtual TypeId GetInstanceTypeId(void) const;
 
 private:
-  Address SA;	//source address        //use 10 bits
-  Address RA; //receiver address      //use 10 bits
+  AquaSimAddress SA;	//source address        //use 10 bits
+  AquaSimAddress RA; //receiver address      //use 10 bits
   Time		m_SendTime;						//use 2 bytes
   Time		m_TxTime;						//use 1 byte
   uint8_t			m_ReqID;							//use 1 byte
@@ -150,13 +151,13 @@ public:
 
   static uint32_t size(BackoffType type);
 
-  void SetSA(Address sa);
-  void SetRA(Address ra);
+  void SetSA(AquaSimAddress sa);
+  void SetRA(AquaSimAddress ra);
   void SetPush(bool push);
   void SetReqID(uint8_t reqid);
 
-  Address GetSA();
-  Address GetRA();
+  AquaSimAddress GetSA();
+  AquaSimAddress GetRA();
   bool GetPush();
   uint8_t GetReqID();
 
@@ -168,8 +169,8 @@ public:
   virtual TypeId GetInstanceTypeId(void) const;
 
 private:
-  Address SA;	//source address        //use 10 bits
-  Address RA; //10 bites, receiver address: BROADCAST because it is broadcast mac
+  AquaSimAddress SA;	//source address        //use 10 bits
+  AquaSimAddress RA; //10 bites, receiver address: BROADCAST because it is broadcast mac
   bool		m_Push;	/*1 bit. if PUSH is set, recver should check the DataSendTimerSet
 						   there must be some packets have been sent before.
 						*/

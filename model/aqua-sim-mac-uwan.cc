@@ -188,7 +188,7 @@ AquaSimUwan::StatusProcess()
 
 
 Ptr<Packet>
-AquaSimUwan::MakeSYNCPkt(Time CyclePeriod, Address Recver)
+AquaSimUwan::MakeSYNCPkt(Time CyclePeriod, AquaSimAddress Recver)
 {
 	Ptr<Packet> p = Create<Packet>();
   UwanSyncHeader hdr_s;
@@ -205,7 +205,7 @@ AquaSimUwan::MakeSYNCPkt(Time CyclePeriod, Address Recver)
   ptag.SetPacketType(AquaSimPtTag::PT_UWAN_SYNC);
 
 	mach.SetDA(Recver);
-	mach.SetSA(m_device->GetAddress());
+	mach.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 
   p->AddHeader(hdr_s);
   p->AddHeader(ash);
@@ -220,23 +220,23 @@ AquaSimUwan::FillMissingList(Ptr<Packet> p)
 {
   AquaSimHeader ash;
   p->RemoveHeader(ash);
-	std::set<Address> ML_;
+	std::set<AquaSimAddress> ML_;
 	std::set_difference(m_neighbors.begin(), m_neighbors.end(),
 		m_CL.begin(), m_CL.end(),
-		std::insert_iterator<std::set<Address> >(ML_, ML_.begin()));
+		std::insert_iterator<std::set<AquaSimAddress> >(ML_, ML_.begin()));
 
-  //ash.size() += 8*( sizeof(uint) + ML_.size()*sizeof(Address) );
-  uint32_t size = sizeof(uint) + ML_.size()*sizeof(Address);
+  //ash.size() += 8*( sizeof(uint) + ML_.size()*sizeof(AquaSimAddress) );
+  uint32_t size = sizeof(uint) + ML_.size()*sizeof(AquaSimAddress);
   uint8_t *data = new uint8_t[size];
 
   *(uint*)data = ML_.size();
   data += sizeof(uint);
 
-  for( std::set<Address>::iterator pos=ML_.begin();
+  for( std::set<AquaSimAddress>::iterator pos=ML_.begin();
        pos != ML_.end(); pos++)
   {
-      *(Address*)data = *pos;
-      data += sizeof(Address);
+      *(AquaSimAddress*)data = *pos;
+      data += sizeof(AquaSimAddress);
   }
   Ptr<Packet> tempPacket = Create<Packet>(data,size);
   p->AddAtEnd(tempPacket);
@@ -262,7 +262,7 @@ AquaSimUwan::FillSYNCHdr(Ptr<Packet> p, Time CyclePeriod)
 
 
 void
-AquaSimUwan::Wakeup(Address node_id)
+AquaSimUwan::Wakeup(AquaSimAddress node_id)
 {
 	Time now = Simulator::Now();
 
@@ -300,8 +300,8 @@ AquaSimUwan::Wakeup(Address node_id)
 										m_nextCyclePeriod, maxPropTime, m_maxTxTime);
 		}
 
-		m_wakeSchQueue.Push(m_nextCyclePeriod, m_device->GetAddress(), m_nextCyclePeriod-now);
-		//m_wakeSchQueue.Print(2*m_maxPropTime, m_maxTxTime, true, m_device->GetAddress());
+		m_wakeSchQueue.Push(m_nextCyclePeriod, AquaSimAddress::ConvertFrom(m_device->GetAddress()) , m_nextCyclePeriod-now);
+		//m_wakeSchQueue.Print(2*m_maxPropTime, m_maxTxTime, true, AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 		if( m_packetQueue.empty() )
 			SendFrame(MakeSYNCPkt(m_nextCyclePeriod-now),true);
 		else
@@ -367,8 +367,8 @@ AquaSimUwan::RecvProcess(Ptr<Packet> p)
   p->PeekHeader(mach);
   p->RemoveHeader(SYNC_h);
 
-	Address dst = mach.GetDA();
-	Address src = mach.GetSA();
+	AquaSimAddress dst = mach.GetDA();
+	AquaSimAddress src = mach.GetSA();
 
     if( ash.GetErrorFlag() )
     {
@@ -387,7 +387,6 @@ AquaSimUwan::RecvProcess(Ptr<Packet> p)
 	SYNC_h.SetCyclePeriod(SYNC_h.GetCyclePeriod() - PRE_WAKE_TIME);
   p->AddHeader(SYNC_h);
 
-  //TODO fix this.
 	if( (ptag.GetPacketType() == AquaSimPtTag::PT_UWAN_HELLO) ||
         (ptag.GetPacketType() == AquaSimPtTag::PT_UWAN_SYNC) ) {
 		//the process to hello packet is same to SYNC packet
@@ -417,7 +416,7 @@ AquaSimUwan::RecvProcess(Ptr<Packet> p)
 			//extract Missing list
 			ProcessMissingList(data, src);  //hello is sent to src in this function
 
-			if( dst == m_device->GetAddress() /*|| (uint32_t)dst == (0xffffffff)*/ ) {   //MAC_BROADCAST
+			if( dst == m_device->GetAddress() || dst == AquaSimAddress::GetBroadcast() ) {
 				SendUp(p);
 				return;
 			}
@@ -457,7 +456,7 @@ AquaSimUwan::SYNCSchedule(bool initial)
 	m_nextCyclePeriod = m_initialCyclePeriod + now;
 	if( initial ) {
 		Time RandomDelay = Seconds(m_rand->GetValue(0.0, m_initialCyclePeriod.ToDouble(Time::S)) );
-		m_wakeSchQueue.Push(m_nextCyclePeriod+RandomDelay, m_device->GetAddress(), m_nextCyclePeriod+RandomDelay-now);
+		m_wakeSchQueue.Push(m_nextCyclePeriod+RandomDelay, AquaSimAddress::ConvertFrom(m_device->GetAddress()) , m_nextCyclePeriod+RandomDelay-now);
 		//m_wakeSchQueue.Print(2*m_maxPropTime, m_maxTxTime, true, index_);
 		SendFrame(MakeSYNCPkt(m_nextCyclePeriod-now), true, RandomDelay);
 		return;
@@ -472,7 +471,7 @@ AquaSimUwan::SYNCSchedule(bool initial)
 						m_nextCyclePeriod, Seconds(2*m_maxPropTime.ToDouble(Time::S)), m_maxTxTime);
 	}
 
-	m_wakeSchQueue.Push(m_nextCyclePeriod, m_device->GetAddress(), m_nextCyclePeriod-now);
+	m_wakeSchQueue.Push(m_nextCyclePeriod, AquaSimAddress::ConvertFrom(m_device->GetAddress()) , m_nextCyclePeriod-now);
 	//m_wakeSchQueue.Print(2*m_maxPropTime, m_maxTxTime, true, index_);
 	SendFrame(MakeSYNCPkt(m_nextCyclePeriod-now),true);
 }
@@ -528,10 +527,10 @@ AquaSimUwan::SendoutPkt(Time NextCyclePeriod)
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash.addr_type()=NS_AF_ILINK;
 
-	//Address next_hop = (0xffffffff);  //MAC_BROADCAST
+	//AquaSimAddress next_hop = AquaSimAddress::GetBroadcast();  //not used...
 
 	if( m_neighbors.size() != 0 ) {
-		std::set<Address>::iterator pos = m_neighbors.begin();
+		std::set<AquaSimAddress>::iterator pos = m_neighbors.begin();
 		for(uint i=0; i<m_nextHopNum; i++, pos++);
 		ash.SetNextHop(*pos);
 		m_nextHopNum = (m_nextHopNum+1)%m_neighbors.size();
@@ -541,7 +540,7 @@ AquaSimUwan::SendoutPkt(Time NextCyclePeriod)
   AlohaHeader mach;   //TODO change this...
   pkt->RemoveHeader(mach);
 	mach.SetDA(ash.GetNextHop());
-	mach.SetSA(m_device->GetAddress());
+	mach.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 
   pkt->AddHeader(ash);
   pkt->AddHeader(mach);
@@ -551,14 +550,14 @@ AquaSimUwan::SendoutPkt(Time NextCyclePeriod)
 
 
 void
-AquaSimUwan::ProcessMissingList(uint8_t *data, Address src)
+AquaSimUwan::ProcessMissingList(uint8_t *data, AquaSimAddress src)
 {
 	uint node_num_ = *((uint*)data);
 	data += sizeof(uint);
-	Address tmp_addr;
+	AquaSimAddress tmp_addr;
 
 	for(uint i=0; i<node_num_; i++ ) {
-		tmp_addr = *((Address*)data);
+		tmp_addr = *((AquaSimAddress*)data);
 		if( m_device->GetAddress() == tmp_addr ) {
 			//make and send out the hello packet
 			Ptr<Packet> p = Create<Packet>();
@@ -577,7 +576,7 @@ AquaSimUwan::ProcessMissingList(uint8_t *data, Address src)
 			//ash.size() = hdr_s.GetSize();
 
       mach.SetDA(src);
-    	mach.SetSA(m_device->GetAddress());
+    	mach.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 
       p->AddHeader(ash);
       p->AddHeader(mach);
@@ -588,7 +587,7 @@ AquaSimUwan::ProcessMissingList(uint8_t *data, Address src)
 			SendFrame(p, true, Seconds(randHelloDelay));   //hello should be delayed!!!!!!
 			return;
 		}
-		data += sizeof(Address);
+		data += sizeof(AquaSimAddress);
 	}
 
 }
@@ -604,7 +603,7 @@ ScheduleQueue::GetTypeId(void)
 }
 
 void
-ScheduleQueue::Push(Time SendTime, Address node_id, Time Interval)
+ScheduleQueue::Push(Time SendTime, AquaSimAddress node_id, Time Interval)
 {
 	ScheduleTime* newElem = new ScheduleTime(SendTime, node_id, m_mac);
 	newElem->timer_.SetFunction(&AquaSimUwan_WakeTimer::expire,&newElem->timer_);
@@ -752,7 +751,7 @@ ScheduleQueue::ClearExpired(Time CurTime)
 
 
 void
-ScheduleQueue::Print(Time GuardTime, Time MaxTxTime, bool IsMe, Address index)
+ScheduleQueue::Print(Time GuardTime, Time MaxTxTime, bool IsMe, AquaSimAddress index)
 {
 	ScheduleTime* pos = m_head->next_;
 	/*char file_name[30];

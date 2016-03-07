@@ -1096,12 +1096,12 @@ TMacHeader::GetDataNum()
 {
   return m_dataNum;
 }
-Address
+AquaSimAddress
 TMacHeader::GetSenderAddr()
 {
   return m_senderAddr;
 }
-Address
+AquaSimAddress
 TMacHeader::GetReceiverAddr()
 {
   return m_receiverAddr;
@@ -1148,12 +1148,12 @@ TMacHeader::SetDataNum(uint32_t dataNum)
   m_dataNum = dataNum;
 }
 void
-TMacHeader::SetSenderAddr(Address senderAddr)
+TMacHeader::SetSenderAddr(AquaSimAddress senderAddr)
 {
   m_senderAddr = senderAddr;
 }
 void
-TMacHeader::SetReceiverAddr(Address receiverAddr)
+TMacHeader::SetReceiverAddr(AquaSimAddress receiverAddr)
 {
   m_receiverAddr = receiverAddr;
 }
@@ -1194,8 +1194,10 @@ TMacHeader::Serialize (Buffer::Iterator start) const
   start.WriteU8 (m_ptype);
   start.WriteU32 (m_pkNum);
   start.WriteU32 (m_dataNum);
-  start.WriteU8 (m_senderAddr.GetLength());
-  start.WriteU8 (m_receiverAddr.GetLength());
+  start.WriteU8 (m_senderAddr.GetAsInt());
+  start.WriteU8 (m_receiverAddr.GetAsInt());
+  //start.WriteU8 (m_senderAddr.GetLength());
+  //start.WriteU8 (m_receiverAddr.GetLength());
   start.WriteU32 ((uint32_t)m_st * 1000.0 + 0.5);
   start.WriteU32 ((uint32_t)m_ts * 1000.0 + 0.5);
   start.WriteU32 ((uint32_t)m_duration * 1000.0 + 0.5);
@@ -1210,8 +1212,10 @@ TMacHeader::Deserialize (Buffer::Iterator start)
   m_ptype = i.ReadU8();
   m_pkNum = i.ReadU32();
   m_dataNum = i.ReadU32();
-  ReadFrom(i, m_senderAddr,8);	//read 8bit addr
-  ReadFrom(i, m_receiverAddr, 8);	//read 8bit addr
+  m_senderAddr = (AquaSimAddress) i.ReadU8();
+  m_receiverAddr = (AquaSimAddress) i.ReadU8();
+  //ReadFrom(i, m_senderAddr,8);	//read 8bit addr
+  //ReadFrom(i, m_receiverAddr, 8);	//read 8bit addr
   m_st = ( (double) i.ReadU32 ()) / 1000.0;
   m_ts = ( (double) i.ReadU32 ()) / 1000.0;
   m_duration = ( (double) i.ReadU32 ()) / 1000.0;

@@ -151,7 +151,7 @@ void AquaSimGoal::RecvProcess(Ptr<Packet> pkt)
   pkt->PeekHeader(goalAckh);
 	pkt->PeekPacketTag(ptag);
 
-	Address dst = mach.GetDA();
+	AquaSimAddress dst = mach.GetDA();
 
 	if( ash.GetErrorFlag() )
 	{
@@ -164,9 +164,7 @@ void AquaSimGoal::RecvProcess(Ptr<Packet> pkt)
 		return;
 	}
 
-	//TODO fix broadcast throughout this file.
-
-	if( dst == m_device->GetAddress() /*|| dst == Address(0xffffffff)*/ ) {  //MAC_BROADCAST;
+	if( dst == m_device->GetAddress() || dst == AquaSimAddress::GetBroadcast() ) {
  		switch(ptag.GetPacketType() ) {
 		case AquaSimPtTag::PT_GOAL_REQ:                               //req is broadcasted, it is also data-ack
 			ProcessReqPkt(pkt);          //both for me and overhear
@@ -217,7 +215,7 @@ void AquaSimGoal::TxProcess(Ptr<Packet> pkt)
 	vbh->info.oy = n->Y();
 	vbh->info.oz = n->Z(); */
 
-	//ash->size() += sizeof(Address)*2;  //plus the size of MAC header: Source address and destination address
+	//ash->size() += sizeof(AquaSimAddress)*2;  //plus the size of MAC header: Source address and destination address
   ash.SetTxTime(GetTxTime(ash.GetSerializedSize()));
   ash.SetNumForwards(0);	//use this area to store number of retrans
 
@@ -255,8 +253,8 @@ AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Ti
 	//hdr_uwvb* vbh = hdr_uwvb::access(DataPkt);
 	  Ptr<MobilityModel> model = m_device->GetNode()->GetObject<MobilityModel>();
 
-	goalReqh.SetRA(Address()/*(Address)0xffffffff*/); //MAC_BROADCAST;
-  goalReqh.SetSA(m_device->GetAddress());
+	goalReqh.SetRA(AquaSimAddress::GetBroadcast());
+  goalReqh.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 	//goalReqh.SetDA(vbh->target_id.addr_);  //sink address
 	m_reqPktSeq++;
   goalReqh.SetReqID(m_reqPktSeq);
@@ -269,15 +267,15 @@ AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Ti
 	ptag.SetPacketType(AquaSimPtTag::PT_GOAL_REQ);
 	ash.SetDirection(AquaSimHeader::DOWN);
 	ash.SetErrorFlag(false);
-	ash.SetNextHop(Address()/*(Address)0xffffffff*/); //MAC_BROADCAST
+	ash.SetNextHop(AquaSimAddress::GetBroadcast());
   // ash size() = goalReqh->size(m_backoffType)+(NSADDR_T_SIZE*DataPktSet.size())/8+1;
-        //sizeof(Address) = 10 in this case.
+        //sizeof(AquaSimAddress) = 10 in this case.
 	ash.SetTxTime(GetTxTime(goalReqh.size(m_backoffType)+(10*DataPktSet.size())/8+1));
 	//ash->addr_type() = NS_AF_ILINK;
 	ash.SetTimeStamp(Simulator::Now());
 
   mach.SetDA(goalReqh.GetRA());
-  mach.SetSA(m_device->GetAddress());
+  mach.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 
   uint32_t size = sizeof(uint)+sizeof(int)*DataPktSet.size();
   uint8_t *data = new uint8_t[size];
@@ -456,7 +454,7 @@ AquaSimGoal::MakeRepPkt(Ptr<Packet> ReqPkt, Time BackoffTime)
   Ptr<MobilityModel> model = m_device->GetNode()->GetObject<MobilityModel>();
 
 
-	repH.SetSA(m_device->GetAddress());
+	repH.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 	repH.SetRA(reqPktHeader.GetSA());
 	repH.SetReqID(reqPktHeader.GetReqID());
 	repH.SetReplyerPos(model->GetPosition());
@@ -581,7 +579,7 @@ AquaSimGoal::PrepareDataPkts()
     NS_LOG_WARN("PrepareDataPkts: size of m_PktQs should not be 0, something must be wrong");
 	}
 
-	std::map<Address, AquaSimGoal_PktQ>::iterator pos = m_PktQs.begin();
+	std::map<AquaSimAddress, AquaSimGoal_PktQ>::iterator pos = m_PktQs.begin();
 	for(int i=0; i<m_sinkSeq; i++) {
 		pos++;
 	}
@@ -632,7 +630,7 @@ AquaSimGoal::PrepareDataPkts()
 
 //---------------------------------------------------------------------
 void
-AquaSimGoal::SendDataPkts(std::set<Ptr<Packet> > DataPktSet, Address NxtHop, Time TxTime)
+AquaSimGoal::SendDataPkts(std::set<Ptr<Packet> > DataPktSet, AquaSimAddress NxtHop, Time TxTime)
 {
 	std::set<Ptr<Packet> >::iterator pos = DataPktSet.begin();
 	Time DelayTime = Seconds(0.00001);  //the delay of sending data packet
@@ -645,7 +643,7 @@ AquaSimGoal::SendDataPkts(std::set<Ptr<Packet> > DataPktSet, Address NxtHop, Tim
     (*pos)->RemoveHeader(mach);
     ash.SetNextHop(NxtHop);
     mach.SetDA(NxtHop);
-    mach.SetSA(m_device->GetAddress());
+    mach.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
     (*pos)->AddHeader(ash);
     (*pos)->AddHeader(mach);
 
@@ -698,7 +696,7 @@ AquaSimGoal::ProcessDataPkt(Ptr<Packet> DataPkt)
 			DataPkt=0;
 		else {
 			m_sinkRecvedList.insert(ash.GetUId());
-			//ash->size() -= sizeof(Address)*2;
+			//ash->size() -= sizeof(AquaSimAddress)*2;
 			SendUp(DataPkt);
 		}
 
@@ -720,8 +718,8 @@ AquaSimGoal::MakeAckPkt(std::set<int> AckSet, bool PSH,  int ReqID)
   AquaSimGoalAckHeader goalAckh;
 	AquaSimPtTag ptag;
 
-	goalAckh.SetSA(m_device->GetAddress());
-	goalAckh.SetRA(Address()/*(Address)0xffffffff*/);  //MAC_BROADCAST
+	goalAckh.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
+	goalAckh.SetRA(AquaSimAddress::GetBroadcast());
 	goalAckh.SetPush(PSH);
 	if( PSH ) {
 		goalAckh.SetReqID(ReqID);

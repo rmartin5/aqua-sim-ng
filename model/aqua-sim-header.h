@@ -370,8 +370,8 @@ private:
    virtual void Print (std::ostream &os) const;
    virtual TypeId GetInstanceTypeId(void) const;
  private:
-   //Address SA;
-   //Address DA;
+   //AquaSimAddress SA;
+   //AquaSimAddress DA;
    uint8_t m_pType;
    uint16_t	m_slotNum;  //the number of slots required for transmitting the DATA packet
 
@@ -417,8 +417,8 @@ public:
   uint8_t GetPtype();
   uint32_t GetPkNum();
   uint32_t GetDataNum();
-  Address GetSenderAddr();
-  Address GetReceiverAddr();
+  AquaSimAddress GetSenderAddr();
+  AquaSimAddress GetReceiverAddr();
   double GetST();
   double GetTS();
   double GetDuration();
@@ -429,8 +429,8 @@ public:
   void SetPtype(uint8_t ptype);
   void SetPkNum(uint32_t pkNum);
   void SetDataNum(uint32_t dataNum);
-  void SetSenderAddr(Address senderAddr);
-  void SetReceiverAddr(Address receiverAddr);
+  void SetSenderAddr(AquaSimAddress senderAddr);
+  void SetReceiverAddr(AquaSimAddress receiverAddr);
   void SetST(double st);
   void SetTS(double ts);
   void SetDuration(double durable);
@@ -447,8 +447,8 @@ private:
   uint8_t m_ptype;     //packet type
   uint32_t m_pkNum;    // sequence number
   uint32_t m_dataNum; //too big?
-  Address m_senderAddr;  //original sender' address
-  Address m_receiverAddr;
+  AquaSimAddress m_senderAddr;  //original sender' address
+  AquaSimAddress m_receiverAddr;
   double m_st;           // Timestamp when pkt is generated.
   double m_ts;
   double m_duration;

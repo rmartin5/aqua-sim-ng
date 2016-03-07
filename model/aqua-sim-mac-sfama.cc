@@ -185,7 +185,7 @@ AquaSimSFama::GetTime2ComingSlot(double t)
 }
 
 Ptr<Packet>
-AquaSimSFama::MakeRTS(Address recver, int slot_num)
+AquaSimSFama::MakeRTS(AquaSimAddress recver, int slot_num)
 {
 	Ptr<Packet> rts_pkt = Create<Packet>();
   AquaSimHeader ash;
@@ -199,7 +199,7 @@ AquaSimSFama::MakeRTS(Address recver, int slot_num)
 	ash.SetDirection(AquaSimHeader::DOWN);
 	ptag.SetPacketType(AquaSimPtTag::PT_SFAMA);
 
-	mach.SetSA(m_device->GetAddress());
+	mach.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 	mach.SetDA(recver);
 
 	SFAMAh.SetPType(SFamaHeader::SFAMA_RTS);
@@ -218,7 +218,7 @@ AquaSimSFama::MakeRTS(Address recver, int slot_num)
 
 
 Ptr<Packet>
-AquaSimSFama::MakeCTS(Address rts_sender, int slot_num)
+AquaSimSFama::MakeCTS(AquaSimAddress rts_sender, int slot_num)
 {
 	Ptr<Packet> cts_pkt = Create<Packet>();
   AquaSimHeader ash;
@@ -232,7 +232,7 @@ AquaSimSFama::MakeCTS(Address rts_sender, int slot_num)
 	ash.SetDirection(AquaSimHeader::DOWN);
 	ptag.SetPacketType(AquaSimPtTag::PT_SFAMA);
 
-	mach.SetSA(m_device->GetAddress());
+	mach.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 	mach.SetDA(rts_sender);
 
 	SFAMAh.SetPType(SFamaHeader::SFAMA_CTS);
@@ -265,7 +265,7 @@ AquaSimSFama::FillDATA(Ptr<Packet> data_pkt)
   ash.SetErrorFlag(false);
   ash.SetDirection(AquaSimHeader::DOWN);
 
-  mach.SetSA(m_device->GetAddress());
+  mach.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
   mach.SetDA(ash.GetNextHop());
 
   SFAMAh.SetPType(SFamaHeader::SFAMA_DATA);
@@ -280,7 +280,7 @@ AquaSimSFama::FillDATA(Ptr<Packet> data_pkt)
 
 
 Ptr<Packet>
-AquaSimSFama::MakeACK(Address data_sender)
+AquaSimSFama::MakeACK(AquaSimAddress data_sender)
 {
   Ptr<Packet> ack_pkt = Create<Packet>();
   AquaSimHeader ash;
@@ -294,7 +294,7 @@ AquaSimSFama::MakeACK(Address data_sender)
   ash.SetDirection(AquaSimHeader::DOWN);
 	ptag.SetPacketType(AquaSimPtTag::PT_SFAMA);
 
-  mach.SetSA(m_device->GetAddress());
+  mach.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
   mach.SetDA(data_sender);
 
   SFAMAh.SetPType(SFamaHeader::SFAMA_ACK);
@@ -491,7 +491,7 @@ AquaSimSFama::PrepareSendingDATA()
 {
 	std::queue<Ptr<Packet> > tmpQ_;
 	Ptr<Packet> tmp_pkt;
-	Address recver_addr;
+	AquaSimAddress recver_addr;
 	int pkt_num = 1;
 
 	if( m_sendingPktQ.empty() && m_CachedPktQ.empty() ) {
@@ -587,7 +587,7 @@ NS_LOG_DEBUG(PrintAllQ());
 
 
 void
-AquaSimSFama::ScheduleRTS(Address recver, int slot_num)
+AquaSimSFama::ScheduleRTS(AquaSimAddress recver, int slot_num)
 {
 	double backoff_time = RandBackoffSlots()*m_slotLen+GetTime2ComingSlot(Simulator::Now().ToDouble(Time::S));
 	SetStatus(WAIT_SEND_RTS);

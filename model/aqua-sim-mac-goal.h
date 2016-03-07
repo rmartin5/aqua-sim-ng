@@ -54,10 +54,10 @@
 #include "ns3/packet.h"
 #include "ns3/timer.h"
 #include "ns3/nstime.h"
-#include "ns3/address.h"
 
 #include "aqua-sim-mac.h"
 #include "aqua-sim-header-goal.h"
+#include "aqua-sim-address.h"
 
 #include <deque>
 #include <set>
@@ -176,7 +176,7 @@ class AquaSimGoalDataSendTimer: public Timer{
 public:
 	AquaSimGoalDataSendTimer(AquaSimGoal* mac): Timer(), mac_(mac) {
 		m_MinBackoffTime = Seconds(100000000);
-		m_NxtHop = Address();
+		m_NxtHop = AquaSimAddress();
 		m_GotRep = false;
 	}
 
@@ -184,7 +184,7 @@ public:
 		return m_DataPktSet;
 	}
 
-	Address NxtHop() {
+	AquaSimAddress NxtHop() {
 		return m_NxtHop;
 	}
 
@@ -221,7 +221,7 @@ public:
 protected:
 	AquaSimGoal*	mac_;
 	std::set<Ptr<Packet> > m_DataPktSet;
-	Address	m_NxtHop;
+	AquaSimAddress	m_NxtHop;
 	Time		m_MinBackoffTime;
 	Time		m_TxTime;
 
@@ -257,7 +257,7 @@ protected:
 
 //---------------------------------------------------------------------
 struct RecvedInfo{
-	Address	Sender;
+	AquaSimAddress	Sender;
 	Time		RecvTime;
 };
 
@@ -330,7 +330,7 @@ private:
 	//set<AquaSimGoal_RepTimeoutTimer*>	RepTimeoutTimerSet_;
 	std::set<AquaSimGoalDataSendTimer*>	m_dataSendTimerSet;
 
-	std::map<Address, AquaSimGoal_PktQ>  m_PktQs;
+	std::map<AquaSimAddress, AquaSimGoal_PktQ>  m_PktQs;
 	int				m_sinkSeq;     //the packet to which destination should be sent.
 	int				m_qsPktNum;    //the number of packets in m_PktQs.
 	//map<int, AquaSimGoal_AckTimeoutTimer*>	SentPktSet;
@@ -352,7 +352,7 @@ private:
 	void SendoutPkt(Ptr<Packet> pkt);
 
 	void PrepareDataPkts();
-	void SendDataPkts(std::set<Ptr<Packet> > DataPktSet, Address NxtHop, Time TxTime);
+	void SendDataPkts(std::set<Ptr<Packet> > DataPktSet, AquaSimAddress NxtHop, Time TxTime);
 
 
 	Ptr<Packet> MakeReqPkt(std::set<Ptr<Packet> > DataPktset, Time DataSendTime, Time TxTime);	//broadcast. the datapkt is the one which will be sent

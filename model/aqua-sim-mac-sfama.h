@@ -35,7 +35,7 @@
 namespace ns3 {
 
 class AquaSimSFama;
-class Address;
+class AquaSimAddress;
 
 
 class AquaSimSFama_Wait_Send_Timer: public Timer {
@@ -187,10 +187,10 @@ private:
   int m_slotNumHandler;
 
 protected:
-	Ptr<Packet> MakeRTS(Address recver, int slot_num);
-	Ptr<Packet> MakeCTS(Address rts_sender, int slot_num);
+	Ptr<Packet> MakeRTS(AquaSimAddress recver, int slot_num);
+	Ptr<Packet> MakeCTS(AquaSimAddress rts_sender, int slot_num);
 	Ptr<Packet> FillDATA(Ptr<Packet> data_pkt);
-	Ptr<Packet> MakeACK(Address data_sender);
+	Ptr<Packet> MakeACK(AquaSimAddress data_sender);
 
 
 	void ProcessRTS(Ptr<Packet> rts_pkt);
@@ -213,7 +213,7 @@ protected:
 
 	double GetPktTrainTxTime();
 
-	void ScheduleRTS(Address recver, int slot_num);
+	void ScheduleRTS(AquaSimAddress recver, int slot_num);
 
 	double GetTime2ComingSlot(double t);
 
