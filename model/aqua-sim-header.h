@@ -175,8 +175,8 @@ public:
   void SetPktNum(uint32_t pkNum);
   void SetDataNum(uint32_t dataNum);
   void SetBlockNum(uint8_t blockNum);
-  void SetSenderAddr(Address senderAddr);
-  void SetRecvAddr(Address recvAddr);
+  void SetSenderAddr(AquaSimAddress senderAddr);
+  void SetRecvAddr(AquaSimAddress recvAddr);
   void SetSt(double st);
   void SetDuration(double duration);
   void SetInterval(double interval);
@@ -187,8 +187,8 @@ public:
   uint32_t GetPktNum();
   uint32_t GetDataNum();
   uint8_t GetBlockNum();
-  Address GetSenderAddr();
-  Address GetRecvAddr();
+  AquaSimAddress GetSenderAddr();
+  AquaSimAddress GetRecvAddr();
   double GetSt();
   double GetDuration();
   double GetInterval();
@@ -207,8 +207,8 @@ private:
   uint32_t m_pkNum;    // sequence number
   uint32_t m_dataNum;
   uint8_t m_blockNum; // the block num, in real world, one bit is enough
-  Address m_senderAddr;
-  Address m_recvAddr;
+  AquaSimAddress m_senderAddr;
+  AquaSimAddress m_recvAddr;
   double m_st; // Timestamp when pkt is generated.
   double m_duration;
   double m_interval;

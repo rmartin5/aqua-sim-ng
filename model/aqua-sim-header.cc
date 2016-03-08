@@ -430,12 +430,12 @@ RMacHeader::SetBlockNum(uint8_t blockNum)
   m_blockNum = blockNum;
 }
 void
-RMacHeader::SetSenderAddr(Address senderAddr)
+RMacHeader::SetSenderAddr(AquaSimAddress senderAddr)
 {
   m_senderAddr = senderAddr;
 }
 void
-RMacHeader::SetRecvAddr(Address recvAddr)
+RMacHeader::SetRecvAddr(AquaSimAddress recvAddr)
 {
   m_recvAddr = recvAddr;
 }
@@ -486,12 +486,12 @@ RMacHeader::GetBlockNum()
 {
   return m_blockNum;
 }
-Address
+AquaSimAddress
 RMacHeader::GetSenderAddr()
 {
   return m_senderAddr;
 }
-Address
+AquaSimAddress
 RMacHeader::GetRecvAddr()
 {
   return m_recvAddr;
@@ -540,8 +540,10 @@ RMacHeader::Serialize (Buffer::Iterator start) const
   start.WriteU32 (m_pkNum);
   start.WriteU32 (m_dataNum);
   start.WriteU8 (m_blockNum);
-  start.WriteU8 (m_senderAddr.GetLength());
-  start.WriteU8 (m_recvAddr.GetLength());
+  start.WriteU8 (m_senderAddr.GetAsInt());
+  start.WriteU8 (m_recvAddr.GetAsInt());
+  //start.WriteU8 (m_senderAddr.GetLength());
+  //start.WriteU8 (m_recvAddr.GetLength());
   start.WriteU32 ((uint32_t)m_st * 1000.0 + 0.5);
   start.WriteU32 ((uint32_t)m_duration * 1000.0 + 0.5);
   start.WriteU32 ((uint32_t)m_interval * 1000.0 + 0.5);
@@ -558,8 +560,10 @@ RMacHeader::Deserialize (Buffer::Iterator start)
   m_pkNum = i.ReadU32();
   m_dataNum = i.ReadU32();
   m_blockNum = i.ReadU8();
-  ReadFrom(i, m_senderAddr,8);	//read 8bit addr
-  ReadFrom(i, m_recvAddr, 8);	//read 8bit addr
+  m_senderAddr = (AquaSimAddress) i.ReadU8();
+  m_recvAddr = (AquaSimAddress) i.ReadU8();
+  //ReadFrom(i, m_senderAddr,8);	//read 8bit addr
+  //ReadFrom(i, m_recvAddr, 8);	//read 8bit addr
   m_st = ( (double) i.ReadU32 ()) / 1000.0;
   m_duration = ( (double) i.ReadU32 ()) / 1000.0;
   m_interval = ( (double) i.ReadU32 ()) / 1000.0;

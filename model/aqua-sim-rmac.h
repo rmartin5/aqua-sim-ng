@@ -23,7 +23,7 @@
 
 #include "aqua-sim-mac.h"
 #include "aqua-sim-rmac-buffer.h"
-#include "ns3/address.h"
+#include "aqua-sim-address.h"
 #include "ns3/event-id.h"
 
 
@@ -67,7 +67,7 @@ enum MAC_STATUS{
 
 
 struct forbidden_time_record{
-  int node_addr;// the address of the node
+  AquaSimAddress node_addr;// the address of the node
   double start_time;// the time to receive the ND packet from the node
   double next_time; // the  start time of next availabe period
   double duration; // the sending time of ND in local clock
@@ -75,14 +75,14 @@ struct forbidden_time_record{
 };
 
 struct time_record{
-  int node_addr;// the address of the node
+  AquaSimAddress node_addr;// the address of the node
   double arrival_time;// the time to receive the ND packet from the node
   double sending_time; // the sending time of ND in local clock
 };
 
 
 struct reservation_record{
-  int  node_addr;    // the address of the node
+  AquaSimAddress  node_addr;    // the address of the node
   double required_time;    // the duration of required time slot
   double interval;
   int block_id;
@@ -93,14 +93,14 @@ struct reservation_record{
 
 
 struct ackdata_record{
-  int node_addr;// the address of the sender
+  AquaSimAddress node_addr;// the address of the sender
   int bitmap[MAXIMUM_BUFFER];  // the pointer to the bitmap
   int block_num;// the block id
 };
 
 
 struct period_record{
-  int node_addr;// the address of the node
+  AquaSimAddress node_addr;// the address of the node
   double difference;// the difference with my period
   double duration; // duration of duty cycle
   double last_update_time; // the time last updated
@@ -108,7 +108,7 @@ struct period_record{
 
 
 struct latency_record{
-  int node_addr;      // the address of the node
+  AquaSimAddress node_addr;      // the address of the node
   double latency;    // the propagation latency with that node
   double sumLatency;// the sum of latency
   int num;         // number of ACKND packets
@@ -223,7 +223,7 @@ public:
   int m_reservedTimeTableIndex;
   int m_ackDataTableIndex;
   int m_timer;// number of periodIntervals to backoff
-  //int m_dataSender; // address of the data sender
+  //AquaSimAddress m_dataSender; // address of the data sender
   double m_NDBackoffWindow;
   int m_NDBackoffCounter;
 
@@ -268,12 +268,12 @@ public:
   enum MAC_STATUS m_macStatus;
 
   //Recv Handler
-  int m_recvDataSender;
+  AquaSimAddress m_recvDataSender;
   double m_recvDuration;// duration of RECV
   int m_recvStatus;// 0 is open the recv window and 1 is close window
 
   //transmission handler
-  Address m_transReceiver;
+  AquaSimAddress m_transReceiver;
 
   double m_cycleStartTime; // the beginning time of this cycle;
   TransmissionBuffer m_txBuffer;
@@ -319,8 +319,8 @@ public:
   void TxACKRev(Ptr<Packet>);
   void TxACKData(Ptr<Packet> pkt);
   void ResetMacStatus();
-  void ScheduleACKREV(int receiver,double duration,double offset);
-  void ScheduleACKData(int dataSender);
+  void ScheduleACKREV(AquaSimAddress receiver,double duration,double offset);
+  void ScheduleACKData(AquaSimAddress dataSender);
   //void SendLargeAckND();
   void SendShortAckND();
   void StatusProcess(TransmissionStatus state);
@@ -330,21 +330,21 @@ public:
   void ResetReservationTable();
   void SetStartTime(buffer_cell* ackRevPt, double st,double nextPeriod);
   void ClearTxBuffer();
-  void InsertReservedTimeTable(int senderAddr,double startTime,double dt);
+  void InsertReservedTimeTable(AquaSimAddress senderAddr,double startTime,double dt);
   void SortPeriodTable(struct period_record* table);
-  void InsertBackoff(int sender_addr);
-  void CopyBitmap(Ptr<Packet> pkt,int dataSender);
-  void UpdateACKDataTable(int dataSender,int bNum,int num);
+  void InsertBackoff(AquaSimAddress sender_addr);
+  void CopyBitmap(Ptr<Packet> pkt,AquaSimAddress dataSender);
+  void UpdateACKDataTable(AquaSimAddress dataSender,int bNum,int num);
   void ClearReservationTable(int index);
-  Ptr<Packet> GenerateACKRev(int receiver, int intendedReceiver, double duration);
+  Ptr<Packet> GenerateACKRev(AquaSimAddress receiver, AquaSimAddress intendedReceiver, double duration);
   Ptr<Packet> GenerateSYN();
   int SelectReservation();
   double CalculateOffset(double dt);
   double CalculateACKRevTime(double diff1,double l1,double diff2,double l2);
   double CalculateACKRevTime(double diff,double latency,double elapsedTime);
-  double DetermineSendingTime(int receiverAddr);
-  double CheckLatency(latency_record* table,int addr);
-  double CheckDifference(period_record* table,int addr);
+  double DetermineSendingTime(AquaSimAddress receiverAddr);
+  double CheckLatency(latency_record* table,AquaSimAddress addr);
+  double CheckDifference(period_record* table,AquaSimAddress addr);
 
 
   bool IsRetransmission(int reservationIndex);
@@ -356,9 +356,9 @@ public:
 
   void InsertACKRevLink(Ptr<Packet> p, double d);
   void InsertACKRevLink(Ptr<Packet> p, double* d);
-  void TxData(Address receiver);
+  void TxData(AquaSimAddress receiver);
   void ClearACKRevLink();
-  void StartRECV(double dt,int id,int dataSender);
+  void StartRECV(double dt,int id,AquaSimAddress dataSender);
   void SetNextHop();
   void DeleteBufferCell(Ptr<Packet>);
   void DeleteRecord(int index);

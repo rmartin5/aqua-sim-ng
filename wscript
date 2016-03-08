@@ -37,7 +37,7 @@ def build(bld):
         'model/aqua-sim-mac-goal.cc',
         'model/aqua-sim-mac-sfama.cc',
         'model/aqua-sim-mac-uwan.cc',
-        #'model/aqua-sim-rmac.cc',
+        'model/aqua-sim-rmac.cc',
         'model/aqua-sim-rmac-buffer.cc',
         'model/aqua-sim-tmac.cc',
         ]
@@ -79,7 +79,7 @@ def build(bld):
         'model/aqua-sim-mac-goal.h',
         'model/aqua-sim-mac-sfama.h',
         'model/aqua-sim-mac-uwan.h',
-        #'model/aqua-sim-rmac.h',
+        'model/aqua-sim-rmac.h',
         'model/aqua-sim-rmac-buffer.h',
         'model/aqua-sim-tmac.h',
         ]
