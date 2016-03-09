@@ -129,7 +129,7 @@ AquaSimHelper::AquaSimHelper() :
   m_phy.Set("Frequency", DoubleValue(25));
   m_phy.Set("K", DoubleValue(2.0));
   m_mac.SetTypeId("ns3::AquaSimMac");	//TODO update... this is base class.
-  m_routing.SetTypeId("ns3::AquaSimRouting"); //TODO update... this is base class.
+  m_routing.SetTypeId("ns3::AquaSimStaticRouting"); //TODO update... this is base class.
 }
 
 AquaSimHelper

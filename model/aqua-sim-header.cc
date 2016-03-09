@@ -41,13 +41,14 @@ NS_LOG_COMPONENT_DEFINE("AquaSimHeader");
 NS_OBJECT_ENSURE_REGISTERED(AquaSimHeader);
 
 AquaSimHeader::AquaSimHeader(void) :
-    m_txTime(0), m_direction(NONE), m_nextHop(),
+    m_txTime(0), m_direction(NONE),
     m_numForwards(0), m_errorFlag(0), m_uId(-1),
     m_pt(-1), m_pr(-1), m_txRange(-1),
     m_freq(-1), m_noise(0), m_status(INVALID), m_timestamp(0)
 {
-  //m_src.addr(Address());
-  //m_dst.addr(Address());
+  m_nextHop = AquaSimAddress(-1);
+  m_src.addr = AquaSimAddress(-1);
+  m_dst.addr = AquaSimAddress(-1);
   //m_src.port(0);
   //m_dst.port(0);
 
@@ -161,7 +162,7 @@ AquaSimHeader::Print(std::ostream &os) const
     case INVALID:   os << "INVALID";   break;
   }
   os << " Timestamp=" << m_timestamp;
-  os << " SenderAddr=" << m_src.addr << " DestAddr=" << m_dst.addr << "\n";
+  os << " SenderAddr=" << m_src.addr << " DestAddr=" << m_dst.addr << " NextHop=" << m_nextHop << "\n";
 }
 
 Time

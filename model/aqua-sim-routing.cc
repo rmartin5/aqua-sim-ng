@@ -42,7 +42,6 @@ AquaSimRouting::GetTypeId(void)
 {
   static TypeId tid = TypeId("ns3::AquaSimRouting")
     .SetParent<Object>()
-    .AddConstructor<AquaSimRouting> ()
     .AddAttribute("SetNetDevice", "The net device where this routing layer resides on",
       PointerValue (),
       MakePointerAccessor (&AquaSimRouting::m_device),
@@ -78,35 +77,6 @@ AquaSimRouting::SetMac(Ptr<AquaSimMac> mac)
   m_mac = mac;
 }
 
-bool
-AquaSimRouting::Recv(Ptr<Packet> p)
-{
-  NS_LOG_FUNCTION(this << p << " : Currently not implemented");
-  /*
-   * TODO this should be implemented in inherited routing protocols
-   * 		This may be redundant compared with sendup/senddown.
-   */
-
-if (IsDeadLoop(p))
-  {
-    NS_LOG_WARN("Packet(" << p << ") is dead loop on device(" << m_device << ")");
-    return false;
-  }
-if (~AmINextHop(p))
-  {
-    NS_LOG_WARN("Device(" << m_device <<
-		") is not the next hop, dropping packet(" << p << ")");
-    return false;
-  }
-if (AmIDst(p))
-  {
-    NS_LOG_INFO("Destination(" << m_device << ") received packet(" << p << ")");
-    return true;
-  }
-
-return SendUp(p);
-}
-
 
 /**
   * send packet p to the upper layer, i.e., port dmux
@@ -133,7 +103,7 @@ AquaSimRouting::SendUp(Ptr<Packet> p)
   * @param delay		packet p will be sent in time of delay
   * */
 bool
-AquaSimRouting::SendDown(Ptr<Packet> p, const Address &nextHop, Time delay)
+AquaSimRouting::SendDown(Ptr<Packet> p, AquaSimAddress nextHop, Time delay)
 {
   //cmh->uw_flag() = true;
   //cmh->addr_type() = NS_AF_INET;
@@ -141,7 +111,6 @@ AquaSimRouting::SendDown(Ptr<Packet> p, const Address &nextHop, Time delay)
   NS_LOG_FUNCTION(this << p << nextHop << delay);
   NS_ASSERT(p != NULL);
 
-  AquaSimAddress next = AquaSimAddress::ConvertFrom(nextHop);
   //add header to packet
   AquaSimHeader header;
   p->RemoveHeader(header);
@@ -149,7 +118,7 @@ AquaSimRouting::SendDown(Ptr<Packet> p, const Address &nextHop, Time delay)
   //NS_LOG_DEBUG("Pktsize=" << header.GetSize());
   if(header.GetUId() == -1) header.SetUId(1);
   header.SetDirection(AquaSimHeader::DOWN);
-  header.SetNextHop(next);
+  header.SetNextHop(nextHop);
   p->AddHeader(header);
 
   //trace here...

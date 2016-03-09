@@ -40,6 +40,7 @@ def build(bld):
         'model/aqua-sim-rmac.cc',
         'model/aqua-sim-rmac-buffer.cc',
         'model/aqua-sim-tmac.cc',
+        'model/aqua-sim-routing-static.cc',
         ]
 
     module_test = bld.create_ns3_module_test_library('aqua-sim-ng')
@@ -82,6 +83,7 @@ def build(bld):
         'model/aqua-sim-rmac.h',
         'model/aqua-sim-rmac-buffer.h',
         'model/aqua-sim-tmac.h',
+        'model/aqua-sim-routing-static.h',
         ]
 
     if bld.env.ENABLE_EXAMPLES:
