@@ -77,6 +77,16 @@ AquaSimRouting::SetMac(Ptr<AquaSimMac> mac)
   m_mac = mac;
 }
 
+Ptr<AquaSimNetDevice>
+AquaSimRouting::GetNetDevice()
+{
+  return m_device;
+}
+Ptr<AquaSimMac>
+AquaSimRouting::GetMac()
+{
+  return m_mac;
+}
 
 /**
   * send packet p to the upper layer, i.e., port dmux

@@ -64,6 +64,9 @@ protected:
 	  * i.e., whose app layer generates this packet.*/
   virtual bool AmISrc(const Ptr<Packet> p);
   virtual void SendPacket(Ptr<Packet> p);
+  
+  virtual Ptr<AquaSimNetDevice> GetNetDevice();
+  virtual Ptr<AquaSimMac> GetMac();
 protected:
   AquaSimAddress m_myAddr;  //the ip address of this node
   Ptr<AquaSimNetDevice> m_device;
