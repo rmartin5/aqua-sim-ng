@@ -33,7 +33,7 @@ namespace ns3 {
 NS_LOG_COMPONENT_DEFINE("AquaSimEnergyModel");
 NS_OBJECT_ENSURE_REGISTERED(AquaSimEnergyModel);
 
-TypeId 
+TypeId
 AquaSimEnergyModel::GetTypeId()
 {
   static TypeId tid = TypeId ("ns3::AquaSimEnergyModel")
@@ -61,7 +61,7 @@ AquaSimEnergyModel::~AquaSimEnergyModel()
 {
 }
 
-void 
+void
 AquaSimEnergyModel::SetDevice(Ptr<AquaSimNetDevice> device)
 {
   m_device = device;
@@ -73,7 +73,7 @@ AquaSimEnergyModel::GetDevice() const
   return m_device;
 }
 
-void 
+void
 AquaSimEnergyModel::ChangeState(int newState)
 {
   NS_LOG_FUNCTION(this << newState);
@@ -86,7 +86,7 @@ AquaSimEnergyModel::DoGetCurrentA(void) const
   return GetCurrentA();
 }
 
-void 
+void
 AquaSimEnergyModel::HandleEnergyDepletion(void)
 {
   NS_LOG_FUNCTION(this);
@@ -96,14 +96,14 @@ AquaSimEnergyModel::HandleEnergyDepletion(void)
   m_device->GetPhy()->EnergyDeplete();
 }
 
-void 
+void
 AquaSimEnergyModel::HandleEnergyRecharged(void)
 {
   //Not currently used.
 }
 
 
-double 
+double
 AquaSimEnergyModel::GetCurrentA(void) const
 {
   //Not currently used.
@@ -111,14 +111,14 @@ AquaSimEnergyModel::GetCurrentA(void) const
   return 0;
 }
 
-double 
+double
 AquaSimEnergyModel::GetTotalEnergyConsumption(void) const
 {
   return m_totalEnergyConsumption;
 }
 
 //only called by DeviceEnergyModel helper...
-void 
+void
 AquaSimEnergyModel::SetEnergySource(Ptr<EnergySource> source)
 {
   NS_LOG_FUNCTION(this);
@@ -173,7 +173,11 @@ AquaSimEnergyModel::GetEnergy()
 {
   return m_energy;
 }
-
+double
+AquaSimEnergyModel::GetInitialEnergy()
+{
+  return m_initialEnergy;
+}
 
 void
 AquaSimEnergyModel::DecrIdleEnergy(double t)

@@ -129,3 +129,195 @@ DRoutingHeader::SetEntryNum(uint32_t entryNum)
 {
   m_entryNum = entryNum;
 }
+
+/*
+* Vector Based Routing
+*/
+NS_OBJECT_ENSURE_REGISTERED(VBHeader);
+
+VBHeader::VBHeader()
+{
+}
+
+VBHeader::~VBHeader()
+{
+}
+
+TypeId
+VBHeader::GetTypeId()
+{
+  static TypeId tid = TypeId("ns3::VBHeader")
+    .SetParent<Header>()
+    .AddConstructor<VBHeader>()
+  ;
+  return tid;
+}
+
+uint32_t
+VBHeader::Deserialize(Buffer::Iterator start)
+{
+  Buffer::Iterator i = start;
+  m_messType = i.ReadU8();
+  m_pkNum = i.ReadU32();
+  m_targetAddr = (AquaSimAddress) i.ReadU8();
+  m_senderAddr = (AquaSimAddress) i.ReadU8();
+  m_forwardAddr = (AquaSimAddress) i.ReadU8();
+  m_dataType = i.ReadU8();
+  m_originalSource.x = ( (double) i.ReadU16() ) / 1000.0;
+  m_originalSource.y = ( (double) i.ReadU16() ) / 1000.0;
+  m_originalSource.z = ( (double) i.ReadU16() ) / 1000.0;
+  m_token = ((double) i.ReadU32()) / 1000.0;
+  m_ts = ((double) i.ReadU32()) / 1000.0;
+  m_range = ((double) i.ReadU32()) / 1000.0;
+
+  return GetSerializedSize();
+}
+
+uint32_t
+VBHeader::GetSerializedSize(void) const
+{
+  //reserved bytes for header
+  return (1+4+1+1+1+1+6+4+4+4);
+}
+
+void
+VBHeader::Serialize(Buffer::Iterator start) const
+{
+  Buffer::Iterator i = start;
+  i.WriteU8(m_messType);
+  i.WriteU32(m_pkNum);
+  i.WriteU8(m_targetAddr.GetAsInt());
+  i.WriteU8(m_senderAddr.GetAsInt());
+  i.WriteU8(m_forwardAddr.GetAsInt());
+  i.WriteU8(m_dataType);
+
+  //Messy...
+  i.WriteU16 ((uint16_t)(m_originalSource.x*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(m_originalSource.y*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(m_originalSource.z*1000.0 +0.5));
+
+  i.WriteU32((uint32_t)(m_token*1000.0 + 0.5));
+  i.WriteU32((uint32_t)(m_ts*1000.0 + 0.5));
+  i.WriteU32((uint32_t)(m_range*1000.0 + 0.5));
+}
+
+void
+VBHeader::Print(std::ostream &os) const
+{
+  //TODO messType print out needs to be a switch case using DEFINE names
+  os << "Vector Based Routing Header is: messType=" << m_messType <<
+   " pkNum=" << m_pkNum << " targetAddr=" << m_targetAddr << " senderAddr=" <<
+   m_senderAddr << " forwardAddr=" << m_forwardAddr << " dataType=" <<
+   m_dataType << " originalSource=" << m_originalSource.x << "," <<
+   m_originalSource.y << "," << m_originalSource.z << " token=" << m_token <<
+   " ts=" << m_ts << " range=" << m_range << "\n";
+}
+
+TypeId
+VBHeader::GetInstanceTypeId(void) const
+{
+  return GetTypeId();
+}
+
+
+void
+VBHeader::SetMessType(uint8_t messType)
+{
+  m_messType = messType;
+}
+void
+VBHeader::SetPkNum(uint32_t pkNum)
+{
+  m_pkNum = pkNum;
+}
+void
+VBHeader::SetTargetAddr(AquaSimAddress targetAddr)
+{
+  m_targetAddr = targetAddr;
+}
+void
+VBHeader::SetSenderAddr(AquaSimAddress senderAddr)
+{
+  m_senderAddr = senderAddr;
+}
+void
+VBHeader::SetForwardAddr(AquaSimAddress forwardAddr)
+{
+  m_forwardAddr = forwardAddr;
+}
+void
+VBHeader::SetDataType(uint8_t dataType)
+{
+  m_dataType = dataType;
+}
+void
+VBHeader::SetOriginalSource(Vector3D originalSource)
+{
+  m_originalSource = originalSource;
+}
+void
+VBHeader::SetToken(double token)
+{
+  m_token = token;
+}
+void
+VBHeader::SetTs(double ts)
+{
+  m_ts = ts;
+}
+void
+VBHeader::SetRange(double range)
+{
+  m_range = range;
+}
+
+uint8_t
+VBHeader::GetMessType()
+{
+  return m_messType;
+}
+uint32_t
+VBHeader::GetPkNum()
+{
+  return m_pkNum;
+}
+AquaSimAddress
+VBHeader::GetTargetAddr()
+{
+  return m_targetAddr;
+}
+AquaSimAddress
+VBHeader::GetSenderAddr()
+{
+  return m_senderAddr;
+}
+AquaSimAddress
+VBHeader::GetForwardAddr()
+{
+  return m_forwardAddr;
+}
+uint8_t
+VBHeader::GetDataType()
+{
+  return m_dataType;
+}
+Vector3D
+VBHeader::GetOriginalSource()
+{
+  return m_originalSource;
+}
+double
+VBHeader::GetToken()
+{
+  return m_token;
+}
+double
+VBHeader::GetTs()
+{
+  return m_ts;
+}
+double
+VBHeader::GetRange()
+{
+  return m_range;
+}

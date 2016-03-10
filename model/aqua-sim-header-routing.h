@@ -26,6 +26,7 @@
 
 #include "ns3/header.h"
 //#include "ns3/nstime.h"
+#include "ns3/vector.h"
 
 #include "aqua-sim-address.h"
 
@@ -64,6 +65,67 @@ private:
   uint32_t m_entryNum; // Packet length (in bytes)
   //add by jun-------routing table
 }; // class DRoutingHeader
+
+/*
+ *  Vector Based Routing
+ */
+class VBHeader : public Header
+{
+public:
+  VBHeader();
+  virtual ~VBHeader();
+  static TypeId GetTypeId();
+
+  //Setters
+  void SetMessType(uint8_t messType);
+  void SetPkNum(uint32_t pkNum);
+  void SetTargetAddr(AquaSimAddress targetAddr);
+  void SetSenderAddr(AquaSimAddress senderAddr);
+  void SetForwardAddr(AquaSimAddress forwardAddr);
+  void SetDataType(uint8_t dataType);
+  void SetOriginalSource(Vector3D originalSource);
+  void SetToken(double token);
+  void SetTs(double ts);
+  void SetRange(double range);
+
+  //Getters
+  uint8_t GetMessType();
+  uint32_t GetPkNum();
+  AquaSimAddress GetTargetAddr();
+  AquaSimAddress GetSenderAddr();
+  AquaSimAddress GetForwardAddr();
+  uint8_t GetDataType();
+  Vector3D GetOriginalSource();
+  double GetToken();
+  double GetTs();
+  double GetRange();
+
+  //inherited methods
+  virtual uint32_t GetSerializedSize(void) const;
+  virtual void Serialize (Buffer::Iterator start) const;
+  virtual uint32_t Deserialize (Buffer::Iterator start);
+  virtual void Print (std::ostream &os) const;
+  virtual TypeId GetInstanceTypeId(void) const;
+  
+private:
+  uint8_t m_messType;  //message type
+  uint32_t m_pkNum;   //packet sequence num
+  AquaSimAddress m_targetAddr; // the target addr of this data
+  AquaSimAddress m_senderAddr;  //original sender addr
+  AquaSimAddress m_forwardAddr;// the forwarder addr
+  // AquaSimAddress next_nodes[MAX_NEIGHBORS];
+  //int num_next;
+  uint8_t m_dataType; //what is this for?
+
+  Vector3D m_originalSource;
+  //struct uw_extra_info info;  //TODO set this up for VBF
+
+  double m_token;
+  double m_ts;      // Timestamp when pkt is generated.
+  double m_range;    // target range
+  //int report_rate;               // For simple diffusion only.
+  //int attr[MAX_ATTRIBUTE];
+};  // class VBHeader
 
 }  // namespace ns3
 

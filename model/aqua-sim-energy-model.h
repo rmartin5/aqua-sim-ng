@@ -70,6 +70,7 @@ public:
   double GetTxPower(void);
   double GetIdlePower(void);
   double GetEnergy(void);
+  double GetInitialEnergy(void);
   void DecrIdleEnergy(double t);
   void DecrRcvEnergy(double t);
   void DecrTxEnergy(double t);

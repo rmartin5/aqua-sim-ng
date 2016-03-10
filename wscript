@@ -43,6 +43,7 @@ def build(bld):
         'model/aqua-sim-routing-static.cc',
         'model/aqua-sim-header-routing.cc',
         'model/aqua-sim-routing-dynamic.cc',
+        'model/aqua-sim-routing-flooding.cc',
         ]
 
     module_test = bld.create_ns3_module_test_library('aqua-sim-ng')
@@ -88,6 +89,7 @@ def build(bld):
         'model/aqua-sim-routing-static.h',
         'model/aqua-sim-header-routing.h',
         'model/aqua-sim-routing-dynamic.h',
+        'model/aqua-sim-routing-flooding.h',
         ]
 
     if bld.env.ENABLE_EXAMPLES:

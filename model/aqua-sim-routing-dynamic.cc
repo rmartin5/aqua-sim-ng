@@ -433,7 +433,10 @@ AquaSimDynamicRouting::ForwardData(Ptr<Packet> p)
   {
 		//ash.size() -= IP_HDR_LEN;
     NS_LOG_INFO("ForwardData: dmux->recv not implemented yet for packet=" << p);
-		//dmux_->recv(p, (Handler*)NULL); //should be sending to dmux
+    //dmux_->recv(p, (Handler*)NULL); //should be sending to dmux
+    //SendUp should handle dmux...
+    if(!SendUp(p))
+      NS_LOG_WARN("ForwardData: Something went wrong when passing packet up.");
 		return;
 	}
 	else
