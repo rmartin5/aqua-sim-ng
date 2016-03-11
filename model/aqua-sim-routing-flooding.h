@@ -23,6 +23,7 @@
 #define AQUA_SIM_ROUTING_FLOODING_H
 
 #include "aqua-sim-routing.h"
+#include "aqua-sim-routing-vbf.h"
 
 namespace ns3 {
 
@@ -43,12 +44,10 @@ class AquaSimFloodingRouting : public AquaSimRouting {
  protected:
   int m_pkCount;
   // int port_number;
-  /*  TODO implement these... see vectorbasedforward.h for class info.
-  UWPkt_Hash_Table PktTable;
-  UWPkt_Hash_Table SourceTable;
-  UWPkt_Hash_Table Target_discoveryTable;
-  UWPkt_Hash_Table SinkTable;
-  */
+  AquaSimPktHashTable PktTable;
+  /*AquaSimPktHashTable SourceTable;
+  AquaSimPktHashTable Target_discoveryTable;
+  AquaSimPktHashTable SinkTable;*/    //not used...
   //UWDelayTimer delaytimer;
 
   //Trace *tracetarget;       //TODO Trace Target

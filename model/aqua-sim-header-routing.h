@@ -29,6 +29,8 @@
 #include "ns3/vector.h"
 
 #include "aqua-sim-address.h"
+#include "aqua-sim-routing-buffer.h"
+#include "aqua-sim-datastructure.h"
 
 namespace ns3 {
 
@@ -87,6 +89,7 @@ public:
   void SetToken(double token);
   void SetTs(double ts);
   void SetRange(double range);
+  void SetExtraInfo(uw_extra_info info);
 
   //Getters
   uint8_t GetMessType();
@@ -99,6 +102,7 @@ public:
   double GetToken();
   double GetTs();
   double GetRange();
+  uw_extra_info GetExtraInfo();
 
   //inherited methods
   virtual uint32_t GetSerializedSize(void) const;
@@ -106,7 +110,7 @@ public:
   virtual uint32_t Deserialize (Buffer::Iterator start);
   virtual void Print (std::ostream &os) const;
   virtual TypeId GetInstanceTypeId(void) const;
-  
+
 private:
   uint8_t m_messType;  //message type
   uint32_t m_pkNum;   //packet sequence num
@@ -118,7 +122,7 @@ private:
   uint8_t m_dataType; //what is this for?
 
   Vector3D m_originalSource;
-  //struct uw_extra_info info;  //TODO set this up for VBF
+  struct uw_extra_info m_info;
 
   double m_token;
   double m_ts;      // Timestamp when pkt is generated.

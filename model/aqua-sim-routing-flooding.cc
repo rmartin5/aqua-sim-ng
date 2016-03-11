@@ -68,7 +68,7 @@ AquaSimFloodingRouting::Recv(Ptr<Packet> packet)
   */
 
 	// Packet Hash Table is used to keep info about experienced pkts.
-  /* TODO
+
 	vbf_neighborhood *hashPtr= PktTable.GetHash(vbh.GetSenderAddr(), vbh.GetPkNum());
 
 	// Received this packet before ?
@@ -79,15 +79,13 @@ AquaSimFloodingRouting::Recv(Ptr<Packet> packet)
   }
 	else {
 
-		PktTable.put_in_hash(vbh);
+		PktTable.PutInHash(&vbh);
 
 		// Take action for a new pkt.
 
 		ConsiderNew(packet);
     return true;
 	}
-  */
-  return true;  //TODO REMOVE
 }
 
 void
@@ -148,8 +146,8 @@ AquaSimFloodingRouting::ConsiderNew(Ptr<Packet> pkt)
 void
 AquaSimFloodingRouting::Reset()
 {
-  /*TODO
-	PktTable.reset();*/
+
+	PktTable.Reset();
 	/*
 	   for (int i=0; i<MAX_DATA_TYPE; i++) {
 	   routing_table[i].reset();

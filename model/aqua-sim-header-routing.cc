@@ -170,6 +170,20 @@ VBHeader::Deserialize(Buffer::Iterator start)
   m_ts = ((double) i.ReadU32()) / 1000.0;
   m_range = ((double) i.ReadU32()) / 1000.0;
 
+  //This is bloated.
+  m_info.o.x = ( (double) i.ReadU16() ) / 1000.0;
+  m_info.o.y = ( (double) i.ReadU16() ) / 1000.0;
+  m_info.o.z = ( (double) i.ReadU16() ) / 1000.0;
+  m_info.f.x = ( (double) i.ReadU16() ) / 1000.0;
+  m_info.f.y = ( (double) i.ReadU16() ) / 1000.0;
+  m_info.f.z = ( (double) i.ReadU16() ) / 1000.0;
+  m_info.t.x = ( (double) i.ReadU16() ) / 1000.0;
+  m_info.t.y = ( (double) i.ReadU16() ) / 1000.0;
+  m_info.t.z = ( (double) i.ReadU16() ) / 1000.0;
+  m_info.d.x = ( (double) i.ReadU16() ) / 1000.0;
+  m_info.d.y = ( (double) i.ReadU16() ) / 1000.0;
+  m_info.d.z = ( (double) i.ReadU16() ) / 1000.0;
+
   return GetSerializedSize();
 }
 
@@ -177,7 +191,7 @@ uint32_t
 VBHeader::GetSerializedSize(void) const
 {
   //reserved bytes for header
-  return (1+4+1+1+1+1+6+4+4+4);
+  return (1+4+1+1+1+1+6+4+4+4 +24);
 }
 
 void
@@ -199,18 +213,57 @@ VBHeader::Serialize(Buffer::Iterator start) const
   i.WriteU32((uint32_t)(m_token*1000.0 + 0.5));
   i.WriteU32((uint32_t)(m_ts*1000.0 + 0.5));
   i.WriteU32((uint32_t)(m_range*1000.0 + 0.5));
+
+  //bloated.
+  i.WriteU16 ((uint16_t)(m_info.o.x*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(m_info.o.y*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(m_info.o.z*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(m_info.f.x*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(m_info.f.y*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(m_info.f.z*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(m_info.t.x*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(m_info.t.y*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(m_info.t.z*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(m_info.d.x*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(m_info.d.y*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(m_info.d.z*1000.0 +0.5));
 }
 
 void
 VBHeader::Print(std::ostream &os) const
 {
   //TODO messType print out needs to be a switch case using DEFINE names
-  os << "Vector Based Routing Header is: messType=" << m_messType <<
-   " pkNum=" << m_pkNum << " targetAddr=" << m_targetAddr << " senderAddr=" <<
+  os << "Vector Based Routing Header is: messType=";
+  switch(m_messType) {
+    case INTEREST:          os << "INTEREST"; break;
+    case AS_DATA:           os << "DATA"; break;
+    case DATA_READY:        os << "DATA_READY";   break;
+    case SOURCE_DISCOVERY:  os << "SOURCE_DISCOVERY"; break;
+    case SOURCE_TIMEOUT:    os << "SOURCE_TIMEOUT"; break;
+    case TARGET_DISCOVERY:  os << "TARGET_DISCOVERY";   break;
+    case TARGET_REQUEST:    os << "TARGET_REQUEST"; break;
+    case SOURCE_DENY:       os << "SOURCE_DENY"; break;
+    case V_SHIFT:           os << "V_SHIFT";   break;
+    case FLOODING:          os << "FLOODING"; break;
+    case DATA_TERMINATION:  os << "DATA_TERMINATION"; break;
+    case BACKPRESSURE:      os << "BACKPRESSURE";   break;
+    case BACKFLOODING:      os << "BACKFLOODING";   break;
+    case EXPENSION:         os << "EXPENSION"; break;
+    case V_SHIFT_DATA:      os << "V_SHIFT_DATA"; break;
+    case EXPENSION_DATA:    os << "EXPENSION_DATA";   break;
+  }
+
+  os << " pkNum=" << m_pkNum << " targetAddr=" << m_targetAddr << " senderAddr=" <<
    m_senderAddr << " forwardAddr=" << m_forwardAddr << " dataType=" <<
    m_dataType << " originalSource=" << m_originalSource.x << "," <<
    m_originalSource.y << "," << m_originalSource.z << " token=" << m_token <<
    " ts=" << m_ts << " range=" << m_range << "\n";
+
+  os << "ExtraInfo= StartPoint(" << m_info.o.x << "," << m_info.o.y << "," <<
+    m_info.o.z << ") ForwardPos(" << m_info.f.x << "," << m_info.f.y << "," <<
+    m_info.f.z << ") EndPoint(" << m_info.t.x << "," << m_info.t.y << "," <<
+    m_info.t.z << ") RecvToForwarder(" << m_info.d.x << "," << m_info.d.y << "," <<
+    m_info.d.z << ")\n";
 }
 
 TypeId
@@ -270,6 +323,11 @@ VBHeader::SetRange(double range)
 {
   m_range = range;
 }
+void
+VBHeader::SetExtraInfo(uw_extra_info info)
+{
+  m_info = info;
+}
 
 uint8_t
 VBHeader::GetMessType()
@@ -320,4 +378,9 @@ double
 VBHeader::GetRange()
 {
   return m_range;
+}
+uw_extra_info
+VBHeader::GetExtraInfo()
+{
+  return m_info;
 }
