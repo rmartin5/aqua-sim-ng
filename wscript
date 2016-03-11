@@ -90,6 +90,7 @@ def build(bld):
         'model/aqua-sim-header-routing.h',
         'model/aqua-sim-routing-dynamic.h',
         'model/aqua-sim-routing-flooding.h',
+        'model/aqua-sim-datastructure.h',
         ]
 
     if bld.env.ENABLE_EXAMPLES:

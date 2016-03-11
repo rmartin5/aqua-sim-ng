@@ -22,6 +22,7 @@
 #include "aqua-sim-address.h"
 #include "aqua-sim-header-routing.h"
 #include "aqua-sim-header.h"
+#include "aqua-sim-datastructure.h"
 
 #include "ns3/log.h"
 #include "ns3/nstime.h"
@@ -111,8 +112,7 @@ AquaSimFloodingRouting::ConsiderNew(Ptr<Packet> pkt)
 	//   printf("uwflooding(%d,%d):it is data packet(%d)! it target id is %d  coordinate is %f,%f,%f and range is %f\n",here_.addr_,here_.port_,vbh->pk_num,vbh->target_id.addr_,vbh->info.tx, vbh->info.ty,vbh->info.tz,vbh->range);
 	//  printf("Vectorbasedforward:oops!\n");
 	switch (msg_type) {
-    //TODO once message type has DEFINE
-	case 1://DATA:
+	case AS_DATA:
 		//    printf("uwflooding(%d,%d):it is data packet(%d)! it target id is %d  coordinate is %f,%f,%f and range is %f\n",here_.addr_,here_.port_,vbh->pk_num,vbh->target_id.addr_,vbh->info.tx, vbh->info.ty,vbh->info.tz,vbh->range);
 		nodeAddr = vbh.GetSenderAddr();
 		if (AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()) == nodeAddr)
@@ -251,7 +251,7 @@ AquaSimFloodingRouting::MACsend(Ptr<Packet> pkt, Time delay)
   pkt->RemoveHeader(ash);
 
   /*
-	if (vbh.GetMessType() == DATA)
+	if (vbh.GetMessType() == AS_DATA)
 		ash.size() = (God::instance()->data_pkt_size);
 	else
 		ash.size() = 36;*/
