@@ -232,7 +232,6 @@ VBHeader::Serialize(Buffer::Iterator start) const
 void
 VBHeader::Print(std::ostream &os) const
 {
-  //TODO messType print out needs to be a switch case using DEFINE names
   os << "Vector Based Routing Header is: messType=";
   switch(m_messType) {
     case INTEREST:          os << "INTEREST"; break;
@@ -383,4 +382,173 @@ uw_extra_info
 VBHeader::GetExtraInfo()
 {
   return m_info;
+}
+
+
+
+/*
+ *  Depth Based Routing Header
+ */
+NS_OBJECT_ENSURE_REGISTERED(DBRHeader);
+
+DBRHeader::DBRHeader()
+{
+}
+
+DBRHeader::~DBRHeader()
+{
+}
+
+TypeId
+DBRHeader::GetTypeId()
+{
+  static TypeId tid = TypeId("ns3::DBRHeader")
+    .SetParent<Header>()
+    .AddConstructor<DBRHeader>()
+  ;
+  return tid;
+}
+
+int
+DBRHeader::Size()
+{
+  //not quite right
+  /*int sz;
+  sz = 4 * sizeof(int);
+  sz += 3 * sizeof(double);
+  return sz;*/
+  
+  return GetSerializedSize();
+}
+
+uint32_t
+DBRHeader::Deserialize(Buffer::Iterator start)
+{
+  Buffer::Iterator i = start;
+  m_position.x = ( (double) i.ReadU16() ) / 1000.0;
+  m_position.y = ( (double) i.ReadU16() ) / 1000.0;
+  m_position.z = ( (double) i.ReadU16() ) / 1000.0;
+  m_packetID = i.ReadU32();
+  m_mode = i.ReadU8();
+  m_nhops = i.ReadU16();
+  m_prevHop = (AquaSimAddress) i.ReadU8();
+  m_owner = (AquaSimAddress) i.ReadU8();
+  m_depth = ((double) i.ReadU32()) / 1000.0;
+
+  return GetSerializedSize();
+}
+
+uint32_t
+DBRHeader::GetSerializedSize(void) const
+{
+  //reserved bytes for header
+  return (6+4+1+2+1+1+4);
+}
+
+void
+DBRHeader::Serialize(Buffer::Iterator start) const
+{
+  Buffer::Iterator i = start;
+  i.WriteU16 ((uint16_t)(m_position.x*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(m_position.y*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(m_position.z*1000.0 +0.5));
+  i.WriteU32(m_packetID);
+  i.WriteU8(m_mode);
+  i.WriteU16(m_nhops);
+  i.WriteU8(m_prevHop.GetAsInt());
+  i.WriteU8(m_owner.GetAsInt());
+  i.WriteU32((uint32_t)(m_depth*1000.0 + 0.5));
+}
+
+void
+DBRHeader::Print(std::ostream &os) const
+{
+  os << "Depth Based Routing Header is: position=(" << m_position.x << "," <<
+    m_position.y << "," << m_position.z << ") packetID=" << m_packetID <<
+    " mode=";
+  switch(m_mode) {
+    case DBRH_DATA_GREEDY:   os << "DBRH_DATA_GREEDY"; break;
+    case DBRH_DATA_RECOVER:  os << "DBRH_DATA_RECOVER"; break;
+    case DBRH_BEACON:        os << "DBRH_BEACON";   break;
+  }
+  os << " maxNumHops=" << m_nhops << " prevHopAddr=" << m_prevHop <<
+    " ownerAddr=" << m_owner << " depth=" << m_depth << "\n";
+}
+
+TypeId
+DBRHeader::GetInstanceTypeId(void) const
+{
+  return GetTypeId();
+}
+
+void
+DBRHeader::SetPosition(Vector3D position)
+{
+  m_position = position;
+}
+void
+DBRHeader::SetPacketID(uint32_t packetID)
+{
+  m_packetID = packetID;
+}
+void
+DBRHeader::SetMode(uint8_t mode)
+{
+  m_mode = mode;
+}
+void
+DBRHeader::SetNHops(uint16_t nhops)
+{
+  m_nhops = nhops;
+}
+void
+DBRHeader::SetPrevHop(AquaSimAddress prevHop)
+{
+  m_prevHop = prevHop;
+}
+void
+DBRHeader::SetOwner(AquaSimAddress owner)
+{
+  m_owner = owner;
+}
+void
+DBRHeader::SetDepth(double depth)
+{
+  m_depth = depth;
+}
+
+Vector3D
+DBRHeader::GetPosition()
+{
+  return m_position;
+}
+uint32_t
+DBRHeader::GetPacketID()
+{
+  return m_packetID;
+}
+uint8_t
+DBRHeader::GetMode()
+{
+  return m_mode;
+}
+uint16_t
+DBRHeader::GetNHops()
+{
+  return m_nhops;
+}
+AquaSimAddress
+DBRHeader::GetPrevHop()
+{
+  return m_prevHop;
+}
+AquaSimAddress
+DBRHeader::GetOwner()
+{
+  return m_owner;
+}
+double
+DBRHeader::GetDepth()
+{
+  return m_depth;
 }

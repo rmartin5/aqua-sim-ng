@@ -32,6 +32,10 @@
 #include "aqua-sim-routing-buffer.h"
 #include "aqua-sim-datastructure.h"
 
+#define	DBRH_DATA_GREEDY	0
+#define	DBRH_DATA_RECOVER	1
+#define	DBRH_BEACON	    	2
+
 namespace ns3 {
 
 /*
@@ -130,6 +134,56 @@ private:
   //int report_rate;               // For simple diffusion only.
   //int attr[MAX_ATTRIBUTE];
 };  // class VBHeader
+
+
+/*
+ *  Depth Based Routing Header
+ */
+class DBRHeader : public Header
+{
+public:
+  DBRHeader();
+  virtual ~DBRHeader();
+  static TypeId GetTypeId();
+
+  int Size();
+
+  //Setters
+  void SetPosition(Vector3D position);
+  void SetPacketID(uint32_t packetID);
+  void SetMode(uint8_t mode);
+  void SetNHops(uint16_t nhops);
+  void SetPrevHop(AquaSimAddress prevHop);
+  void SetOwner(AquaSimAddress owner);
+  void SetDepth(double depth);
+
+  //Getters
+  Vector3D GetPosition();
+  uint32_t GetPacketID();
+  uint8_t GetMode();
+  uint16_t GetNHops();
+  AquaSimAddress GetPrevHop();
+  AquaSimAddress GetOwner();
+  double GetDepth(); 
+
+  //inherited methods
+  virtual uint32_t GetSerializedSize(void) const;
+  virtual void Serialize (Buffer::Iterator start) const;
+  virtual uint32_t Deserialize (Buffer::Iterator start);
+  virtual void Print (std::ostream &os) const;
+  virtual TypeId GetInstanceTypeId(void) const;
+
+private:
+  Vector3D m_position;
+  uint32_t m_packetID;  // unique id for packet
+  //int valid_;		// is this header in the packet? //not used...
+  uint8_t m_mode; // routing mode: greedy|recovery|beacon
+  uint16_t m_nhops;		// max # of hops to broadcast
+        // in recovery mode
+  AquaSimAddress m_prevHop;	// the sender
+  AquaSimAddress m_owner;	// from whom the sender got it
+  double m_depth;		// the depth of last hop
+};  // class DBRHeader
 
 }  // namespace ns3
 

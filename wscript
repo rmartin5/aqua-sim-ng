@@ -46,6 +46,7 @@ def build(bld):
         'model/aqua-sim-routing-flooding.cc',
         'model/aqua-sim-routing-buffer.cc',
         'model/aqua-sim-routing-vbf.cc',
+        'model/aqua-sim-routing-dbr.cc',
         ]
 
     module_test = bld.create_ns3_module_test_library('aqua-sim-ng')
@@ -95,6 +96,7 @@ def build(bld):
         'model/aqua-sim-datastructure.h',
         'model/aqua-sim-routing-buffer.h',
         'model/aqua-sim-routing-vbf.h',
+        'model/aqua-sim-routing-dbr.h',
         ]
 
     if bld.env.ENABLE_EXAMPLES:
