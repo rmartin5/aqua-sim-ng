@@ -21,9 +21,12 @@
 #ifndef AQUA_SIM_ROUTING_VBF_H
 #define AQUA_SIM_ROUTING_VBF_H
 
+#include "aqua-sim-routing.h"
 #include "aqua-sim-address.h"
 #include "aqua-sim-datastructure.h"
 #include "ns3/vector.h"
+#include "ns3/random-variable-stream.h"
+#include "ns3/packet.h"
 
 #include <map>
 
@@ -57,10 +60,76 @@ public:
   vbf_neighborhood* GetHash(AquaSimAddress senderAddr, unsigned int pkt_num);
 //private:
 //int lower_counter;
-};
+};  // class AquaSimPktHashTable
 
-//TODO VBF class...
+class AquaSimDataHashTable {
+public:
+  std::map<int*,int*> m_htable;
+  //Tcl_HashTable htable;
 
+  AquaSimDataHashTable() {
+    //Tcl_InitHashTable(&htable, MAX_ATTRIBUTE);
+  }
+
+  void Reset();
+  void PutInHash(int *attr);
+  int* GetHash(int *attr);
+};  // class AquaSimDataHashTable
+
+
+class AquaSimVBF : public AquaSimRouting {
+public:
+  AquaSimVBF();
+  static TypeId GetTypeId(void);
+  virtual bool Recv(Ptr<Packet>);
+
+  // AquaSimVBF_Entry routing_table[MAX_DATA_TYPE];
+protected:
+  int m_pkCount;
+  int m_counter;
+  int m_hopByHop;
+  int m_enableRouting;   //if true, VBF can perform routing functionality. Otherwise, not perform
+  //int m_useOverhear;
+  double m_priority;
+  bool m_measureStatus;
+  // int m_portNumber;
+  AquaSimPktHashTable PktTable;
+  AquaSimPktHashTable SourceTable;
+  AquaSimPktHashTable Target_discoveryTable;
+  AquaSimPktHashTable SinkTable;
+
+  //TODO Trace *tracetarget;       // Trace Target
+  double m_width;
+  // the width is used to test if the node is close enough to the path specified by the packet
+  Ptr<UniformRandomVariable> m_rand;
+
+  void Terminate();
+  void Reset();
+  void ConsiderNew(Ptr<Packet> pkt);
+  void SetDelayTimer(Ptr<Packet>,double);
+  void Timeout(Ptr<Packet>);
+  double Advance(Ptr<Packet> );
+  double Distance(Ptr<Packet> );
+  double Projection(Ptr<Packet>);
+  double CalculateDelay(Ptr<Packet>, Vector3D*);
+  //double RecoveryDelay(Ptr<Packet>, Vector3D*);
+  void CalculatePosition(Ptr<Packet>);
+  void SetMeasureTimer(Ptr<Packet>,double);
+  bool IsTarget(Ptr<Packet>);
+  bool IsCloseEnough(Ptr<Packet>);
+
+
+  Ptr<Packet> CreatePacket();
+  Ptr<Packet> PrepareMessage(unsigned int dtype, AquaSimAddress to_addr, int msg_type);
+
+
+  void DataForSink(Ptr<Packet> pkt);
+  void StopSource();
+  void MACprepare(Ptr<Packet> pkt);
+  void MACsend(Ptr<Packet> pkt, double delay=0);
+
+  //void trace(char *fmt,...);
+};  // class AquaSimVBF
 
 }  // namespace ns3
 

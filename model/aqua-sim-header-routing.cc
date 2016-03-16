@@ -327,6 +327,26 @@ VBHeader::SetExtraInfo(uw_extra_info info)
 {
   m_info = info;
 }
+void
+VBHeader::SetExtraInfo_o(Vector3D position_o)
+{
+  m_info.o = position_o;
+}
+void
+VBHeader::SetExtraInfo_f(Vector3D position_f)
+{
+  m_info.f = position_f;
+}
+void
+VBHeader::SetExtraInfo_t(Vector3D position_t)
+{
+  m_info.t = position_t;
+}
+void
+VBHeader::SetExtraInfo_d(Vector3D position_d)
+{
+  m_info.d = position_d;
+}
 
 uint8_t
 VBHeader::GetMessType()
@@ -417,7 +437,7 @@ DBRHeader::Size()
   sz = 4 * sizeof(int);
   sz += 3 * sizeof(double);
   return sz;*/
-  
+
   return GetSerializedSize();
 }
 

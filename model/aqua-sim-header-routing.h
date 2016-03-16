@@ -94,6 +94,10 @@ public:
   void SetTs(double ts);
   void SetRange(double range);
   void SetExtraInfo(uw_extra_info info);
+  void SetExtraInfo_o(Vector3D position_o);
+  void SetExtraInfo_f(Vector3D position_f);
+  void SetExtraInfo_t(Vector3D position_t);
+  void SetExtraInfo_d(Vector3D position_d);
 
   //Getters
   uint8_t GetMessType();
@@ -164,7 +168,7 @@ public:
   uint16_t GetNHops();
   AquaSimAddress GetPrevHop();
   AquaSimAddress GetOwner();
-  double GetDepth(); 
+  double GetDepth();
 
   //inherited methods
   virtual uint32_t GetSerializedSize(void) const;
