@@ -1006,7 +1006,7 @@ AquaSimVBF::IsCloseEnough(Ptr<Packet> pkt)
 	//double oz=vbh.GetExtraInfo().o.z;  //unused
 
 	/*
-  double tx=vbh.GetExtraInfo().t.x;
+  double tx=vbh.GetExtraInfo().t.x; 
 	double ty=vbh.GetExtraInfo().t.y;
 	double tz=vbh.GetExtraInfo().t.z;
 

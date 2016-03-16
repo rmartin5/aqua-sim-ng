@@ -32,7 +32,7 @@
 
 namespace ns3 {
 
-class VBHeader;
+class VBHeader; 
 
 struct vbf_neighborhood{
   int number;
