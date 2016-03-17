@@ -471,7 +471,7 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 		CalculatePosition(pkt);
 		if (GetNetDevice()->GetAddress()==vbh.GetTargetAddr())
 		{
-		     NS_LOG_INFO("AquaSimVBF::ConsiderNew: target is " << GetNetDevice()->GetAddress());
+		  NS_LOG_INFO("AquaSimVBF::ConsiderNew: target is " << GetNetDevice()->GetAddress());
 			DataForSink(pkt); // process it
 		}
 		else{
@@ -1006,7 +1006,7 @@ AquaSimVBF::IsCloseEnough(Ptr<Packet> pkt)
 	//double oz=vbh.GetExtraInfo().o.z;  //unused
 
 	/*
-  double tx=vbh.GetExtraInfo().t.x; 
+  double tx=vbh.GetExtraInfo().t.x;
 	double ty=vbh.GetExtraInfo().t.y;
 	double tz=vbh.GetExtraInfo().t.z;
 
