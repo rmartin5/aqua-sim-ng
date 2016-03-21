@@ -94,40 +94,38 @@ main (int argc, char *argv[])
   Ptr<ListPositionAllocator> position = CreateObject<ListPositionAllocator> ();
 
   //Static Y and Z dimension for now
-  double m_YBoundry = 0;
-  double m_ZBoundry = 0;
-  double m_XBoundry = 0;
+  Vector3D boundry = Vector3D(0,0,0);
 
   std::cout << "Creating Nodes\n";
 
   for (NodeContainer::Iterator i = nodesCon.Begin(); i != nodesCon.End(); i++)
     {
       Ptr<AquaSimNetDevice> newDevice = CreateObject<AquaSimNetDevice>();
-      position->Add(Vector(m_XBoundry, m_YBoundry, m_ZBoundry));
+      position->Add(boundry);
 
       devices.Add(asHelper.Create(*i, newDevice));
 
       NS_LOG_DEBUG("Node: " << *i << " newDevice: " << newDevice << " Position: " <<
-		     m_XBoundry << "," << m_YBoundry << "," << m_ZBoundry <<
+		     boundry.x << "," << boundry.y << "," << boundry.z <<
 		     " freq:" << newDevice->GetPhy()->GetFrequency());
 		     //<<
 		     //" NDtypeid:" << newDevice->GetTypeId() <<
 		     //" Ptypeid:" << newDevice->GetPhy()->GetTypeId());
 
-      m_XBoundry += 2000;
+      boundry.x += 2000;
     }
 
   for (NodeContainer::Iterator i = sinksCon.Begin(); i != sinksCon.End(); i++)
     {
       Ptr<AquaSimNetDevice> newDevice = CreateObject<AquaSimNetDevice>();
-      position->Add(Vector(m_XBoundry, m_YBoundry, m_ZBoundry));
+      position->Add(boundry);
 
       devices.Add(asHelper.Create(*i, newDevice));
 
       NS_LOG_DEBUG("Sink: " << *i << " newDevice: " << newDevice << " Position: " <<
-		     m_XBoundry << "," << m_YBoundry << "," << m_ZBoundry);
+		     boundry.x << "," << boundry.y << "," << boundry.z);
 
-      m_XBoundry += 2000;
+      boundry.x += 2000;
     }
 
 
@@ -135,8 +133,6 @@ main (int argc, char *argv[])
   mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
   mobility.Install(nodesCon);
   mobility.Install(sinksCon);
-  //asHelper.AttachMobility(nodesCon);
-  //asHelper.AttachMobility(sinksCon);
 
   PacketSocketAddress socket;
   socket.SetAllDevices();

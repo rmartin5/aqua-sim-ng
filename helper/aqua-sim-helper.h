@@ -99,7 +99,6 @@ public:
 			     std::string n7 = "", const AttributeValue &v7 = EmptyAttributeValue ());
 
     Ptr<AquaSimNetDevice> Create (Ptr<Node> node, Ptr<AquaSimNetDevice> device);
-
 private:
 
   Ptr<AquaSimChannel> m_channel;
@@ -115,4 +114,3 @@ private:
 }
 
 #endif /* AQUA_SIM_HELPER_H */
-

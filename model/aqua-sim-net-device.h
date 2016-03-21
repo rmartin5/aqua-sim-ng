@@ -114,6 +114,7 @@ public:
   //void Start(void);
   //void CheckPosition(void);
   inline Time &PositionUpdateTime(void) { return m_positionUpdateTime; }
+  void SetPositionUpdateTime(Time posUpdateTime) { m_positionUpdateTime = posUpdateTime; }
 
   //sink related attributes
   int ClearSinkStatus(void);

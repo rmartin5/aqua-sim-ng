@@ -17,23 +17,18 @@
  *
  * Author: Robert Martin <robert.martin@engr.uconn.edu>
  */
-/******
 
 #ifndef AQUA_SIM_MOBILITY_PATTERN_H
 #define AQUA_SIM_MOBILITY_PATTERN_H
 
 
-#include <string.h>
 #include <cmath>
 #include <vector>
-//#include <random.h>
 #include <stdexcept>
-//#include "ns3/vector.h"
-#include "ns3/nstime.h"
-#include "ns3/mobility-model.h"		//redundant
 
-
- **** should remove AquaSimNode / Node references within this file
+#include "ns3/vector.h"
+#include "ns3/mobility-model.h"
+#include "ns3/timer.h"
 
 
 #ifndef PI
@@ -47,22 +42,21 @@ namespace ns3{
 /* Some redudency within these classes, compared to ns3,
 but for this port this ns2 version will suffix
 */
-/******
 
 class AquaSimMobilityPattern;
 
 class AquaSimPosUpdateHelper : public Timer {
-
 public:
   AquaSimPosUpdateHelper(AquaSimMobilityPattern *mP) : Timer() {
     m_mP = mP;
   }
+  void Expire(void);
 private:
-  void Expire(void);	// this can just use MobilityModel functions...
   AquaSimMobilityPattern * m_mP;
   Timer m_updateIntv;
 };  //class AquaSimPosUpdateHelper
 
+/*  **NOTE: Vector3D does exactly this **
 class Location3D {
 private:
   double m_X, m_Y, m_Z;
@@ -75,65 +69,64 @@ public:
     m_X = X; m_Y = Y; m_Z = Z;
   }
 };  // class Location3D
+*/
 
 class Speed{
 private:
-  double m_dX, m_dY, m_dZ;
+  Vector3D m_speedVect;
 public:
-  Speed(double dX = 0, double dY = 0, double dZ = 0) : m_dX(dX), m_dY(dY), m_dZ(dZ){}
-  void Set(double dX, double dY, double dZ) {
-    m_dX = dX; m_dY = dY; m_dZ = dZ;
+  Speed(Vector3D speedVect = Vector3D(0,0,0) ) : m_speedVect(speedVect) {}
+  void Set(Vector3D speedVect) {
+    m_speedVect = speedVect;
   }
+  Vector3D GetSpeedVect() { return m_speedVect; }
   double GetSpeed() {
-    return std::sqrt(m_dX*m_dX + m_dY*m_dY + m_dZ*m_dZ);
+    return std::sqrt(m_speedVect.x*m_speedVect.x +
+                      m_speedVect.y*m_speedVect.y +
+                      m_speedVect.z*m_speedVect.z);
   }
-  double & dX() { return m_dX; }
-  double & dY() { return m_dY; }
-  double & dZ() { return m_dZ; }
 };  // class Speed
 
 
 struct LocationCacheElem {
-  Location3D loc;
-  Speed sp;
-  LocationCacheElem() : loc(0, 0, 0) {};
+  Vector3D m_loc;
+  Speed m_sp;
+  LocationCacheElem() : m_loc(Vector3D(0,0,0)) {};
   void Set(double X, double Y, double Z, double dX, double dY, double dZ) {
-	  loc.Set(X, Y, Z);
-	  sp.Set(dX, dY, dZ);
+	  m_loc = Vector3D(X,Y,Z);
+	  m_sp.Set(Vector3D(dX,dY,dZ));
   }
 };
 
 class LocationCache{
 private:
-  std::vector<LocationCacheElem> locations;
-  size_t	m_bIndex; //beginning index;
-  size_t	m_size;	//end index
-  Time	m_interval;
-  Time	m_fstUptTime;
+  std::vector<LocationCacheElem> m_locations;
+  size_t m_bIndex; //beginning index;
+  size_t m_size;	//end index
+  double m_interval;
+  double m_fstUptTime;
 
 protected:
   bool	Empty() { return m_size == 0; }
   bool	Full() { return m_size == Capacity(); }
 
 public:
-  LocationCache(Time duration, Time interval,
+  LocationCache(double duration, double interval,
 	  double X, double Y, double Z,
 	  double dX, double dY, double dZ);
 
   size_t Capacity();
-  //Time FirstUpdateTime();
-  Time LastUpdateTime();
-  bool InRange(Time t);
+  //double FirstUpdateTime();
+  double LastUpdateTime();
+  bool InRange(double t);
 
-  LocationCacheElem GetLocByTime(Time t);
+  LocationCacheElem GetLocByTime(double t);
   void AddNewLoc(const LocationCacheElem &lce);
+  LocationCacheElem GetLastLoc();
   /*
-  LocationCacheElem getLastLoc();
   void pop_front();
   const LocationCacheElem & front();
   */
-/******
-
 };  // class LocationCache
 
 
@@ -141,42 +134,51 @@ public:
 * base class of mobility pattern
 * AquaSimNode will possess a member of this type
 */
-/******
 
-class AquaSimMobilityPattern : public Object{
+class AquaSimMobilityPattern : public MobilityModel {
 public:
   AquaSimMobilityPattern();
   virtual ~AquaSimMobilityPattern();
   static TypeId GetTypeId(void);
 
   void Start();
-  void SetNode(AquaSimNode *n);
   void HandleLocUpdate(); //a public interface for AquaSimPosUpdateHelper
-  Time UptIntv() { return m_updateInterval; };
+  double UptIntv() { return m_updateInterval; };
 
   //tell future position
-  LocationCacheElem GetLocByTime(Time t);
+  LocationCacheElem GetLocByTime(double t);
+  void SetBounds(double minx,double miny,double minz,
+                  double maxx, double maxy, double maxz);
+  void SetBounds(Vector3D min, Vector3D max);
+  void SetVelocity(Vector3D vector);
 
 protected:
   virtual LocationCacheElem GenNewLoc(); /* the actual method that each
 					  * derived class need to overload to
 					  * update node's position;
 					  */
-  /*initialize mobility pattern here*/ /******
-
+  /*initialize mobility pattern here*/
   virtual void Init();
 
   //void UpdateGridKeeper();
   void RestrictLocByBound(LocationCacheElem &lce);
-  //void namLogMobility(Time t, LocationCacheElem &lce);	//Not currently implemented
+  void NamLogMobility(double t, LocationCacheElem &lce);
 private:
-  bool BounceByEdge(double &coord, double &speed,
+  bool BounceByEdge(double coord, double speed,
 		double bound, bool lowerBound);
 
+  //topography
+  Vector3D m_minBound;
+  Vector3D m_maxBound;
+
+  //inherited functions
+  virtual Vector DoGetPosition (void) const;
+  virtual void DoSetPosition (const Vector &position);
+  virtual Vector DoGetVelocity (void) const;
+
 protected:
-  AquaSimNode *m_node;
   LocationCache *m_lc;
-  Time m_updateInterval;
+  double m_updateInterval;
   AquaSimPosUpdateHelper m_posUpdateHelper;
 };  //class AquaSimMobilityPattern
 
