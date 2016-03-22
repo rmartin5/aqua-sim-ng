@@ -167,19 +167,20 @@ private:
   bool BounceByEdge(double coord, double speed,
 		double bound, bool lowerBound);
 
-  //topography
-  Vector3D m_minBound;
-  Vector3D m_maxBound;
 
   //inherited functions
   virtual Vector DoGetPosition (void) const;
   virtual void DoSetPosition (const Vector &position);
   virtual Vector DoGetVelocity (void) const;
 
-protected:
+protected:  
   LocationCache *m_lc;
   double m_updateInterval;
   AquaSimPosUpdateHelper m_posUpdateHelper;
+
+  //topography
+  Vector3D m_minBound;
+  Vector3D m_maxBound;
 };  //class AquaSimMobilityPattern
 
 } // namespace ns3
