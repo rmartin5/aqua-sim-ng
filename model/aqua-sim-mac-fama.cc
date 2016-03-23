@@ -210,7 +210,7 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
 
   if( asHeader.GetErrorFlag() )
   {
-      NS_LOG_INFO("RecvProcess: pkt:" << pkt << " is corrupted at time " << Seconds(Simulator::Now()));
+      NS_LOG_INFO("RecvProcess: pkt:" << pkt << " is corrupted at time " << Simulator::Now().GetSeconds());
       //if(drop_)
 	//drop_->recv(pkt,"Error/Collision");
     //else

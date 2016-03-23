@@ -472,7 +472,7 @@ bool AquaSimVBVA::Recv(Ptr<Packet> packet)
 		return false;
 	}
 
-  NS_LOG_FUNCTION(this << GetNetDevice()->GetAddress() << Seconds(Simulator::Now()));
+  NS_LOG_FUNCTION(this << GetNetDevice()->GetAddress() << Simulator::Now().GetSeconds());
 
   VBHeader vbh;
   packet->PeekHeader(vbh);
@@ -1188,7 +1188,7 @@ void AquaSimVBVA::trace (char *fmt,...)
 
 void AquaSimVBVA::SetForwardDelayTimer(Ptr<Packet> pkt, double c)
 {
-  NS_LOG_FUNCTION(this << GetNetDevice()->GetAddress() << Seconds(Simulator::Now()));
+  NS_LOG_FUNCTION(this << GetNetDevice()->GetAddress() << Simulator::Now().GetSeconds());
   Simulator::Schedule(Seconds(c),&AquaSimVBVA::ProcessForwardTimeout,this,pkt);
 }
 
@@ -1611,7 +1611,7 @@ void AquaSimVBVA::ProcessVoidAvoidanceTimeout(Ptr<Packet> pkt)
        } else {
          NS_LOG_WARN("AquaSimVBVA: " << GetNetDevice()->GetAddress() <<
           " set timer  backpressure packet(" << pkt_num << ") delay=" <<
-          c << " at " << Seconds(Simulator::Now()));
+          c << " at " << Simulator::Now().GetSeconds());
           Simulator::Schedule(Seconds(c),&AquaSimVBVA::ProcessBackpressureTimeout,this,pt);
       return;
        }
@@ -1672,7 +1672,7 @@ void AquaSimVBVA::SendDataTermination(const Ptr<Packet> p)
         pkt->AddPacketTag(ptag);
         MACsend(pkt, 0);
         NS_LOG_WARN("AquaSimVBVA: " << GetNetDevice()->GetAddress() <<
-          " send data termination " << pkt_num << " at " << Seconds(Simulator::Now()));
+          " send data termination " << pkt_num << " at " << Simulator::Now().GetSeconds());
 }
 
 // Is sp useful?

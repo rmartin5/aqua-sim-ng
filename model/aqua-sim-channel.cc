@@ -83,7 +83,7 @@ AquaSimChannel::GetDevice (uint32_t i) const
   return m_deviceList[i];
 }
 
-uint32_t 
+uint32_t
 AquaSimChannel::GetId (void) const
 {
   NS_LOG_INFO("AquaSimChannel::GetId not implemented");
@@ -132,7 +132,7 @@ AquaSimChannel::Recv(Ptr<Packet> p, Ptr<AquaSimPhy> phy)
 
 bool
 AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
-{ 
+{
   NS_LOG_FUNCTION(this);
   NS_LOG_DEBUG("Packet:" << p << " Phy:" << tifp << " Channel:" << this);
 
@@ -173,7 +173,7 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
      * Send to each interface a copy, and we will filter the packet
      * in physical layer according to freq and modulation
      */
-    NS_LOG_DEBUG ("Channel. NodeS:" << sender->GetNode() << " NodeR:" << recver->GetNode()
+    NS_LOG_DEBUG ("Channel. NodeS:" << sender->GetNode() << " NodeR:" << recver->GetNode() << " S.Phy:" << sender->GetPhy() << " R.Phy:" << recver->GetPhy() << " packet:" << p
 		  << " TxTime:" << asHeader.GetTxTime());
 
     Simulator::Schedule(pDelay, &AquaSimPhy::Recv, rifp, p);
@@ -203,7 +203,7 @@ AquaSimChannel::GetPropDelay (Ptr<AquaSimNetDevice> tdevice, Ptr<AquaSimNetDevic
 
   return m_prop->PDelay(GetMobilityModel(tdevice), GetMobilityModel(rdevice));
 }
-   	
+
 double
 AquaSimChannel::Distance(Ptr<AquaSimNetDevice> tdevice, Ptr<AquaSimNetDevice> rdevice)
 {

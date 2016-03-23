@@ -397,7 +397,7 @@ AquaSimCopeMac::Start()
 {
   m_device->SetTransmissionStatus(NIDLE);
 
-  m_dataStartTime = Seconds(3*m_NDInterval + 7);
+  m_dataStartTime = 3*m_NDInterval + Seconds(7);
   Time MaxRTT = Seconds(2*1000/1500.0);
   m_ackTimeOut = m_revAckAccumTime + m_dataAckAccumTime + 2*MaxRTT + Seconds(5); //5 is time error
 
@@ -501,7 +501,7 @@ AquaSimCopeMac::RecvProcess(Ptr<Packet> pkt)
 	if( ash.GetErrorFlag() )
 	{
 		//NS_LOG_WARN("RecvProcess: node" << m_device->GetNode() <<
-		//	  " gets a corrupted packet at " << Seconds(Simulator::Now()));
+		//	  " gets a corrupted packet at " << Simulator::Now().GetSeconds());
 		/*if(drop_)
 		                drop_->recv(pkt,"Error/Collision");
 		   else*/
@@ -747,7 +747,7 @@ AquaSimCopeMac::ProcessNDReply(Ptr<Packet> pkt)
   CopeHeader ch;
   pkt->PeekHeader(ash);
   pkt->PeekHeader(ch);
-  NS_LOG_FUNCTION(this << m_device->GetNode() << ch.GetSA() << Seconds(Simulator::Now()));
+  NS_LOG_FUNCTION(this << m_device->GetNode() << ch.GetSA() << Simulator::Now().GetSeconds());
 
   uint32_t size = pkt->GetSize();
   uint8_t *data = new uint8_t[size];

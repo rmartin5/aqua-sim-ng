@@ -56,9 +56,9 @@ AquaSimPhyCmn::AquaSimPhyCmn(void) :
   m_channel = NULL;
   m_mac = NULL;
 
-  m_ptLevel = 0; 
+  m_ptLevel = 0;
   m_ptConsume = 0.660;
-  m_prConsume = 0.395; 
+  m_prConsume = 0.395;
   m_PoweredOn = true;
 
   m_RXThresh = 0;
@@ -367,7 +367,7 @@ AquaSimPhyCmn::Decodable(double noise, double ps) {
 * different channel model may require different information
 * overload this method if needed
 */
-Ptr<Packet> 
+Ptr<Packet>
 AquaSimPhyCmn::StampTxInfo(Ptr<Packet> p) {
 NS_LOG_FUNCTION(this << "not currently supported.");
 return p;
@@ -379,7 +379,7 @@ return p;
 */
 bool
 AquaSimPhyCmn::Recv(Ptr<Packet> p) {  // Handler* h
-  NS_LOG_FUNCTION(this << p);
+  NS_LOG_FUNCTION(this << p << "at time" << Simulator::Now().GetSeconds());
 
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
@@ -479,7 +479,7 @@ AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p) {
 */
 bool
 AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
-  NS_LOG_FUNCTION(this);
+  NS_LOG_FUNCTION(this << p);
 
   AquaSimHeader asHeader;
   p->RemoveHeader(asHeader);
@@ -539,7 +539,7 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
 
   p->AddHeader(asHeader);
 
-  asHeader.Print(std::cout);
+  //asHeader.Print(std::cout);
 
   return m_channel->Recv(p, this);
 }
@@ -616,7 +616,7 @@ AquaSimPhyCmn::PowerOff() {
   }
 }
 
-void 
+void
 AquaSimPhyCmn::Dump(void) const
 {
   NS_LOG_DEBUG("AquaSimPhyCmn Dump: Channel(" << m_channel << ") " <<

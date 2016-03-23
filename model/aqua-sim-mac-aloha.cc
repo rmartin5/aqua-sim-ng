@@ -151,7 +151,7 @@ void AquaSimAloha::TxProcess(Ptr<Packet> pkt)
 
   Time time;
   if( Simulator::Now().GetDouble() > 500 )	//why?
-    time = Seconds(Simulator::Now());
+    time = Simulator::Now();
   alohaH.SetPType(AlohaHeader::DATA);
 	alohaH.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 
@@ -217,7 +217,7 @@ void AquaSimAloha::SendPkt(Ptr<Packet> pkt)
 
     case NIDLE:
       m_device->SetTransmissionStatus(SEND);
-      asHeader.SetTimeStamp(Seconds(Simulator::Now())); //why?
+      asHeader.SetTimeStamp(Simulator::Now()); //why?
       asHeader.SetDirection(AquaSimHeader::DOWN);	//already set...
 
       //ACK doesn't affect the status, only process DATA here
@@ -307,7 +307,7 @@ void AquaSimAloha::RecvProcess(Ptr<Packet> pkt)
     if( recver == m_device->GetAddress() || recver == AquaSimAddress::GetBroadcast() ) {
 	//size() -= alohaH.size();
 	SendUp(pkt->Copy());
-	if ( m_AckOn && (recver != AquaSimAddress::GetBroadcast()))	
+	if ( m_AckOn && (recver != AquaSimAddress::GetBroadcast()))
 	    ReplyACK(pkt->Copy());
 	else
 	    ProcessPassive();

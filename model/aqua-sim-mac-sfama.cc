@@ -106,7 +106,7 @@ AquaSimSFama::RecvProcess(Ptr<Packet> p)
   p->PeekHeader(SFAMAh);
   p->PeekHeader(mach);
 
-  NS_LOG_DEBUG("Time:" << Seconds(Simulator::Now()) << ",node:" << m_device->GetNode() <<
+  NS_LOG_DEBUG("Time:" << Simulator::Now().GetSeconds() << ",node:" << m_device->GetNode() <<
                 ",node " << mach.GetDA() << " recv from node " << mach.GetSA());
 
 		switch( SFAMAh.GetPType() ) {
@@ -637,7 +637,7 @@ AquaSimSFama::SendPkt(Ptr<Packet> pkt)
 			m_device->SetTransmissionStatus(SEND);
 			ash.SetTimeStamp(Simulator::Now());
 			pkt->PeekHeader(mach);
-			NS_LOG_DEBUG(Seconds(Simulator::Now()) << ": node " << mach.GetSA() <<
+			NS_LOG_DEBUG(Simulator::Now().GetSeconds() << ": node " << mach.GetSA() <<
 					       " send to node " << mach.GetDA() );
 			pkt->AddHeader(ash);
 			SendDown(pkt);
@@ -739,7 +739,7 @@ AquaSimSFama::WaitReplyTimerProcess(bool directcall)
 	double backoff_time = RandBackoffSlots()*m_slotLen + GetTime2ComingSlot(Simulator::Now().ToDouble(Time::S));
 	#ifdef AquaSimSFama_DEBUG
 	if( !directcall )
-    NS_LOG_WARN(Seconds(Simulator::Now()) << " node " << m_device->GetNode() << "TIME OUT!!!!!");
+    NS_LOG_WARN(Simulator::Now().GetSeconds() << " node " << m_device->GetNode() << "TIME OUT!!!!!");
 	#endif  //AquaSimSFama_DEBUG
 	if( directcall ) {
 		SetStatus(BACKOFF_FAIR);
@@ -833,7 +833,7 @@ AquaSimSFama::SendDataPkt(Ptr<Packet> pkt)
 			m_device->SetTransmissionStatus(SEND);
 			ash.SetTimeStamp(Simulator::Now());
       pkt->PeekHeader(mach);
-      NS_LOG_DEBUG(Seconds(Simulator::Now()) << ": node " << mach.GetSA() <<
+      NS_LOG_DEBUG(Simulator::Now().GetSeconds() << ": node " << mach.GetSA() <<
             " send to node " << mach.GetDA() );
       pkt->AddHeader(ash);
 			SendDown(pkt);
@@ -873,7 +873,7 @@ AquaSimSFama::SlotInitHandler()
 void
 AquaSimSFama::PrintAllQ()
 {
-  NS_LOG_INFO("Time " << Seconds(Simulator::Now()) << " node " <<
+  NS_LOG_INFO("Time " << Simulator::Now().GetSeconds() << " node " <<
                 m_device->GetNode() << ". m_CachedPktQ:");
   NS_LOG_INFO(m_CachedPktQ);
   NS_LOG_INFO("m_sendingPktQ:");

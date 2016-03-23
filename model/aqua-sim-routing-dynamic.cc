@@ -47,7 +47,7 @@ AquaSimDynamicRoutingTable::GetTypeId()
 void
 AquaSimDynamicRoutingTable::Print(AquaSimAddress id)
 {
-  NS_LOG_FUNCTION(this << id << Seconds(Simulator::Now()));
+  NS_LOG_FUNCTION(this << id << Simulator::Now().GetSeconds());
 	for (t_table::iterator it = m_rt.begin(); it != m_rt.end(); it++) {
     NS_LOG_INFO(id << "," << (*it).first << "," <<
                   (*it).second.first << "," << it->second.second);
@@ -453,7 +453,7 @@ AquaSimDynamicRouting::ForwardData(Ptr<Packet> p)
       {
         NS_LOG_DEBUG("ForwardData: Node " << RaAddr() <<
             " can not forward a packet destined to " << ash.GetDAddr() <<
-            " at time " << Seconds(Simulator::Now()));
+            " at time " << Simulator::Now().GetSeconds());
 				//drop(p, DROP_RTR_NO_ROUTE);
         p=0;
 				return;
