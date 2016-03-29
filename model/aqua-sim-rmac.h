@@ -391,10 +391,10 @@ public:
 
   //Node* node(void) const {return node_;}
     // to process the incoming packet
-  virtual void RecvProcess(Ptr<Packet> p);
+  virtual bool RecvProcess(Ptr<Packet> p);
 
     // to process the outgoing packet
-  virtual void TxProcess(Ptr<Packet> p);
+  virtual bool TxProcess(Ptr<Packet> p);
 
 }; // class AquaSimRMac
 

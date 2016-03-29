@@ -129,6 +129,7 @@ AquaSimRouting::SendDown(Ptr<Packet> p, AquaSimAddress nextHop, Time delay)
   if(header.GetUId() == -1) header.SetUId(1);
   header.SetDirection(AquaSimHeader::DOWN);
   header.SetNextHop(nextHop);
+  header.SetSAddr(m_myAddr);
   p->AddHeader(header);
 
   //trace here...
@@ -158,10 +159,17 @@ AquaSimRouting::SendDown(Ptr<Packet> p, AquaSimAddress nextHop, Time delay)
 }
 
 void
+AquaSimRouting::SetMyAddr(AquaSimAddress myAddr)
+{
+  m_myAddr = myAddr;
+}
+
+
+void
 AquaSimRouting::SendPacket(Ptr<Packet> p)
 {
   NS_LOG_FUNCTION(this);
-  if (!m_mac->Recv(p))
+  if (!m_mac->TxProcess(p))
     NS_LOG_DEBUG(this << "Mac recv error");
 }
 
@@ -178,7 +186,6 @@ AquaSimRouting::IsDeadLoop(Ptr<Packet> p)
   NS_LOG_FUNCTION(this);
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
-  NS_LOG_DEBUG ("SAddr=" << asHeader.GetSAddr());
   return (asHeader.GetSAddr()==m_myAddr) && (asHeader.GetNumForwards() > 0);
 }
 
@@ -196,7 +203,6 @@ AquaSimRouting::AmISrc(const Ptr<Packet> p)
   NS_LOG_FUNCTION(this);
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
-  NS_LOG_DEBUG ("SAddr=" << asHeader.GetSAddr());
   return (asHeader.GetSAddr()==m_myAddr) && (asHeader.GetNumForwards() == 0);
 }
 
@@ -212,7 +218,6 @@ AquaSimRouting::AmIDst(const Ptr<Packet> p)
   NS_LOG_FUNCTION(this);
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
-  NS_LOG_DEBUG ("Direction=" << asHeader.GetDirection());
   return ((asHeader.GetDirection()==AquaSimHeader::UP) && (asHeader.GetDAddr() == m_myAddr));
 }
 
@@ -229,7 +234,6 @@ AquaSimRouting::AmINextHop(const Ptr<Packet> p)
   NS_LOG_FUNCTION(this);
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
-  NS_LOG_DEBUG ("NextHop=" << asHeader.GetNextHop());
   return ((asHeader.GetNextHop() == m_myAddr)|| ( asHeader.GetNextHop() == AquaSimAddress::GetBroadcast() ));
 }
 

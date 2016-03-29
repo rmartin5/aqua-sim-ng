@@ -97,66 +97,59 @@ AquaSimStaticRouting::ReadRouteTable(char *filename)
 
 
 bool
-AquaSimStaticRouting::Recv(Ptr<Packet> p)
+AquaSimStaticRouting::Recv (Ptr<Packet> p)
 {
   NS_LOG_FUNCTION(this << p);
   AquaSimHeader ash;
-	//struct hdr_ip* ih = HDR_IP(p);
-  p->PeekHeader(ash);
+  //struct hdr_ip* ih = HDR_IP(p);
+  p->PeekHeader (ash);
 
+  if (IsDeadLoop (p))
+    {
+      NS_LOG_INFO("Dropping packet " << p << " due to route loop");
+      //drop(p, DROP_RTR_ROUTE_LOOP);
+      p = 0;
+      return false;
+    }
+  else if (AmISrc (p))
+    {
+      //ash->size() +=  SR_HDR_LEN; //add the overhead of static routing's header
+    }
+  else if (!AmINextHop (p))
+    {
+      NS_LOG_INFO("Dropping packet " << p << " due to duplicate");
+      //drop(p, DROP_MAC_DUPLICATE);
+      p = 0;
+      return false;
+    }
 
-  if (ash.GetSAddr() == 0 && ash.GetDAddr() == 0 && ash.GetNextHop() == 0) {
-    /*TODO this should be updated.
-        for simplicity we can just assume this packet was recently created and
-        needs to be populated.
-    */
-  	AquaSimAddress next_hop = FindNextHop(p);
-    SendDown(p, next_hop, Seconds(0.0));
-    return true;
-  }
-  //ash.Print (std::cout);
-  //std::cout << std::endl;
+  //increase the number of forwards
+  p->RemoveHeader (ash);
+  uint8_t numForwards = ash.GetNumForwards () + 1;
+  ash.SetNumForwards (numForwards);
+  p->AddHeader (ash);
 
-	if( IsDeadLoop(p) ) {
-    NS_LOG_INFO("Dropping packet " << p << " due to route loop");
-		//drop(p, DROP_RTR_ROUTE_LOOP);
-    p=0;
-    return false;
-	}
-	else if( AmISrc(p) ) {
-		//ash->size() +=  SR_HDR_LEN; //add the overhead of static routing's header
-	}
-	else if( !AmINextHop(p) ) {
-    NS_LOG_INFO("Dropping packet " << p << " due to duplicate");
-		//drop(p, DROP_MAC_DUPLICATE);
-    p=0;
-		return false;
-	}
+  if (AmIDst (p))
+    {
+      NS_LOG_INFO("I am destination. Sending up.");
+      SendUp (p);
+      return true;
+    }
 
-	//increase the number of forwards
-  p->RemoveHeader(ash);
-  uint8_t numForwards = ash.GetNumForwards() + 1;
-  ash.SetNumForwards(numForwards);
-  p->AddHeader(ash);
-
-	if( AmIDst(p) ) {
-    NS_LOG_INFO("I am destination. Sending up.");
-		SendUp(p);
-		return true;
-	}
-
-	//find the next hop and forward
-	AquaSimAddress next_hop = FindNextHop(p);
-	if( next_hop != AquaSimAddress::GetBroadcast() ) {
-		SendDown(p, next_hop, Seconds(0.0));
-    return true;
-	}
-	else {
-		//fail to find the route, drop it
-    NS_LOG_INFO("Dropping packet " << p << " due to no route");
-		//drop(p, DROP_RTR_NO_ROUTE);
-    p=0;
-	}
+  //find the next hop and forward
+  AquaSimAddress next_hop = FindNextHop (p);
+  if (next_hop != AquaSimAddress::GetBroadcast ())
+    {
+      SendDown (p, next_hop, Seconds (0.0));
+      return true;
+    }
+  else
+    {
+      //fail to find the route, drop it
+      NS_LOG_INFO("Dropping packet " << p << " due to no route");
+      //drop(p, DROP_RTR_NO_ROUTE);
+      p = 0;
+    }
   return false;
 }
 
@@ -169,8 +162,8 @@ AquaSimStaticRouting::FindNextHop(const Ptr<Packet> p)
 {
   AquaSimHeader ash;
   p->PeekHeader(ash);
-	std::map<AquaSimAddress, AquaSimAddress>::iterator it = m_rTable.find(ash.GetDAddr());
-	return it == m_rTable.end() ? AquaSimAddress::GetBroadcast() : it->second;
+  std::map<AquaSimAddress, AquaSimAddress>::iterator it = m_rTable.find(ash.GetDAddr());
+  return it == m_rTable.end() ? AquaSimAddress::GetBroadcast() : it->second;
 }
 
 

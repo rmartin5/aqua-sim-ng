@@ -182,13 +182,13 @@ public:
   ~AquaSimUwan();
   static TypeId GetTypeId(void);
 
-	virtual  void RecvProcess(Ptr<Packet>);
+	virtual  bool RecvProcess(Ptr<Packet>);
 	/*
 	 * UWAN MAC assumes that node knows when it will send out the next packet.
 	 * To simulate such pre-knowledge, we should not send out the outgoing packet in TxProcess(),
 	 * but just queue it and then send out it according to the Schedule via SendoutPkt().
 	 */
-	virtual  void TxProcess(Ptr<Packet>);
+	virtual  bool TxProcess(Ptr<Packet>);
 
 protected:
 	void	SendFrame(Ptr<Packet> p, bool IsMacPkt, Time delay = Seconds(0.0));

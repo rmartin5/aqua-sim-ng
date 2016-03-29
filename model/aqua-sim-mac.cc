@@ -45,7 +45,7 @@ AquaSimMac::GetTypeId(void)
 {
   static TypeId tid = TypeId("ns3::AquaSimMac")
   .SetParent<Object>()
-  .AddConstructor<AquaSimMac>()
+  //.AddConstructor<AquaSimMac>()
   .AddAttribute ("SetNetDevice", "A pointer to connect to the net device.",
     PointerValue (),
     MakePointerAccessor (&AquaSimMac::m_device),
@@ -96,17 +96,6 @@ AquaSimMac::SetAddress(AquaSimAddress addr)
   m_address = addr;
 }
 
-void
-AquaSimMac::RecvProcess(Ptr<Packet> p){
-  NS_LOG_FUNCTION (this << " a dummy version.");
-}
-
-void
-AquaSimMac::TxProcess(Ptr<Packet> p){
-  NS_LOG_FUNCTION(this << "dummy version");
-  if (!m_phy->Recv(p))
-    NS_LOG_DEBUG(this << "Phy Recv error");
-}
 
 void
 AquaSimMac::SetForwardUpCallback(Callback<void, const AquaSimAddress&> upCallback)
@@ -119,7 +108,6 @@ bool
 AquaSimMac::SendUp(Ptr<Packet> p)
 {
   NS_ASSERT(m_device && m_phy && m_rout);
-
   return m_rout->Recv(p);
 }
 
@@ -160,11 +148,10 @@ AquaSimMac::HandleOutgoingPkt(Ptr<Packet> p) {
   TxProcess(p);
 }
 
-bool
+void
 AquaSimMac::Recv(Ptr<Packet> p) {
   //assert(initialized());
   NS_LOG_FUNCTION(this);
-
   NS_ASSERT(m_device && m_phy && m_rout);
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
@@ -174,17 +161,16 @@ AquaSimMac::Recv(Ptr<Packet> p) {
     case (AquaSimHeader::DOWN):
       // Handle outgoing packets.
       HandleOutgoingPkt(p);
-      return true;
+      return;
     case (AquaSimHeader::NONE):
       NS_LOG_WARN(this << "No direction set for packet(" << p << "), dropping");
-      return false;
+      return;
     case (AquaSimHeader::UP):
       // Handle incoming packets.
       HandleIncomingPkt(p);
-      return true;
+      return;
   }
   NS_LOG_DEBUG("Something went very wrong in mac");
-  return false;	//should not be hit.
 }
 
 void

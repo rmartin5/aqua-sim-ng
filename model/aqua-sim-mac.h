@@ -59,9 +59,9 @@ public:
 
   //interfaces for derived MAC protocols
   // to process the incoming packet
-  virtual void RecvProcess(Ptr<Packet> p);
+  virtual bool RecvProcess(Ptr<Packet> p)=0;
   // to process the outgoing packet
-  virtual void TxProcess(Ptr<Packet> p);
+  virtual bool TxProcess(Ptr<Packet> p)=0;
 
   //interfaces for derived base MAC classes
   virtual void HandleIncomingPkt(Ptr<Packet> p);
@@ -86,11 +86,11 @@ public:
 
   double GetPreamble(void);
 
-  bool Recv(Ptr<Packet> p);	//TODO move to private once non-base MAC classes available
 private:
   // to receive packet from upper layer and lower layer
   //we hide this interface and demand derived classes to
   //override RecvProcess and TxProcess
+  void Recv(Ptr<Packet> p);
 
   /*
    * virtual void Recv(Ptr<Packet>);	//handler not imlemented... handler can be 0 unless needed in operation

@@ -98,7 +98,7 @@ AquaSimSFama::GetTypeId(void)
 }
 
 
-void
+bool
 AquaSimSFama::RecvProcess(Ptr<Packet> p)
 {
   SFamaHeader SFAMAh;
@@ -127,12 +127,13 @@ AquaSimSFama::RecvProcess(Ptr<Packet> p)
         NS_LOG_WARN("RecvProcess: unknown packet type.");
 				break;
 		}
-
   p=0;
+	return true;
+
 }
 
 
-void
+bool
 AquaSimSFama::TxProcess(Ptr<Packet> p)
 {
 	//hdr_cmn* cmh = hdr_cmn::access(p);
@@ -162,6 +163,7 @@ AquaSimSFama::TxProcess(Ptr<Packet> p)
 	if( m_CachedPktQ.size() == 1 && GetStatus() == IDLE_WAIT ) {
 		PrepareSendingDATA();
 	}
+	return true;
 }
 
 

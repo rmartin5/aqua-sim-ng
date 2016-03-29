@@ -269,11 +269,11 @@ public:
 //     RTSSilenceHandler rts_silence_handler;
 //Node* node(void) const {return node_;}
 // to process the incomming packet
-  virtual void RecvProcess(Ptr<Packet>);
+  virtual bool RecvProcess(Ptr<Packet>);
 
 
 // to process the outgoing packet
-  virtual void TxProcess(Ptr<Packet>);
+  virtual bool TxProcess(Ptr<Packet>);
 
 private:
   int m_tBackoffCounter;

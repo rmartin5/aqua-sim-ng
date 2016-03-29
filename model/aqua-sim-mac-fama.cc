@@ -124,7 +124,7 @@ AquaSimFama::StatusProcess()
   m_device->SetTransmissionStatus(NIDLE);
 }
 
-void
+bool
 AquaSimFama::TxProcess(Ptr<Packet> pkt)
 {
   //callback to higher level, should be implemented differently
@@ -132,7 +132,7 @@ AquaSimFama::TxProcess(Ptr<Packet> pkt)
 
   if( NeighborList.empty() ) {
       pkt=0;
-      return;
+      return false;
   }
   //figure out how to cache the packet will be sent out!!!!!!!
   AquaSimHeader asHeader;
@@ -175,10 +175,11 @@ AquaSimFama::TxProcess(Ptr<Packet> pkt)
       }
 
   }
+  return true;
 }
 
 
-void
+bool
 AquaSimFama::RecvProcess(Ptr<Packet> pkt)
 {
   AquaSimHeader asHeader;
@@ -205,7 +206,7 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
   if( ( ptag.GetPacketType() == AquaSimPtTag::PT_FAMA)&& (FamaH.GetPType()==FamaHeader::ND) ) {
       ProcessND(pkt);
       pkt=0;
-      return;
+      return false;
   }
 
   if( asHeader.GetErrorFlag() )
@@ -217,7 +218,7 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
 	pkt=0;
 
       DoRemote(2*m_maxPropDelay+m_estimateError);
-      return;
+      return false;
   }
 
 
@@ -233,7 +234,7 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
 	  DoBackoff();
       }
       pkt=0;
-      return;
+      return true;
   }
 
 
@@ -258,15 +259,15 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
 	  if( dst == m_device->GetAddress() ) {
 	      //ptag.SetPacketType(UpperLayerPktType);
 	    	SendUp(pkt);
-	    	return;
+	    	return true;
 	  }
 	  else {
 		DoRemote(m_maxPropDelay+m_estimateError);
 	  }
       }
   }
-
   pkt=0;
+  return true;
 }
 
 void

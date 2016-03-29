@@ -217,9 +217,9 @@ public:
   static TypeId GetTypeId(void);
 
   // to process the incoming packet
-  void RecvProcess(Ptr<Packet> pkt);
+  virtual bool RecvProcess(Ptr<Packet> pkt);
   // to process the outgoing packet
-  void TxProcess(Ptr<Packet> pkt);
+  virtual bool TxProcess(Ptr<Packet> pkt);
 protected:
   void PreSendPkt(Ptr<Packet> pkt, Time delay=Seconds(0.0001));  //send out the packet after delay
   void SendPkt(Ptr<Packet> pkt);

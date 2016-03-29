@@ -41,7 +41,7 @@ NS_LOG_COMPONENT_DEFINE("AquaSimHeader");
 NS_OBJECT_ENSURE_REGISTERED(AquaSimHeader);
 
 AquaSimHeader::AquaSimHeader(void) :
-    m_txTime(0), m_direction(NONE),
+    m_txTime(0), m_direction(DOWN),
     m_numForwards(0), m_errorFlag(0), m_uId(-1),
     m_pt(-1), m_pr(-1), m_txRange(-1),
     m_freq(-1), m_noise(0), m_status(INVALID), m_timestamp(0)
@@ -89,8 +89,9 @@ AquaSimHeader::Deserialize(Buffer::Iterator start)
   m_errorFlag = i.ReadU8();	//wasted space due to only needing 1 bit
   m_uId = i.ReadNtohU16();
 
-  m_pt = i.ReadU32();
-  m_pr = i.ReadU32();
+  //TODO this should be handled seperately in a more precise way
+  m_pt = (double) i.ReadU32() / 10000.0;
+  m_pr = (double) i.ReadU32() / 10000.0;
   m_txRange = i.ReadU16();
   m_freq = i.ReadU16();
   m_noise = i.ReadU16();
@@ -125,8 +126,8 @@ AquaSimHeader::Serialize(Buffer::Iterator start) const
   i.WriteU8(m_errorFlag);
   i.WriteHtonU16(m_uId);
   //src/dst port
-  i.WriteU32(m_pt);
-  i.WriteU32(m_pr);
+  i.WriteU32((uint32_t) (m_pt * 10000.0));
+  i.WriteU32((uint32_t) (m_pr * 10000.0));
   i.WriteU16(m_txRange);
   i.WriteU16(m_freq);
   i.WriteU16(m_noise);

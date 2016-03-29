@@ -76,8 +76,8 @@ public:
   ~AquaSimAloha();
   static TypeId GetTypeId(void);
 
-  void TxProcess(Ptr<Packet> pkt);
-  void RecvProcess(Ptr<Packet> pkt);
+  virtual bool TxProcess(Ptr<Packet> pkt);
+  virtual bool RecvProcess(Ptr<Packet> pkt);
   int m_boCounter;
 
   void	ProcessRetryTimer(AquaSimAlohaAckRetry* timer);

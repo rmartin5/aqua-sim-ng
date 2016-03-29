@@ -387,7 +387,7 @@ AquaSimPhyCmn::Recv(Ptr<Packet> p) {  // Handler* h
 
   if (asHeader.GetDirection() == AquaSimHeader::DOWN) {
     NS_LOG_DEBUG("Phy_Recv DOWN. Pkt counter(" << outPktCounter++ << ") on node(" <<
-		 m_device->GetNode() << ")");
+		 m_device->GetAddress() << ")");
     PktTransmit(p);
   }
   else {
@@ -397,7 +397,7 @@ AquaSimPhyCmn::Recv(Ptr<Packet> p) {  // Handler* h
     }
 
     NS_LOG_DEBUG("Phy_Recv UP. Pkt counter(" << incPktCounter++ << ") on node(" <<
-		 m_device->GetNode() << ")");
+		 m_device->GetAddress() << ")");
     p = PrevalidateIncomingPkt(p);
 
     if (p != NULL) {
@@ -522,9 +522,9 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
   *  Stamp the packet with the interface arguments
   */
   asHeader.Stamp(GetPointer(p), m_pT, m_lambda);
-
   asHeader.SetFreq(m_freq);
-  asHeader.SetPt(m_powerLevels[m_ptLevel]);
+  //TODO testing below asHeader.SetPt(m_powerLevels[m_ptLevel]);
+  asHeader.SetPt(m_pT);
   asHeader.SetModName(m_modulationName);
   asHeader.SetErrorFlag(false);
 
@@ -538,7 +538,6 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
   */
 
   p->AddHeader(asHeader);
-
   //asHeader.Print(std::cout);
 
   return m_channel->Recv(p, this);
@@ -552,7 +551,7 @@ void
 AquaSimPhyCmn::SendPktUp(Ptr<Packet> p) {
   NS_LOG_FUNCTION(this);
 
-  if (!m_mac->Recv(p))
+  if (!m_mac->RecvProcess(p))
     NS_LOG_DEBUG(this << "Mac Recv error");
 }
 

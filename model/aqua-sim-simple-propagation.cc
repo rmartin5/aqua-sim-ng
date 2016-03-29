@@ -91,19 +91,55 @@ AquaSimSimplePropagation::ReceivedCopies (Ptr<AquaSimNetDevice> s,
 
     NS_LOG_DEBUG("dist:" << dist
 		 << " recver:" << pru.recver
-		 << " pDelay" << pru.pDelay
-		 << " pR" << pru.pR);
+		 << " pDelay" << pru.pDelay.GetMilliSeconds()
+		 << " pR" << pru.pR
+		 << " freq" << asHeader.GetFreq()
+		 << " Pt" << asHeader.GetPt());
   }
-
   return res;
 }
-    
+
 double
 AquaSimSimplePropagation::RayleighAtt (double dist, double freq, double pT)
 {
   if (dist <= 0) return 0;
+  /*
   double SL = pT - Thorp(dist, freq);
   return Rayleigh(SL);
+  */
+  //resorting to 1.0 model for reliability purposes
+  NS_LOG_DEBUG("RayleighAtt DUMP: dist(" << dist << ") freq(" << freq << ") pT("
+    << pT << ") Rayleigh(" << Rayleigh(dist,freq) << ") pR(" << pT/Rayleigh(dist,freq) << ")");
+   return pT/Rayleigh(dist,freq);
+}
+
+double
+AquaSimSimplePropagation::Rayleigh (double d, double f)
+{
+  /* the distance unit used for absorption coefficient is km,
+     but for the attenuation, the used unit is meter
+   */
+  double k;
+  k=2;
+  /*
+  if (d <= 500) {
+   k = 3;
+  } else if (d <= 2000) {
+   k = 2;
+  } else {
+   k = 1.5;
+  }
+  */
+
+  double d1=d/1000.0; // convert to km
+  double t1=pow(d,k);
+  double alpha_f=Thorp(d,f);
+  //printf("the alpha_f is %f\n",alpha_f);
+  double alpha=pow(10.0,(alpha_f/10.0));
+  //printf("the alpha is %f\n",alpha);
+  double t3=pow(alpha,d1);
+  // printf("t1 is %f and  t3  is %f and attenuation is %f\n",t1,t3,t1*t3);
+  return t1*t3;
 }
 
 
@@ -132,6 +168,7 @@ AquaSimSimplePropagation::Rayleigh (double SL)
 double
 AquaSimSimplePropagation::Thorp (double dist, double freq)
 {
+  /*TODO re-evaluate all of this attenuation model (from 2.0)
   double k, spre, abso;
 
   if (dist <= 500) {
@@ -147,9 +184,11 @@ AquaSimSimplePropagation::Thorp (double dist, double freq)
   abso = dist/1000 * (0.11 * pow(freq,2) / (1 + pow(freq,2) )
                 + 44 * pow(freq,2) / (4100 + pow(freq,2) )
                 + 0.000275 * pow(freq,2) + 0.003 );
-  
   return spre + abso;
+  */
+  return (0.11 * pow(freq,2) / (1 + pow(freq,2) )
+      + 44 * pow(freq,2) / (4100 + pow(freq,2) )
+      + 0.000275 * pow(freq,2) + 0.0003 );
 }
 
 }  // namespace ns3
-

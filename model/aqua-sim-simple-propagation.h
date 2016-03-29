@@ -37,7 +37,7 @@ class Packet;
 
 class AquaSimSimplePropagation : public AquaSimPropagation
 {
-public:    
+public:
   static TypeId GetTypeId (void);
   AquaSimSimplePropagation (void);
   ~AquaSimSimplePropagation (void);
@@ -49,8 +49,8 @@ public:
 protected:
   virtual double RayleighAtt (double dist, double freq, double pT);
   virtual double Rayleigh (double SL);
+  virtual double Rayleigh (double d, double f);
   virtual double Thorp (double range, double freq);
-
 };  //class AquaSimSimplePropagation
 
 }  // namespace ns3

@@ -140,7 +140,7 @@ void AquaSimGoal::StatusProcess()
 }
 
 //---------------------------------------------------------------------
-void AquaSimGoal::RecvProcess(Ptr<Packet> pkt)
+bool AquaSimGoal::RecvProcess(Ptr<Packet> pkt)
 {
 	AquaSimHeader ash;
 	AlohaHeader mach; //TODO change all AlohaHeader's here to a base case header for mac.
@@ -161,7 +161,7 @@ void AquaSimGoal::RecvProcess(Ptr<Packet> pkt)
 		else*/
       pkt=0;
 
-		return;
+		return false;
 	}
 
 	if( dst == m_device->GetAddress() || dst == AquaSimAddress::GetBroadcast() ) {
@@ -182,7 +182,6 @@ void AquaSimGoal::RecvProcess(Ptr<Packet> pkt)
 			ProcessDataPkt(pkt);
 			//free data if it's not for this node
 			//
-			return;
 			;
 		}
 
@@ -193,13 +192,12 @@ void AquaSimGoal::RecvProcess(Ptr<Packet> pkt)
 		   timeslot to avoid receive-receive collision*/
 		ProcessOverhearedRepPkt(pkt);
 	}
-
-
   pkt=0;
+	return true;
 }
 
 //---------------------------------------------------------------------
-void AquaSimGoal::TxProcess(Ptr<Packet> pkt)
+bool AquaSimGoal::TxProcess(Ptr<Packet> pkt)
 {
 	//this node must be the origin
   AquaSimHeader ash;
@@ -236,6 +234,7 @@ void AquaSimGoal::TxProcess(Ptr<Packet> pkt)
 
   //callback to higher level, should be implemented differently
   //Scheduler::instance().schedule(&CallbackHandler,&CallbackEvent, GOAL_CALLBACK_DELAY);
+	return true;
 }
 
 //---------------------------------------------------------------------

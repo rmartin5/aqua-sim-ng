@@ -125,11 +125,11 @@ AquaSimHelper::AquaSimHelper() :
   m_phy.Set("CPThresh", DoubleValue(10));
   m_phy.Set("CSThresh", DoubleValue(0));
   m_phy.Set("RXThresh", DoubleValue(0));
-  m_phy.Set("PT", DoubleValue(0));
+  m_phy.Set("PT", DoubleValue(0.2818));
   m_phy.Set("Frequency", DoubleValue(25));
   m_phy.Set("K", DoubleValue(2.0));
-  m_mac.SetTypeId("ns3::AquaSimMac");	//TODO update... this is base class.
-  m_routing.SetTypeId("ns3::AquaSimStaticRouting"); //TODO update... this is base class.
+  m_mac.SetTypeId("ns3::AquaSimBroadcastMac");
+  m_routing.SetTypeId("ns3::AquaSimStaticRouting");
 }
 
 AquaSimHelper
@@ -148,6 +148,11 @@ AquaSimHelper::SetChannel(Ptr<AquaSimChannel> channel)
   m_channel = channel;
 }
 
+Ptr<AquaSimChannel>
+AquaSimHelper::GetChannel()
+{
+  return m_channel;
+}
 void
 AquaSimHelper::SetPhy (std::string type,
                        std::string n0, const AttributeValue &v0,

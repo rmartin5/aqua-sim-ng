@@ -4,3 +4,5 @@ def build(bld):
     obj = bld.create_ns3_program('broadcastMAC_example', ['network', 'mobility', 'energy', 'applications', 'aqua-sim-ng'])
     obj.source = 'broadcastMAC_example.cc'
 
+    obj = bld.create_ns3_program('floodtest', ['network', 'mobility', 'energy', 'applications', 'aqua-sim-ng'])
+    obj.source = 'floodtest.cc'

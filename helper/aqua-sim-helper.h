@@ -70,6 +70,7 @@ public:
   static AquaSimHelper Default(void);
 
   void SetChannel(Ptr<AquaSimChannel> channel);
+  Ptr<AquaSimChannel> GetChannel();
   void SetPhy (std::string name,
 			     std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue (),
 			     std::string n1 = "", const AttributeValue &v1 = EmptyAttributeValue (),

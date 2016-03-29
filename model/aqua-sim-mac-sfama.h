@@ -138,9 +138,9 @@ public:
   virtual ~AquaSimSFama();
   static TypeId GetTypeId(void);
 	// to process the incomming packet
-	virtual  void RecvProcess(Ptr<Packet>);
+	virtual  bool RecvProcess(Ptr<Packet>);
 	// to process the outgoing packet
-	virtual  void TxProcess(Ptr<Packet>);
+	virtual  bool TxProcess(Ptr<Packet>);
 
 
 	enum AquaSimSFama_Status m_status;

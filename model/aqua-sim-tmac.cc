@@ -2142,7 +2142,7 @@ it should be virtual function, different class may have
 different versions.
 */
 
-void
+bool
 AquaSimTMac::TxProcess(Ptr<Packet> pkt)
 {
 	//hdr_uwvb* hdr=HDR_UWVB(pkt);
@@ -2161,11 +2161,12 @@ AquaSimTMac::TxProcess(Ptr<Packet> pkt)
 	           " put new data packets in m_txbuffer");
 	if(!m_txbuffer.IsFull())
 		//if(callback_) callback_->handle(&m_statusEvent);
-		return;
+		return false;
+	return true;
 }
 
 
-void
+bool
 AquaSimTMac::RecvProcess(Ptr<Packet> pkt)
 {
   TMacHeader tmac;
@@ -2181,7 +2182,7 @@ AquaSimTMac::RecvProcess(Ptr<Packet> pkt)
     NS_LOG_INFO("RecvProcess:node " << m_device->GetNode() <<
               " gets a corrupted packet from node " << receiver_addr <<
               " at " << Simulator::Now().GetSeconds());
-		return;
+		return false;
 	}
   NS_LOG_INFO("RecvProcess:node " << m_device->GetNode() <<
             " gets a packet from node " << receiver_addr <<
@@ -2190,7 +2191,7 @@ AquaSimTMac::RecvProcess(Ptr<Packet> pkt)
 	if(dst==AquaSimAddress::GetBroadcast()) {
 		if (ptype==PT_ND) ProcessNDPacket(pkt); //this is ND packet
 		if (ptype==PT_SYN) ProcessSYN(pkt);
-		return;
+		return true;
 	}
 
   //this should be switch
@@ -2198,34 +2199,34 @@ AquaSimTMac::RecvProcess(Ptr<Packet> pkt)
 	if ((ptype==PT_SACKND)&&(dst==m_device->GetAddress()))
 	{
 		ProcessShortACKNDPacket(pkt);
-		return;
+		return true;
 	}
 	if (ptype==PT_DATA) {
 		ProcessDataPacket(pkt);
-		return;
+		return true;
 	}
 	if (ptype==PT_ACKDATA) {
 		ProcessACKDataPacket(pkt);
-		return;
+		return true;
 		// printf("underwaterbroadcastmac:this is my packet \n");
 	}
 
 	if(ptype==PT_RTS)
 	{
 		ProcessRTSPacket(pkt);
-		return;
+		return true;
 	}
 
 	if(ptype==PT_CTS)
 	{
 		ProcessCTSPacket(pkt);
-		return;
+		return true;
 	}
   NS_LOG_INFO("RecvProcess:node " << m_device->GetNode() <<
             " this is neither broadcast nor my packet " << dst <<
             " , just drop it at " << Simulator::Now().GetSeconds());
   pkt=0;
-	return;
+	return false;
 }
 
 

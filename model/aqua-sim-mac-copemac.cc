@@ -448,7 +448,7 @@ AquaSimCopeMac::GetTypeId(void)
 }
 
 
-void
+bool
 AquaSimCopeMac::TxProcess(Ptr<Packet> pkt)
 {
   AquaSimHeader ash;
@@ -463,7 +463,7 @@ AquaSimCopeMac::TxProcess(Ptr<Packet> pkt)
   if( m_propDelays.size() == 0 ) {
       NS_LOG_INFO("TxProcess: Node=" << m_device->GetNode() << "doesn't have neighbor.");
       pkt=0;
-      return;
+      return false;
   }
 
   ash.SetErrorFlag(false);
@@ -482,10 +482,11 @@ AquaSimCopeMac::TxProcess(Ptr<Packet> pkt)
 
   //callback to higher level, should be implemented differently
   //Scheduler::instance().schedule(&callback_handler,&callback_event, COPEMAC_CALLBACK_DELAY);
+  return true;
 }
 
 
-void
+bool
 AquaSimCopeMac::RecvProcess(Ptr<Packet> pkt)
 {
 	AquaSimHeader ash;
@@ -506,7 +507,7 @@ AquaSimCopeMac::RecvProcess(Ptr<Packet> pkt)
 		                drop_->recv(pkt,"Error/Collision");
 		   else*/
 		pkt=0;
-		return;
+		return false;
 	}
 
 	if ( dst == m_device->GetAddress() || dst == AquaSimAddress::GetBroadcast() ) {
@@ -539,11 +540,11 @@ AquaSimCopeMac::RecvProcess(Ptr<Packet> pkt)
 		SendUp(pkt);         //record the data received.!!!!
 		//Packet::free(pkt);
 		PrintResult();
-		return;
 	}
 
 
 pkt=0;
+return true;
 }
 
 void

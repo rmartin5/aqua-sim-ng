@@ -2692,7 +2692,7 @@ AquaSimRMac::ProcessSYN(Ptr<Packet> pkt)
 it should be virtual function, different class may have
 different versions.
 */
-void
+bool
 AquaSimRMac::RecvProcess(Ptr<Packet> pkt)
 {
   AquaSimHeader asHeader;
@@ -2713,7 +2713,7 @@ AquaSimRMac::RecvProcess(Ptr<Packet> pkt)
   if(elapsed_time<=ack_window)
     {
       ProcessACKRevPacket(pkt);
-      return;
+      return true;
     }
 
   if (asHeader.GetErrorFlag())
@@ -2721,7 +2721,7 @@ AquaSimRMac::RecvProcess(Ptr<Packet> pkt)
       NS_LOG_INFO("AquaSimRMac:RecvProcess node " << m_device->GetAddress() <<
 		    " gets a corrupted packet at " << Simulator::Now().GetSeconds());
       pkt=0;
-      return;
+      return false;
     }
 
   if(dst==AquaSimAddress::GetBroadcast())
@@ -2732,7 +2732,7 @@ AquaSimRMac::RecvProcess(Ptr<Packet> pkt)
       if (ptype==P_ND) ProcessNDPacket(pkt); //this is ND packet
       if (ptype==P_SYN) ProcessSYN(pkt); // this is ACK_ND packet
       // uptarget_->recv(pkt, this);
-      return;
+      return true;
     }
 
   //  if (ptag.GetPacketType()==AquaSimPtTag::P_ACKREV) {ProcessACKRevPacket(pkt); return;}
@@ -2748,13 +2748,13 @@ AquaSimRMac::RecvProcess(Ptr<Packet> pkt)
       if(ptype==P_ACKDATA) ProcessACKDataPacket(pkt);
       // printf("underwaterbroadcastmac:this is my packet \n");
       //  uptarget_->recv(pkt, this);
-      return;
+      return true;
     }
   NS_LOG_INFO("AquaSimRMac:RecvProcess node " << m_device->GetAddress() <<
 		  " this is neither broadcast nor my packet " << dst <<
 		  ", just drop it at " << Simulator::Now().GetSeconds());
   pkt=0;
-  return;
+  return false;
 }
 
 
@@ -2880,7 +2880,7 @@ AquaSimRMac::ResumeTxProcess()
 it should be virtual function, different class may have
 different versions.
 */
-void
+bool
 AquaSimRMac::TxProcess(Ptr<Packet> pkt)
 {
   NS_LOG_FUNCTION(this << m_device->GetAddress());
@@ -2901,7 +2901,7 @@ AquaSimRMac::TxProcess(Ptr<Packet> pkt)
     {
         //if(callback_) callback_->handle(&status_event);
     }
-  return;
+  return true;
 }
 
 void

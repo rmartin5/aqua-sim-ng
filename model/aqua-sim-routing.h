@@ -51,6 +51,7 @@ public:
   virtual bool Recv(Ptr<Packet> p)=0;	//handler not implemented
   /*send packet p to next_hop after delay*/
   virtual bool SendDown(Ptr<Packet> p, AquaSimAddress nextHop, Time delay);
+  virtual void SetMyAddr(AquaSimAddress myAddr);
 protected:
   /*send packet up to port-demux*/
   virtual bool SendUp(Ptr<Packet> p);			//demux not implemented yet.

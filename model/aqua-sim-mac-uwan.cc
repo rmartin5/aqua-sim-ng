@@ -355,7 +355,7 @@ AquaSimUwan::GenNxCyclePeriod()
 /*
  *process the incoming packet
  */
-void
+bool
 AquaSimUwan::RecvProcess(Ptr<Packet> p)
 {
   UwanSyncHeader SYNC_h;
@@ -378,7 +378,7 @@ AquaSimUwan::RecvProcess(Ptr<Packet> p)
 			drop_->recv(p,"Error/Collision");
      	else*/
       p=0;
-     	return;
+     	return false;
     }
 
 	m_neighbors.insert(src);		//update the neighbor list
@@ -418,19 +418,19 @@ AquaSimUwan::RecvProcess(Ptr<Packet> p)
 
 			if( dst == m_device->GetAddress() || dst == AquaSimAddress::GetBroadcast() ) {
 				SendUp(p);
-				return;
+				return true;
 			}
 
 	}
-
 	//packet sent to other nodes will be freed
   p=0;
+	return false;
 }
 
 /*
  * process the outgoing packet
  */
-void
+bool
 AquaSimUwan::TxProcess(Ptr<Packet> p)
 {
 	/* because any packet which has nothing to do with this node is filtered by
@@ -445,6 +445,7 @@ AquaSimUwan::TxProcess(Ptr<Packet> p)
   m_packetQueue.push(p);
   //callback to higher level, should be implemented differently
 	//Scheduler::instance().schedule(&callback_handler,&callback_event, UWAN_CALLBACK_DELAY);
+  return true;
 }
 
 

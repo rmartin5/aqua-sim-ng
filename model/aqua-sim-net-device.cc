@@ -430,16 +430,20 @@ bool
 AquaSimNetDevice::Send (Ptr< Packet > packet, const Address &dest, uint16_t protocolNumber)
 {
   NS_LOG_FUNCTION(this << packet << dest << protocolNumber);
+  AquaSimHeader ash;
+  ash.SetDAddr(AquaSimAddress::ConvertFrom(dest));
+  packet->AddHeader(ash);
+
   if(m_routing)
     {//Note : https://www.nsnam.org/docs/release/3.24/doxygen/uan-mac-cw_8cc_source.html#l00123
-      NS_LOG_DEBUG("Routing SendDown hit");
+      if(m_mac)
+	m_routing->SetMyAddr(AquaSimAddress::ConvertFrom(m_mac->GetAddress()));
       return m_routing->Recv(packet);
       //return m_routing->SendDown(packet, AquaSimAddress::ConvertFrom(dest), Seconds(0));
     }
   if (m_mac)
     {
-      NS_LOG_DEBUG("Mac SendDown hit");
-      return m_mac->Recv(packet);
+      return m_mac->RecvProcess(packet);
     }
   /*if (m_phy)
     {

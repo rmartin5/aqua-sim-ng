@@ -42,8 +42,8 @@ public:
   ~AquaSimChannel (void);
         //virtual int command(int argc, const char*const* argv);
   static TypeId GetTypeId (void);
-        //double TransmitDistance(){return distCST;}; 
-  
+        //double TransmitDistance(){return distCST;};
+
   void SetNoiseGenerator (Ptr<AquaSimNoiseGen> noiseGen);
   void SetPropagation (Ptr<AquaSimPropagation> prop);
   bool Recv(Ptr<Packet>, Ptr<AquaSimPhy>);
@@ -56,13 +56,14 @@ public:
   uint32_t GetId (void) const;
   virtual uint32_t GetNDevices (void) const;
   Ptr<AquaSimNoiseGen> GetNoiseGen();
+  void PrintCounters();
 
 private:
   bool SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp);
   Time GetPropDelay (Ptr<AquaSimNetDevice> tdevice, Ptr<AquaSimNetDevice> rdevice);
   Ptr<MobilityModel> GetMobilityModel(Ptr<AquaSimNetDevice> device);
-   	
-	/* For list-keeper, channel keeps list of mobilenodes 
+
+	/* For list-keeper, channel keeps list of mobilenodes
 	   listening on to it */
 	//int numNodes_;
 	//MobileNode *xListHead_;
@@ -75,13 +76,16 @@ private:
 	//void sortLists(void);
 	//void updateNodesList(class MobileNode *mn, double oldX);
 	//MobileNode **getAffectedNodes(MobileNode *mn, double radius, int *numAffectedNodes);
-	
+  int allPktCounter;
+  int sentPktCounter;
+  int allRecvPktCounter;
+
 protected:
-        //static double m_distCST;      
+        //static double m_distCST;
         //void EstTransLocation(MobileNode* sender, MobileNode* recver); // to be added by Robert to estimate receiving position
   Ptr<AquaSimPropagation> m_prop;
   Ptr<AquaSimNoiseGen> m_noiseGen;
-  std::vector<Ptr<AquaSimNetDevice> > m_deviceList; 
+  std::vector<Ptr<AquaSimNetDevice> > m_deviceList;
 };  // class AquaSimChannel
 
 } // namespace ns3

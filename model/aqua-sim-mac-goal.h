@@ -291,9 +291,9 @@ public:
   static TypeId GetTypeId(void);
 
 	// to process the incomming packet
-	virtual  void RecvProcess(Ptr<Packet>);
+	virtual  bool RecvProcess(Ptr<Packet>);
 	// to process the outgoing packet
-	virtual  void TxProcess(Ptr<Packet>);
+	virtual  bool TxProcess(Ptr<Packet>);
 
 private:
 	int		m_maxBurst;			//maximum number of packets sent in one burst

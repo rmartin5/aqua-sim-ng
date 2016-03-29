@@ -134,7 +134,7 @@ void AquaSimAloha::StatusProcess(bool isAck)
 
 /*===========================Send and Receive===========================*/
 
-void AquaSimAloha::TxProcess(Ptr<Packet> pkt)
+bool AquaSimAloha::TxProcess(Ptr<Packet> pkt)
 {
   //callback to higher level, should be implemented differently
   //Scheduler::instance().schedule(&CallBack_handler, &m_callbackEvent, CALLBACK_DELAY);
@@ -173,6 +173,7 @@ void AquaSimAloha::TxProcess(Ptr<Packet> pkt)
   {
     SendDataPkt();
   }
+  return true;
 }
 
 
@@ -269,7 +270,7 @@ void AquaSimAloha::SendPkt(Ptr<Packet> pkt)
   }
 }
 
-void AquaSimAloha::RecvProcess(Ptr<Packet> pkt)
+bool AquaSimAloha::RecvProcess(Ptr<Packet> pkt)
 {
   AquaSimHeader asHeader;
   AlohaHeader alohaH;
@@ -288,7 +289,7 @@ void AquaSimAloha::RecvProcess(Ptr<Packet> pkt)
       pkt=0;
 
     //ProcessPassive();
-    return;
+    return false;
   }
 
   if( alohaH.GetPType() == AlohaHeader::ACK ) {
@@ -315,6 +316,7 @@ void AquaSimAloha::RecvProcess(Ptr<Packet> pkt)
 
   }
   pkt=0;
+  return true;
 }
 
 void AquaSimAloha::ReplyACK(Ptr<Packet> pkt)//sendACK
