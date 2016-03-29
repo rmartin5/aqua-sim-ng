@@ -213,7 +213,7 @@ bool AquaSimGoal::TxProcess(Ptr<Packet> pkt)
 	vbh->info.oy = n->Y();
 	vbh->info.oz = n->Z(); */
 
-	//ash->size() += sizeof(AquaSimAddress)*2;  //plus the size of MAC header: Source address and destination address
+	ash.SetSize(ash.GetSize() + sizeof(AquaSimAddress)*2);  //plus the size of MAC header: Source address and destination address
   ash.SetTxTime(GetTxTime(ash.GetSerializedSize()));
   ash.SetNumForwards(0);	//use this area to store number of retrans
 
@@ -267,9 +267,9 @@ AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Ti
 	ash.SetDirection(AquaSimHeader::DOWN);
 	ash.SetErrorFlag(false);
 	ash.SetNextHop(AquaSimAddress::GetBroadcast());
-  // ash size() = goalReqh->size(m_backoffType)+(NSADDR_T_SIZE*DataPktSet.size())/8+1;
+  ash.SetSize(goalReqh.size(m_backoffType)+(NSADDR_T_SIZE*DataPktSet.size())/8+1);
         //sizeof(AquaSimAddress) = 10 in this case.
-	ash.SetTxTime(GetTxTime(goalReqh.size(m_backoffType)+(10*DataPktSet.size())/8+1));
+	ash.SetTxTime(GetTxTime(ash.GetSize()));
 	//ash->addr_type() = NS_AF_ILINK;
 	ash.SetTimeStamp(Simulator::Now());
 
@@ -464,7 +464,7 @@ AquaSimGoal::MakeRepPkt(Ptr<Packet> ReqPkt, Time BackoffTime)
 	ptag.SetPacketType(AquaSimPtTag::PT_GOAL_REP);
 	ash.SetErrorFlag(false);
 	ash.SetNextHop(repH.GetRA());			//reply the sender of request pkt
-	//ash.size() = hdr_GOAL_rep::size(m_backoffType);
+	ash.SetSize(repH.size(m_backoffType));
 	//ash.addr_type() = NS_AF_ILINK;
 	ash.SetTimeStamp(Simulator::Now());
 
@@ -695,7 +695,7 @@ AquaSimGoal::ProcessDataPkt(Ptr<Packet> DataPkt)
 			DataPkt=0;
 		else {
 			m_sinkRecvedList.insert(ash.GetUId());
-			//ash->size() -= sizeof(AquaSimAddress)*2;
+			ash.SetSize(ash.GetSize() - sizeof(AquaSimAddress)*2);
 			SendUp(DataPkt);
 		}
 
@@ -728,7 +728,7 @@ AquaSimGoal::MakeAckPkt(std::set<int> AckSet, bool PSH,  int ReqID)
 	ash.SetDirection(AquaSimHeader::DOWN);
 	ash.SetErrorFlag(false);
 	ash.SetNextHop(goalAckh.GetRA());   //reply the sender of request pkt
-//	ash.size() = goalAckh size() + (NSADDR_T_SIZE*AckSet.size())/8+1;
+	ash.SetSize(goalAckh.size(m_backoffType) + (NSADDR_T_SIZE*AckSet.size())/8+1);
 	//ash.addr_type() = NS_AF_ILINK;
 
 	mach.SetDA(goalAckh.GetRA());

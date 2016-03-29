@@ -143,7 +143,7 @@ AquaSimFama::TxProcess(Ptr<Packet> pkt)
   pkt->RemoveHeader(FamaH);
 	pkt->RemovePacketTag(ptag);
 
-  //size() = m_dataPktSize;
+	asHeader.SetSize(m_dataPktSize);
   asHeader.SetTxTime(m_maxDataTxTime);
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);
@@ -332,7 +332,7 @@ AquaSimFama::MakeND()
   FamaHeader FamaH;
 	AquaSimPtTag ptag;
 
-  //asheader->size() = 2*sizeof(nsaddr_t)+1;
+	asHeader.SetSize(2*sizeof(AquaSimAddress)+1);
   asHeader.SetTxTime(GetTxTime(asHeader.GetSize()));
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);
@@ -370,7 +370,7 @@ AquaSimFama::MakeRTS(AquaSimAddress Recver)
   FamaHeader FamaH;
 	AquaSimPtTag ptag;
 
-  //asheader->size() = GetSizeByTxTime(m_RTSTxTime);
+  asHeader.SetSize(GetSizeByTxTime(m_RTSTxTime.ToDouble(Time::S)));
   asHeader.SetTxTime(m_RTSTxTime);
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);
@@ -423,7 +423,7 @@ AquaSimFama::MakeCTS(AquaSimAddress RTS_Sender)
   FamaHeader FamaH;
 	AquaSimPtTag ptag;
 
-  //asheader->size() = GetSizeByTxTime(m_CTSTxTime);
+  asHeader.SetSize(GetSizeByTxTime(m_CTSTxTime.ToDouble(Time::S)));
   asHeader.SetTxTime(m_CTSTxTime);
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);

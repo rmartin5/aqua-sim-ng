@@ -81,6 +81,7 @@ AquaSimHeader::Deserialize(Buffer::Iterator start)
 {
   Buffer::Iterator i = start;
   m_txTime = Seconds ( ( (double) i.ReadU32 ()) / 1000.0 );
+  m_size = i.ReadU16();
   m_direction = i.ReadU8();
   m_nextHop = (AquaSimAddress) i.ReadU8();
   m_numForwards = i.ReadU8();
@@ -110,7 +111,7 @@ AquaSimHeader::GetSerializedSize(void) const
   example can be seen @ main-packet-header.cc*/
 
   //reserved bytes for header
-  return (4 + 1 + 1 + 1 +1+1+ 1 + 2 + 4 + 4 + 2 + 2 + 2 + 1 + 4);
+  return (4 + 2+1 + 1 + 1 +1+1+ 1 + 2 + 4 + 4 + 2 + 2 + 2 + 1 + 4);
 }
 
 void
@@ -118,6 +119,7 @@ AquaSimHeader::Serialize(Buffer::Iterator start) const
 {
   Buffer::Iterator i = start;
   i.WriteU32((uint32_t)(m_txTime.GetSeconds() * 1000.0 + 0.5));
+  i.WriteU16(m_size);
   i.WriteU8(m_direction);
   i.WriteU8(m_nextHop.GetAsInt());
   i.WriteU8(m_numForwards);
@@ -140,7 +142,7 @@ void
 AquaSimHeader::Print(std::ostream &os) const
 {
   os << "Packet header is  ";
-  os << "TxTime=" << m_txTime << " Direction=";
+  os << "TxTime=" << m_txTime << " Size=" << m_size << " Direction=";
   switch (m_direction){
     case DOWN:  os << " DOWN"; break;
     case NONE:  os << " NONE"; break;
@@ -175,7 +177,8 @@ AquaSimHeader::GetTxTime(void)
 uint32_t
 AquaSimHeader::GetSize(void)
 {
-  return GetSerializedSize();
+  return m_size;
+  //return GetSerializedSize();
 }
 
 uint8_t
@@ -277,6 +280,12 @@ void
 AquaSimHeader::SetTxTime(Time time)
 {
   m_txTime = time;
+}
+
+void
+AquaSimHeader::SetSize(uint16_t size)
+{
+  m_size = size;
 }
 
 void

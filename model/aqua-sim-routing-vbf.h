@@ -24,6 +24,7 @@
 #include "aqua-sim-routing.h"
 #include "aqua-sim-address.h"
 #include "aqua-sim-datastructure.h"
+#include "aqua-sim-channel.h"
 #include "ns3/vector.h"
 #include "ns3/random-variable-stream.h"
 #include "ns3/packet.h"
@@ -32,7 +33,7 @@
 
 namespace ns3 {
 
-class VBHeader; 
+class VBHeader;
 
 struct vbf_neighborhood{
   int number;
@@ -129,6 +130,8 @@ protected:
   void MACsend(Ptr<Packet> pkt, double delay=0);
 
   //void trace(char *fmt,...);
+private:
+  Ptr<AquaSimChannel> m_channel;
 };  // class AquaSimVBF
 
 }  // namespace ns3

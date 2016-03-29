@@ -80,8 +80,8 @@ namespace ns3 {
 
     virtual void UpdateIdleEnergy() = 0;
     /***************
-     * could this just be handled by energy model instead??? AquaSimEnergyModel()
-     **************/
+    * could this just be handled by energy model instead??? AquaSimEnergyModel()
+    **************/
 
     virtual void PowerOn() = 0;
     virtual void PowerOff() = 0;
@@ -116,7 +116,7 @@ namespace ns3 {
   protected:
     virtual Ptr<Packet> PrevalidateIncomingPkt(Ptr<Packet> p) = 0;
     virtual void UpdateTxEnergy(Time txTime, double pT, double pIdle) = 0;
-    virtual void UpdateRxEnergy(Time txTime) = 0;
+    virtual void UpdateRxEnergy(Time txTime, bool errorFlag) = 0;
     virtual Ptr<Packet> StampTxInfo(Ptr<Packet> p) = 0;
     virtual void EnergyDeplete() = 0;
 
@@ -124,10 +124,8 @@ namespace ns3 {
 
 
     virtual void DoDispose();
-    virtual void Expire(void) = 0;
 
     friend class AquaSimEnergyModel;
-
   }; //AquaSimPhy class
 
 } //ns3 namespace

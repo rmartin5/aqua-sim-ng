@@ -71,9 +71,9 @@ public:
   double GetIdlePower(void);
   double GetEnergy(void);
   double GetInitialEnergy(void);
-  void DecrIdleEnergy(double t);
-  void DecrRcvEnergy(double t);
-  void DecrTxEnergy(double t);
+  void DecrIdleEnergy(double t, double idleP);
+  void DecrRcvEnergy(double t, double rcv);
+  void DecrTxEnergy(double t, double pT);
   void DecrEnergy(double t, double decrEnergy);  //allow user to specify energy decr value
 
   /* TODO : Future work needs to incorporate total times in each state */

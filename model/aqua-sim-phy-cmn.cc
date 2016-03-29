@@ -18,7 +18,6 @@
  * Author: Robert Martin <robert.martin@engr.uconn.edu>
  */
 
-//#include ...
 #include <string>
 #include <vector>
 
@@ -43,7 +42,7 @@ NS_OBJECT_ENSURE_REGISTERED(AquaSimPhyCmn);
 
 AquaSimPhyCmn::AquaSimPhyCmn(void) :
     m_powerLevels(1, 0.660),	/*0.660 indicates 1.6 W drained power for transmission*/
-    m_sinrChecker(NULL)//, m_idleTimer(this)
+    m_sinrChecker(NULL)
 {
   NS_LOG_FUNCTION(this);
 
@@ -82,7 +81,7 @@ AquaSimPhyCmn::AquaSimPhyCmn(void) :
   incPktCounter = 0;	//debugging purposes only
   outPktCounter = 0;
 
-  Simulator::Schedule(Time(1.0), &AquaSimPhyCmn::Expire, this);	//start energy drain
+  Simulator::Schedule(Seconds(1), &AquaSimPhyCmn::UpdateIdleEnergy, this); //start energy drain
 }
 
 AquaSimPhyCmn::~AquaSimPhyCmn(void)
@@ -270,81 +269,85 @@ AquaSimPhyCmn::GetNetDevice()
 }
 
 /**
-* update energy for transmitting for duration of P_t
-*/
+ * update energy for transmitting for duration of P_t
+ */
 void
 AquaSimPhyCmn::UpdateTxEnergy(Time txTime, double pT, double pIdle) {
-  NS_LOG_FUNCTION(this << "Currently not implemented");
-  /*double startTime = Simulator::Now().GetSeconds(), endTime = Simulator::Now().GetSeconds() + txTime.GetSeconds();
+	NS_LOG_FUNCTION(this << "Currently not implemented");
+	double startTime = Simulator::Now().GetSeconds(), endTime = Simulator::Now().GetSeconds() + txTime.GetSeconds();
 
-  if (NULL != EM()) {
-    if (startTime >= m_updateEnergyTime) {
-      EM()->DecrIdleEnergy(startTime - m_updateEnergyTime);
-      m_updateEnergyTime = startTime;
-    }
-    EM()->DecrTxEnergy(txTime.GetSeconds());
-    m_updateEnergyTime = endTime;
-  }
-  else
-    NS_LOG_FUNCTION(this << " No EnergyModel set.");
-  */
+	if (NULL != EM()) {
+		if (startTime >= m_updateEnergyTime) {
+			EM()->DecrIdleEnergy(startTime - m_updateEnergyTime, pIdle);
+			m_updateEnergyTime = startTime;
+		}
+		EM()->DecrTxEnergy(txTime.GetSeconds(), pT);
+		m_updateEnergyTime = endTime;
+	}
+	else
+		NS_LOG_FUNCTION(this << " No EnergyModel set.");
 }
 
 
 void
-AquaSimPhyCmn::UpdateRxEnergy(Time txTime) {
+AquaSimPhyCmn::UpdateRxEnergy(Time txTime, bool errorFlag) {
   NS_LOG_FUNCTION(txTime);
 
   double startTime = Simulator::Now().GetSeconds();
   double endTime = startTime + txTime.GetSeconds();
 
-  /*if (EM() == NULL) {
+  if (EM() == NULL) {
     NS_LOG_FUNCTION(this << " No EnergyModel set.");
     return;
   }
-  */
 
   if (startTime > m_updateEnergyTime) {
-    //EM()->DecrIdleEnergy(startTime - m_updateEnergyTime);
-    //EM()->DecrRcvEnergy(txTime.GetSeconds());
+    EM()->DecrIdleEnergy(startTime - m_updateEnergyTime, m_pIdle);
+    EM()->DecrRcvEnergy(txTime.GetSeconds(), m_prConsume);
     m_updateEnergyTime = endTime;
   }
   else{
     /* In this case, this device is receiving some other packet*/
-    if (endTime > m_updateEnergyTime) {		 //TODO check for errors
-      //EM()->DecrRcvEnergy(endTime - m_updateEnergyTime);
+    if (endTime > m_updateEnergyTime && errorFlag)
+    {
+      EM()->DecrRcvEnergy(endTime - m_updateEnergyTime, m_prConsume);
       m_updateEnergyTime = endTime;
     }
   }
 
 
-  /*if (EM()->Energy() <= 0) {
+  if (EM()->GetEnergy() <= 0) {
     EM()->SetEnergy(-1);
-    m_device->LogEnergy(0);
+    //m_device->LogEnergy(0);
+    NS_LOG_INFO("AquaSimPhyCmn::UpdateRxEnergy: -t " << Simulator::Now().GetSeconds() <<
+      " -n " << m_device->GetAddress() << " -e 0");
   }
-  */
 }
 
 void
-AquaSimPhyCmn::UpdateIdleEnergy() {
-  if (!m_PoweredOn /*|| EM() == NULL*/ )
+AquaSimPhyCmn::UpdateIdleEnergy()
+{
+  if (!m_PoweredOn || EM() == NULL )
     return;
 
   if (Simulator::Now().GetSeconds() > m_updateEnergyTime && m_PoweredOn) {
-    //EM()->DecrIdleEnergy(Simulator::Now().GetSeconds() - m_updateEnergyTime);
+    EM()->DecrIdleEnergy(Simulator::Now().GetSeconds() - m_updateEnergyTime, m_pIdle);
     m_updateEnergyTime = Simulator::Now().GetSeconds();
   }
 
   // log device energy
-  /*if (EM()->Energy() > 0) {
-    m_device->LogEnergy(1);
+  if (EM()->GetEnergy() > 0) {
+    //m_device->LogEnergy(1);
+    NS_LOG_INFO("AquaSimPhyCmn::UpdateRxEnergy: -t " << Simulator::Now().GetSeconds() <<
+      " -n " << m_device->GetAddress() << " -e " << EM()->GetEnergy());
   }
   else {
-    m_device->LogEnergy(0);
+    //m_device->LogEnergy(0);
+    NS_LOG_INFO("AquaSimPhyCmn::UpdateRxEnergy: -t " << Simulator::Now().GetSeconds() <<
+      " -n " << m_device->GetAddress() << " -e 0");
   }
-  */
 
-  Simulator::Schedule(Time(1.0), &AquaSimPhyCmn::UpdateIdleEnergy, this);	//m_idleTimer.resched(1.0);
+  Simulator::Schedule(Seconds(1), &AquaSimPhyCmn::UpdateIdleEnergy, this);
 }
 
 bool
@@ -368,9 +371,18 @@ AquaSimPhyCmn::Decodable(double noise, double ps) {
 * overload this method if needed
 */
 Ptr<Packet>
-AquaSimPhyCmn::StampTxInfo(Ptr<Packet> p) {
-NS_LOG_FUNCTION(this << "not currently supported.");
-return p;
+AquaSimPhyCmn::StampTxInfo(Ptr<Packet> p)
+{
+  AquaSimHeader ash;
+  p->RemoveHeader(ash);
+  ash.Stamp(p, m_pT, m_lambda);
+
+  ash.SetFreq(m_freq);
+  ash.SetPt(m_powerLevels[m_ptLevel]);
+  ash.SetModName(m_modulationName);
+
+  p->AddHeader(ash);
+  return p;
 }
 
 /**
@@ -378,7 +390,8 @@ return p;
 * and send it to MAC layer after receiving the entire one
 */
 bool
-AquaSimPhyCmn::Recv(Ptr<Packet> p) {  // Handler* h
+AquaSimPhyCmn::Recv(Ptr<Packet> p)
+{
   NS_LOG_FUNCTION(this << p << "at time" << Simulator::Now().GetSeconds());
 
   AquaSimHeader asHeader;
@@ -405,10 +418,11 @@ AquaSimPhyCmn::Recv(Ptr<Packet> p) {  // Handler* h
       m_sC->AddNewPacket(p);
     }
   }
-  return true; //TODO fix this.
+  return true;
 }
 
-bool AquaSimPhyCmn::MatchFreq(double freq) {
+bool AquaSimPhyCmn::MatchFreq(double freq)
+{
   double epsilon = 1e-6;	//accuracy for float comparison
 
   return std::fabs(freq - m_freq) < epsilon;
@@ -425,7 +439,8 @@ bool AquaSimPhyCmn::MatchFreq(double freq) {
 * 			otherwise, return p
 */
 Ptr<Packet>
-AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p) {
+AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p)
+{
   NS_LOG_FUNCTION(this << p);
 
   AquaSimHeader asHeader;
@@ -450,10 +465,10 @@ AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p) {
   * any packet error set here result from that a packet
   * cannot be detected by the modem, so modem's status doesn't receive
   */
-  if (/*(EM() && EM()->Energy() <= 0) ||*/ Status() == PHY_SLEEP
+  if ((EM() && EM()->GetEnergy() <= 0) || Status() == PHY_SLEEP
 				      || Status() == PHY_SEND
-				      || asHeader.GetPr() < m_RXThresh
-				      || Status() == PHY_DISABLE) {
+				      || asHeader.GetPr() < m_RXThresh)
+  {
 
     /**
     * p still can pass since its signal may affect other packets
@@ -464,10 +479,10 @@ AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p) {
   }
 
   else {
-    Status() = PHY_RECV;
+    SetPhyStatus(PHY_RECV);
   }
 
-  UpdateRxEnergy(txTime);
+  UpdateRxEnergy(txTime, (bool)asHeader.GetErrorFlag());
 
   p->AddHeader(asHeader);
 
@@ -490,7 +505,7 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
     return false;
   }
 
-  if (Status() == PHY_SLEEP || /*(NULL != EM() && EM()->Energy() <= 0) ||*/ Status() == PHY_DISABLE)
+  if (Status() == PHY_SLEEP || (NULL != EM() && EM()->GetEnergy() <= 0))
   {
     NS_LOG_DEBUG("Unable to reach phy layer (sleep/disable)");
     p = 0;
@@ -521,12 +536,7 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
   /*
   *  Stamp the packet with the interface arguments
   */
-  asHeader.Stamp(GetPointer(p), m_pT, m_lambda);
-  asHeader.SetFreq(m_freq);
-  //TODO testing below asHeader.SetPt(m_powerLevels[m_ptLevel]);
-  asHeader.SetPt(m_pT);
-  asHeader.SetModName(m_modulationName);
-  asHeader.SetErrorFlag(false);
+  StampTxInfo(p);
 
   Time txSendDelay = this->CalcTxTime(p->GetSize(), &m_modulationName );
   Simulator::Schedule(txSendDelay, &AquaSimPhyCmn::SetPhyStatus, this, PHY_IDLE);
@@ -582,12 +592,11 @@ AquaSimPhyCmn::PowerOn() {
   {
     m_PoweredOn = true;
     m_status = PHY_IDLE;
-    /*if (EM() != NULL) {
+    if (EM() != NULL) {
 	    //minus the energy consumed by power on
-	    EM()->SetEnergy(std::max(0, EM->Energy() - m_EnergyTurnOn));
-	    m_updateEnergyTime = std::max(Simulator::Now().GetSeconds, m_updateEnergyTime);
+	    EM()->SetEnergy(std::max(0.0, EM()->GetEnergy() - m_EnergyTurnOn));
+	    m_updateEnergyTime = std::max(Simulator::Now().GetSeconds(), m_updateEnergyTime);
     }
-    */
   }
 }
 
@@ -601,15 +610,15 @@ AquaSimPhyCmn::PowerOff() {
   {
     m_PoweredOn = false;
     m_status = PHY_SLEEP;
-    /*if (EM() == NULL)
+    if (EM() == NULL)
 	    return;
-    */
+
 
     //minus the energy consumed by power off
-    //EM()->SetEnergy(std::max(0, EM->Energy() - m_EnergyTurnOff));
+    EM()->SetEnergy(std::max(0.0, EM()->GetEnergy() - m_EnergyTurnOff));
 
     if (Simulator::Now().GetSeconds() > m_updateEnergyTime) {
-      //EM()->DecrIdleEnergy(Simulator::Now().GetSeconds() - m_updateEnergyTime);
+      EM()->DecrIdleEnergy(Simulator::Now().GetSeconds() - m_updateEnergyTime, m_pIdle);
       m_updateEnergyTime = Simulator::Now().GetSeconds();
     }
   }
@@ -636,15 +645,15 @@ AquaSimPhyCmn::StatusShift(double txTime) {
   */
   if (m_updateEnergyTime < endTime)
   {
-    //double overlapTime = m_updateEnergyTime - Simulator::Now().GetSeconds();
-    //double actualTxTime = endTime - m_updateEnergyTime;
-    //EM()->DecrEnergy(overlapTime, m_ptConsume - m_prConsume);
-    //EM()->DecrTxEnergy(actualTxTime);
+    double overlapTime = m_updateEnergyTime - Simulator::Now().GetSeconds();
+    double actualTxTime = endTime - m_updateEnergyTime;
+    EM()->DecrEnergy(overlapTime, m_ptConsume - m_prConsume);
+    EM()->DecrTxEnergy(actualTxTime, m_ptConsume);
     m_updateEnergyTime = endTime;
   }
   else {
-    //double overlapTime = txTime;
-    //EM()->DecrEnergy(overlapTime, m_ptConsume - m_prConsume);
+    double overlapTime = txTime;
+    EM()->DecrEnergy(overlapTime, m_ptConsume - m_prConsume);
   }
 }
 
@@ -682,12 +691,6 @@ AquaSimPhyCmn::EnergyDeplete() {
   m_status = PHY_DISABLE;
 }
 
-void
-AquaSimPhyCmn::Expire(void) {
-  NS_LOG_INFO("Expire not currently implemented.");
-  //m_idleTimer.Expire();
-}
-
 /**
  * calculate transmission time of a packet of size pktsize
  * we consider the preamble
@@ -695,9 +698,7 @@ AquaSimPhyCmn::Expire(void) {
 Time
 AquaSimPhyCmn::CalcTxTime (uint32_t pktSize, std::string * modName)
 {
-  //TODO fix the variables for this to actually make sense...
-    //also an Assert for the given name being NULL
-
+  NS_ASSERT(modName == NULL);
   return Time::FromDouble(m_modulations.find(m_modulationName)->second->TxTime(pktSize), Time::S)
       + Time::FromInteger(Preamble(), Time::S);
 }
@@ -708,13 +709,5 @@ AquaSimPhyCmn::CalcPktSize (double txTime, std::string * modName)
   return Modulation(modName)->PktSize (txTime - Preamble());
 }
 
-/*
-void
-AquaSimIdleTimer::Expire(void)
-{
-  m_a->UpdateIdleEnergy();
-  Simulator::Schedule(Time(1.0), &AquaSimIdleTimer::Expire, this);
-}
-*/
 
 };  // namespace ns3

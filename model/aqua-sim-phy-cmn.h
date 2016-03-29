@@ -47,23 +47,6 @@ namespace ns3 {
 
 class Packet;
 
-/*
- * TODO implement AquaSimIdleTimer fully to support energy reduction
- */
-
-/*
-class AquaSimIdleTimer : public Timer
-{
-public:
-  AquaSimIdleTimer(AquaSimPhy* a) : Timer() { m_a = a; }
-  void Expire(void);
-	  //this is calling energy reduction function using phy variable
-	  // should probably be a callback instead...
-private:
-  AquaSimPhy* m_a;
-  //Ptr<EventImpl> m_e;  //would probably also need to use PeekEventImpl()
-};  //  class AquaSimIdleTimer
-*/
 
 class AquaSimPhyCmn : public AquaSimPhy
 {
@@ -110,18 +93,14 @@ public:
 			  );
   }
   */
-
-  //inline Ptr<AquaSimEnergyModel> EM(void) { return m_device->EnergyModel(); }
-  /*
-   * will not have to place some of the basic functions, such as above, within child class.
-   */
-
+  //probably belongs in base
+  inline Ptr<AquaSimEnergyModel> EM(void) { return m_device->EnergyModel(); }
 
   virtual inline double GetPt() { return m_pT; }
   virtual inline double GetRXThresh() { return m_RXThresh; }
   virtual inline double GetCSThresh() { return m_CSThresh; }
 
-  virtual Ptr<AquaSimModulation> Modulation(std::string * modName); //TODO modulation should be updated.
+  virtual Ptr<AquaSimModulation> Modulation(std::string * modName);
 
 
   virtual inline double Trigger(void) { return m_trigger; }
@@ -141,7 +120,7 @@ public:
 protected:
   virtual Ptr<Packet> PrevalidateIncomingPkt(Ptr<Packet> p);
   virtual void UpdateTxEnergy(Time txTime, double pT, double pIdle);
-  virtual void UpdateRxEnergy(Time txTime);
+  virtual void UpdateRxEnergy(Time txTime, bool errorFlag);
   virtual Ptr<Packet> StampTxInfo(Ptr<Packet> p);
   virtual void EnergyDeplete(void);
 
@@ -189,12 +168,6 @@ protected:
   Ptr<AquaSimSignalCache> m_sC;
   Ptr<AquaSimSinrChecker> m_sinrChecker;
 
-  /*
-   * implement fully:
-   *
-   * AquaSimIdleTimer m_idleTimer;
-   */
-
   double m_EnergyTurnOn;	//energy consumption for turning on the modem (J)
   double m_EnergyTurnOff; //energy consumption for turning off the modem (J)
 
@@ -207,7 +180,6 @@ protected:
 
   bool m_PoweredOn;  //true: power on false:power off
 
-  //friend class AquaSimIdleTimer;
   friend class AquaSimEnergyModel;
 
   virtual void DoDispose() {AquaSimPhy::DoDispose();}
@@ -220,8 +192,6 @@ private:
 
   uint32_t incPktCounter;
   uint32_t outPktCounter;
-
-  virtual void Expire(void);
 
 }; //AquaSimPhyCmn
 

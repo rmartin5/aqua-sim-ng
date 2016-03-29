@@ -180,7 +180,7 @@ AquaSimEnergyModel::GetInitialEnergy()
 }
 
 void
-AquaSimEnergyModel::DecrIdleEnergy(double t)
+AquaSimEnergyModel::DecrIdleEnergy(double t, double idleP)
 {
   NS_LOG_FUNCTION(this);
 
@@ -196,11 +196,11 @@ AquaSimEnergyModel::DecrIdleEnergy(double t)
 }
 
 void
-AquaSimEnergyModel::DecrRcvEnergy(double t)
+AquaSimEnergyModel::DecrRcvEnergy(double t, double rcv)
 {
   NS_LOG_FUNCTION(this);
 
-  double dEng = t * m_rxP;
+  double dEng = t * rcv;
   if (m_energy <= dEng) {
 	  m_energy = 0.0;
 	  HandleEnergyDepletion();
@@ -212,11 +212,11 @@ AquaSimEnergyModel::DecrRcvEnergy(double t)
 }
 
 void
-AquaSimEnergyModel::DecrTxEnergy(double t)
+AquaSimEnergyModel::DecrTxEnergy(double t, double pT)
 {
   NS_LOG_FUNCTION(this);
 
-  double dEng = t * m_txP;
+  double dEng = t * pT;
   if (m_energy <= dEng) {
 	  m_energy = 0.0;
 	  HandleEnergyDepletion();

@@ -528,8 +528,7 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 			//  printf("Vectorbasedforward: %d is the not  target\n", here_.addr_);
 			if (IsCloseEnough(pkt)) {
 				double delay=CalculateDelay(pkt,p1);
-        /*UnderwaterChannel::Transmit_distance() TODO placeholder below...*/
-				double d2=(3000-Distance(pkt))/ns3::SOUND_SPEED_IN_WATER;
+				double d2=(m_channel->TransmitDistance()-Distance(pkt))/ns3::SOUND_SPEED_IN_WATER;
 				//printf("Vectorbasedforward: I am  not  target delay is %f d2=%f distance=%f\n",(sqrt(delay)*DELAY+d2*2),d2,Distance(pkt));
 				SetDelayTimer(pkt,(sqrt(delay)*DELAY+d2*2));
 
@@ -889,9 +888,7 @@ AquaSimVBF::CalculateDelay(Ptr<Packet> pkt,Vector3D* p1)
 	double l=sqrt((dtx*dtx)+(dty*dty)+ (dtz*dtz));
 	double cos_theta=dp/(d*l);
 	// double delay=(TRANSMISSION_DISTANCE-d*cos_theta)/TRANSMISSION_DISTANCE;
-  //TODO update static value: UnderwaterChannel::Transmit_distance()
-  double transmit_dist = 3000;
-	double delay=(p/m_width) +((transmit_dist-d*cos_theta)/transmit_dist);
+	double delay=(p/m_width) +((m_channel->TransmitDistance()-d*cos_theta)/m_channel->TransmitDistance());
 	// double delay=(p/m_width) +((TRANSMISSION_DISTANCE-d)/TRANSMISSION_DISTANCE)+(1-cos_theta);
 	//printf("vectorbased: node(%d) projection is %f, and cos is %f, and d is %f)\n",here_.addr_,p, cos_theta, d);
 	return delay;

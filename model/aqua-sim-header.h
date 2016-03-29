@@ -94,6 +94,7 @@ public:
 
   //Setters
   void SetTxTime(Time time);
+  void SetSize(uint16_t size);
   void SetDirection(uint8_t direction);
   void SetNextHop(AquaSimAddress nextHop);
   void SetNumForwards(uint8_t numForwards);
@@ -135,7 +136,7 @@ private:
   addr_t m_dst;
   uint8_t m_errorFlag;
   uint16_t m_uId;
-
+  uint16_t m_size; //figmented size of packet...
 
   //Packet Stamp variables:
   /**

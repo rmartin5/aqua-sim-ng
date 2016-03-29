@@ -34,7 +34,6 @@ namespace ns3 {
  * MUST make sure Pt and tx_range are consistent at the physical layer!!
  */
 
- //TODO
   /*
    *find all nodes within range and they will receive a copy of pkt
    */

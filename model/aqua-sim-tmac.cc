@@ -345,7 +345,7 @@ AquaSimTMac::GenerateSYN()
   AquaSimHeader ash;
   AquaSimPtTag ptag;
 
-  //ash.size()=m_shortPacketSize;
+  ash.SetSize(m_shortPacketSize);
   ash.SetNextHop(AquaSimAddress::GetBroadcast());
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash.addr_type()=NS_AF_ILINK;
@@ -374,7 +374,7 @@ AquaSimTMac::SendSYN()
   AquaSimHeader ash;
   AquaSimPtTag ptag;
 
-  //ash.size()=m_shortPacketSize;
+  ash.SetSize(m_shortPacketSize);
   ash.SetNextHop(AquaSimAddress::GetBroadcast());
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash.addr_type()=NS_AF_ILINK;
@@ -420,7 +420,7 @@ AquaSimTMac::SendND(int pkt_size)
 
   //  cmh->size()=sizeof(hdr_nd)+3*8;
   //  printf("old size is %d\n",cmh->size());
-  //ash.size()=pkt_size;
+  ash.SetSize(m_shortPacketSize);
 
   ash.SetNextHop(AquaSimAddress::GetBroadcast());
   ash.SetDirection(AquaSimHeader::DOWN);
@@ -486,7 +486,7 @@ AquaSimTMac::SendShortAckND()
   // timestamp
   //  ash->size()=sizeof(hdr_ack_nd)+3*8;
 
-      //ash.size()=m_shortPacketSize;
+      ash.SetSize(m_shortPacketSize);
       ash.SetNextHop(receiver);
       ash.SetDirection(AquaSimHeader::DOWN);
       //ash.addr_type()=NS_AF_ILINK;
@@ -1670,7 +1670,7 @@ AquaSimTMac::GenerateCTS(AquaSimAddress receiver_addr, double duration)
   TMacHeader ctsh;
   AquaSimHeader ash;
   AquaSimPtTag ptag;
-  //ash.size()=m_shortPacketSize;
+  ash.SetSize(m_shortPacketSize);
   ash.SetNextHop(receiver_addr);
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash.addr_type()=NS_AF_ILINK;
@@ -1864,7 +1864,6 @@ AquaSimTMac::ProcessDataPacket(Ptr<Packet> pkt)
 	NS_LOG_INFO("ProcessDataPacket: node " << m_device->GetNode() <<
 	             " send up the packet");
   SendUp(pkt);
-	//uptarget_->recv(pkt,this);
 	// SendACKPacket();
 	return;
 }
@@ -1905,7 +1904,7 @@ AquaSimTMac::SendACKPacket()
               " return bitmap is");
 	for(int i=0; i<MAXIMUM_BUFFER; i++) NS_LOG_INFO("bmap[" << i << "]=" << m_bitMap[i]);
 
-  //ash.size()=m_shortPacketSize;
+  ash.SetSize(m_shortPacketSize);
   ash.SetNextHop(m_dataSender);
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash.addr_type()=NS_AF_ILINK;
@@ -2044,7 +2043,7 @@ AquaSimTMac::TxData(AquaSimAddress receiver)
 	m_numSend++;
 	m_numData++;
 
-  //ash.size()=m_largePacketSize;
+  ash.SetSize(m_largePacketSize);
   ash.SetNextHop(receiver);
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash.addr_type()=NS_AF_ILINK;

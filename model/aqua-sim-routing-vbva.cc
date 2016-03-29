@@ -809,8 +809,7 @@ void AquaSimVBVA::ProcessBackpressurePacket(Ptr<Packet> pkt)
 	   }
 
           PktTable.DeleteHash(source,num);
-          /*UnderwaterChannel::Transmit_distance() TODO placeholder below...*/
-          double d3=(3000)/ns3::SOUND_SPEED_IN_WATER;
+          double d3=(m_channel->TransmitDistance())/ns3::SOUND_SPEED_IN_WATER;
             double d4=m_rand->GetValue()*JITTER;
 	    //  double c=DELAY*sqrt(m_miniThreshold)+JITTER+d3*3+d4;
 	     double c=DELAY*sqrt(3.0)*4.0+JITTER+d3*3+d4;
@@ -985,8 +984,7 @@ void AquaSimVBVA::ConsiderNew(Ptr<Packet> pkt)
 			PacketStatusTable.PutInHash(source,pkt_num,CENTER_FORWARDED);
 			m_voidAvoidanceBuffer.CopyNewPacket(pkt);
 
-      /*UnderwaterChannel::Transmit_distance() TODO placeholder below...*/
-			double d3=3000/ns3::SOUND_SPEED_IN_WATER;
+			double d3=m_channel->TransmitDistance()/ns3::SOUND_SPEED_IN_WATER;
 			// Ptr<Packet> pt=pkt->copy();
 			double c=2*DELAY+JITTER+d3*3;
 
@@ -1011,9 +1009,8 @@ void AquaSimVBVA::ConsiderNew(Ptr<Packet> pkt)
 				double delay=CalculateDesirableness(pkt);
 				PacketStatusTable.PutInHash(source, pkt_num,SUPPRESSED);// later possibly changed in forward_timeout
 
-        /*UnderwaterChannel::Transmit_distance() TODO placeholder below...*/
-				double d2=(3000-Distance(pkt))/ns3::SOUND_SPEED_IN_WATER;
-				double d3=(3000)/ns3::SOUND_SPEED_IN_WATER;
+				double d2=(m_channel->TransmitDistance()-Distance(pkt))/ns3::SOUND_SPEED_IN_WATER;
+				double d3=(m_channel->TransmitDistance())/ns3::SOUND_SPEED_IN_WATER;
 				double d4=m_rand->GetValue()*JITTER;
 				SetForwardDelayTimer(pkt,(sqrt(delay)*DELAY+d2*2+d3+d4));
 			} else {
@@ -1360,8 +1357,7 @@ void AquaSimVBVA::ProcessSelfcenteredTimeout(Ptr<Packet> pkt)
     }
 
     //        printf ("vectorbasedvoidavoidance(%d): is worth forwarding this packet\n ",here_.addr_);
-          /*UnderwaterChannel::Transmit_distance() TODO placeholder below...*/
-          double d3=(3000)/ns3::SOUND_SPEED_IN_WATER;
+          double d3=(m_channel->TransmitDistance())/ns3::SOUND_SPEED_IN_WATER;
           double d4=m_rand->GetValue()*JITTER;
           SetShiftTimer(pkt,(sqrt(m_miniThreshold)*DELAY*2+d3*3+d4));
 
@@ -1370,7 +1366,7 @@ void AquaSimVBVA::ProcessSelfcenteredTimeout(Ptr<Packet> pkt)
 	Ptr<Packet> pt=GenerateBackpressurePacket(&source,pkt_num);
 	PktTable.DeleteHash(source, pkt_num);
 
-            double d3=(UnderwaterChannel::Transmit_distance())/ns3::SOUND_SPEED_IN_WATER;
+            double d3=(m_channel->TransmitDistance())/ns3::SOUND_SPEED_IN_WATER;
 
             double d4=m_rand->GetValue()*JITTER;
 
@@ -1476,8 +1472,7 @@ void AquaSimVBVA::ProcessForwardTimeout(Ptr<Packet>  pkt)
 
                if(tdelay<=m_priority) {
 		 // printf("vectorbased: node (%d) is still worth forwarding the data packet c=%d and tdelay=%f \n", here_.addr_,ncounter,tdelay);
-     /*UnderwaterChannel::Transmit_distance() TODO placeholder below...*/
-double d3=(3000)/ns3::SOUND_SPEED_IN_WATER;
+double d3=(m_channel->TransmitDistance())/ns3::SOUND_SPEED_IN_WATER;
             double d4=m_rand->GetValue()*JITTER;
 
            SetShiftTimer(pkt,(sqrt(m_miniThreshold)*DELAY*2+d3*3+d4));
@@ -1597,8 +1592,7 @@ void AquaSimVBVA::ProcessVoidAvoidanceTimeout(Ptr<Packet> pkt)
         Ptr<Packet> pt=GenerateBackpressurePacket(pdata);
 
 	PktTable.DeleteHash(source, pkt_num);
-  /*UnderwaterChannel::Transmit_distance() TODO placeholder below...*/
-        double d3=(3000)/ns3::SOUND_SPEED_IN_WATER;
+        double d3=(m_channel->TransmitDistance())/ns3::SOUND_SPEED_IN_WATER;
 
             double d4=m_rand->GetValue()*JITTER;
 	    //   double c=DELAY*sqrt(m_miniThreshold)+JITTER+d3*3+d4;
@@ -1829,8 +1823,7 @@ double AquaSimVBVA::CalculateFloodingDesirableness(const Ptr<Packet> pkt)
 {
 
    double d1=Distance(pkt);
-   /*UnderwaterChannel::Transmit_distance() TODO placeholder below...*/
-   double dt=3000;
+   double dt=m_channel->TransmitDistance();
    double dr=dt-d1;
    if(dr<0) dr=0.0; // in case of location error
    double d2=dr/ns3::SOUND_SPEED_IN_WATER;
@@ -2087,8 +2080,7 @@ double AquaSimVBVA::CalculateSelfCenteredDelay(const Vector3D* sp,
  double d=sqrt((dx*dx)+(dy*dy)+ (dz*dz));
  double l=sqrt((dtx*dtx)+(dty*dty)+ (dtz*dtz));
  double cos_theta=dp/(d*l);
- /*UnderwaterChannel::Transmit_distance() TODO placeholder below...*/
-   double delay=(1.0-(p/m_width)) +((3000-d*cos_theta)/3000);
+   double delay=(1.0-(p/m_width)) +((m_channel->TransmitDistance()-d*cos_theta)/m_channel->TransmitDistance());
 
  //double delay=(1.0-(p/m_width));
 NS_LOG_WARN("AquaSimVBVA: " << GetNetDevice()->GetAddress() <<
@@ -2145,8 +2137,7 @@ double AquaSimVBVA::CalculateDelay(const Vector3D* sp,const Vector3D*  tp,
  double d=sqrt((dx*dx)+(dy*dy)+ (dz*dz));
  double l=sqrt((dtx*dtx)+(dty*dty)+ (dtz*dtz));
  double cos_theta=dp/(d*l);
- /*UnderwaterChannel::Transmit_distance() TODO placeholder below...*/
-   double delay=(p/m_width) +((3000-d*cos_theta)/3000);
+   double delay=(p/m_width) +((m_channel->TransmitDistance()-d*cos_theta)/m_channel->TransmitDistance());
 
 // printf("vectorbased: node(%d) projection is %f, and cos is %f, and d is %f)\n",here_.addr_,p, cos_theta, d);
    if(delay<0.0) delay=0.0; // in case the location error, which may result in negative delay
@@ -2243,8 +2234,7 @@ double AquaSimVBVA::CalculateDelay(Ptr<Packet> pkt,Vector3D* p1)
  double l=sqrt((dtx*dtx)+(dty*dty)+ (dtz*dtz));
  double cos_theta=dp/(d*l);
  // double delay=(TRANSMISSION_DISTANCE-d*cos_theta)/TRANSMISSION_DISTANCE;
- //TODO update static value: UnderwaterChannel::Transmit_distance()
-   double delay=(p/m_width) +((3000-d*cos_theta)/3000);
+   double delay=(p/m_width) +((m_channel->TransmitDistance()-d*cos_theta)/m_channel->TransmitDistance());
  // double delay=(p/m_width) +((TRANSMISSION_DISTANCE-d)/TRANSMISSION_DISTANCE)+(1-cos_theta);
   //printf("vectorbased: node(%d) projection is %f, and cos is %f, and d is %f)\n",here_.addr_,p, cos_theta, d);
    return delay;

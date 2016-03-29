@@ -128,7 +128,7 @@ AquaSimUwan::SendFrame(Ptr<Packet> p, bool IsMacPkt, Time delay)
   AquaSimHeader ash;
   p->RemoveHeader(ash);
   ash.SetDirection(AquaSimHeader::DOWN);
-  ash.SetTxTime( Seconds(/*ash size()* */ m_encodingEfficiency/m_bitRate));
+  ash.SetTxTime( Seconds(ash.GetSize() * m_encodingEfficiency/m_bitRate));
   p->AddHeader(ash);
 
 	AquaSimUwan_PktSendTimer *tmp = new AquaSimUwan_PktSendTimer(this);
@@ -142,7 +142,7 @@ AquaSimUwan::SendFrame(Ptr<Packet> p, bool IsMacPkt, Time delay)
 	//pkt_send_timer.m_p = p;
 	//pkt_send_timer.resched(delay);  //set transmission status when this timer expires
 
-	//Scheduler::instance().schedule(downtarget_, p, delay+0.0001);
+	//Scheduler::instance().schedule(downtarget_, p, delay+0.0001);  //phy->Recv(p)
 	/*if( !IsMacPkt ) {
 		Scheduler::instance().schedule(&callback_handler,
 						&callback_event, delay_time+UWAN_CALLBACK_DELAY);
@@ -198,7 +198,7 @@ AquaSimUwan::MakeSYNCPkt(Time CyclePeriod, AquaSimAddress Recver)
 
 	hdr_s.SetCyclePeriod(CyclePeriod.ToDouble(Time::S));
 
-	//ash.size() = hdr_s.GetSize();
+	ash.SetSize(hdr_s.GetSize());
   ash.SetNextHop(Recver);  //the sent packet??
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash.addr_type()=NS_AF_ILINK;
@@ -225,9 +225,9 @@ AquaSimUwan::FillMissingList(Ptr<Packet> p)
 		m_CL.begin(), m_CL.end(),
 		std::insert_iterator<std::set<AquaSimAddress> >(ML_, ML_.begin()));
 
-  //ash.size() += 8*( sizeof(uint) + ML_.size()*sizeof(AquaSimAddress) );
   uint32_t size = sizeof(uint) + ML_.size()*sizeof(AquaSimAddress);
   uint8_t *data = new uint8_t[size];
+  ash.SetSize(ash.GetSize() + 8*size );
 
   *(uint*)data = ML_.size();
   data += sizeof(uint);
@@ -248,15 +248,15 @@ Ptr<Packet>
 AquaSimUwan::FillSYNCHdr(Ptr<Packet> p, Time CyclePeriod)
 {
   UwanSyncHeader hdr_s;
-  //AquaSimHeader ash;
+  AquaSimHeader ash;
   p->RemoveHeader(hdr_s);
-  //p->RemoveHeader(ash);
+  p->RemoveHeader(ash);
 
   hdr_s.SetCyclePeriod(CyclePeriod.ToDouble(Time::S));
 
-  //ash.size() += hdr_s->size();
+  ash.SetSize(ash.GetSize() + hdr_s.GetSize());
   p->AddHeader(hdr_s);
-  //p->AddHeader(ash);
+  p->AddHeader(ash);
   return p;
 }
 
@@ -440,7 +440,7 @@ AquaSimUwan::TxProcess(Ptr<Packet> p)
 
   AquaSimHeader ash;
   p->RemoveHeader(ash);
-  //ash.size() = 1600;
+  ash.SetSize(1600);
   p->AddHeader(ash);
   m_packetQueue.push(p);
   //callback to higher level, should be implemented differently
@@ -574,7 +574,7 @@ AquaSimUwan::ProcessMissingList(uint8_t *data, AquaSimAddress src)
       ash.SetDirection(AquaSimHeader::DOWN);
       //ash.addr_type()=NS_AF_ILINK;
       ptag.SetPacketType(AquaSimPtTag::PT_UWAN_HELLO);
-			//ash.size() = hdr_s.GetSize();
+			ash.SetSize(hdr_s.GetSize());
 
       mach.SetDA(src);
     	mach.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );

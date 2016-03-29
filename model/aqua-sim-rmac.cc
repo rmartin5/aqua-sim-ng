@@ -853,7 +853,7 @@ AquaSimRMac::GenerateACKRev(AquaSimAddress receiver, AquaSimAddress intended_rec
   asHeader.SetDirection(AquaSimHeader::DOWN);
   // addr_type()=NS_AF_ILINK;
   ptag.SetPacketType(AquaSimPtTag::PT_RMAC);
-  // size()=short_packet_size_;
+  asHeader.SetSize(m_shortPacketSize);
 
   rHeader.SetPtype(P_ACKREV);
   rHeader.SetPktNum(m_numSend);
@@ -1766,8 +1766,8 @@ AquaSimRMac::GenerateSYN()
   RMacHeader rHeader;
   AquaSimPtTag ptag;
 
-  // size()=short_packet_size_;
-  //asHeader.SetNextHop(MAC_BROADCAST);
+  asHeader.SetSize(m_shortPacketSize);
+  asHeader.SetNextHop(AquaSimAddress::GetBroadcast());
   asHeader.SetDirection(AquaSimHeader::DOWN);
   // addr_type()=NS_AF_ILINK;
   ptag.SetPacketType(AquaSimPtTag::PT_RMAC);
@@ -1795,8 +1795,8 @@ AquaSimRMac::SendSYN()
   RMacHeader rHeader;
   AquaSimPtTag ptag;
 
-  // size()=short_packet_size_;
-  //asHeader.SetNextHop(MAC_BROADCAST);
+  asHeader.SetSize(m_shortPacketSize);
+  asHeader.SetNextHop(AquaSimAddress::GetBroadcast());
   asHeader.SetDirection(AquaSimHeader::DOWN);
   // addr_type()=NS_AF_ILINK;
   ptag.SetPacketType(AquaSimPtTag::PT_RMAC);
@@ -1849,9 +1849,9 @@ AquaSimRMac::SendND(int pkt_size)
   // additional 2*8 denotes the size of type,next-hop of the packet and
   // timestamp
       //Not really used in ns3
-  // size()=short_packet_size_;
+  asHeader.SetSize(m_shortPacketSize);
 
-  //asHeader.SetNextHop(MAC_BROADCAST);
+  asHeader.SetNextHop(AquaSimAddress::GetBroadcast());
   asHeader.SetDirection(AquaSimHeader::DOWN);
   // addr_type()=NS_AF_ILINK;
   ptag.SetPacketType(AquaSimPtTag::PT_RMAC);
@@ -1911,7 +1911,7 @@ AquaSimRMac::SendShortAckND()
   // timestamp
       //not used.
       //  cmh->size()=sizeof(hdr_ack_nd)+3*8;
-      //cmh->size()=short_packet_size_;
+      asHeader.SetSize(m_shortPacketSize);
 
       asHeader.SetNextHop(receiver);
       asHeader.SetDirection(AquaSimHeader::DOWN);
@@ -2437,7 +2437,7 @@ AquaSimRMac::ScheduleACKData(AquaSimAddress data_sender)
   asHeader.SetDirection(AquaSimHeader::DOWN);
   // addr_type()=NS_AF_ILINK;
   ptag.SetPacketType(AquaSimPtTag::PT_RMAC);
-  // size() = short_packet_size;
+  asHeader.SetSize(m_shortPacketSize);
 
   rHeader.SetPtype(P_ACKDATA);
   rHeader.SetPktNum(m_numSend);
@@ -2731,7 +2731,7 @@ AquaSimRMac::RecvProcess(Ptr<Packet> pkt)
 		  " and type is " << ptype);
       if (ptype==P_ND) ProcessNDPacket(pkt); //this is ND packet
       if (ptype==P_SYN) ProcessSYN(pkt); // this is ACK_ND packet
-      // uptarget_->recv(pkt, this);
+      // SendUp(pkt);
       return true;
     }
 
@@ -2747,7 +2747,7 @@ AquaSimRMac::RecvProcess(Ptr<Packet> pkt)
       // if (ptag.GetPacketType()==AquaSimPtTag::P_ACKREV) ProcessACKRevPacket(pkt);
       if(ptype==P_ACKDATA) ProcessACKDataPacket(pkt);
       // printf("underwaterbroadcastmac:this is my packet \n");
-      //  uptarget_->recv(pkt, this);
+      //  SendUp(pkt);
       return true;
     }
   NS_LOG_INFO("AquaSimRMac:RecvProcess node " << m_device->GetAddress() <<
@@ -2800,7 +2800,7 @@ AquaSimRMac::TxData(AquaSimAddress receiver)
   m_numSend++;
   m_numData++;
 
-  //size()=large_packet_size_;
+  asHeader.SetSize(m_largePacketSize);
   asHeader.SetNextHop(receiver);
   asHeader.SetDirection(AquaSimHeader::DOWN);
   //addr_type()=NS_AF_ILINK;

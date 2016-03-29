@@ -144,7 +144,7 @@ bool AquaSimAloha::TxProcess(Ptr<Packet> pkt)
   pkt->RemoveHeader(asHeader);
   pkt->RemoveHeader(alohaH);
 
-  //size() += alohaH.size();
+	asHeader.SetSize(alohaH.size()+asHeader.GetSize());
   asHeader.SetTxTime(GetTxTime(asHeader.GetSerializedSize() + alohaH.GetSerializedSize()));
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);
@@ -306,7 +306,7 @@ bool AquaSimAloha::RecvProcess(Ptr<Packet> pkt)
   else if(alohaH.GetPType() == AlohaHeader::DATA) {
     //process Data packet
     if( recver == m_device->GetAddress() || recver == AquaSimAddress::GetBroadcast() ) {
-	//size() -= alohaH.size();
+			asHeader.SetSize(asHeader.GetSize() + alohaH.size());
 	SendUp(pkt->Copy());
 	if ( m_AckOn && (recver != AquaSimAddress::GetBroadcast()))
 	    ReplyACK(pkt->Copy());
@@ -337,7 +337,7 @@ Ptr<Packet> AquaSimAloha::MakeACK(AquaSimAddress Data_Sender)
   AlohaHeader alohaH;
 	AquaSimPtTag ptag;
 
-  //size() += alohaH.size();
+	asHeader.SetSize(asHeader.GetSize() + alohaH.size());
   asHeader.SetTxTime(GetTxTime(asHeader.GetSerializedSize() + alohaH.GetSerializedSize()));
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);

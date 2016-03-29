@@ -195,8 +195,8 @@ AquaSimSFama::MakeRTS(AquaSimAddress recver, int slot_num)
   AlohaHeader mach;   //TODO change this...
 	AquaSimPtTag ptag;
 
-	//ash->size() = hdr_SFAMA::getSize(hdr_SFAMA::SFAMA_RTS);
-	ash.SetTxTime(GetTxTime(SFAMAh.GetSize(SFamaHeader::SFAMA_RTS)) );
+	ash.SetSize(SFAMAh.GetSize(SFamaHeader::SFAMA_RTS));
+	ash.SetTxTime(GetTxTime(ash.GetSize()) );
 	ash.SetErrorFlag(false);
 	ash.SetDirection(AquaSimHeader::DOWN);
 	ptag.SetPacketType(AquaSimPtTag::PT_SFAMA);
@@ -228,8 +228,8 @@ AquaSimSFama::MakeCTS(AquaSimAddress rts_sender, int slot_num)
   AlohaHeader mach;   //TODO change this...
 	AquaSimPtTag ptag;
 
-	//ash->size() = hdr_SFAMA::getSize(hdr_SFAMA::SFAMA_CTS);
-	ash.SetTxTime(GetTxTime(SFAMAh.GetSize(SFamaHeader::SFAMA_CTS)) );
+	ash.SetSize(SFAMAh.GetSize(SFamaHeader::SFAMA_CTS));
+	ash.SetTxTime(GetTxTime(ash.GetSize()) );
 	ash.SetErrorFlag(false);
 	ash.SetDirection(AquaSimHeader::DOWN);
 	ptag.SetPacketType(AquaSimPtTag::PT_SFAMA);
@@ -262,8 +262,8 @@ AquaSimSFama::FillDATA(Ptr<Packet> data_pkt)
   data_pkt->RemoveHeader(SFAMAh);
   data_pkt->RemoveHeader(mach);
 
-  //ash->size() = hdr_SFAMA::getSize(hdr_SFAMA::SFAMA_DATA);
-  ash.SetTxTime(GetTxTime(SFAMAh.GetSize(SFamaHeader::SFAMA_DATA)) );
+  ash.SetSize(SFAMAh.GetSize(SFamaHeader::SFAMA_DATA));
+  ash.SetTxTime(GetTxTime(ash.GetSize()) );
   ash.SetErrorFlag(false);
   ash.SetDirection(AquaSimHeader::DOWN);
 
@@ -290,8 +290,8 @@ AquaSimSFama::MakeACK(AquaSimAddress data_sender)
   AlohaHeader mach;   //TODO change this...
 	AquaSimPtTag ptag;
 
-  //ash->size() = hdr_SFAMA::getSize(hdr_SFAMA::SFAMA_ACK);
-  ash.SetTxTime(GetTxTime(SFAMAh.GetSize(SFamaHeader::SFAMA_ACK)) );
+  ash.SetSize(SFAMAh.GetSize(SFamaHeader::SFAMA_ACK));
+  ash.SetTxTime(GetTxTime(ash.GetSize()) );
   ash.SetErrorFlag(false);
   ash.SetDirection(AquaSimHeader::DOWN);
 	ptag.SetPacketType(AquaSimPtTag::PT_SFAMA);
@@ -411,7 +411,7 @@ AquaSimSFama::ProcessDATA(Ptr<Packet> data_pkt)
     AquaSimHeader ash;
     data_pkt->RemoveHeader(ash);
     data_pkt->PeekHeader(SFAMAh);
-    //ash.setsize(SFAMAh.GetSize(SFamaHeader::SFAMA_DATA));
+    ash.SetSize(SFAMAh.GetSize(SFamaHeader::SFAMA_DATA));
     data_pkt->AddHeader(ash);
 		SendUp(data_pkt->Copy()); /*the original one will be released*/
 	}

@@ -457,7 +457,7 @@ AquaSimCopeMac::TxProcess(Ptr<Packet> pkt)
   pkt->RemoveHeader(ch);
   //vbf header
 
-  //ash size() = m_pktSize;
+  ash.SetSize(m_pktSize);
   ash.SetTxTime(GetTxTime(ash.GetSerializedSize()+ch.GetSerializedSize()));
 
   if( m_propDelays.size() == 0 ) {
@@ -613,7 +613,7 @@ AquaSimCopeMac::MakeND()
   ch.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
   //hdr_o->hdr.ndh.send_time_ = NOW;
 
-  //ash size() = ch->size();
+  ash.SetSize(ch.size());
   ash.SetNextHop(AquaSimAddress::GetBroadcast());
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash->addr_type()=NS_AF_ILINK;
@@ -627,7 +627,7 @@ AquaSimCopeMac::MakeND()
   uint8_t *data = new uint8_t[size];
   //uint data_size = sizeof(uint)+ sizeof(AquaSimAddress)*m_propDelays.size();
   //Ptr<Packet> pkt = Create<Packet>(data_size);
-  //ash->size() += data_size;
+  //ash.SetSize(ash.GetSize() + size);
 
   //unsigned char* walk = (unsigned char*)pkt->accessdata();
   *(uint*)data = m_propDelays.size();
@@ -702,7 +702,7 @@ AquaSimCopeMac::MakeNDReply()
   //hdr_o->hdr.nd_reply_h.nd_send_time_ = m_ndDepartNeighborTime[NDSender];
   //hdr_o->hdr.nd_reply_h.delay_at_receiver = NOW - m_ndReceiveTime[NDSender];
 
-  //ash->size() = ch->size();
+  ash.SetSize(ch.size());
   ash.SetNextHop(AquaSimAddress::GetBroadcast());
   ash.SetDirection(AquaSimHeader::DOWN);
   //ash->addr_type()=NS_AF_ILINK;
@@ -710,10 +710,10 @@ AquaSimCopeMac::MakeNDReply()
 
   //uint data_size = sizeof(uint) + (2*sizeof(Time)+sizeof(AquaSimAddress))*m_PendingND.size();
   //pkt->allocdata( data_size);
-  //cmh->size() += data_size;
   //unsigned char* walk = (unsigned char*)pkt->accessdata();
   uint32_t size = (2*sizeof(Time)+sizeof(AquaSimAddress))*m_PendingND.size();
   uint8_t *data = new uint8_t[size];
+  //ash.SetSize(ash.GetSize() + size);
   *(uint*)data = m_PendingND.size();
   data += sizeof(uint);
   for( std::map<AquaSimAddress, NDRecord>::iterator pos = m_PendingND.begin();
@@ -958,7 +958,7 @@ AquaSimCopeMac::MakeMultiRev()
 
   //node id use 8 bits, first time slot use 10bits, backup time slot use 4 bits
 
-  //ash->size() = (4+(8+8+8+8))*rev_num/8;
+  ash.SetSize((4+(8+8+8+8))*rev_num/8);
 
   m_neighborId = (m_neighborId+1)%m_propDelays.size();
   //m_RevQ.printRevQueue();
@@ -1122,7 +1122,7 @@ AquaSimCopeMac::MakeMultiRevAck()
   //schedule the rev req.
   //node id use 10 bits, first time slot use 10bits, backup time slot use 4 bits
   //ch->size() = (m_pendingRevs.size()*(10+10+6+4))/8;
-  //ash->size() = (m_pendingRevs.size()*(8+10+6+4))/8;
+  ash.SetSize(m_pendingRevs.size()*(8+10+6+4)/8);
 
   Ptr<Packet> tempPacket = Create<Packet>(data,size);
   pkt->AddAtEnd(tempPacket);
@@ -1231,7 +1231,7 @@ AquaSimCopeMac::MakeDataAck()
   uint DataAckNum = m_pendingDataAcks.size();
 
   //ch->size() = DataAckNum*((10+10)/8);
-  //ash->size() = DataAckNum*((10+10)/8);
+  ash.SetSize(DataAckNum*((10+10)/8));
 
 
   uint32_t size = sizeof(uint)+DataAckNum*(sizeof(AquaSimAddress)+sizeof(int));

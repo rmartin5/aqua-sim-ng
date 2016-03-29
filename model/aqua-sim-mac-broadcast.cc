@@ -86,8 +86,7 @@ AquaSimBroadcastMac::RecvProcess (Ptr<Packet> pkt)
       if (m_packetSize == 0)
 	{
 	  NS_LOG_INFO("Should be changing header size here.");
-	  //TODO
-	  //ash->size () -= m_packetHeaderSize;
+    ash.SetSize(ash.GetSize() - m_packetHeaderSize);
 	}
       return SendUp(pkt);
     }
@@ -121,12 +120,10 @@ AquaSimBroadcastMac::TxProcess(Ptr<Packet> pkt)
   ash.SetDAddr(AquaSimAddress::GetBroadcast());
   ash.SetSAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
 
-  /*TODO size...
   if( m_packetSize != 0 )
-	  ash->size() = m_packetSize;
+    ash.SetSize(m_packetSize);
   else
-	  ash->size()+=(m_packetHeaderSize);
-   */
+    ash.SetSize(m_packetHeaderSize + ash.GetSize());
 
   ash.SetTxTime(GetTxTime(pkt));
 

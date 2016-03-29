@@ -22,6 +22,7 @@
 #include "ns3/ptr.h"
 #include "ns3/pointer.h"
 #include "ns3/simulator.h"
+#include "ns3/double.h"
 
 #include "aqua-sim-channel.h"
 #include "aqua-sim-header.h"
@@ -34,6 +35,7 @@ NS_LOG_COMPONENT_DEFINE("AquaSimChannel");
 NS_OBJECT_ENSURE_REGISTERED (AquaSimChannel);
 
 AquaSimChannel::AquaSimChannel ()// : Channel()
+  : m_distCST(3000)
 {
   NS_LOG_FUNCTION(this);
   m_deviceList.clear();
@@ -62,6 +64,10 @@ AquaSimChannel::GetTypeId ()
        PointerValue (),
        MakePointerAccessor (&AquaSimChannel::m_noiseGen),
        MakePointerChecker<AquaSimNoiseGen> ())
+    .AddAttribute ("TransmitDistance", "Static transmit distance.",
+       DoubleValue(3000),
+       MakeDoubleAccessor(&AquaSimChannel::m_distCST),
+       MakeDoubleChecker<double>())
     ;
   return tid;
 }
