@@ -4,7 +4,7 @@
 
 #### About
 
-Aqua-Sim is a underwater network simulator which supports a vast amount of protocols and features. Originally developed on the basis of [NS-2](http://www.isi.edu/nsnam/ns/), Aqua-Sim can effectively simulate acoustic signal attenuation and packet collisions in underwater sensor networks (UWSN). Moreover, Aqua-Sim supports three-dimensional deployment. This work consists of rewriting and porting [Aqua-Sim](http://uwsn.engr.uconn.edu/wiki/index.php?title=Aqua-Sim&redirect=no) from [NS-3](http://www.nsnam.org) to improve upon current simulation issues such as memory leakage and usage simplicity.
+Aqua-Sim is a underwater network simulator which supports a vast amount of protocols and features. Originally developed on the basis of [NS-2](http://www.isi.edu/nsnam/ns/), Aqua-Sim can effectively simulate acoustic signal attenuation and packet collisions in underwater sensor networks (UWSN). Moreover, Aqua-Sim supports three-dimensional deployment. This work consists of rewriting and porting [Aqua-Sim](http://uwsn.engr.uconn.edu/wiki/index.php?title=Aqua-Sim&redirect=no) to [NS-3](http://www.nsnam.org) to improve upon current simulation issues such as memory leakage and usage simplicity.
 
 Work supported by the UWSN Lab at University of Connecticut.
 
@@ -18,14 +18,29 @@ Work supported by the UWSN Lab at University of Connecticut.
 --------------------------------------
 
 #### Requirements
-This code is meant to be as a add-on to current NS3 software and therefore requires NS-3 and all pre-requirements of said software. Current work of Aqua-Sim Next Generation is in very early stages and therefore will be extremely buggy (so use with caution). 
+This code is meant to be as a add-on to current NS3 software and therefore requires NS-3 and all pre-requirements of said software. Current work of Aqua-Sim Next Generation is in early stages and therefore will be buggy (so use with caution). 
 
 --------------------------------------
 
-#### Ongoing Work
-Current support includes a basic example and helper class, as well as base protocol stack support. Extensive protocol support is planned in future iterations. 
+#### Documentation and Installation
+Further documentation and installation steps can be found under [Aqua-Sim NG Documentation](Aqua-Sim%20NG%20Documentation.pdf).
 
-The protocol port will be focused on transferring MAC and routing protocols, from past Aqua-Sim work, such as R-MAC, UW-ALOHA, Broadcast-MAC, VBF, and DBR. Furthermore, we will continue supporting the core Aqua-Sim implemented functions such as half-duplex, long propagation delays, and acoustic signal attenuation. 
+--------------------------------------
+#### Ongoing Work
+
+- ~~_Core Aqua-Sim port_~~
+- ~~_Example/helper creation_~~
+- ~~_Extensive protocol port_~~
+- **Extensive example port**
+- **Enhanced channel model support**
+- **Trace driven support**
+- **Synchronization support**
+- **Localization support**
+- **Transmission range uncertainty module**
+- **Busy terminal model**
+
+
+Current protcol support includes: (MAC layer:) BroadcastMAC, Underwater ALOHA, CopeMAC, Underwater FAMA, Underwater Slotted FAMA, GOAL, UWAN, RMac, Tmac, (Routing Layer:) DBR, Static, Dynamic, Flooding, VBF, and VBVA. Furthermore, Aqua-Sim NG core continues to support basic underwater functions such as half-duplex, long propagation delays, and acoustic signal attenuation. 
 
 ###### Enhanced Channel Models
 Supporting additional propagation models such as [Bellhop](http://oalib.hlsresearch.com/Rays/) ray tracing model for acoustic communications. Our goal here is to depict better accuracy to real world scenarios in our simulation results.
