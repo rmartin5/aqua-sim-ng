@@ -56,7 +56,7 @@ private:
   Timer m_updateIntv;
 };  //class AquaSimPosUpdateHelper
 
-/*  **NOTE: Vector3D does exactly this **
+/*  **NOTE: Vector does exactly this **
 class Location3D {
 private:
   double m_X, m_Y, m_Z;
@@ -73,13 +73,13 @@ public:
 
 class Speed{
 private:
-  Vector3D m_speedVect;
+  Vector m_speedVect;
 public:
-  Speed(Vector3D speedVect = Vector3D(0,0,0) ) : m_speedVect(speedVect) {}
-  void Set(Vector3D speedVect) {
+  Speed(Vector speedVect = Vector(0,0,0) ) : m_speedVect(speedVect) {}
+  void Set(Vector speedVect) {
     m_speedVect = speedVect;
   }
-  Vector3D GetSpeedVect() { return m_speedVect; }
+  Vector GetSpeedVect() { return m_speedVect; }
   double GetSpeed() {
     return std::sqrt(m_speedVect.x*m_speedVect.x +
                       m_speedVect.y*m_speedVect.y +
@@ -89,12 +89,12 @@ public:
 
 
 struct LocationCacheElem {
-  Vector3D m_loc;
+  Vector m_loc;
   Speed m_sp;
-  LocationCacheElem() : m_loc(Vector3D(0,0,0)) {};
+  LocationCacheElem() : m_loc(Vector(0,0,0)) {};
   void Set(double X, double Y, double Z, double dX, double dY, double dZ) {
-	  m_loc = Vector3D(X,Y,Z);
-	  m_sp.Set(Vector3D(dX,dY,dZ));
+	  m_loc = Vector(X,Y,Z);
+	  m_sp.Set(Vector(dX,dY,dZ));
   }
 };
 
@@ -149,8 +149,8 @@ public:
   LocationCacheElem GetLocByTime(double t);
   void SetBounds(double minx,double miny,double minz,
                   double maxx, double maxy, double maxz);
-  void SetBounds(Vector3D min, Vector3D max);
-  void SetVelocity(Vector3D vector);
+  void SetBounds(Vector min, Vector max);
+  void SetVelocity(Vector vector);
 
 protected:
   virtual LocationCacheElem GenNewLoc(); /* the actual method that each
@@ -179,8 +179,8 @@ protected:
   AquaSimPosUpdateHelper m_posUpdateHelper;
 
   //topography
-  Vector3D m_minBound;
-  Vector3D m_maxBound;
+  Vector m_minBound;
+  Vector m_maxBound;
 };  //class AquaSimMobilityPattern
 
 } // namespace ns3

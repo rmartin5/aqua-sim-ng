@@ -79,7 +79,7 @@ public:
 
   //Packet Stamp Getters:
   double GetTxRange();
-  double GetPt();	//TODO adapt double variables (conversion to uint32 issues) *** See TxTime***
+  double GetPt();
   double GetPr();
   double GetFreq();
   double GetNoise();

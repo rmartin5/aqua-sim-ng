@@ -21,6 +21,7 @@
 #include "aqua-sim-mac-goal.h"
 #include "aqua-sim-header.h"
 #include "aqua-sim-pt-tag.h"
+#include "aqua-sim-header-routing.h"
 
 #include "ns3/log.h"
 #include "ns3/integer.h"
@@ -94,7 +95,7 @@ AquaSimGoal::AquaSimGoal(): m_maxBurst(1), m_dataPktInterval(0.0001), m_guardTim
 	m_nxtRoundMaxWaitTime = Seconds(1.0);
 	m_propSpeed = 1500.0;
 	m_isForwarding = false;
-	m_txRadius = 3000.0; //static for now... UnderwaterChannel::Transmit_distance();
+	m_txRadius = m_channel->TransmitDistance();
 	m_maxDelay = Seconds(m_txRadius/m_propSpeed);
 	m_pipeWidth = 100.0;
 	//m_dataPktSize = 300;   //Byte
@@ -201,35 +202,38 @@ bool AquaSimGoal::TxProcess(Ptr<Packet> pkt)
 {
 	//this node must be the origin
   AquaSimHeader ash;
-  //vbh here too;
+	VBHeader vbh;
   pkt->RemoveHeader(ash);
+	pkt->RemoveHeader(vbh);
 
 	//hdr_ip* iph = hdr_ip::access(pkt);
 	//schedule immediately after receiving. Or cache first then schedule periodically
 
-  /*
-	n->update_position();
-	vbh->info.ox = n->X();
-	vbh->info.oy = n->Y();
-	vbh->info.oz = n->Z(); */
+	//m_device->UpdatePosition();
+	Ptr<MobilityModel> model = m_device->GetNode()->GetObject<MobilityModel>();
+	vbh.SetExtraInfo_o(Vector(model->GetPosition().x,
+				model->GetPosition().y,
+				model->GetPosition().z) );
 
 	ash.SetSize(ash.GetSize() + sizeof(AquaSimAddress)*2);  //plus the size of MAC header: Source address and destination address
   ash.SetTxTime(GetTxTime(ash.GetSerializedSize()));
   ash.SetNumForwards(0);	//use this area to store number of retrans
 
-	//iph->daddr() = vbh->target_id.addr_;
-	//iph->saddr() = index_;
+	ash.SetDAddr(vbh.GetTargetAddr());
+	ash.SetSAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
 	//suppose Sink has broadcast its position before. To simplify the simulation, we
 	//directly get the position of the target node (Sink)
-  /*
-	UnderwaterSensorNode* tn = (UnderwaterSensorNode*)(Node::get_node_by_address(vbh->target_id.addr_));
-	tn->update_position();
-	vbh->info.tx = tn->X();
-	vbh->info.ty = tn->Y();
-	vbh->info.tz = tn->Z();*/
+
+
+	Ptr<NetDevice> tn =  m_device->GetNode()->GetDevice(vbh.GetTargetAddr().GetAsInt());
+  Ptr<MobilityModel> tModel = tn->GetNode()->GetObject<MobilityModel>();
+	//UnderwaterSensorNode* tn = (UnderwaterSensorNode*)(Node::get_node_by_address(vbh->target_id.addr_));
+	//tn->UpdatePosition();
+	vbh.SetExtraInfo_t(tModel->GetPosition());
 
 	m_originPktSet[ash.GetUId()] = Simulator::Now();
   pkt->AddHeader(ash);
+	pkt->AddHeader(vbh);
 	Insert2PktQs(pkt);
 
   //callback to higher level, should be implemented differently
@@ -248,20 +252,21 @@ AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Ti
 	AlohaHeader mach;
   AquaSimGoalReqHeader goalReqh;
 	AquaSimPtTag ptag;
+	VBHeader vbh;
 	Ptr<Packet> DataPkt = *(DataPktSet.begin());
-	//hdr_uwvb* vbh = hdr_uwvb::access(DataPkt);
-	  Ptr<MobilityModel> model = m_device->GetNode()->GetObject<MobilityModel>();
+	DataPkt->PeekHeader(vbh);
+	Ptr<MobilityModel> model = m_device->GetNode()->GetObject<MobilityModel>();
 
 	goalReqh.SetRA(AquaSimAddress::GetBroadcast());
   goalReqh.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
-	//goalReqh.SetDA(vbh->target_id.addr_);  //sink address
+	goalReqh.SetDA(vbh.GetTargetAddr());  //sink address
 	m_reqPktSeq++;
   goalReqh.SetReqID(m_reqPktSeq);
   goalReqh.SetSenderPos(model->GetPosition());
 	goalReqh.SetSendTime(DataSendTime-Simulator::Now());
 	goalReqh.SetTxTime(TxTime);
-	//goalReqh.SetSinkPos.setValue(vbh->info.tx, vbh->info.ty, vbh->info.tz);
-	//goalReqh.SetSourcePos.setValue(vbh->info.ox, vbh->info.oy, vbh->info.oz);
+	goalReqh.SetSinkPos(vbh.GetExtraInfo().t);
+	goalReqh.SetSourcePos(vbh.GetExtraInfo().o);
 
 	ptag.SetPacketType(AquaSimPtTag::PT_GOAL_REQ);
 	ash.SetDirection(AquaSimHeader::DOWN);
@@ -666,8 +671,10 @@ AquaSimGoal::ProcessDataPkt(Ptr<Packet> DataPkt)
 {
   AquaSimHeader ash;
   AlohaHeader mach;   //TODO update this...
+	VBHeader vbh;
   DataPkt->RemoveHeader(ash);
   DataPkt->PeekHeader(mach);
+	DataPkt->PeekHeader(vbh);
 	//hdr_uwvb* vbh = hdr_uwvb::access(DataPkt);
 
 	if( m_recvedList.count(ash.GetUId()) != 0 ) {
@@ -680,7 +687,7 @@ AquaSimGoal::ProcessDataPkt(Ptr<Packet> DataPkt)
 	m_recvedList[ash.GetUId()].RecvTime = Simulator::Now();
 	m_recvedList[ash.GetUId()].Sender = mach.GetSA();
 
-	if( /* TODO update*/ /*vbh->target_id.addr_ ==*/ ash.GetDAddr() == m_device->GetAddress() ) {
+	if( vbh.GetTargetAddr() == m_device->GetAddress() ) {
 		//ack this data pkt if this node is the destination
 		//ack!!! insert the uid into AckSet.
 		if( SinkAccumAckTimer.IsRunning() ) {
@@ -880,9 +887,10 @@ AquaSimGoal::ProcessPSHAckPkt(Ptr<Packet> AckPkt)
 void
 AquaSimGoal::Insert2PktQs(Ptr<Packet> DataPkt, bool FrontPush)
 {
-	//hdr_uwvb* vbh = hdr_uwvb::access(DataPkt);
+	VBHeader vbh;
   AquaSimHeader ash;
   DataPkt->RemoveHeader(ash);
+	DataPkt->PeekHeader(ash);
 
 	if( ash.GetNumForwards() > m_maxRetransTimes ) {
 		DataPkt=0;
@@ -894,12 +902,12 @@ AquaSimGoal::Insert2PktQs(Ptr<Packet> DataPkt, bool FrontPush)
 	    ash.SetNumForwards(tmp);	//bit awkward.
     DataPkt->AddHeader(ash);
 	}
-	/* vbh not implemented yet
+
 	if( FrontPush )
-	  //[vbh->target_id.addr_].Q_.push_front(DataPkt);
+	  m_PktQs[vbh.GetTargetAddr()].Q_.push_front(DataPkt);
 	else
-	  //m_PktQs[vbh->target_id.addr_].Q_.push_back(DataPkt);
-	*/
+	  m_PktQs[vbh.GetTargetAddr()].Q_.push_back(DataPkt);
+
 	m_qsPktNum++;
 
 	GotoNxtRound();
@@ -1125,10 +1133,9 @@ AquaSimGoal::SendoutPkt(Ptr<Packet> pkt)
 
 //---------------------------------------------------------------------
 double
-AquaSimGoal::Dist(Vector3D Pos1, Vector3D Pos2)
+AquaSimGoal::Dist(Vector Pos1, Vector Pos2)
 {
-  //TODO should probably be integrated using something else
-  //return m_device->GetChannel()->Distance(device1, device2);
+  //redundant - should probably be integrated using something else
 
 	double delta_x = Pos1.x - Pos2.x;
 	double delta_y = Pos1.y - Pos2.y;
@@ -1165,12 +1172,12 @@ AquaSimGoal::GetBackoffTime(Ptr<Packet> ReqPkt)
 //---------------------------------------------------------------------
 //Backoff Functions
 double
-AquaSimGoal::GetVBFbackoffTime(Vector3D Source, Vector3D Sender, Vector3D Sink)
+AquaSimGoal::GetVBFbackoffTime(Vector Source, Vector Sender, Vector Sink)
 {
 	double DTimesCosTheta =0.0;
 	double p = 0.0;;
 	double alpha = 0.0;
-	Vector3D ThisNode;
+	Vector ThisNode;
 	//m_device->UpdatePosition();  //out of date
 	  Ptr<MobilityModel> model = m_device->GetNode()->GetObject<MobilityModel>();
 	ThisNode = model->GetPosition();
@@ -1191,7 +1198,7 @@ AquaSimGoal::GetVBFbackoffTime(Vector3D Source, Vector3D Sender, Vector3D Sink)
 
 //---------------------------------------------------------------------
 double
-AquaSimGoal::GetHH_VBFbackoffTime(Vector3D Sender, Vector3D Sink)
+AquaSimGoal::GetHH_VBFbackoffTime(Vector Sender, Vector Sink)
 {
 	return GetVBFbackoffTime(Sender, Sender, Sink);
 }
@@ -1200,9 +1207,9 @@ AquaSimGoal::GetHH_VBFbackoffTime(Vector3D Sender, Vector3D Sink)
 //---------------------------------------------------------------------
 //Line Point1 and Line Point2 is two points on the line
 double
-AquaSimGoal::DistToLine(Vector3D LinePoint1, Vector3D LinePoint2)
+AquaSimGoal::DistToLine(Vector LinePoint1, Vector LinePoint2)
 {
-  Vector3D ThisNode;
+  Vector ThisNode;
   //m_device->UpdatePosition();  //out of date
   Ptr<MobilityModel> model = m_device->GetNode()->GetObject<MobilityModel>();
   ThisNode = model->GetPosition();

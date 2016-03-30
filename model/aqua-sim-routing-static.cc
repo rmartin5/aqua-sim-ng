@@ -113,7 +113,7 @@ AquaSimStaticRouting::Recv (Ptr<Packet> p)
     }
   else if (AmISrc (p))
     {
-      //ash->size() +=  SR_HDR_LEN; //add the overhead of static routing's header
+      ash.SetSize(ash.GetSize() + SR_HDR_LEN); //add the overhead of static routing's header
     }
   else if (!AmINextHop (p))
     {

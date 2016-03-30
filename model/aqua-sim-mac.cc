@@ -112,7 +112,7 @@ AquaSimMac::SendUp(Ptr<Packet> p)
 }
 
 bool
-AquaSimMac::SendDown(Ptr<Packet> p)	//TODO remove this is redundant
+AquaSimMac::SendDown(Ptr<Packet> p)
 {
   NS_ASSERT(m_device && m_phy && m_rout);
 

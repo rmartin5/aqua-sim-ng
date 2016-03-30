@@ -303,7 +303,7 @@ VBHeader::SetDataType(uint8_t dataType)
   m_dataType = dataType;
 }
 void
-VBHeader::SetOriginalSource(Vector3D originalSource)
+VBHeader::SetOriginalSource(Vector originalSource)
 {
   m_originalSource = originalSource;
 }
@@ -328,22 +328,22 @@ VBHeader::SetExtraInfo(uw_extra_info info)
   m_info = info;
 }
 void
-VBHeader::SetExtraInfo_o(Vector3D position_o)
+VBHeader::SetExtraInfo_o(Vector position_o)
 {
   m_info.o = position_o;
 }
 void
-VBHeader::SetExtraInfo_f(Vector3D position_f)
+VBHeader::SetExtraInfo_f(Vector position_f)
 {
   m_info.f = position_f;
 }
 void
-VBHeader::SetExtraInfo_t(Vector3D position_t)
+VBHeader::SetExtraInfo_t(Vector position_t)
 {
   m_info.t = position_t;
 }
 void
-VBHeader::SetExtraInfo_d(Vector3D position_d)
+VBHeader::SetExtraInfo_d(Vector position_d)
 {
   m_info.d = position_d;
 }
@@ -378,7 +378,7 @@ VBHeader::GetDataType()
 {
   return m_dataType;
 }
-Vector3D
+Vector
 VBHeader::GetOriginalSource()
 {
   return m_originalSource;
@@ -502,7 +502,7 @@ DBRHeader::GetInstanceTypeId(void) const
 }
 
 void
-DBRHeader::SetPosition(Vector3D position)
+DBRHeader::SetPosition(Vector position)
 {
   m_position = position;
 }
@@ -537,7 +537,7 @@ DBRHeader::SetDepth(double depth)
   m_depth = depth;
 }
 
-Vector3D
+Vector
 DBRHeader::GetPosition()
 {
   return m_position;

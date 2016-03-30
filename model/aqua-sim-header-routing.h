@@ -89,15 +89,15 @@ public:
   void SetSenderAddr(AquaSimAddress senderAddr);
   void SetForwardAddr(AquaSimAddress forwardAddr);
   void SetDataType(uint8_t dataType);
-  void SetOriginalSource(Vector3D originalSource);
+  void SetOriginalSource(Vector originalSource);
   void SetToken(double token);
   void SetTs(double ts);
   void SetRange(double range);
   void SetExtraInfo(uw_extra_info info);
-  void SetExtraInfo_o(Vector3D position_o);
-  void SetExtraInfo_f(Vector3D position_f);
-  void SetExtraInfo_t(Vector3D position_t);
-  void SetExtraInfo_d(Vector3D position_d);
+  void SetExtraInfo_o(Vector position_o);
+  void SetExtraInfo_f(Vector position_f);
+  void SetExtraInfo_t(Vector position_t);
+  void SetExtraInfo_d(Vector position_d);
 
   //Getters
   uint8_t GetMessType();
@@ -106,7 +106,7 @@ public:
   AquaSimAddress GetSenderAddr();
   AquaSimAddress GetForwardAddr();
   uint8_t GetDataType();
-  Vector3D GetOriginalSource();
+  Vector GetOriginalSource();
   double GetToken();
   double GetTs();
   double GetRange();
@@ -129,7 +129,7 @@ private:
   //int num_next;
   uint8_t m_dataType; //what is this for?
 
-  Vector3D m_originalSource;
+  Vector m_originalSource;
   struct uw_extra_info m_info;
 
   double m_token;
@@ -153,7 +153,7 @@ public:
   int Size();
 
   //Setters
-  void SetPosition(Vector3D position);
+  void SetPosition(Vector position);
   void SetPacketID(uint32_t packetID);
   void SetMode(uint8_t mode);
   void SetNHops(uint16_t nhops);
@@ -162,7 +162,7 @@ public:
   void SetDepth(double depth);
 
   //Getters
-  Vector3D GetPosition();
+  Vector GetPosition();
   uint32_t GetPacketID();
   uint8_t GetMode();
   uint16_t GetNHops();
@@ -178,7 +178,7 @@ public:
   virtual TypeId GetInstanceTypeId(void) const;
 
 private:
-  Vector3D m_position;
+  Vector m_position;
   uint32_t m_packetID;  // unique id for packet
   //int valid_;		// is this header in the packet? //not used...
   uint8_t m_mode; // routing mode: greedy|recovery|beacon

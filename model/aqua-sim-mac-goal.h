@@ -58,6 +58,7 @@
 #include "aqua-sim-mac.h"
 #include "aqua-sim-header-goal.h"
 #include "aqua-sim-address.h"
+#include "aqua-sim-channel.h"
 
 #include <deque>
 #include <set>
@@ -378,19 +379,20 @@ private:
 	void	Insert2PktQs(Ptr<Packet> DataPkt, bool FrontPush=false);
 
 	//calculate the distance between two nodes.
-	double	Dist(Vector3D Pos1, Vector3D Pos2); //TODO fix the parameters here. & other Vector3D below...
+	double	Dist(Vector Pos1, Vector Pos2);
 
 	//backoff time calculation method
 	Time	GetBackoffTime(Ptr<Packet> ReqPkt);
 	//VBF backoff time
 	//minus value will be returned if this node is out of forward area.
-	double	GetVBFbackoffTime(Vector3D Source, Vector3D Sender, Vector3D Sink);
-	double	GetHH_VBFbackoffTime(Vector3D Sender, Vector3D Sink);
+	double	GetVBFbackoffTime(Vector Source, Vector Sender, Vector Sink);
+	double	GetHH_VBFbackoffTime(Vector Sender, Vector Sink);
 
 	//distance from this node to line
-	double  DistToLine(Vector3D LinePoint1, Vector3D LinePoint2);
+	double  DistToLine(Vector LinePoint1, Vector LinePoint2);
 	Time	JitterStartTime(Time Txtime); //Jitter the start time to avoid collision
 
+	Ptr<AquaSimChannel> m_channel;
 protected:
 	void	StatusProcess();
 

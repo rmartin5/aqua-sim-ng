@@ -87,7 +87,6 @@ AquaSimSink::AquaSimSink() :	//Agent(PT_UWVB),
 	m_periodicTimer(Timer::CANCEL_ON_DESTROY),
 	m_reportTimer(Timer::CANCEL_ON_DESTROY)
 {
-  // set option first. ... TODO clean this up...
 
   m_AppDup = true; // allow duplication
 
@@ -258,7 +257,7 @@ AquaSimSink::SendPkt()
   Ptr<Packet> pkt = CreatePacket();
   AquaSimHeader ashdr;
 
-  //TODO implement other headers
+  //implement other headers
   //hdr_uwvb* vbh = HDR_UWVB(pkt);		//not implemented
 
   ashdr.SetUId(m_pktId++);
@@ -621,8 +620,8 @@ AquaSimSink::GetTypeId(void)
     ;
   return tid;
 }
-//TODO attach routing layer...
-//TODO the following arg commands:			(all are functions)
+// attach routing layer...
+// the following arg commands:			(all are functions)
 //terminate()?, announce .. bcast_interest()?,
 //ready .. dataready()?, send .. SendPkt()?, exp-start .. ExponentialStart()?
 //stop .. Stop()?  node lookup???

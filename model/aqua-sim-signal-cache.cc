@@ -57,18 +57,8 @@ PktSubmissionTimer::GetTypeId (void)
 }
 
 void
-PktSubmissionTimer::Expire(void) {
-//TODO remove this priority_queue testing below
-  /*
-   std::priority_queue<PktSubmissionUnit> printList = m_waitingList;
-  while(!printList.empty())
-    {
-      std::cout << printList.top().endT.GetSeconds() << "/" << printList.top().inPkt << " ";
-      printList.pop();
-    }
-  std::cout << '\n';
-   */
-
+PktSubmissionTimer::Expire(void)
+{
   IncomingPacket* inPkt = m_waitingList.top().inPkt;
   m_waitingList.pop();
 

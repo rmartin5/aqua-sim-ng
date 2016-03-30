@@ -138,7 +138,7 @@ AquaSimChannel::Recv(Ptr<Packet> p, Ptr<AquaSimPhy> phy)
 {
   NS_LOG_FUNCTION(this << p << phy);
   NS_ASSERT(p != NULL || phy != NULL);
-  return SendUp(p,phy);	//TODO
+  return SendUp(p,phy);
 }
 
 bool
@@ -158,8 +158,6 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
     SortLists();
   }
   */
-  AquaSimHeader asHeader;
-  p->PeekHeader(asHeader);
 
   std::vector<PktRecvUnit> * recvUnits = m_prop->ReceivedCopies(sender, p, m_deviceList);
 
@@ -171,7 +169,7 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
       continue;
     }
 
-    //TODO remove ... this is a local addition
+    //TODO remove ... this is a local addition for flooding_test.
     #ifdef FLOODING_TEST
     if (Distance(sender, (*recvUnits)[i].recver) > Distance((*recvUnits)[0].recver,(*recvUnits)[1].recver)*1.25/*arbitrary*/)
     {
@@ -205,7 +203,7 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
 
     Simulator::Schedule(pDelay, &AquaSimPhy::Recv, rifp, p);
 
-    /* FIXME in future support multiple phy with below code.
+    /* TODO in future support multiple phy with below code.
      *
      * for (std::vector<Ptr<AquaSimPhy> >::iterator it = rifp.begin(); it!=rifp.end(); it++) {
      *	 pCopy = p->Copy();
@@ -215,11 +213,10 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
      */
 
   }
-  //pCopy->Unref();
-  //p->Unref();
-  //p = 0; //smart pointer will unref automatically once out of scope
+
+  p = 0; //smart pointer will unref automatically once out of scope
   delete recvUnits;
-  return true;	//TODO fix this to make it more accurately check for issues.
+  return true;
 }
 
 void

@@ -59,9 +59,10 @@ AquaSimUwan_StartTimer::expire()
   m_mac->Start();
 }
 
+class AquaSimUwan;
 
 Time AquaSimUwan::m_initialCyclePeriod = Seconds(10.0);
-Time AquaSimUwan::m_maxPropTime = Seconds(3000.0 /* TODO UnderwaterChannel::Transmit_distance()*//1500.0);
+Time AquaSimUwan::m_maxPropTime = Seconds(3000.0/1500.0); //FIXME static AquaSimChannel::TransmitDistance() for now...
 Time AquaSimUwan::m_maxTxTime = Seconds(0.0);
 Time AquaSimUwan::m_listenPeriod = Seconds(0.0);		//the length of listening to the channel after transmission.
 Time AquaSimUwan::m_helloTxLen = Seconds(0.0);

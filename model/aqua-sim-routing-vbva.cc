@@ -1637,7 +1637,7 @@ void AquaSimVBVA::SendDataTermination(const Ptr<Packet> p)
 
 
       ptag.SetPacketType(AquaSimPtTag::PT_UWVB);
-      //ash.size() =m_controlPacketSize*8;
+      ash.SetSize(m_controlPacketSize*8);
       ash.SetSAddr(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()));
       ash.SetDAddr(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()));
       /*iph->src_=here_;
@@ -1696,7 +1696,7 @@ return NULL;
 
 
     ptag.SetPacketType(AquaSimPtTag::PT_UWVB);
-    //ash.size() =m_controlPacketSize*8;
+    ash.SetSize(m_controlPacketSize*8);
     ash.SetSAddr(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()));
     ash.SetDAddr(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()));
     /*iph->src_=here_;

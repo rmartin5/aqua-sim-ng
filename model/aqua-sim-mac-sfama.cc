@@ -170,12 +170,10 @@ AquaSimSFama::TxProcess(Ptr<Packet> p)
 void
 AquaSimSFama::InitSlotLen()
 {
-  double transmitDistance = 3000.0; /*static for now but should be fixed in the future TODO
-        UnderwaterChannel::Transmit_Distance() */
   SFamaHeader SFAMA;
 	m_slotLen = m_guardTime +
 		GetTxTime(SFAMA.GetSize(SFamaHeader::SFAMA_CTS) +
-		transmitDistance/1500.0).ToDouble(Time::S);
+		m_channel->TransmitDistance()/1500.0).ToDouble(Time::S);
 }
 
 double

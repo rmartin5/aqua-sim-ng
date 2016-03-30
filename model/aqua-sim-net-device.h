@@ -42,8 +42,6 @@ namespace ns3 {
  * A basic underwater net device structure. Ported from UWSN Lab's Aqua-Sim on NS2.
  */
 
-    //TODO clean up this ugly mess...
-
 enum TransmissionStatus{SLEEP, NIDLE, SEND, RECV, NSTATUS };
 
 class Channel;
@@ -78,7 +76,7 @@ public:
   virtual void DoDispose (void);
   virtual void DoInitialize (void);
 
-  void ForwardUp (Ptr<Packet> packet, Ptr<MobilityModel> src, Ptr<MobilityModel> dst);  // TODO - no init of ForwardUp
+  void ForwardUp (Ptr<Packet> packet, Ptr<MobilityModel> src, Ptr<MobilityModel> dst);	//not used.
 
   //inherited functions from NetDevice class
   virtual void AddLinkChangeCallback (Callback<void> callback);

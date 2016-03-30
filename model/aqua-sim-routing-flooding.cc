@@ -248,11 +248,11 @@ AquaSimFloodingRouting::MACsend(Ptr<Packet> pkt, Time delay)
   pkt->PeekHeader(vbh);
   pkt->RemoveHeader(ash);
 
-  /*
+
 	if (vbh.GetMessType() == AS_DATA)
-		ash.size() = (God::instance()->data_pkt_size);
+		ash.SetSize(64); //(God::instance()->data_pkt_size);
 	else
-		ash.size() = 36;*/
+		ash.SetSize(36);
 
   pkt->AddHeader(ash);
   Simulator::Schedule(delay, &AquaSimRouting::SendDown,this,

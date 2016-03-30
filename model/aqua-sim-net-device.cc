@@ -156,7 +156,7 @@ AquaSimNetDevice::CompleteConfig (void)
       return;
     }
   //exec
-  //TODO set app, ++
+  //TODO set app
   m_configComplete = true;
 }
 
@@ -183,7 +183,6 @@ void
 AquaSimNetDevice::SetPhy (Ptr<AquaSimPhy> phy)
 {
   //currently only supporting single layer per net device
-  //TODO could all this connectivity be done more efficiently?
   if (m_phy == 0)
     {
       NS_LOG_FUNCTION(this);
@@ -313,7 +312,7 @@ AquaSimNetDevice::IsMoving(void)
       return false;
   }
 
-  Vector3D vel = model->GetVelocity();
+  Vector vel = model->GetVelocity();
   if (vel.x==0 && vel.y==0 && vel.z==0) {
       return false;
   }

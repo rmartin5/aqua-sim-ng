@@ -29,6 +29,7 @@
 
 #include <map>
 
+#define IP_HDR_LEN      20
 
 namespace ns3 {
 

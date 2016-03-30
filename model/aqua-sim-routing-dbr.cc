@@ -444,7 +444,7 @@ void NeighbTable::UpdateRouteFlag(AquaSimAddress addr, int val)
 
 #ifdef	DBR_USE_ROUTEFLAG
 NeighbEnt *
-NeighbTable::EntFindShadowest(Vector3D location)
+NeighbTable::EntFindShadowest(Vector location)
 {
 	NeighbEnt *ne = 0;
 	int i;
@@ -478,7 +478,7 @@ NeighbTable::EntFindShadowest(Vector3D location)
 }
 #else
 NeighbEnt *
-NeighbTable::EntFindShadowest(Vector3D location)
+NeighbTable::EntFindShadowest(Vector location)
 {
     NeighbEnt *ne = 0;
     int i;
@@ -669,7 +669,7 @@ AquaSimDBR::MakeBeacon(void)
 	ash.SetNextHop(AquaSimAddress::GetBroadcast());
 	//ash.addr_type_ = AF_INET;
   ash.SetDirection(AquaSimHeader::DOWN);
-	//ash.size() = dbrh.Size() + IP_HDR_LEN;
+	ash.SetSize(dbrh.Size() + IP_HDR_LEN);
   ash.SetDAddr(AquaSimAddress::GetBroadcast());
   ash.SetSAddr(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()));
   //ash->dport() = DBR_PORT;
@@ -811,7 +811,7 @@ AquaSimDBR::ForwardPacket(Ptr<Packet> p, int flag)
 	// common settings for forwarding
   ash.SetDirection(AquaSimHeader::DOWN);
 	//ash->addr_type_ = AF_INET;
-	//ash->size() = dbrh->size() + IP_HDR_LEN;
+	ash.SetSize(dbrh.Size() + IP_HDR_LEN);
   ptag.SetPacketType(AquaSimPtTag::PT_DBR);
 
 	// make decision on next hop based on packet mode
@@ -1019,7 +1019,7 @@ AquaSimDBR::Recv(Ptr<Packet> p)
 	ash.SetDirection(AquaSimHeader::DOWN);
 	//ash->addr_type_ = AF_INET;
   ptag.SetPacketType(AquaSimPtTag::PT_DBR);
-	//ash->size() = dbrh->size() + IP_HDR_LEN;
+	ash.SetSize(dbrh.Size() + IP_HDR_LEN);
 	ash.SetNextHop(AquaSimAddress::GetBroadcast());
 	iph.SetTtl(128);
 
@@ -1107,7 +1107,7 @@ AquaSimDBR::HandlePktForward(Ptr<Packet> p)
 	ash.SetDirection(AquaSimHeader::DOWN);
 	//ash->addr_type_ = AF_INET;
 	ptag.SetPacketType(AquaSimPtTag::PT_DBR);
-	//ash->size() = dbrh->size() + IP_HDR_LEN;
+	ash.SetSize(dbrh.Size() + IP_HDR_LEN);
 	ash.SetNextHop(AquaSimAddress:GetBroadcast());
 
 	// finally broadcasting it!
@@ -1173,7 +1173,7 @@ AquaSimDBR::HandlePktForward(Ptr<Packet> p)
   ash.SetDirection(AquaSimHeader::DOWN);
 	//ash->addr_type_ = AF_INET;
 	ptag.SetPacketType(AquaSimPtTag::PT_DBR);
-	//ash->size() = dbrh->size() + IP_HDR_LEN;
+	ash.SetSize(dbrh.Size() + IP_HDR_LEN);
 	ash.SetNextHop(AquaSimAddress::GetBroadcast());
 
 	switch (dbrh.GetMode())
@@ -1331,7 +1331,7 @@ AquaSimDBR::Recv(Ptr<Packet> p)
     p->RemoveHeader(iph);
 
     ash.SetDirection(AquaSimHeader::DOWN);
-    //ash->size() += IP_HDR_LEN + 8;
+    ash.SetSize(ash.GetSize() + IP_HDR_LEN + 8);
     iph.SetTtl(128);
 		dbrh.SetMode(DBRH_DATA_GREEDY);
 		dbrh.SetPacketID(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()).GetAsInt());
@@ -1448,7 +1448,7 @@ AquaSimDBR::Recv2(Ptr<Packet> p)
     p->RemoveHeader(dbrh);
     p->RemoveHeader(iph);
 
-		//ash->size() += IP_HDR_LEN + 8;
+		ash.SetSize(ash.GetSize() + IP_HDR_LEN + 8);
     ash.SetDirection(AquaSimHeader::DOWN);
     iph.SetTtl(128);
     dbrh.SetMode(DBRH_DATA_GREEDY);

@@ -54,9 +54,9 @@ public:
   void SetSendTime(Time sendtime);
   void SetTxTime(Time txtime);
   void SetReqID(uint8_t reqid);
-  void SetSenderPos(Vector3D senderPos);
-  void SetSinkPos(Vector3D sinkPos);
-  void SetSourcePos(Vector3D sourcePos);
+  void SetSenderPos(Vector senderPos);
+  void SetSinkPos(Vector sinkPos);
+  void SetSourcePos(Vector sourcePos);
 
   AquaSimAddress GetSA();
   AquaSimAddress GetRA();
@@ -64,9 +64,9 @@ public:
   Time GetSendTime();
   Time GetTxTime();
   uint8_t GetReqID();
-  Vector3D GetSenderPos();
-  Vector3D GetSinkPos();
-  Vector3D GetSourcePos();
+  Vector GetSenderPos();
+  Vector GetSinkPos();
+  Vector GetSourcePos();
 
   //inherited methods
   virtual uint32_t GetSerializedSize(void) const;
@@ -84,10 +84,10 @@ private:
   uint8_t			m_ReqID;							//use 1 byte
 
   //following three are for VBF
-  Vector3D		SenderPos;						//3*2bytess
+  Vector		SenderPos;						//3*2bytess
   //following two are for HH-VBF
-  Vector3D		SinkPos;						//3*2bytes
-  Vector3D		SourcePos;						//3*2bytes
+  Vector		SinkPos;						//3*2bytes
+  Vector		SourcePos;						//3*2bytes
 
 }; // class AquaSimGoalReqHeader
 
@@ -106,7 +106,7 @@ public:
   void SetTxTime(Time txtime);
   void SetReqID(uint8_t reqid);
   void SetBackoffTime(Time backoffTime);
-  void SetReplyerPos(Vector3D replyerPos);
+  void SetReplyerPos(Vector replyerPos);
 
   AquaSimAddress GetSA();
   AquaSimAddress GetRA();
@@ -114,7 +114,7 @@ public:
   Time GetTxTime();
   uint8_t GetReqID();
   Time GetBackoffTime();
-  Vector3D GetReplyerPos();
+  Vector GetReplyerPos();
 
   //inherited methods
   virtual uint32_t GetSerializedSize(void) const;
@@ -136,7 +136,7 @@ private:
 							   * in the packet size.
 							   */  //2 B
 
-  Vector3D ReplyerPos;  //6 B
+  Vector ReplyerPos;  //6 B
 
 
 }; // class AquaSimGoalRepHeader

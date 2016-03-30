@@ -95,17 +95,17 @@ AquaSimGoalReqHeader::SetReqID(uint8_t reqid)
   m_ReqID = reqid;
 }
 void
-AquaSimGoalReqHeader::SetSenderPos(Vector3D senderPos)
+AquaSimGoalReqHeader::SetSenderPos(Vector senderPos)
 {
   SenderPos = senderPos;
 }
 void
-AquaSimGoalReqHeader::SetSinkPos(Vector3D sinkPos)
+AquaSimGoalReqHeader::SetSinkPos(Vector sinkPos)
 {
   SinkPos = sinkPos;
 }
 void
-AquaSimGoalReqHeader::SetSourcePos(Vector3D sourcePos)
+AquaSimGoalReqHeader::SetSourcePos(Vector sourcePos)
 {
   SourcePos = sourcePos;
 }
@@ -140,17 +140,17 @@ AquaSimGoalReqHeader::GetReqID()
 {
   return m_ReqID;
 }
-Vector3D
+Vector
 AquaSimGoalReqHeader::GetSenderPos()
 {
   return SenderPos;
 }
-Vector3D
+Vector
 AquaSimGoalReqHeader::GetSinkPos()
 {
   return SinkPos;
 }
-Vector3D
+Vector
 AquaSimGoalReqHeader::GetSourcePos()
 {
   return SourcePos;
@@ -280,7 +280,7 @@ void AquaSimGoalRepHeader::SetBackoffTime(Time backoffTime)
   m_BackoffTime = backoffTime;
 }
 void
-AquaSimGoalRepHeader::SetReplyerPos(Vector3D replyerPos)
+AquaSimGoalRepHeader::SetReplyerPos(Vector replyerPos)
 {
   ReplyerPos = replyerPos;
 }
@@ -315,7 +315,7 @@ AquaSimGoalRepHeader::GetBackoffTime()
 {
   return m_BackoffTime;
 }
-Vector3D
+Vector
 AquaSimGoalRepHeader::GetReplyerPos()
 {
   return ReplyerPos;

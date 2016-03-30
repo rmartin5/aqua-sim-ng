@@ -23,6 +23,7 @@
 
 
 #include "aqua-sim-mac.h"
+#include "aqua-sim-channel.h"
 
 #include "ns3/packet.h"
 #include "ns3/timer.h"
@@ -186,6 +187,7 @@ private:
 
   int m_slotNumHandler;
 
+  Ptr<AquaSimChannel> m_channel;
 protected:
 	Ptr<Packet> MakeRTS(AquaSimAddress recver, int slot_num);
 	Ptr<Packet> MakeCTS(AquaSimAddress rts_sender, int slot_num);

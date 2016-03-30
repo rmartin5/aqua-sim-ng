@@ -255,8 +255,8 @@ AquaSimDynamicRouting::Recv(Ptr<Packet> p)
 			return false;
 		}
 		// else if this is a packet I am originating, must add IP header
-		/*else if (ash.GetNumForwards() == 0)
-			TODO ash.size() += IP_HDR_LEN;*/
+		else if (ash.GetNumForwards() == 0)
+			ash.SetSize(ash.GetSize() + IP_HDR_LEN);
 	}
 	else if( ash.GetNextHop() != AquaSimAddress::GetBroadcast() && ash.GetNextHop() != RaAddr() )
   {
@@ -400,7 +400,7 @@ AquaSimDynamicRouting::SendDRoutingPkt()
 	iph.SetTtl(1);
 
 	ash.SetDirection(AquaSimHeader::DOWN);
-	//ash.size() = IP_HDR_LEN + ph->pkt_len()+DataSize;
+	ash.SetSize(IP_HDR_LEN + drh.GetPktLen()+size);
 	ash.SetErrorFlag(false);
 	ash.SetNextHop(AquaSimAddress::GetBroadcast());
 	//ash.addr_type() = NS_AF_INET;
@@ -431,7 +431,7 @@ AquaSimDynamicRouting::ForwardData(Ptr<Packet> p)
 	if (ash.GetDirection() == AquaSimHeader::UP &&
 	    (ash.GetDAddr() == AquaSimAddress::GetBroadcast() || ash.GetDAddr() == RaAddr()))
   {
-		//ash.size() -= IP_HDR_LEN;
+		ash.SetSize(ash.GetSize() - IP_HDR_LEN);
     NS_LOG_INFO("ForwardData: dmux->recv not implemented yet for packet=" << p);
     //dmux_->recv(p, (Handler*)NULL); //should be sending to dmux
     //SendUp should handle dmux...

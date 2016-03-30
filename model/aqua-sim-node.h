@@ -75,7 +75,7 @@ public:
   //Ptr<CubicPositionAllocator> T(void) { return m_T; }	//mobility model may cover this...
 
   *coordinates*
-  inline double &X(void) { return m_x; }	//TODO redefine coordinates and speed projections using mobilitymodel API
+  inline double &X(void) { return m_x; }
   inline double &Y(void) { return m_y; }
   inline double &Z(void) { return m_z; }
   *speeds projected to each axis*
@@ -199,7 +199,7 @@ protected:
   *
   void GenerateFailure(void);
 
-  //FIXME - fully integrate MobilityModel within ASNode
+  //fully integrate MobilityModel within ASNode
   //UnderwaterMobilityPattern * MP_; //our new mobility pattern module
 
   Ptr<MobilityModel> m_MP;

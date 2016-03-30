@@ -51,8 +51,8 @@ LocationCache::LocationCache(double duration, double interval,
   m_bIndex(0), m_size(1)
 {
   m_interval = interval;
-  m_locations[0].m_loc = Vector3D(X, Y, Z);
-  m_locations[0].m_sp = Speed(Vector3D(dX, dY, dZ));
+  m_locations[0].m_loc = Vector(X, Y, Z);
+  m_locations[0].m_sp = Speed(Vector(dX, dY, dZ));
 }
 
 /**
@@ -147,8 +147,8 @@ AquaSimMobilityPattern::~AquaSimMobilityPattern() {
 */
 void
 AquaSimMobilityPattern::Start() {
-  Vector3D position = Vector3D(0,0,0);
-  Vector3D speed = Vector3D(0,0,0);
+  Vector position = Vector(0,0,0);
+  Vector speed = Vector(0,0,0);
   if (NULL != m_lc) {
     position = m_lc->GetLastLoc().m_loc;
     speed = m_lc->GetLastLoc().m_sp.GetSpeedVect();
@@ -210,8 +210,8 @@ AquaSimMobilityPattern::HandleLocUpdate() {
   e = GetLocByTime(t);
   //Ptr<MobilityModel> model = GetNetDevice()->GetNode()->GetObject<MobilityModel>();
   //double oldX = GetPosition().x;
-  SetPosition(Vector3D(e.m_loc.x,e.m_loc.y,e.m_loc.z));
-  SetVelocity(Vector3D(e.m_sp.GetSpeedVect().x,
+  SetPosition(Vector(e.m_loc.x,e.m_loc.y,e.m_loc.z));
+  SetVelocity(Vector(e.m_sp.GetSpeedVect().x,
                         e.m_sp.GetSpeedVect().y,
                         e.m_sp.GetSpeedVect().z));
   //m_node->speed() = e.m_sp.GetSpeed(); //already handled by model->GetVelocity()
@@ -270,11 +270,11 @@ void
 AquaSimMobilityPattern::SetBounds(double minx,double miny,double minz,
                                   double maxx, double maxy, double maxz)
 {
-  SetBounds(Vector3D(minx,miny,minz),Vector3D(maxx,maxy,maxz));
+  SetBounds(Vector(minx,miny,minz),Vector(maxx,maxy,maxz));
 }
 
 void
-AquaSimMobilityPattern::SetBounds(Vector3D min, Vector3D max)
+AquaSimMobilityPattern::SetBounds(Vector min, Vector max)
 {
   m_minBound = min;
   m_maxBound = max;
@@ -288,7 +288,7 @@ void
 AquaSimMobilityPattern::RestrictLocByBound(LocationCacheElem &lce)
 {
   /*
-   * //TODO should probably write a CubicPositionAllocator class to clean this up
+   * //should probably write a CubicPositionAllocator class to clean this up
    */
   bool recheck = true;
   //Ptr<CubicPositionAllocator> T = m_node->T();
@@ -329,7 +329,7 @@ double bound, bool lowerBound) {
 }
 
 void
-AquaSimMobilityPattern::SetVelocity(Vector3D vector)
+AquaSimMobilityPattern::SetVelocity(Vector vector)
 {
   m_lc->GetLastLoc().m_sp.Set(vector);
 }

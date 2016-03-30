@@ -94,7 +94,7 @@ main (int argc, char *argv[])
   Ptr<ListPositionAllocator> position = CreateObject<ListPositionAllocator> ();
 
   //Static Y and Z dimension for now
-  Vector3D boundry = Vector3D(0,0,0);
+  Vector boundry = Vector(0,0,0);
 
   std::cout << "Creating Nodes\n";
 

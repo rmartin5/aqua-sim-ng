@@ -80,8 +80,8 @@
 namespace ns3 {
 
 typedef struct RoutingVector{
-   Vector3D start;
-   Vector3D end;
+   Vector start;
+   Vector end;
 } routing_vector;
 
 
@@ -90,24 +90,24 @@ struct uw_extra_info {
  // AquaSimAddress osender_id;            // The original sender of this message
  // unsigned int seq;           //  sequence number
 
-Vector3D o;   // the start point of the forward path
+Vector o;   // the start point of the forward path
  //double ox;
  //double oy;
  //double oz;
 
  //AquaSimAddress sender_id;            // The forwarder of this message
 
-Vector3D f; // the forward's position
+Vector f; // the forward's position
  //double fx;
  //double fy;
  //double fz;
 
-Vector3D t;  // the end point of the forward path
+Vector t;  // the end point of the forward path
  //double tx;
  //double ty;
  //double tz;
 
-Vector3D d;  // this is the information about relative position of the receiver
+Vector d;  // this is the information about relative position of the receiver
              //   to the forwarder, not include in the header of real packet
  //double dx;
  //double dy;

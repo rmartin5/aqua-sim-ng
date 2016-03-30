@@ -26,6 +26,7 @@
 
 #include "aqua-sim-address.h"
 #include "aqua-sim-mac.h"
+#include "aqua-sim-channel.h"
 
 #include <set>
 #include <queue>
@@ -202,7 +203,7 @@ protected:
 	AquaSimUwan_SleepTimer		m_sleepTimer;
 	AquaSimUwan_StartTimer		m_startTimer;
 
-	Ptr<Packet> MakeSYNCPkt(Time CyclePeriod, AquaSimAddress Recver = AquaSimAddress() /*TODO MAC_BROADCAST*/); //perhaps CyclePeriod is not required
+	Ptr<Packet> MakeSYNCPkt(Time CyclePeriod, AquaSimAddress Recver = AquaSimAddress::GetBroadcast()); //perhaps CyclePeriod is not required
 	Ptr<Packet> FillMissingList(Ptr<Packet> p);
 	Ptr<Packet> FillSYNCHdr(Ptr<Packet> p, Time CyclePeriod);
 
@@ -250,6 +251,7 @@ private:
   Ptr<UniformRandomVariable> m_rand;
   double m_bitRate;
   double m_encodingEfficiency;
+
 }; // AquaSimUwan
 
 }  //namespace ns3

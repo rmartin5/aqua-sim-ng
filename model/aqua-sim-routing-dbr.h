@@ -43,6 +43,7 @@
 #define	DBR_BEACON_DESYNC	0.1		// desynchronizing form for alive beacons
 #define	DBR_BEACON_INT		10		// interval between beacons
 #define	DBR_JITTER			1		// jitter for broadcasting
+#define IP_HDR_LEN      20
 
 namespace ns3 {
 
@@ -114,11 +115,11 @@ class NeighbEnt{
 public:
 	NeighbEnt(/*AquaSimDBR* ina*/) : m_routeFlag(0)
     {
-      m_location = Vector3D();
+      m_location = Vector();
     }
 	// the agent is used for timer object
 
-	Vector3D m_location;		// location of neighbor, actually we only need depth info
+	Vector m_location;		// location of neighbor, actually we only need depth info
 	AquaSimAddress m_netID;    // IP of neighbor
 	int m_routeFlag;		// indicates that a routing path exists
 
@@ -135,7 +136,7 @@ public:
 	void Dump(void);
 	void EntDelete(const NeighbEnt *e);        	// delete an neighbor
 	NeighbEnt *EntAdd(const NeighbEnt *e);     	// add an neighbor
-	NeighbEnt *EntFindShadowest(Vector3D location);  // find the neighbor with minimal depth
+	NeighbEnt *EntFindShadowest(Vector location);  // find the neighbor with minimal depth
 	void UpdateRouteFlag(AquaSimAddress, int);
 
 private:

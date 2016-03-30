@@ -37,7 +37,7 @@ class VBHeader;
 
 struct vbf_neighborhood{
   int number;
-  Vector3D neighbor[MAX_NEIGHBOR];
+  Vector neighbor[MAX_NEIGHBOR];
 };
 
 typedef std::pair<AquaSimAddress, unsigned int> hash_entry;
@@ -57,7 +57,7 @@ public:
   int  m_windowSize;
   void Reset();
   void PutInHash(VBHeader *);
-  void PutInHash(VBHeader *, Vector3D *);
+  void PutInHash(VBHeader *, Vector *);
   vbf_neighborhood* GetHash(AquaSimAddress senderAddr, unsigned int pkt_num);
 //private:
 //int lower_counter;
@@ -112,8 +112,8 @@ protected:
   double Advance(Ptr<Packet> );
   double Distance(Ptr<Packet> );
   double Projection(Ptr<Packet>);
-  double CalculateDelay(Ptr<Packet>, Vector3D*);
-  //double RecoveryDelay(Ptr<Packet>, Vector3D*);
+  double CalculateDelay(Ptr<Packet>, Vector*);
+  //double RecoveryDelay(Ptr<Packet>, Vector*);
   void CalculatePosition(Ptr<Packet>);
   void SetMeasureTimer(Ptr<Packet>,double);
   bool IsTarget(Ptr<Packet>);

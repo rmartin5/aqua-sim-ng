@@ -93,9 +93,9 @@ AquaSimHeader::Deserialize(Buffer::Iterator start)
   //TODO this should be handled seperately in a more precise way
   m_pt = (double) i.ReadU32() / 10000.0;
   m_pr = (double) i.ReadU32() / 10000.0;
-  m_txRange = i.ReadU16();
-  m_freq = i.ReadU16();
-  m_noise = i.ReadU16();
+  m_txRange = (double) i.ReadU32() / 1000.0;
+  m_freq = (double) i.ReadU32() / 1000.0;
+  m_noise = (double) i.ReadU32() / 1000.0;
   m_status = i.ReadU8();
   m_timestamp = Seconds ( ( (double) i.ReadU32 ()) / 1000.0 );
 
@@ -111,7 +111,7 @@ AquaSimHeader::GetSerializedSize(void) const
   example can be seen @ main-packet-header.cc*/
 
   //reserved bytes for header
-  return (4 + 2+1 + 1 + 1 +1+1+ 1 + 2 + 4 + 4 + 2 + 2 + 2 + 1 + 4);
+  return (4 + 2+1 + 1 + 1 +1+1+ 1 + 2 + 4 + 4 + 4 + 4 + 4 + 1 + 4);
 }
 
 void
@@ -130,9 +130,9 @@ AquaSimHeader::Serialize(Buffer::Iterator start) const
   //src/dst port
   i.WriteU32((uint32_t) (m_pt * 10000.0));
   i.WriteU32((uint32_t) (m_pr * 10000.0));
-  i.WriteU16(m_txRange);
-  i.WriteU16(m_freq);
-  i.WriteU16(m_noise);
+  i.WriteU32((uint32_t) (m_txRange * 1000.0));
+  i.WriteU32((uint32_t) (m_freq * 1000.0));
+  i.WriteU32((uint32_t) (m_noise * 1000.0));
   i.WriteU8(m_status);
   i.WriteU32((uint32_t)(m_timestamp.GetSeconds()*1000.0 + 0.5));
   //m_modName

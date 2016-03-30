@@ -137,7 +137,7 @@ AquaSimHelper::Default()
 {
   AquaSimHelper asHelper;
 
-  //TODO populate the default case once child classes are created for mac/routing
+  //populate the default case with child classes for mac/routing
 
   return asHelper;
 }

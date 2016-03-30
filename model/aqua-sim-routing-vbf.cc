@@ -139,7 +139,7 @@ AquaSimPktHashTable::PutInHash(VBHeader * vbh)
 }
 
 void
-AquaSimPktHashTable::PutInHash(VBHeader * vbh, Vector3D* p)
+AquaSimPktHashTable::PutInHash(VBHeader * vbh, Vector* p)
 {
 	//Tcl_HashEntry *entryPtr;
 	// Pkt_Hash_Entry    *hashPtr;
@@ -286,9 +286,9 @@ AquaSimVBF::Recv(Ptr<Packet> packet)
 	//unsigned char msg_type =vbh.GetMessType();  //unused
 	//unsigned int dtype = vbh.GetDataType();  //unused
 	//double t1=vbh.GetTs();  //unused
-	Vector3D * p1;
+	Vector * p1;
 
-	p1=new Vector3D[1];
+	p1=new Vector[1];
 	p1[0].x=vbh.GetExtraInfo().f.x;
 	p1[0].y=vbh.GetExtraInfo().f.y;
 	p1[0].z=vbh.GetExtraInfo().f.z;
@@ -338,7 +338,7 @@ AquaSimVBF::Recv(Ptr<Packet> packet)
     Ptr<MobilityModel> thisModel = thisNode->GetNode()->GetObject<MobilityModel>();
 
     packet->RemoveHeader(vbh);
-    Vector3D d = Vector3D(thisModel->GetPosition().x - fModel->GetPosition().x,
+    Vector d = Vector(thisModel->GetPosition().x - fModel->GetPosition().x,
                           thisModel->GetPosition().y - fModel->GetPosition().y,
                           thisModel->GetPosition().z - fModel->GetPosition().z);
     vbh.SetExtraInfo_d(d);
@@ -367,8 +367,8 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 
 	Ptr<Packet> gen_pkt;
 	VBHeader gen_vbh;
-	Vector3D * p1;
-	p1=new Vector3D[1];
+	Vector * p1;
+	p1=new Vector[1];
 	p1[0].x=vbh.GetExtraInfo().f.x;
 	p1[0].y=vbh.GetExtraInfo().f.y;
 	p1[0].z=vbh.GetExtraInfo().f.z;
@@ -589,14 +589,14 @@ AquaSimVBF::CreatePacket()
 
   AquaSimHeader ash;
   VBHeader vbh;
-	//ash->size() = 36;
+	ash.SetSize(36);
 
   pkt->RemoveHeader(vbh);
 	vbh.SetTs(Simulator::Now().ToDouble(Time::S));
 
 	//!! I add new part
 
-  Vector3D curPos = Vector3D(GetNetDevice()->CX(),
+  Vector curPos = Vector(GetNetDevice()->CX(),
                               GetNetDevice()->CY(),
                               GetNetDevice()->CZ());
 	vbh.SetExtraInfo_o(curPos);
@@ -657,15 +657,15 @@ AquaSimVBF::MACprepare(Ptr<Packet> pkt)
 	// printf("vectorbased: the address type is :%d and suppose to be %d and  nexthop %d MAC_BROAD %d\n", ash->addr_type(),NS_AF_ILINK,ash->next_hop(),MAC_BROADCAST);
 	ash.SetDirection(AquaSimHeader::DOWN);
 
-  Vector3D f;
+  Vector f;
 	if(!GetNetDevice()->GetSinkStatus()) {       //!! I add new part
-    f = Vector3D(GetNetDevice()->CX(),
+    f = Vector(GetNetDevice()->CX(),
                   GetNetDevice()->CY(),
                   GetNetDevice()->CZ());
 	}
 	else{
     Ptr<MobilityModel> model = GetNetDevice()->GetNode()->GetObject<MobilityModel>();
-    f = Vector3D(model->GetPosition().x,
+    f = Vector(model->GetPosition().x,
                   model->GetPosition().y,
                   model->GetPosition().z);
 	}
@@ -784,8 +784,8 @@ AquaSimVBF::Timeout(Ptr<Packet> pkt)
 				else //I need to calculate my delay time again
 				{
 					int i=0;
-					Vector3D* tp;
-					tp=new Vector3D[1];
+					Vector* tp;
+					tp=new Vector[1];
 
 					tp[0].x=hashPtr->neighbor[i].x;
 					tp[0].y=hashPtr->neighbor[i].y;
@@ -815,8 +815,8 @@ AquaSimVBF::Timeout(Ptr<Packet> pkt)
 				}// end of calculate my new delay time
 			}
 			else{// I am the only neighbor
-				Vector3D* tp;
-				tp=new Vector3D[1];
+				Vector* tp;
+				tp=new Vector[1];
 				tp[0].x=vbh.GetExtraInfo().f.x;
 				tp[0].y=vbh.GetExtraInfo().f.y;
 				tp[0].z=vbh.GetExtraInfo().f.z;
@@ -860,7 +860,7 @@ AquaSimVBF::CalculatePosition(Ptr<Packet> pkt)
 }
 
 double
-AquaSimVBF::CalculateDelay(Ptr<Packet> pkt,Vector3D* p1)
+AquaSimVBF::CalculateDelay(Ptr<Packet> pkt,Vector* p1)
 {
   VBHeader vbh;
   pkt->PeekHeader(vbh);
@@ -935,7 +935,7 @@ AquaSimVBF::Projection(Ptr<Packet> pkt)
 	double ty=vbh.GetExtraInfo().t.y;
 	double tz=vbh.GetExtraInfo().t.z;
 
-  Vector3D o;
+  Vector o;
 	//double ox, oy, oz;
 
 	if( !m_hopByHop )

@@ -37,7 +37,7 @@
 
 /*
  *
- * FIXME
+ *
  * This is redundant since AquaSimNode can act as a sink...
  * 	Plus node inherits mobility model allowing easier vector positioning.
  * 	Could instead integrate some additional features from here into AquaSimNode.
