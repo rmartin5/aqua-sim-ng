@@ -54,13 +54,22 @@ public:
 			     std::string n5 = "", const AttributeValue &v5 = EmptyAttributeValue (),
 			     std::string n6 = "", const AttributeValue &v6 = EmptyAttributeValue (),
 			     std::string n7 = "", const AttributeValue &v7 = EmptyAttributeValue ());
-
+   void SetChannel (std::string name,
+ 			     std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue (),
+ 			     std::string n1 = "", const AttributeValue &v1 = EmptyAttributeValue (),
+ 			     std::string n2 = "", const AttributeValue &v2 = EmptyAttributeValue (),
+ 			     std::string n3 = "", const AttributeValue &v3 = EmptyAttributeValue (),
+ 			     std::string n4 = "", const AttributeValue &v4 = EmptyAttributeValue (),
+ 			     std::string n5 = "", const AttributeValue &v5 = EmptyAttributeValue (),
+ 			     std::string n6 = "", const AttributeValue &v6 = EmptyAttributeValue (),
+ 			     std::string n7 = "", const AttributeValue &v7 = EmptyAttributeValue ());
   Ptr<AquaSimChannel> Create (void) const;
   //int64_t AssignStreams (Ptr<AquaSimChannel> c, int64_t stream);
 
 private:
   ObjectFactory m_propagation;
   ObjectFactory m_noiseGen;
+  ObjectFactory m_channel;
 };  // class AquaSimChannelHelper
 
 class AquaSimHelper
@@ -98,14 +107,24 @@ public:
 			     std::string n5 = "", const AttributeValue &v5 = EmptyAttributeValue (),
 			     std::string n6 = "", const AttributeValue &v6 = EmptyAttributeValue (),
 			     std::string n7 = "", const AttributeValue &v7 = EmptyAttributeValue ());
+  void SetEnergyModel (std::string name,
+ 			     std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue (),
+ 			     std::string n1 = "", const AttributeValue &v1 = EmptyAttributeValue (),
+ 			     std::string n2 = "", const AttributeValue &v2 = EmptyAttributeValue (),
+ 			     std::string n3 = "", const AttributeValue &v3 = EmptyAttributeValue (),
+ 			     std::string n4 = "", const AttributeValue &v4 = EmptyAttributeValue (),
+ 			     std::string n5 = "", const AttributeValue &v5 = EmptyAttributeValue (),
+ 			     std::string n6 = "", const AttributeValue &v6 = EmptyAttributeValue (),
+ 			     std::string n7 = "", const AttributeValue &v7 = EmptyAttributeValue ());
 
     Ptr<AquaSimNetDevice> Create (Ptr<Node> node, Ptr<AquaSimNetDevice> device);
-private:
 
+private:
   Ptr<AquaSimChannel> m_channel;
   ObjectFactory m_phy;
   ObjectFactory m_mac;
   ObjectFactory m_routing;
+  ObjectFactory m_energyM;
 };  //class AquaSimHelper
 
 /*

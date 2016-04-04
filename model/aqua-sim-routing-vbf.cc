@@ -251,6 +251,7 @@ AquaSimVBF::AquaSimVBF()
 	//m_useOverhear = 0;
 	m_enableRouting = 1;
   Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
+  transmitDistance = 1000; //arbitrary value
 }
 
 TypeId
@@ -283,6 +284,7 @@ AquaSimVBF::Recv(Ptr<Packet> packet)
   VBHeader vbh;
   AquaSimPtTag ptag;
   packet->PeekHeader(vbh);
+
 	//unsigned char msg_type =vbh.GetMessType();  //unused
 	//unsigned int dtype = vbh.GetDataType();  //unused
 	//double t1=vbh.GetTs();  //unused
@@ -293,6 +295,11 @@ AquaSimVBF::Recv(Ptr<Packet> packet)
 	p1[0].y=vbh.GetExtraInfo().f.y;
 	p1[0].z=vbh.GetExtraInfo().f.z;
 
+  if (!vbh.GetMessType())
+  {
+    vbh.SetMessType(AS_DATA);
+    packet->AddHeader(vbh);
+  }
 
 	if( !m_enableRouting ) {
 		if( vbh.GetMessType() != AS_DATA ) {
@@ -301,11 +308,12 @@ AquaSimVBF::Recv(Ptr<Packet> packet)
 		}
 
 		if( vbh.GetSenderAddr() == GetNetDevice()->GetAddress() ) {
-      packet->RemovePacketTag(ptag);
+      //packet->RemovePacketTag(ptag);
       ptag.SetPacketType(AquaSimPtTag::PT_UWVB);
-      packet->AddPacketTag(ptag);
+      packet->ReplacePacketTag(ptag);
 			MACprepare(packet);
-			MACsend(packet, m_rand->GetValue()*JITTER);
+      Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
+			MACsend(packet, (m_rand->GetValue()*JITTER));
 		}
 		else if( vbh.GetTargetAddr() == GetNetDevice()->GetAddress() )  {
 			DataForSink(packet);
@@ -324,7 +332,6 @@ AquaSimVBF::Recv(Ptr<Packet> packet)
 		// printf("vectrobasedforward: this is duplicate packet\n");
 	}
 	else {
-
 		// Never receive it before ? Put in hash table.
 		//printf("vectrobasedforward: this is new packet\n");
 		PktTable.PutInHash(&vbh,p1);
@@ -348,6 +355,12 @@ AquaSimVBF::Recv(Ptr<Packet> packet)
 
 	delete p1;
   return true;
+}
+
+void
+AquaSimVBF::SetTransDistance(double range)
+{
+  transmitDistance = range;
 }
 
 void
@@ -390,6 +403,7 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 		if (GetNetDevice()->GetAddress() == from_nodeAddr) {
 
 			MACprepare(pkt);
+      Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 			MACsend(pkt,m_rand->GetValue()*JITTER);
 			//  printf("vectorbasedforward: after MACprepare(pkt)\n");
 		}
@@ -419,6 +433,7 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 				if (IsCloseEnough(pkt)) {
 					// printf("vectorbasedforward:%d I am close enough for the interest\n",here_.addr_);
 					MACprepare(pkt);
+          Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 					MACsend(pkt,m_rand->GetValue()*JITTER);//!!!! need to re-think
 				}
 				else {
@@ -465,6 +480,7 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 		if (GetNetDevice()->GetAddress() == from_nodeAddr) {
 			// come from the same node, broadcast it
 			MACprepare(pkt);
+      Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 			MACsend(pkt,m_rand->GetValue()*JITTER);
 			return;
 		}
@@ -477,6 +493,7 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 		else{
 			// printf("Vectorbasedforward: %d is the not  target\n", here_.addr_);
 			MACprepare(pkt);
+      Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 			MACsend(pkt, m_rand->GetValue()*JITTER);
 		}
 		return;
@@ -528,7 +545,7 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 			//  printf("Vectorbasedforward: %d is the not  target\n", here_.addr_);
 			if (IsCloseEnough(pkt)) {
 				double delay=CalculateDelay(pkt,p1);
-				double d2=(m_channel->TransmitDistance()-Distance(pkt))/ns3::SOUND_SPEED_IN_WATER;
+				double d2=(transmitDistance-Distance(pkt))/ns3::SOUND_SPEED_IN_WATER;
 				//printf("Vectorbasedforward: I am  not  target delay is %f d2=%f distance=%f\n",(sqrt(delay)*DELAY+d2*2),d2,Distance(pkt));
 				SetDelayTimer(pkt,(sqrt(delay)*DELAY+d2*2));
 
@@ -680,6 +697,7 @@ AquaSimVBF::MACprepare(Ptr<Packet> pkt)
 void
 AquaSimVBF::MACsend(Ptr<Packet> pkt, double delay)
 {
+  std::cout << "macsend d" << delay << " now " << Simulator::Now().GetSeconds() << "\n";
   AquaSimHeader ash;
   VBHeader vbh;
   //AquaSimPtTag ptag;
@@ -888,7 +906,7 @@ AquaSimVBF::CalculateDelay(Ptr<Packet> pkt,Vector* p1)
 	double l=sqrt((dtx*dtx)+(dty*dty)+ (dtz*dtz));
 	double cos_theta=dp/(d*l);
 	// double delay=(TRANSMISSION_DISTANCE-d*cos_theta)/TRANSMISSION_DISTANCE;
-	double delay=(p/m_width) +((m_channel->TransmitDistance()-d*cos_theta)/m_channel->TransmitDistance());
+	double delay=(p/m_width) +((transmitDistance-d*cos_theta)/transmitDistance);
 	// double delay=(p/m_width) +((TRANSMISSION_DISTANCE-d)/TRANSMISSION_DISTANCE)+(1-cos_theta);
 	//printf("vectorbased: node(%d) projection is %f, and cos is %f, and d is %f)\n",here_.addr_,p, cos_theta, d);
 	return delay;

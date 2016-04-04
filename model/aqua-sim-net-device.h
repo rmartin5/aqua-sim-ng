@@ -33,6 +33,7 @@
 #include "aqua-sim-phy.h"
 #include "aqua-sim-mac.h"
 #include "aqua-sim-energy-model.h"
+#include "aqua-sim-channel.h"
 
 namespace ns3 {
 
@@ -66,12 +67,16 @@ public:
   void SetRouting (Ptr<AquaSimRouting> routing);
   void SetChannel (Ptr<AquaSimChannel> channel);
   //void SetApp (Ptr<AquaSimApp> app);
+  void SetEnergyModel (Ptr<AquaSimEnergyModel> energyModel);
+  double TransmitDistance();  //should be static
+  void SetTransmitDistance(double range);
 
   Ptr<AquaSimPhy> GetPhy (void);
   Ptr<AquaSimMac> GetMac (void);
   Ptr<AquaSimRouting> GetRouting (void);
   //Ptr<AquaSimApp> GetApp (void);
         //Not currently implemented
+  Ptr<AquaSimChannel> DoGetChannel(void) const;
 
   virtual void DoDispose (void);
   virtual void DoInitialize (void);
@@ -197,6 +202,9 @@ private:
 
   uint32_t m_ifIndex;
   uint16_t m_mtu;
+
+  double m_distCST;
+
 };  // class AquaSimNetDevice
 
 

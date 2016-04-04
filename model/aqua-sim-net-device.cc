@@ -57,7 +57,8 @@ AquaSimNetDevice::AquaSimNetDevice ()
     m_carrierSense(false),
     m_carrierId(false),
     m_ifIndex(0),
-    m_mtu(64000)
+    m_mtu(64000),
+    m_distCST(3000)
 {
   m_configComplete = false;
   NS_LOG_FUNCTION(this);
@@ -174,6 +175,8 @@ AquaSimNetDevice::ConnectLayers()
     {
       m_mac->SetRouting(m_routing);
       m_routing->SetMac(m_mac);
+      m_mac->SetTransDistance(m_distCST);
+      m_routing->SetTransDistance(m_distCST);
       NS_LOG_DEBUG("Routing/Mac layers set");
     }
 }
@@ -257,6 +260,28 @@ AquaSimNetDevice::SetApp (Ptr<AquaSimApp> app)
 }
 */
 void
+AquaSimNetDevice::SetEnergyModel (Ptr<AquaSimEnergyModel> energyModel)
+{
+  if (m_energyModel == 0)
+  {
+    NS_LOG_FUNCTION(this);
+    m_energyModel = energyModel;
+    m_energyModel->SetDevice(Ptr<AquaSimNetDevice> (this));
+  }
+}
+
+double
+AquaSimNetDevice::TransmitDistance()
+{
+  return m_distCST;
+}
+
+void
+AquaSimNetDevice::SetTransmitDistance(double range)
+{
+  m_distCST = range;
+}
+void
 AquaSimNetDevice::SetNode (Ptr<Node> node)
 {
   NS_LOG_FUNCTION(this);
@@ -279,6 +304,12 @@ Ptr<AquaSimRouting>
 AquaSimNetDevice::GetRouting (void)
 {
   return m_routing;
+}
+
+Ptr<AquaSimChannel>
+AquaSimNetDevice::DoGetChannel (void) const
+{
+  return m_channel;
 }
 
 Ptr<Channel>
@@ -436,9 +467,11 @@ AquaSimNetDevice::Send (Ptr< Packet > packet, const Address &dest, uint16_t prot
   if(m_routing)
     {//Note : https://www.nsnam.org/docs/release/3.24/doxygen/uan-mac-cw_8cc_source.html#l00123
       if(m_mac)
-	m_routing->SetMyAddr(AquaSimAddress::ConvertFrom(m_mac->GetAddress()));
-      return m_routing->Recv(packet);
-      //return m_routing->SendDown(packet, AquaSimAddress::ConvertFrom(dest), Seconds(0));
+      {
+	      m_routing->SetMyAddr(AquaSimAddress::ConvertFrom(m_mac->GetAddress()));
+        return m_routing->Recv(packet);
+        //return m_routing->SendDown(packet, AquaSimAddress::ConvertFrom(dest), Seconds(0));
+      }
     }
   if (m_mac)
     {

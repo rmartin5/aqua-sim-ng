@@ -22,6 +22,7 @@
 
 #include "ns3/log.h"
 #include "ns3/address-utils.h"
+#include "ns3/buffer.h"
 
 using namespace ns3;
 
@@ -164,25 +165,26 @@ AquaSimGoalReqHeader::GetSerializedSize(void) const
 void
 AquaSimGoalReqHeader::Serialize (Buffer::Iterator start) const
 {
-  start.WriteU8 (SA.GetAsInt());
-  start.WriteU8 (RA.GetAsInt());
-  start.WriteU8 (DA.GetAsInt());
-  //start.WriteU8 (SA.GetLength());
-  //start.WriteU8 (RA.GetLength());
-  //start.WriteU8 (DA.GetLength());
-  start.WriteU32((uint32_t)(m_SendTime.GetSeconds()*1000.0 + 0.5));
-  start.WriteU32((uint32_t)(m_TxTime.GetSeconds()*1000.0 + 0.5));
-  start.WriteU8 (m_ReqID);
+  Buffer::Iterator i = start;
+  i.WriteU8 (SA.GetAsInt());
+  i.WriteU8 (RA.GetAsInt());
+  i.WriteU8 (DA.GetAsInt());
+  //i.WriteU8 (SA.GetLength());
+  //i.WriteU8 (RA.GetLength());
+  //i.WriteU8 (DA.GetLength());
+  i.WriteU32((uint32_t)(m_SendTime.GetSeconds()*1000.0 + 0.5));
+  i.WriteU32((uint32_t)(m_TxTime.GetSeconds()*1000.0 + 0.5));
+  i.WriteU8 (m_ReqID);
   //Messy...
-  start.WriteU16 ((uint16_t)(SenderPos.x*1000.0 +0.5));
-  start.WriteU16 ((uint16_t)(SenderPos.y*1000.0 +0.5));
-  start.WriteU16 ((uint16_t)(SenderPos.z*1000.0 +0.5));
-  start.WriteU16 ((uint16_t)(SinkPos.x*1000.0 +0.5));
-  start.WriteU16 ((uint16_t)(SinkPos.y*1000.0 +0.5));
-  start.WriteU16 ((uint16_t)(SinkPos.z*1000.0 +0.5));
-  start.WriteU16 ((uint16_t)(SourcePos.x*1000.0 +0.5));
-  start.WriteU16 ((uint16_t)(SourcePos.y*1000.0 +0.5));
-  start.WriteU16 ((uint16_t)(SourcePos.z*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(SenderPos.x*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(SenderPos.y*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(SenderPos.z*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(SinkPos.x*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(SinkPos.y*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(SinkPos.z*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(SourcePos.x*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(SourcePos.y*1000.0 +0.5));
+  i.WriteU16 ((uint16_t)(SourcePos.z*1000.0 +0.5));
 }
 uint32_t
 AquaSimGoalReqHeader::Deserialize (Buffer::Iterator start)
@@ -329,18 +331,19 @@ AquaSimGoalRepHeader::GetSerializedSize(void) const
 void
 AquaSimGoalRepHeader::Serialize (Buffer::Iterator start) const
 {
-  start.WriteU8 (SA.GetAsInt());
-  start.WriteU8 (RA.GetAsInt());
-  //start.WriteU8 (SA.GetLength());
-  //start.WriteU8 (RA.GetLength());
-  start.WriteU32((uint32_t)(m_SendTime.GetSeconds()*1000.0 + 0.5));
-  start.WriteU32((uint32_t)(m_TxTime.GetSeconds()*1000.0 + 0.5));
-  start.WriteU8 (m_ReqID);
-  start.WriteU32((uint32_t)(m_BackoffTime.GetSeconds()*1000.0 + 0.5));
+  Buffer::Iterator i = start;
+  i.WriteU8(SA.GetAsInt());
+  i.WriteU8(RA.GetAsInt());
+  //i.WriteU8(SA.GetLength());
+  //i.WriteU8(RA.GetLength());
+  i.WriteU32((uint32_t)(m_SendTime.GetSeconds()*1000.0 + 0.5));
+  i.WriteU32((uint32_t)(m_TxTime.GetSeconds()*1000.0 + 0.5));
+  i.WriteU8(m_ReqID);
+  i.WriteU32((uint32_t)(m_BackoffTime.GetSeconds()*1000.0 + 0.5));
   //Messy...
-  start.WriteU16 ((uint16_t)(ReplyerPos.x*1000.0 +0.5));
-  start.WriteU16 ((uint16_t)(ReplyerPos.y*1000.0 +0.5));
-  start.WriteU16 ((uint16_t)(ReplyerPos.z*1000.0 +0.5));
+  i.WriteU16((uint16_t)(ReplyerPos.x*1000.0 +0.5));
+  i.WriteU16((uint16_t)(ReplyerPos.y*1000.0 +0.5));
+  i.WriteU16((uint16_t)(ReplyerPos.z*1000.0 +0.5));
 }
 uint32_t
 AquaSimGoalRepHeader::Deserialize (Buffer::Iterator start)
@@ -449,12 +452,13 @@ AquaSimGoalAckHeader::GetSerializedSize(void) const
 void
 AquaSimGoalAckHeader::Serialize (Buffer::Iterator start) const
 {
-  start.WriteU8 (SA.GetAsInt());
-  start.WriteU8 (RA.GetAsInt());
-  //start.WriteU8 (SA.GetLength());
-  //start.WriteU8 (RA.GetLength());
-  start.WriteU8 (m_Push);
-  start.WriteU8 (m_ReqID);
+  Buffer::Iterator i = start;
+  i.WriteU8 (SA.GetAsInt());
+  i.WriteU8 (RA.GetAsInt());
+  //i.WriteU8 (SA.GetLength());
+  //i.WriteU8 (RA.GetLength());
+  i.WriteU8 (m_Push);
+  i.WriteU8 (m_ReqID);
 }
 uint32_t
 AquaSimGoalAckHeader::Deserialize (Buffer::Iterator start)

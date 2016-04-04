@@ -58,7 +58,6 @@
 #include "aqua-sim-mac.h"
 #include "aqua-sim-header-goal.h"
 #include "aqua-sim-address.h"
-#include "aqua-sim-channel.h"
 
 #include <deque>
 #include <set>
@@ -392,7 +391,7 @@ private:
 	double  DistToLine(Vector LinePoint1, Vector LinePoint2);
 	Time	JitterStartTime(Time Txtime); //Jitter the start time to avoid collision
 
-	Ptr<AquaSimChannel> m_channel;
+	virtual void SetTransDistance(double range); //overloaded for certain cases.
 protected:
 	void	StatusProcess();
 

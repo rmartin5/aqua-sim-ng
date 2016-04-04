@@ -51,7 +51,6 @@ AquaSimPhyCmn::AquaSimPhyCmn(void) :
   m_trigger = 0.45;
   m_status = PHY_IDLE;
   //m_ant = NULL;
-  m_eM = NULL;
   m_channel = NULL;
   m_mac = NULL;
 
@@ -169,7 +168,7 @@ AquaSimPhyCmn::SetTxPower(double ptConsume)
 {
   m_ptConsume = ptConsume;
   //NS_ASSERT(EM() != NULL);
-  m_eM->SetTxPower(m_ptConsume);
+  EM()->SetTxPower(m_ptConsume);
 }
 
 void
@@ -177,7 +176,7 @@ AquaSimPhyCmn::SetRxPower(double prConsume)
 {
   m_prConsume = prConsume;
   //NS_ASSERT(EM() != NULL);
-  m_eM->SetRxPower(m_prConsume);
+  EM()->SetRxPower(m_prConsume);
 }
 
 void
@@ -185,7 +184,7 @@ AquaSimPhyCmn::SetIdlePower(double pIdle)
 {
   m_pIdle = pIdle;
   //NS_ASSERT(EM() != NULL);
-  m_eM->SetIdlePower(m_pIdle);
+  EM()->SetIdlePower(m_pIdle);
 }
 
 /*

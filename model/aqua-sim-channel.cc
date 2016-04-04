@@ -35,7 +35,6 @@ NS_LOG_COMPONENT_DEFINE("AquaSimChannel");
 NS_OBJECT_ENSURE_REGISTERED (AquaSimChannel);
 
 AquaSimChannel::AquaSimChannel ()// : Channel()
-  : m_distCST(3000)
 {
   NS_LOG_FUNCTION(this);
   m_deviceList.clear();
@@ -55,19 +54,15 @@ AquaSimChannel::GetTypeId ()
 {
   static TypeId tid = TypeId("ns3::AquaSimChannel")
     .SetParent<Channel> ()
-    //.AddConstructor<AquaSimChannel> ()
+    .AddConstructor<AquaSimChannel> ()
     .AddAttribute ("SetProp", "A pointer to set the propagation model.",
-       PointerValue (),
+       PointerValue (0),
        MakePointerAccessor (&AquaSimChannel::m_prop),
        MakePointerChecker<AquaSimPropagation> ())
     .AddAttribute ("SetNoise", "A pointer to set the noise generator.",
-       PointerValue (),
+       PointerValue (0),
        MakePointerAccessor (&AquaSimChannel::m_noiseGen),
        MakePointerChecker<AquaSimNoiseGen> ())
-    .AddAttribute ("TransmitDistance", "Static transmit distance.",
-       DoubleValue(3000),
-       MakeDoubleAccessor(&AquaSimChannel::m_distCST),
-       MakeDoubleChecker<double>())
     ;
   return tid;
 }

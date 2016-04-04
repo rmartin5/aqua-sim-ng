@@ -28,7 +28,6 @@
 #include "ns3/vector.h"
 #include "ns3/random-variable-stream.h"
 #include "ns3/packet.h"
-#include "aqua-sim-channel.h"
 
 #include <math.h>
 #include <map>
@@ -210,8 +209,6 @@ protected:
   void MACsend(Ptr<Packet> pkt, double delay=0);
 
   //void trace(char *fmt,...);
-private:
-  Ptr<AquaSimChannel> m_channel;
 };  // class AquaSimVBVA
 
 } // namespace ns3

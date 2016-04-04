@@ -173,7 +173,7 @@ AquaSimSFama::InitSlotLen()
   SFamaHeader SFAMA;
 	m_slotLen = m_guardTime +
 		GetTxTime(SFAMA.GetSize(SFamaHeader::SFAMA_CTS) +
-		m_channel->TransmitDistance()/1500.0).ToDouble(Time::S);
+		Device()->TransmitDistance()/1500.0).ToDouble(Time::S);
 }
 
 double

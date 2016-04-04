@@ -33,6 +33,7 @@ namespace ns3 {
 
 class AquaSimPhy;
 class Packet;
+class AquaSimPropagation;
 
 class AquaSimChannel : public Channel
 {
@@ -42,8 +43,6 @@ public:
   ~AquaSimChannel (void);
         //virtual int command(int argc, const char*const* argv);
   static TypeId GetTypeId (void);
-
-  double TransmitDistance(){return m_distCST;};  //should be static
 
   void SetNoiseGenerator (Ptr<AquaSimNoiseGen> noiseGen);
   void SetPropagation (Ptr<AquaSimPropagation> prop);
@@ -83,7 +82,6 @@ private:
   int allRecvPktCounter;
 
 protected:
-  double m_distCST;
         //void EstTransLocation(MobileNode* sender, MobileNode* recver); // to be added by Robert to estimate receiving position
   Ptr<AquaSimPropagation> m_prop;
   Ptr<AquaSimNoiseGen> m_noiseGen;

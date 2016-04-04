@@ -73,7 +73,7 @@ AquaSimRouting::SetNetDevice(Ptr<AquaSimNetDevice> device)
 void
 AquaSimRouting::SetMac(Ptr<AquaSimMac> mac)
 {
-  NS_LOG_FUNCTION(this);
+  NS_LOG_FUNCTION(this << mac);
   m_mac = mac;
 }
 
@@ -168,7 +168,7 @@ AquaSimRouting::SetMyAddr(AquaSimAddress myAddr)
 void
 AquaSimRouting::SendPacket(Ptr<Packet> p)
 {
-  NS_LOG_FUNCTION(this);
+  NS_LOG_FUNCTION(this << m_mac);
   if (!m_mac->TxProcess(p))
     NS_LOG_DEBUG(this << "Mac recv error");
 }
@@ -236,5 +236,9 @@ AquaSimRouting::AmINextHop(const Ptr<Packet> p)
   return ((asHeader.GetNextHop() == m_myAddr)|| ( asHeader.GetNextHop() == AquaSimAddress::GetBroadcast() ));
 }
 
+void
+AquaSimRouting::SetTransDistance(double range)
+{
+}
 
 }  //namespace ns3

@@ -26,28 +26,55 @@
 #include "ns3/applications-module.h"
 #include "ns3/log.h"
 #include "ns3/callback.h"
-
+#include <math.h>
 
 /*
- * BroadCastMAC
+ * Flood : 2xN architecture
  *
- * N ---->  N  -----> N -----> N* -----> S
- *
+ * N ---->  N  -----> N -----> N*
+ * |        |         |        |    ->(S)
+ * N ---->  N  -----> N -----> N*
  */
 
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("ASBroadcastMac");
 
-int
-main (int argc, char *argv[])
+class LocalExperiment
 {
-  double simStop = 20; //seconds
-  int nodes = 2;
-  int sinks = 1;
-  uint32_t m_dataRate = 180;
-  uint32_t m_packetSize = 32;
+public:
+  LocalExperiment();
+  void Run();
+  void RecvPacket(Ptr<Socket> socket);
 
+  double simStop; //seconds
+  int nodes;
+  int sinks;
+  uint32_t m_dataRate;
+  uint32_t m_packetSize;
+};
+
+LocalExperiment::LocalExperiment() :
+  simStop(20), nodes(4), sinks(1),
+  m_dataRate(180), m_packetSize(32)
+{
+}
+
+void
+LocalExperiment::RecvPacket(Ptr<Socket> socket)
+{
+  std::cout << "HIT;\n";
+  Ptr<Packet> packet;
+  while ((packet = socket->Recv ()))
+  {
+    std::cout << "Recv a packet of size " << packet->GetSize() << "\n";
+    //m_bytesTotal += packet->GetSize ();
+  }
+}
+
+void
+LocalExperiment::Run()
+{
   /*
    * **********
    * Node -> NetDevice -> AquaSimNetDeive -> etc.
@@ -60,14 +87,6 @@ main (int argc, char *argv[])
    *  *********
    */
 
-  LogComponentEnable ("ASBroadcastMac", LOG_LEVEL_INFO);
-
-  //to change on the fly
-  CommandLine cmd;
-  cmd.AddValue ("simStop", "Length of simulation", simStop);
-  cmd.AddValue ("nodes", "Amount of regular underwater nodes", nodes);
-  cmd.AddValue ("sinks", "Amount of underwater sinks", sinks);
-  cmd.Parse(argc,argv);
 
   std::cout << "-----------Initializing simulation-----------\n";
 
@@ -98,36 +117,47 @@ main (int argc, char *argv[])
 
   std::cout << "Creating Nodes\n";
 
+  int c = 0;
+  int nodeDistance = 2000;
   for (NodeContainer::Iterator i = nodesCon.Begin(); i != nodesCon.End(); i++)
     {
       Ptr<AquaSimNetDevice> newDevice = CreateObject<AquaSimNetDevice>();
       position->Add(boundry);
-
       devices.Add(asHelper.Create(*i, newDevice));
 
-      NS_LOG_DEBUG("Node: " << *i << " newDevice: " << newDevice << " Position: " <<
+      NS_LOG_DEBUG("Node: " << *i << " newDevice: " << newDevice << " Position:(" <<
 		     boundry.x << "," << boundry.y << "," << boundry.z <<
-		     " freq:" << newDevice->GetPhy()->GetFrequency());
+		     ") freq:" << newDevice->GetPhy()->GetFrequency());
 		     //<<
 		     //" NDtypeid:" << newDevice->GetTypeId() <<
 		     //" Ptypeid:" << newDevice->GetPhy()->GetTypeId());
 
-      boundry.x += 2000;
+      if(c%2) //row 1
+      {
+        boundry.y = 0;
+        boundry.x += nodeDistance;
+      }
+      else  //row 2
+      {
+        boundry.y = nodeDistance;
+      }
+      c++;
     }
 
   for (NodeContainer::Iterator i = sinksCon.Begin(); i != sinksCon.End(); i++)
     {
       Ptr<AquaSimNetDevice> newDevice = CreateObject<AquaSimNetDevice>();
+
+      if(c%2==1)
+        {boundry.x += nodeDistance;}
+      boundry.y = nodeDistance/2;
       position->Add(boundry);
 
       devices.Add(asHelper.Create(*i, newDevice));
 
-      NS_LOG_DEBUG("Sink: " << *i << " newDevice: " << newDevice << " Position: " <<
-		     boundry.x << "," << boundry.y << "," << boundry.z);
-
-      boundry.x += 2000;
+      NS_LOG_DEBUG("Sink: " << *i << " newDevice: " << newDevice << " Position:(" <<
+		     boundry.x << "," << boundry.y << "," << boundry.z << ")");
     }
-
 
   mobility.SetPositionAllocator(position);
   mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
@@ -137,11 +167,9 @@ main (int argc, char *argv[])
   PacketSocketAddress socket;
   socket.SetAllDevices();
   // socket.SetSingleDevice (devices.Get(0)->GetIfIndex());
-  socket.SetPhysicalAddress (devices.Get(0)->GetAddress());
+  socket.SetPhysicalAddress (devices.Get(nodes+sinks-1)->GetAddress());
   socket.SetProtocol (0);
 
-  std::cout << devices.Get(0)->GetAddress() << " &&& " << devices.Get(0)->GetIfIndex() << "\n";
-  std::cout << devices.Get(1)->GetAddress() << " &&& " << devices.Get(1)->GetIfIndex() << "\n";
 
   OnOffHelper app ("ns3::PacketSocketFactory", Address (socket));
   app.SetAttribute ("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
@@ -159,6 +187,7 @@ main (int argc, char *argv[])
 
   Ptr<Socket> sinkSocket = Socket::CreateSocket (sinkNode, psfid);
   sinkSocket->Bind (socket);
+  sinkSocket->SetRecvCallback (MakeCallback (&LocalExperiment::RecvPacket, this));
 
 /*
   ApplicationContainer serverApp;
@@ -172,7 +201,23 @@ main (int argc, char *argv[])
   Simulator::Stop(Seconds(simStop + 1));
   Simulator::Run();
   Simulator::Destroy(); //null all nodes too??
+  asHelper.GetChannel()->PrintCounters();
+  std::cout << "End.\n";
+}
 
-  std::cout << "fin.\n";
+int
+main (int argc, char *argv[])
+{
+  LocalExperiment exp;
+
+  LogComponentEnable ("ASBroadcastMac", LOG_LEVEL_INFO);
+  //to change on the fly
+  CommandLine cmd;
+  cmd.AddValue ("simStop", "Length of simulation", exp.simStop);
+  cmd.AddValue ("nodes", "Amount of regular underwater nodes", exp.nodes);
+  cmd.AddValue ("sinks", "Amount of underwater sinks", exp.sinks);
+  cmd.Parse(argc,argv);
+
+  exp.Run();
   return 0;
 }

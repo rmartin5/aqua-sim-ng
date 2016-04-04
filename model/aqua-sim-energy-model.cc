@@ -21,6 +21,7 @@
 #include "ns3/energy-source.h"
 #include "ns3/log.h"
 #include "ns3/pointer.h"
+#include "ns3/double.h"
 
 #include "aqua-sim-energy-model.h"
 #include "aqua-sim-net-device.h"
@@ -28,7 +29,7 @@
 
 // Aqua Sim Energy Model
 
-namespace ns3 {
+using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("AquaSimEnergyModel");
 NS_OBJECT_ENSURE_REGISTERED(AquaSimEnergyModel);
@@ -38,10 +39,27 @@ AquaSimEnergyModel::GetTypeId()
 {
   static TypeId tid = TypeId ("ns3::AquaSimEnergyModel")
     .SetParent<DeviceEnergyModel> ()
+    .AddConstructor<AquaSimEnergyModel> ()
     .AddAttribute ("NetDevice", "The Aqua Sim Net Device this model resides on.",
       PointerValue (),
       MakePointerAccessor (&AquaSimEnergyModel::m_device),
       MakePointerChecker<AquaSimNetDevice>())
+    .AddAttribute ("RxPower", "Rx power",
+      DoubleValue (0.0),
+      MakeDoubleAccessor (&AquaSimEnergyModel::m_rxP),
+      MakeDoubleChecker<double>())
+    .AddAttribute ("TxPower", "Tx power",
+      DoubleValue (0.0),
+      MakeDoubleAccessor (&AquaSimEnergyModel::m_txP),
+      MakeDoubleChecker<double>())
+    .AddAttribute ("InitialEnergy", "Starting energy",
+      DoubleValue (0.0),
+      MakeDoubleAccessor (&AquaSimEnergyModel::m_initialEnergy),
+      MakeDoubleChecker<double>())
+    .AddAttribute ("IdlePower", "Idle power",
+      DoubleValue (0.0),
+      MakeDoubleAccessor (&AquaSimEnergyModel::m_idleP),
+      MakeDoubleChecker<double>())
     ;
   return tid;
 }
@@ -242,5 +260,3 @@ AquaSimEnergyModel::DecrEnergy(double t, double decrEnergy)
 
   m_totalEnergyConsumption += dEng;
 }
-
-} // namespace ns3

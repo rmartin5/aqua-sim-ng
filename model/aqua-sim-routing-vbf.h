@@ -85,6 +85,8 @@ public:
   virtual bool Recv(Ptr<Packet>);
 
   // AquaSimVBF_Entry routing_table[MAX_DATA_TYPE];
+
+  virtual void SetTransDistance(double range);
 protected:
   int m_pkCount;
   int m_counter;
@@ -131,7 +133,7 @@ protected:
 
   //void trace(char *fmt,...);
 private:
-  Ptr<AquaSimChannel> m_channel;
+  double transmitDistance;
 };  // class AquaSimVBF
 
 }  // namespace ns3

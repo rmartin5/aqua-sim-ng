@@ -52,6 +52,8 @@ public:
   /*send packet p to next_hop after delay*/
   virtual bool SendDown(Ptr<Packet> p, AquaSimAddress nextHop, Time delay);
   virtual void SetMyAddr(AquaSimAddress myAddr);
+
+  virtual void SetTransDistance(double range); //does nothing. overload for certain cases
 protected:
   /*send packet up to port-demux*/
   virtual bool SendUp(Ptr<Packet> p);			//demux not implemented yet.
@@ -65,7 +67,7 @@ protected:
 	  * i.e., whose app layer generates this packet.*/
   virtual bool AmISrc(const Ptr<Packet> p);
   virtual void SendPacket(Ptr<Packet> p);
-  
+
   virtual Ptr<AquaSimNetDevice> GetNetDevice();
   virtual Ptr<AquaSimMac> GetMac();
 protected:

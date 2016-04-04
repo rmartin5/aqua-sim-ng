@@ -95,14 +95,13 @@ AquaSimGoal::AquaSimGoal(): m_maxBurst(1), m_dataPktInterval(0.0001), m_guardTim
 	m_nxtRoundMaxWaitTime = Seconds(1.0);
 	m_propSpeed = 1500.0;
 	m_isForwarding = false;
-	m_txRadius = m_channel->TransmitDistance();
+	m_txRadius = 1000;	//arbitrary value here...
 	m_maxDelay = Seconds(m_txRadius/m_propSpeed);
 	m_pipeWidth = 100.0;
 	//m_dataPktSize = 300;   //Byte
 	m_backoffType = VBF;
 
 	m_maxBackoffTime = 4*m_maxDelay+m_VBF_MaxDelay*1.5+Seconds(2);
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 }
 
 AquaSimGoal::~AquaSimGoal()
@@ -131,6 +130,12 @@ AquaSimGoal::GetTypeId(void)
   return tid;
 }
 
+void
+AquaSimGoal::SetTransDistance(double range)
+{
+	m_txRadius = range;
+	m_maxDelay = Seconds(m_txRadius/m_propSpeed);
+}
 
 //---------------------------------------------------------------------
 void AquaSimGoal::StatusProcess()
@@ -200,6 +205,7 @@ bool AquaSimGoal::RecvProcess(Ptr<Packet> pkt)
 //---------------------------------------------------------------------
 bool AquaSimGoal::TxProcess(Ptr<Packet> pkt)
 {
+	std::cout << "hitxProcess";
 	//this node must be the origin
   AquaSimHeader ash;
 	VBHeader vbh;
@@ -1256,6 +1262,7 @@ AquaSimGoal::GotoNxtRound()
 	m_isForwarding = true;
 
   m_nxtRoundTimer.SetFunction(&AquaSimGoal_NxtRoundTimer::expire, &m_nxtRoundTimer);
+	Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   m_nxtRoundTimer.Schedule(FemtoSeconds(m_rand->GetValue(0.0,m_nxtRoundMaxWaitTime.ToDouble(Time::S) ) ) );
 }
 
@@ -1265,6 +1272,7 @@ AquaSimGoal::GotoNxtRound()
 Time
 AquaSimGoal::JitterStartTime(Time Txtime)
 {
+	Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 	Time BeginTime = 5*Txtime*m_rand->GetValue();
 	return BeginTime;
 }

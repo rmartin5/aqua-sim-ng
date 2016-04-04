@@ -224,4 +224,8 @@ void AquaSimMac::InterruptRecv(double txTime){
   }
 }
 
+void
+AquaSimMac::SetTransDistance(double range)
+{
+}
 } // namespace ns3

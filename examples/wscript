@@ -6,3 +6,6 @@ def build(bld):
 
     obj = bld.create_ns3_program('floodtest', ['network', 'mobility', 'energy', 'applications', 'aqua-sim-ng'])
     obj.source = 'floodtest.cc'
+
+    obj = bld.create_ns3_program('GOAL_string', ['network', 'mobility', 'energy', 'applications', 'aqua-sim-ng'])
+    obj.source = 'GOAL_string.cc'

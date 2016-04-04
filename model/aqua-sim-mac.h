@@ -86,6 +86,8 @@ public:
 
   double GetPreamble(void);
 
+  virtual void SetTransDistance(double range); //to be overloaded for certain cases.
+
 private:
   // to receive packet from upper layer and lower layer
   //we hide this interface and demand derived classes to
