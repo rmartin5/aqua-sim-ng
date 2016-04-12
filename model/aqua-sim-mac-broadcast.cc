@@ -20,6 +20,7 @@
 
 #include "aqua-sim-mac-broadcast.h"
 #include "aqua-sim-header.h"
+#include "aqua-sim-header-mac.h"
 #include "aqua-sim-address.h"
 
 #include "ns3/log.h"
@@ -67,33 +68,39 @@ different versions.
 bool
 AquaSimBroadcastMac::RecvProcess (Ptr<Packet> pkt)
 {
-  AquaSimHeader ash;
-  pkt->PeekHeader(ash);
-  AquaSimAddress dst = ash.GetDAddr();
+  std::cout << "\nBMac @RecvProcess check:\n";
+  pkt->Print(std::cout);
+  std::cout << "\n";
 
-  //get a packet from modem, remove the sync hdr from txtime first
-  //cmh->txtime() -= getSyncHdrLen();
+	AquaSimHeader ash;
+  MacHeader mach;
+	pkt->RemoveHeader(ash);
+  pkt->RemoveHeader(mach);
+	AquaSimAddress dst = mach.GetDA();
 
-  if (ash.GetErrorFlag())
-    {
-      NS_LOG_DEBUG("BroadcastMac:RecvProcess: received corrupt packet.");
-      pkt=0;
-      return false;
-    }
+	//get a packet from modem, remove the sync hdr from txtime first
+	//cmh->txtime() -= getSyncHdrLen();
 
-  if (dst == AquaSimAddress::GetBroadcast() || dst == AquaSimAddress::ConvertFrom(m_device->GetAddress()))
-    {
-      if (m_packetSize == 0)
+	if (ash.GetErrorFlag())
 	{
-	  NS_LOG_INFO("Should be changing header size here.");
-    ash.SetSize(ash.GetSize() - m_packetHeaderSize);
+		NS_LOG_DEBUG("BroadcastMac:RecvProcess: received corrupt packet.");
+		pkt=0;
+		return false;
 	}
-      return SendUp(pkt);
-    }
+
+	if (dst == AquaSimAddress::GetBroadcast() || dst == AquaSimAddress::ConvertFrom(m_device->GetAddress()))
+	{
+		if (m_packetSize == 0)
+		{
+			ash.SetSize(ash.GetSize() - m_packetHeaderSize);
+		}
+    pkt->AddHeader(ash);  //leave MacHeader off since sending to upper layers
+		return SendUp(pkt);
+	}
 
 //	printf("underwaterAquaSimBroadcastMac: this is neither broadcast nor my packet, just drop it\n");
-  pkt=0;
-  return false;
+	pkt=0;
+	return false;
 }
 
 
@@ -114,11 +121,13 @@ different versions.
 bool
 AquaSimBroadcastMac::TxProcess(Ptr<Packet> pkt)
 {
+  NS_LOG_FUNCTION(this << pkt);
   AquaSimHeader ash;
+  MacHeader mach;
   pkt->RemoveHeader(ash);
 
-  ash.SetDAddr(AquaSimAddress::GetBroadcast());
-  ash.SetSAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
+  mach.SetDA(AquaSimAddress::GetBroadcast());
+  mach.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
 
   if( m_packetSize != 0 )
     ash.SetSize(m_packetSize);
@@ -137,7 +146,9 @@ AquaSimBroadcastMac::TxProcess(Ptr<Packet> pkt)
       ash.SetDirection(AquaSimHeader::DOWN);
       //ash->addr_type()=NS_AF_ILINK;
       //add the sync hdr
+      pkt->AddHeader(mach);
       pkt->AddHeader(ash);
+      Phy()->SetPhyStatus(PHY_SEND);
       SendDown(pkt);
       m_backoffCounter=0;
       Simulator::Schedule(ash.GetTxTime(),&AquaSimBroadcastMac::StatusProcess,this);
@@ -146,6 +157,7 @@ AquaSimBroadcastMac::TxProcess(Ptr<Packet> pkt)
     {
       Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable> ();
       double backoff=rand->GetValue()*BC_BACKOFF;
+      pkt->AddHeader(mach);
       pkt->AddHeader(ash);
       Simulator::Schedule(Seconds(backoff),&AquaSimBroadcastMac::BackoffHandler,this,pkt);
     }

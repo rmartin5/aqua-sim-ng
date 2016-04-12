@@ -158,6 +158,7 @@ public:
   bool IsMoving(void);
   Ptr<AquaSimEnergyModel> EnergyModel(void) {return m_energyModel; }
 
+  int TotalSentPkts() {return m_totalSentPkts;}
 protected:
 
   void GenerateFailure(void);
@@ -205,6 +206,8 @@ private:
 
   double m_distCST;
 
+  int m_totalSentPkts;
+  //XXX remove counters
 };  // class AquaSimNetDevice
 
 

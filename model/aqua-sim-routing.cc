@@ -24,6 +24,7 @@
 #include "ns3/ptr.h"
 #include "ns3/packet.h"
 #include "ns3/pointer.h"
+#include "ns3/trace-source-accessor.h"
 
 #include "aqua-sim-header.h"
 #include "aqua-sim-routing.h"
@@ -46,12 +47,19 @@ AquaSimRouting::GetTypeId(void)
       PointerValue (),
       MakePointerAccessor (&AquaSimRouting::m_device),
       MakePointerChecker<AquaSimRouting> ())
-    //set my_addr, on-node lookup, add-ll, tracetarget, port-dmux
+    .AddTraceSource ("RoutingTx",
+      "Trace source indicating a packet has started transmitting.",
+      MakeTraceSourceAccessor (&AquaSimRouting::m_routingTxTrace))
+    .AddTraceSource ("RoutingRx",
+      "Trace source indicating a packet has been received.",
+      MakeTraceSourceAccessor (&AquaSimRouting::m_routingRxTrace))
+    //set my_addr, on-node lookup, add-ll, port-dmux
   ;
   return tid;
 }
 
-AquaSimRouting::AquaSimRouting()
+AquaSimRouting::AquaSimRouting() :
+  m_sendUpPktCount(0)
 {
   NS_LOG_FUNCTION(this);
   //m_tracetarget=NULL;		//to be implemented
@@ -98,6 +106,7 @@ AquaSimRouting::SendUp(Ptr<Packet> p)
 {
   //port_dmux->recv(p); // (Handler*)NULL
   NS_LOG_FUNCTION(this << p << " : currently a dummy sendup");
+  m_sendUpPktCount++;
   /*TODO this needs to be fully implemented with the multiplexer
 		  Or at least sent up for further processing
 		  ie. Sync, Localization, Application driven
@@ -126,7 +135,7 @@ AquaSimRouting::SendDown(Ptr<Packet> p, AquaSimAddress nextHop, Time delay)
   p->RemoveHeader(header);
 
   //NS_LOG_DEBUG("Pktsize=" << header.GetSize());
-  if(header.GetUId() == -1) header.SetUId(1);
+  if(header.GetUId() == -1) header.SetUId(p->GetUid());
   header.SetDirection(AquaSimHeader::DOWN);
   header.SetNextHop(nextHop);
   header.SetSAddr(m_myAddr);
@@ -135,18 +144,11 @@ AquaSimRouting::SendDown(Ptr<Packet> p, AquaSimAddress nextHop, Time delay)
   //trace here...
 
   //send down after given delay
-  NS_LOG_FUNCTION(this << " Currently a dummy send down. delay=" << delay << " p=" << p);
 
-  NS_LOG_INFO("RoutingSendDown Dump: direction:" << header.GetDirection() <<
-		", nexthop: " << header.GetNextHop() <<
-		", pktsize: " << header.GetSize() <<
-		", nosie: " << header.GetNoise() <<
-		", freq: " << header.GetFreq() <<
-		", modname: " << header.GetModName() <<
-		", SAddr: " << header.GetSAddr() <<
-		", txrange: " << header.GetTxRange() <<
-		", txtime: " << header.GetTxTime() <<
-		", device: " << m_device);
+  if (0)
+  {
+    header.Print(std::cout);
+  }
 
   /*Note this schedule will not work, should instead call internal function once
    * event is executed which will internal call Mac's function directly.
@@ -239,6 +241,18 @@ AquaSimRouting::AmINextHop(const Ptr<Packet> p)
 void
 AquaSimRouting::SetTransDistance(double range)
 {
+}
+
+void
+AquaSimRouting::NotifyRx (Ptr<const Packet> p)
+{
+  m_routingRxTrace(p);
+}
+
+void
+AquaSimRouting::NotifyTx (Ptr<const Packet> p)
+{
+  m_routingTxTrace(p);
 }
 
 }  //namespace ns3

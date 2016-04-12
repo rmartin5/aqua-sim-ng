@@ -51,4 +51,11 @@ AquaSimPhy::DoDispose()
   NS_LOG_FUNCTION(this);
   Object::Dispose();
 }
+
+void
+AquaSimPhy::SetPhyStatus(PhyStatus status)
+{
+  NS_LOG_FUNCTION(this << status);
+  m_status = status;
+}
 } //ns3 namespace

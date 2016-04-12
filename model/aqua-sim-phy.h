@@ -95,8 +95,9 @@ namespace ns3 {
 
     virtual double Trigger() = 0;
     virtual double Preamble() = 0;
-    virtual PhyStatus &Status() = 0;
-    virtual void SetPhyStatus(PhyStatus status) = 0;
+
+    inline PhyStatus & Status() {return m_status;}
+    void SetPhyStatus(PhyStatus status);
 
     virtual Ptr<AquaSimSignalCache> GetSignalCache() = 0;
 
@@ -126,6 +127,8 @@ namespace ns3 {
     virtual void DoDispose();
 
     friend class AquaSimEnergyModel;
+
+    PhyStatus m_status;	// status of modem
   }; //AquaSimPhy class
 
 } //ns3 namespace

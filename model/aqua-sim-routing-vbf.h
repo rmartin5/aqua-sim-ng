@@ -56,7 +56,7 @@ public:
 
   int  m_windowSize;
   void Reset();
-  void PutInHash(VBHeader *);
+  void PutInHash(VBHeader * vbh);
   void PutInHash(VBHeader *, Vector *);
   vbf_neighborhood* GetHash(AquaSimAddress senderAddr, unsigned int pkt_num);
 //private:
@@ -82,7 +82,7 @@ class AquaSimVBF : public AquaSimRouting {
 public:
   AquaSimVBF();
   static TypeId GetTypeId(void);
-  virtual bool Recv(Ptr<Packet>);
+  virtual bool Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber);
 
   // AquaSimVBF_Entry routing_table[MAX_DATA_TYPE];
 
@@ -101,7 +101,6 @@ protected:
   AquaSimPktHashTable Target_discoveryTable;
   AquaSimPktHashTable SinkTable;
 
-  //TODO Trace *tracetarget;       // Trace Target
   double m_width;
   // the width is used to test if the node is close enough to the path specified by the packet
   Ptr<UniformRandomVariable> m_rand;
@@ -130,8 +129,6 @@ protected:
   void StopSource();
   void MACprepare(Ptr<Packet> pkt);
   void MACsend(Ptr<Packet> pkt, double delay=0);
-
-  //void trace(char *fmt,...);
 private:
   double transmitDistance;
 };  // class AquaSimVBF

@@ -37,7 +37,7 @@ class AquaSimFloodingRouting : public AquaSimRouting {
  public:
   AquaSimFloodingRouting();
   static TypeId GetTypeId(void);
-  virtual bool Recv(Ptr<Packet>);
+  virtual bool Recv(Ptr< Packet > packet, const Address &dest, uint16_t protocolNumber);
 
   // Vectorbasedforward_Entry routing_table[MAX_DATA_TYPE];
 
@@ -50,9 +50,6 @@ class AquaSimFloodingRouting : public AquaSimRouting {
   AquaSimPktHashTable SinkTable;*/    //not used...
   //UWDelayTimer delaytimer;
 
-  //Trace *tracetarget;       //TODO Trace Target
-
-
   void Terminate();
   void Reset();
   void ConsiderNew(Ptr<Packet> pkt);
@@ -63,8 +60,6 @@ class AquaSimFloodingRouting : public AquaSimRouting {
   void StopSource();
   void MACprepare(Ptr<Packet> pkt);
   void MACsend(Ptr<Packet> pkt, Time delay=Seconds(0));
-
-  //void trace(char *fmt,...);
 };
 
 } // namespace ns3

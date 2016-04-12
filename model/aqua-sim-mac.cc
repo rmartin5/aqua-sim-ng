@@ -58,6 +58,12 @@ AquaSimMac::GetTypeId(void)
     PointerValue (),
     MakePointerAccessor (&AquaSimMac::m_rout),
     MakePointerChecker<AquaSimMac> ())
+  .AddTraceSource ("RoutingTx",
+    "Trace source indicating a packet has started transmitting.",
+    MakeTraceSourceAccessor (&AquaSimMac::m_macTxTrace))
+  .AddTraceSource ("RoutingRx",
+    "Trace source indicating a packet has been received.",
+    MakeTraceSourceAccessor (&AquaSimMac::m_macRxTrace))
   ;
   return tid;
 }
@@ -108,13 +114,24 @@ bool
 AquaSimMac::SendUp(Ptr<Packet> p)
 {
   NS_ASSERT(m_device && m_phy && m_rout);
-  return m_rout->Recv(p);
+  AquaSimHeader ash;
+  p->PeekHeader(ash);
+  return m_rout->Recv(p,ash.GetDAddr(),0);
 }
 
 bool
 AquaSimMac::SendDown(Ptr<Packet> p)
 {
   NS_ASSERT(m_device && m_phy && m_rout);
+
+  std::cout << "\nMac @SendDown check:\n";
+  p->Print(std::cout);
+  std::cout << "\n";
+
+  //slightly awkard but for phy header Buffer
+  AquaSimPacketStamp pstamp;
+  p->AddHeader(pstamp);
+
 
   return m_phy->Recv(p);
 }
@@ -143,7 +160,7 @@ AquaSimMac::HandleOutgoingPkt(Ptr<Packet> p) {
   /*
   *  TODO Handle busy terminal problem before trying to tx packet
   */
-  m_phy->SetPhyStatus(PHY_SEND);
+  //m_phy->SetPhyStatus(PHY_SEND);
 
   TxProcess(p);
 }
@@ -228,4 +245,17 @@ void
 AquaSimMac::SetTransDistance(double range)
 {
 }
+
+void
+AquaSimMac::NotifyRx (Ptr<const Packet> p)
+{
+  m_macRxTrace(p);
+}
+
+void
+AquaSimMac::NotifyTx (Ptr<const Packet> p)
+{
+  m_macTxTrace(p);
+}
+
 } // namespace ns3

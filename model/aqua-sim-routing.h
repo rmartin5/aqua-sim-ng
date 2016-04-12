@@ -24,6 +24,7 @@
 #include "ns3/object.h"
 #include "ns3/address.h"
 #include "ns3/nstime.h"
+#include "ns3/traced-callback.h"
 //#include "ns3/ipv4.h"
 //#include "ns3/ipv4-routing-protocol.h"
 //#include "ns3/ipv4-static-routing.h"
@@ -48,12 +49,14 @@ public:
   virtual void SetMac(Ptr<AquaSimMac> mac);
 
   /*avoid instantiation since UnderwaterRouting's behavior is not defined*/
-  virtual bool Recv(Ptr<Packet> p)=0;	//handler not implemented
+  virtual bool Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber)=0;	//handler not implemented
   /*send packet p to next_hop after delay*/
   virtual bool SendDown(Ptr<Packet> p, AquaSimAddress nextHop, Time delay);
   virtual void SetMyAddr(AquaSimAddress myAddr);
 
   virtual void SetTransDistance(double range); //does nothing. overload for certain cases
+
+  int SendUpPktCount() {return m_sendUpPktCount;}
 protected:
   /*send packet up to port-demux*/
   virtual bool SendUp(Ptr<Packet> p);			//demux not implemented yet.
@@ -70,16 +73,22 @@ protected:
 
   virtual Ptr<AquaSimNetDevice> GetNetDevice();
   virtual Ptr<AquaSimMac> GetMac();
+
+  void NotifyRx(Ptr<const Packet> p);
+  void NotifyTx(Ptr<const Packet> p);
 protected:
   AquaSimAddress m_myAddr;  //the ip address of this node
   Ptr<AquaSimNetDevice> m_device;
-  //Ptr<Trace> m_traceTarget;       // Trace Target	TODO need to initiate tracing
   //NsObject *ll;			//pointer to link layer object
   //NsObject *port_dmux;
 
 private:
   Ptr<AquaSimMac> m_mac;
 
+  TracedCallback<Ptr<const Packet> > m_routingRxTrace;
+  TracedCallback<Ptr<const Packet> > m_routingTxTrace;
+
+  int m_sendUpPktCount;
 };  //AquaSimRouting class
 
 }  //namespace ns3

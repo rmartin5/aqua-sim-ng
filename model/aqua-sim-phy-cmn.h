@@ -112,9 +112,6 @@ public:
   virtual inline double GetL() const { return m_L; }
   virtual inline double GetLambda() { return m_lambda; }
 
-  virtual PhyStatus &Status() {return m_status;}
-  virtual void SetPhyStatus(PhyStatus status);
-
   virtual Ptr<AquaSimSignalCache> GetSignalCache();
 
 protected:
@@ -139,8 +136,6 @@ protected:
   double m_freq;  // frequency
   double m_L;	// system loss default factor
   double m_lambda;  // wavelength (m), we don't use it anymore
-
-  PhyStatus m_status;	// status of modem
 
   // preamble and trigger are fixed for a given modem (can be updated in future)
   double m_preamble;

@@ -21,6 +21,8 @@
 
 #include "aqua-sim-mac-aloha.h"
 #include "aqua-sim-pt-tag.h"
+#include "aqua-sim-header.h"
+#include "aqua-sim-header-mac.h"
 
 #include "ns3/packet.h"
 #include "ns3/log.h"

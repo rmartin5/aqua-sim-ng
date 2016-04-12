@@ -58,7 +58,8 @@ AquaSimNetDevice::AquaSimNetDevice ()
     m_carrierId(false),
     m_ifIndex(0),
     m_mtu(64000),
-    m_distCST(3000)
+    m_distCST(3000),
+    m_totalSentPkts(0)
 {
   m_configComplete = false;
   NS_LOG_FUNCTION(this);
@@ -460,30 +461,29 @@ bool
 AquaSimNetDevice::Send (Ptr< Packet > packet, const Address &dest, uint16_t protocolNumber)
 {
   NS_LOG_FUNCTION(this << packet << dest << protocolNumber);
-  AquaSimHeader ash;
-  ash.SetDAddr(AquaSimAddress::ConvertFrom(dest));
-  packet->AddHeader(ash);
+
+  m_totalSentPkts++;  //debugging
 
   if(m_routing)
     {//Note : https://www.nsnam.org/docs/release/3.24/doxygen/uan-mac-cw_8cc_source.html#l00123
       if(m_mac)
       {
 	      m_routing->SetMyAddr(AquaSimAddress::ConvertFrom(m_mac->GetAddress()));
-        return m_routing->Recv(packet);
+        return m_routing->Recv(packet, dest, protocolNumber);
         //return m_routing->SendDown(packet, AquaSimAddress::ConvertFrom(dest), Seconds(0));
       }
     }
-  if (m_mac)
+  else if (m_mac)
     {
       return m_mac->RecvProcess(packet);
     }
-  /*if (m_phy)
+  /*else if (m_phy)
     {
       NS_LOG_DEBUG("Phy SendDown hit");
       return m_phy->PktTransmit(packet);
     }
     */
-  NS_LOG_WARN("Routing/Mac layers are not attached to this device. Can not send.");
+  else NS_LOG_WARN("Routing/Mac layers are not attached to this device. Can not send.");
   return false;
 }
 

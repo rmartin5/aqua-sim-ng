@@ -21,7 +21,6 @@
 #ifndef AQUA_SIM_MAC_ALOHA_H
 #define AQUA_SIM_MAC_ALOHA_H
 
-#include "aqua-sim-header.h"
 #include "aqua-sim-mac.h"
 
 #include "ns3/event-id.h"

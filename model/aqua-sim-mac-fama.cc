@@ -20,6 +20,7 @@
 
 #include "aqua-sim-mac-fama.h"
 #include "aqua-sim-header.h"
+#include "aqua-sim-header-mac.h"
 #include "aqua-sim-pt-tag.h"
 #include "aqua-sim-address.h"
 //include vbf once created.

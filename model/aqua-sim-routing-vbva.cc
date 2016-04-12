@@ -464,7 +464,7 @@ AquaSimVBVA::GetTypeId(void)
   return tid;
 }
 
-bool AquaSimVBVA::Recv(Ptr<Packet> packet)
+bool AquaSimVBVA::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber)
 {
 	if (GetNetDevice()->FailureStatus()==1) {
     NS_LOG_INFO("AquaSimVBVA " << GetNetDevice()->GetAddress() << " fails!!!!");

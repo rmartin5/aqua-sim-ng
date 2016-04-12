@@ -20,6 +20,7 @@
 
 #include "aqua-sim-mac-copemac.h"
 #include "aqua-sim-header.h"
+#include "aqua-sim-header-mac.h"
 #include "aqua-sim-pt-tag.h"
 //#include "vbf/vectorbasedforward.h"
 

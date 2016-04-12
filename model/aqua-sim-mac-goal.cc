@@ -20,6 +20,7 @@
 
 #include "aqua-sim-mac-goal.h"
 #include "aqua-sim-header.h"
+#include "aqua-sim-header-mac.h"
 #include "aqua-sim-pt-tag.h"
 #include "aqua-sim-header-routing.h"
 
@@ -149,13 +150,15 @@ void AquaSimGoal::StatusProcess()
 bool AquaSimGoal::RecvProcess(Ptr<Packet> pkt)
 {
 	AquaSimHeader ash;
-	AlohaHeader mach; //TODO change all AlohaHeader's here to a base case header for mac.
+	MacHeader mach;
   AquaSimGoalAckHeader goalAckh;
 	AquaSimPtTag ptag;
-	pkt->PeekHeader(ash);
-	pkt->PeekHeader(mach);
+	pkt->RemoveHeader(ash);
+	pkt->RemoveHeader(mach);
   pkt->PeekHeader(goalAckh);
 	pkt->PeekPacketTag(ptag);
+	pkt->AddHeader(mach);
+	pkt->AddHeader(ash);
 
 	AquaSimAddress dst = mach.GetDA();
 
@@ -255,7 +258,7 @@ AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Ti
 	//m_device->UpdatePosition();  //out of date.
 	Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader ash;
-	AlohaHeader mach;
+	MacHeader mach;
   AquaSimGoalReqHeader goalReqh;
 	AquaSimPtTag ptag;
 	VBHeader vbh;
@@ -302,9 +305,9 @@ AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Ti
 	}
   Ptr<Packet> tempPacket = Create<Packet>(data,size);
   pkt->AddAtEnd(tempPacket);
+	pkt->AddHeader(mach);
+	pkt->AddHeader(goalReqh);
   pkt->AddHeader(ash);
-  pkt->AddHeader(mach);
-  pkt->AddHeader(goalReqh);
 	pkt->AddPacketTag(ptag);
 	return pkt;
 }
@@ -458,7 +461,7 @@ AquaSimGoal::MakeRepPkt(Ptr<Packet> ReqPkt, Time BackoffTime)
   ReqPkt->PeekHeader(reqPktHeader);
 	Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader ash;
-  AlohaHeader mach; //TODO update this.
+  MacHeader mach;
   AquaSimGoalRepHeader repH;
 	AquaSimPtTag ptag;
   Ptr<MobilityModel> model = m_device->GetNode()->GetObject<MobilityModel>();
@@ -482,9 +485,9 @@ AquaSimGoal::MakeRepPkt(Ptr<Packet> ReqPkt, Time BackoffTime)
 	mach.SetDA(repH.GetRA());
 	mach.SetSA(repH.GetSA());
 
-  pkt->AddHeader(ash);
-  pkt->AddHeader(mach);
+	pkt->AddHeader(mach);
   pkt->AddHeader(repH);
+	pkt->AddHeader(ash);
 	pkt->AddPacketTag(ptag);
 	return pkt;
 }
@@ -645,7 +648,7 @@ AquaSimGoal::SendDataPkts(std::set<Ptr<Packet> > DataPktSet, AquaSimAddress NxtH
 	std::set<Ptr<Packet> >::iterator pos = DataPktSet.begin();
 	Time DelayTime = Seconds(0.00001);  //the delay of sending data packet
   AquaSimHeader ash;
-  AlohaHeader mach;   //TODO change.
+  MacHeader mach;
 	AquaSimGoal_AckTimeoutTimer* AckTimeoutTimer = new AquaSimGoal_AckTimeoutTimer(this);
 
 	while( pos != DataPktSet.end() ) {
@@ -654,8 +657,8 @@ AquaSimGoal::SendDataPkts(std::set<Ptr<Packet> > DataPktSet, AquaSimAddress NxtH
     ash.SetNextHop(NxtHop);
     mach.SetDA(NxtHop);
     mach.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
+		(*pos)->AddHeader(mach);
     (*pos)->AddHeader(ash);
-    (*pos)->AddHeader(mach);
 
 		PreSendPkt((*pos)->Copy(), DelayTime);
 
@@ -676,10 +679,10 @@ void
 AquaSimGoal::ProcessDataPkt(Ptr<Packet> DataPkt)
 {
   AquaSimHeader ash;
-  AlohaHeader mach;   //TODO update this...
+  MacHeader mach;
 	VBHeader vbh;
   DataPkt->RemoveHeader(ash);
-  DataPkt->PeekHeader(mach);
+  DataPkt->RemoveHeader(mach);
 	DataPkt->PeekHeader(vbh);
 	//hdr_uwvb* vbh = hdr_uwvb::access(DataPkt);
 
@@ -709,6 +712,8 @@ AquaSimGoal::ProcessDataPkt(Ptr<Packet> DataPkt)
 		else {
 			m_sinkRecvedList.insert(ash.GetUId());
 			ash.SetSize(ash.GetSize() - sizeof(AquaSimAddress)*2);
+			DataPkt->AddHeader(mach);
+			DataPkt->AddHeader(ash);
 			SendUp(DataPkt);
 		}
 
@@ -716,6 +721,8 @@ AquaSimGoal::ProcessDataPkt(Ptr<Packet> DataPkt)
 	else {
 		//forward this packet later
     ash.SetNumForwards(0);
+		DataPkt->AddHeader(mach);
+		DataPkt->AddHeader(ash);
 		Insert2PktQs(DataPkt);
 	}
 }
@@ -726,7 +733,7 @@ AquaSimGoal::MakeAckPkt(std::set<int> AckSet, bool PSH,  int ReqID)
 {
 	Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader ash;
-  AlohaHeader mach;   //TODO change this...
+  MacHeader mach;
   AquaSimGoalAckHeader goalAckh;
 	AquaSimPtTag ptag;
 
@@ -760,9 +767,9 @@ AquaSimGoal::MakeAckPkt(std::set<int> AckSet, bool PSH,  int ReqID)
 	}
   Ptr<Packet> tempPacket = Create<Packet>(data,size);
   pkt->AddAtEnd(tempPacket);
+	pkt->AddHeader(mach);
   pkt->AddHeader(goalAckh);
   pkt->AddHeader(ash);
-  pkt->AddHeader(mach);
 	pkt->AddPacketTag(ptag);
   return pkt;
 }

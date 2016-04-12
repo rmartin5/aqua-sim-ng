@@ -97,7 +97,7 @@ AquaSimStaticRouting::ReadRouteTable(char *filename)
 
 
 bool
-AquaSimStaticRouting::Recv (Ptr<Packet> p)
+AquaSimStaticRouting::Recv (Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
 {
   NS_LOG_FUNCTION(this << p);
   AquaSimHeader ash;

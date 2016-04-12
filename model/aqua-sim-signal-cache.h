@@ -41,9 +41,9 @@ namespace ns3 {
 
 struct IncomingPacket{
   Ptr<Packet> packet;
-  AquaSimHeader::PacketStatus status;
+  AquaSimPacketStamp::PacketStatus status;
   IncomingPacket* next;
-  IncomingPacket(Ptr<Packet> p, AquaSimHeader::PacketStatus s = AquaSimHeader::INVALID) :
+  IncomingPacket(Ptr<Packet> p, AquaSimPacketStamp::PacketStatus s = AquaSimPacketStamp::INVALID) :
 	  packet(p), status(s), next(NULL) {}
 };
 
@@ -56,14 +56,14 @@ struct PktSubmissionUnit{
     //pkt with earlier ending time appears at the front
     return l.endT >= r.endT;
   }
-	
+
   PktSubmissionUnit(IncomingPacket* inPkt_, Time endT_);
 };
 
 /**
 * submit packets in signal cache to upper layer
 */
-class PktSubmissionTimer : public Timer{	
+class PktSubmissionTimer : public Timer{
 private:
   std::priority_queue<PktSubmissionUnit> m_waitingList;
   Ptr<AquaSimSignalCache> m_sC;
@@ -80,7 +80,7 @@ public:
 * this SignalCache simulates the way that how modems handle
 * signals without considering multi-path effect
 */
-class AquaSimSignalCache : public Object { 
+class AquaSimSignalCache : public Object {
 public:
   AquaSimSignalCache(void);
   virtual ~AquaSimSignalCache(void);
@@ -90,8 +90,8 @@ public:
   virtual bool DeleteIncomingPacket(Ptr<Packet>);
   void InvalidateIncomingPacket(void);
   IncomingPacket* Lookup(Ptr<Packet>);
-  AquaSimHeader::PacketStatus status;
-  AquaSimHeader::PacketStatus Status(Ptr<Packet> p);
+  AquaSimPacketStamp::PacketStatus status;
+  AquaSimPacketStamp::PacketStatus Status(Ptr<Packet> p);
   void SubmitPkt(IncomingPacket* inPkt);
 
   void SetNoiseGen(Ptr<AquaSimNoiseGen> noise);
@@ -128,7 +128,7 @@ private:
 * this class considers multi-path effect, what's the difference?
 */
 class AquaSimMultiPathSignalCache : public AquaSimSignalCache {
-	
+
   //TODO - in future work.
 
 };  //class AquaSimMultiPathSignalCache

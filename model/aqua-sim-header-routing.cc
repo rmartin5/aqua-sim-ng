@@ -135,7 +135,8 @@ DRoutingHeader::SetEntryNum(uint32_t entryNum)
 */
 NS_OBJECT_ENSURE_REGISTERED(VBHeader);
 
-VBHeader::VBHeader()
+VBHeader::VBHeader() :
+m_messType(AS_DATA)
 {
 }
 
@@ -163,26 +164,26 @@ VBHeader::Deserialize(Buffer::Iterator start)
   m_senderAddr = (AquaSimAddress) i.ReadU8();
   m_forwardAddr = (AquaSimAddress) i.ReadU8();
   m_dataType = i.ReadU8();
-  m_originalSource.x = ( (double) i.ReadU16() ) / 1000.0;
-  m_originalSource.y = ( (double) i.ReadU16() ) / 1000.0;
-  m_originalSource.z = ( (double) i.ReadU16() ) / 1000.0;
+  m_originalSource.x = ( (double) i.ReadU32() ) / 1000.0;
+  m_originalSource.y = ( (double) i.ReadU32() ) / 1000.0;
+  m_originalSource.z = ( (double) i.ReadU32() ) / 1000.0;
   m_token = ((double) i.ReadU32()) / 1000.0;
   m_ts = ((double) i.ReadU32()) / 1000.0;
   m_range = ((double) i.ReadU32()) / 1000.0;
 
   //This is bloated.
-  m_info.o.x = ( (double) i.ReadU16() ) / 1000.0;
-  m_info.o.y = ( (double) i.ReadU16() ) / 1000.0;
-  m_info.o.z = ( (double) i.ReadU16() ) / 1000.0;
-  m_info.f.x = ( (double) i.ReadU16() ) / 1000.0;
-  m_info.f.y = ( (double) i.ReadU16() ) / 1000.0;
-  m_info.f.z = ( (double) i.ReadU16() ) / 1000.0;
-  m_info.t.x = ( (double) i.ReadU16() ) / 1000.0;
-  m_info.t.y = ( (double) i.ReadU16() ) / 1000.0;
-  m_info.t.z = ( (double) i.ReadU16() ) / 1000.0;
-  m_info.d.x = ( (double) i.ReadU16() ) / 1000.0;
-  m_info.d.y = ( (double) i.ReadU16() ) / 1000.0;
-  m_info.d.z = ( (double) i.ReadU16() ) / 1000.0;
+  m_info.o.x = ( (double) i.ReadU32() ) / 1000.0;
+  m_info.o.y = ( (double) i.ReadU32() ) / 1000.0;
+  m_info.o.z = ( (double) i.ReadU32() ) / 1000.0;
+  m_info.f.x = ( (double) i.ReadU32() ) / 1000.0;
+  m_info.f.y = ( (double) i.ReadU32() ) / 1000.0;
+  m_info.f.z = ( (double) i.ReadU32() ) / 1000.0;
+  m_info.t.x = ( (double) i.ReadU32() ) / 1000.0;
+  m_info.t.y = ( (double) i.ReadU32() ) / 1000.0;
+  m_info.t.z = ( (double) i.ReadU32() ) / 1000.0;
+  m_info.d.x = ( (double) i.ReadU32() ) / 1000.0;
+  m_info.d.y = ( (double) i.ReadU32() ) / 1000.0;
+  m_info.d.z = ( (double) i.ReadU32() ) / 1000.0;
 
   return GetSerializedSize();
 }
@@ -191,7 +192,7 @@ uint32_t
 VBHeader::GetSerializedSize(void) const
 {
   //reserved bytes for header
-  return (1+4+1+1+1+1+6+4+4+4 +24);
+  return (1+4+1+1+1+1+12+4+4+4 +48);
 }
 
 void
@@ -206,27 +207,27 @@ VBHeader::Serialize(Buffer::Iterator start) const
   i.WriteU8(m_dataType);
 
   //Messy...
-  i.WriteU16 ((uint16_t)(m_originalSource.x*1000.0 +0.5));
-  i.WriteU16 ((uint16_t)(m_originalSource.y*1000.0 +0.5));
-  i.WriteU16 ((uint16_t)(m_originalSource.z*1000.0 +0.5));
+  i.WriteU32 ((uint32_t)(m_originalSource.x*1000.0));
+  i.WriteU32 ((uint32_t)(m_originalSource.y*1000.0));
+  i.WriteU32 ((uint32_t)(m_originalSource.z*1000.0));
 
   i.WriteU32((uint32_t)(m_token*1000.0 + 0.5));
   i.WriteU32((uint32_t)(m_ts*1000.0 + 0.5));
   i.WriteU32((uint32_t)(m_range*1000.0 + 0.5));
 
   //bloated.
-  i.WriteU16 ((uint16_t)(m_info.o.x*1000.0 +0.5));
-  i.WriteU16 ((uint16_t)(m_info.o.y*1000.0 +0.5));
-  i.WriteU16 ((uint16_t)(m_info.o.z*1000.0 +0.5));
-  i.WriteU16 ((uint16_t)(m_info.f.x*1000.0 +0.5));
-  i.WriteU16 ((uint16_t)(m_info.f.y*1000.0 +0.5));
-  i.WriteU16 ((uint16_t)(m_info.f.z*1000.0 +0.5));
-  i.WriteU16 ((uint16_t)(m_info.t.x*1000.0 +0.5));
-  i.WriteU16 ((uint16_t)(m_info.t.y*1000.0 +0.5));
-  i.WriteU16 ((uint16_t)(m_info.t.z*1000.0 +0.5));
-  i.WriteU16 ((uint16_t)(m_info.d.x*1000.0 +0.5));
-  i.WriteU16 ((uint16_t)(m_info.d.y*1000.0 +0.5));
-  i.WriteU16 ((uint16_t)(m_info.d.z*1000.0 +0.5));
+  i.WriteU32 ((uint32_t)(m_info.o.x*1000.0 +0.5));
+  i.WriteU32 ((uint32_t)(m_info.o.y*1000.0 +0.5));
+  i.WriteU32 ((uint32_t)(m_info.o.z*1000.0 +0.5));
+  i.WriteU32 ((uint32_t)(m_info.f.x*1000.0 +0.5));
+  i.WriteU32 ((uint32_t)(m_info.f.y*1000.0 +0.5));
+  i.WriteU32 ((uint32_t)(m_info.f.z*1000.0 +0.5));
+  i.WriteU32 ((uint32_t)(m_info.t.x*1000.0 +0.5));
+  i.WriteU32 ((uint32_t)(m_info.t.y*1000.0 +0.5));
+  i.WriteU32 ((uint32_t)(m_info.t.z*1000.0 +0.5));
+  i.WriteU32 ((uint32_t)(m_info.d.x*1000.0 +0.5));
+  i.WriteU32 ((uint32_t)(m_info.d.y*1000.0 +0.5));
+  i.WriteU32 ((uint32_t)(m_info.d.z*1000.0 +0.5));
 }
 
 void
@@ -285,6 +286,7 @@ VBHeader::SetPkNum(uint32_t pkNum)
 void
 VBHeader::SetTargetAddr(AquaSimAddress targetAddr)
 {
+  std::cout << "set target: new:" << targetAddr << ",old:" << m_targetAddr << "\n";
   m_targetAddr = targetAddr;
 }
 void
@@ -445,9 +447,9 @@ uint32_t
 DBRHeader::Deserialize(Buffer::Iterator start)
 {
   Buffer::Iterator i = start;
-  m_position.x = ( (double) i.ReadU16() ) / 1000.0;
-  m_position.y = ( (double) i.ReadU16() ) / 1000.0;
-  m_position.z = ( (double) i.ReadU16() ) / 1000.0;
+  m_position.x = ( (double) i.ReadU32() ) / 1000.0;
+  m_position.y = ( (double) i.ReadU32() ) / 1000.0;
+  m_position.z = ( (double) i.ReadU32() ) / 1000.0;
   m_packetID = i.ReadU32();
   m_mode = i.ReadU8();
   m_nhops = i.ReadU16();
@@ -462,16 +464,16 @@ uint32_t
 DBRHeader::GetSerializedSize(void) const
 {
   //reserved bytes for header
-  return (6+4+1+2+1+1+4);
+  return (12+4+1+2+1+1+4);
 }
 
 void
 DBRHeader::Serialize(Buffer::Iterator start) const
 {
   Buffer::Iterator i = start;
-  i.WriteU16 ((uint16_t)(m_position.x*1000.0 +0.5));
-  i.WriteU16 ((uint16_t)(m_position.y*1000.0 +0.5));
-  i.WriteU16 ((uint16_t)(m_position.z*1000.0 +0.5));
+  i.WriteU32 ((uint32_t)(m_position.x*1000.0 +0.5));
+  i.WriteU32 ((uint32_t)(m_position.y*1000.0 +0.5));
+  i.WriteU32 ((uint32_t)(m_position.z*1000.0 +0.5));
   i.WriteU32(m_packetID);
   i.WriteU8(m_mode);
   i.WriteU16(m_nhops);

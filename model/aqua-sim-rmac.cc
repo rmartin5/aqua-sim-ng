@@ -40,6 +40,7 @@ in the next period interval
 #include "aqua-sim-rmac-buffer.h"
 #include "aqua-sim-phy.h"
 #include "aqua-sim-header.h"
+#include "aqua-sim-header-mac.h"
 #include "aqua-sim-pt-tag.h"
 
 #include <stdlib.h>
@@ -237,19 +238,19 @@ AquaSimRMac::TxACKRev(Ptr<Packet> pkt){
   DeleteBufferCell(pkt);
 
   AquaSimHeader asHeader;
-  RMacHeader rHeader;
+  TMacHeader tHeader;
   pkt->RemoveHeader(asHeader);
-  pkt->PeekHeader(rHeader);
+  pkt->PeekHeader(tHeader);
 
   //assert(initialized());
   //UnderwaterSensorNode* n=(UnderwaterSensorNode*) node_;
 
-  Time totalTxTime = Seconds( ((asHeader.GetSerializedSize() + rHeader.GetSerializedSize()) * m_encodingEfficiency
+  Time totalTxTime = Seconds( ((asHeader.GetSerializedSize() + tHeader.GetSerializedSize()) * m_encodingEfficiency
 			+ m_phyOverhead) / m_bitRate );
   asHeader.SetTxTime(totalTxTime);
 
   NS_LOG_INFO("AquaSimRMac Txackrev: node:" << m_device->GetAddress() <<
-	      " is transmitting a packet st=" << rHeader.GetSt() <<
+	      " is transmitting a packet st=" << tHeader.GetST() <<
 	      " txtime=" << totalTxTime << " at time " << Simulator::Now().GetSeconds());
 
   if(m_device->TransmissionStatus() == SLEEP)
@@ -264,7 +265,7 @@ AquaSimRMac::TxACKRev(Ptr<Packet> pkt){
     {
       NS_LOG_DEBUG("AquaSimRMac Txackrev: node:" << m_device->GetAddress() <<
 		   " converged with ACKwindow");
-      InsertReservedTimeTable(rHeader.GetSenderAddr(),m_periodInterval,(4*m_periodInterval));
+      InsertReservedTimeTable(tHeader.GetSenderAddr(),m_periodInterval,(4*m_periodInterval));
     }
   m_device->SetTransmissionStatus(SLEEP);
   Simulator::Schedule(totalTxTime, &AquaSimRMac::StatusProcess, this, m_device->TransmissionStatus());
@@ -284,7 +285,7 @@ AquaSimRMac::TxACKRev(Ptr<Packet> pkt){
     {
       NS_LOG_DEBUG("AquaSimRMac Txackrev: node:" << m_device->GetAddress() <<
 		   " converged with ACKwindow");
-      InsertReservedTimeTable(rHeader.GetSenderAddr(),m_periodInterval,(4*m_periodInterval));
+      InsertReservedTimeTable(tHeader.GetSenderAddr(),m_periodInterval,(4*m_periodInterval));
     }
   m_device->SetTransmissionStatus(NIDLE);
   Simulator::Schedule(totalTxTime, &AquaSimRMac::StatusProcess, this, m_device->TransmissionStatus());
@@ -302,7 +303,7 @@ AquaSimRMac::TxACKRev(Ptr<Packet> pkt){
 	{
 	  NS_LOG_DEBUG("AquaSimRMac Txackrev: node:" << m_device->GetAddress() <<
 	  		   " converged with ACKwindow");
-	  InsertReservedTimeTable(rHeader.GetSenderAddr(),m_periodInterval,(4*m_periodInterval));
+	  InsertReservedTimeTable(tHeader.GetSenderAddr(),m_periodInterval,(4*m_periodInterval));
       }
       m_device->SetTransmissionStatus(NIDLE);
       Simulator::Schedule(totalTxTime, &AquaSimRMac::StatusProcess, this, m_device->TransmissionStatus());
@@ -846,7 +847,7 @@ AquaSimRMac::GenerateACKRev(AquaSimAddress receiver, AquaSimAddress intended_rec
 
   Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
-  RMacHeader rHeader;
+  TMacHeader tHeader;
   AquaSimPtTag ptag;
 
   asHeader.SetNextHop(receiver);
@@ -855,14 +856,14 @@ AquaSimRMac::GenerateACKRev(AquaSimAddress receiver, AquaSimAddress intended_rec
   ptag.SetPacketType(AquaSimPtTag::PT_RMAC);
   asHeader.SetSize(m_shortPacketSize);
 
-  rHeader.SetPtype(P_ACKREV);
-  rHeader.SetPktNum(m_numSend);
-  rHeader.SetRecvAddr(intended_receiver);
-  rHeader.SetDuration(duration);
-  rHeader.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
+  tHeader.SetPtype(P_ACKREV);
+  tHeader.SetPktNum(m_numSend);
+  tHeader.SetRecvAddr(intended_receiver);
+  tHeader.SetDuration(duration);
+  tHeader.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 
   pkt->AddHeader(asHeader);
-  pkt->AddHeader(rHeader);
+  pkt->AddHeader(tHeader);
   pkt->AddPacketTag(ptag);
   m_numSend++;
   return pkt;
@@ -880,15 +881,15 @@ AquaSimRMac::SetStartTime(buffer_cell* ack_rev_pt, double st, double next_period
   t1=ack_rev_pt;
   while(t1)
     {
-      RMacHeader rHeader;
-      (t1->packet)->RemoveHeader(rHeader);
+      TMacHeader tHeader;
+      (t1->packet)->RemoveHeader(tHeader);
       double d=t1->delay;
-      rHeader.SetSt(st-d);
-      rHeader.SetInterval(next_period-d);
-      rHeader.SetDuration(next_period-d);
-      NS_LOG_INFO("AquaSimRMac Setstarttime: Node:" << m_device->GetAddress() <<
-		  " offset time is:" << rHeader.GetSt() << " and next period is:" <<
-		  rHeader.GetInterval());
+      tHeader.SetST(st-d);
+      tHeader.SetInterval(next_period-d);
+      tHeader.SetDuration(next_period-d);
+      NS_LOG_INFO("AquaSimRMac SetStartTime: Node:" << m_device->GetAddress() <<
+		  " offset time is:" << tHeader.GetST() << " and next period is:" <<
+		  tHeader.GetInterval());
       t1=t1->next;
     }
 }
@@ -897,7 +898,7 @@ AquaSimRMac::SetStartTime(buffer_cell* ack_rev_pt, double st, double next_period
 /* // old version of SetStartTime
 void
 RMac::SetStartTime(buffer_cell* ack_rev_pt, double st, double next_period){
- printf("rmac setstarttime: node %d \n",index_);
+ printf("rmac SetStartTime: node %d \n",index_);
   buffer_cell* t1;
   t1=ack_rev_pt;
   while(t1){
@@ -905,7 +906,7 @@ RMac::SetStartTime(buffer_cell* ack_rev_pt, double st, double next_period){
     double d=t1->delay;
     ackrevh->st=st-d;
     ackrevh->interval=next_period-d;
- printf("rmac setstarttime: node %d interval to recv =%f and next period is %f\n",index_,ackrevh->st,ackrevh->interval);
+ printf("rmac SetStartTime: node %d interval to recv =%f and next period is %f\n",index_,ackrevh->st,ackrevh->interval);
     t1=t1->next;
   }
 }
@@ -1365,7 +1366,7 @@ AquaSimRMac::MakeReservation()
   double t2=DetermineSendingTime(receiver_addr);
 
   Ptr<Packet> pkt = Create<Packet>();
-  RMacHeader rHeader;
+  TMacHeader tHeader;
   AquaSimPtTag ptag;
 
   asHeader.SetNextHop(receiver_addr);
@@ -1373,21 +1374,21 @@ AquaSimRMac::MakeReservation()
   // addr_type()=NS_AF_ILINK;
   ptag.SetPacketType(AquaSimPtTag::PT_RMAC);
 
-  rHeader.SetPtype(P_REV);
-  rHeader.SetBlockNum(m_numBlock);
-  rHeader.SetPktNum(m_numSend);
-  rHeader.SetDuration(dt);
-  rHeader.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
-  rHeader.SetInterval(it);
+  tHeader.SetPtype(P_REV);
+  tHeader.SetBlockNum(m_numBlock);
+  tHeader.SetPktNum(m_numSend);
+  tHeader.SetDuration(dt);
+  tHeader.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
+  tHeader.SetInterval(it);
   m_numSend++;
 
   pkt->AddHeader(asHeader);
-  pkt->AddHeader(rHeader);
+  pkt->AddHeader(tHeader);
   pkt->AddPacketTag(ptag);
 
   NS_LOG_INFO("AquaSimRMac:MakeReservation: Node " << m_device->GetAddress() <<
 	      " send a reservation to node " << receiver_addr << ", duration is " <<
-	      rHeader.GetDuration() << " and offset is " << it << " after " << t2 <<
+	      tHeader.GetDuration() << " and offset is " << it << " after " << t2 <<
 	      " at " << Simulator::Now().GetSeconds());
   Simulator::Schedule(Seconds(t2), &AquaSimRMac::TxRev, this, pkt);
 }
@@ -1622,9 +1623,9 @@ AquaSimRMac::TxRev(Ptr<Packet> p)
   NS_LOG_FUNCTION(this << Simulator::Now().GetSeconds());
 
   AquaSimHeader asHeader;
-  RMacHeader rHeader;
+  TMacHeader tHeader;
   p->RemoveHeader(asHeader);
-  p->PeekHeader(rHeader);
+  p->PeekHeader(tHeader);
 
   if(m_macStatus==RMAC_FORBIDDED)
     {
@@ -1643,7 +1644,7 @@ AquaSimRMac::TxRev(Ptr<Packet> p)
       return;
     }
 
-  int totalHeaderSize = rHeader.GetSerializedSize() + asHeader.GetSize();
+  int totalHeaderSize = tHeader.GetSerializedSize() + asHeader.GetSize();
   asHeader.SetTxTime(Seconds((totalHeaderSize*m_encodingEfficiency + m_phyOverhead) / m_bitRate));
 
   Time txtime=asHeader.GetTxTime();
@@ -1763,7 +1764,7 @@ AquaSimRMac::GenerateSYN()
 {
   Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
-  RMacHeader rHeader;
+  TMacHeader tHeader;
   AquaSimPtTag ptag;
 
   asHeader.SetSize(m_shortPacketSize);
@@ -1772,17 +1773,17 @@ AquaSimRMac::GenerateSYN()
   // addr_type()=NS_AF_ILINK;
   ptag.SetPacketType(AquaSimPtTag::PT_RMAC);
 
-  rHeader.SetPtype(P_SYN);
-  rHeader.SetPktNum(m_numSend);
-  rHeader.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
-  rHeader.SetDuration(m_duration);
+  tHeader.SetPtype(P_SYN);
+  tHeader.SetPktNum(m_numSend);
+  tHeader.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
+  tHeader.SetDuration(m_duration);
   m_numSend++;
 
   pkt->AddHeader(asHeader);
-  pkt->AddHeader(rHeader);
+  pkt->AddHeader(tHeader);
   pkt->AddPacketTag(ptag);
 
-  NS_LOG_INFO("AquaSimRMac:GenerateSYN: node " << rHeader.GetSenderAddr() <<
+  NS_LOG_INFO("AquaSimRMac:GenerateSYN: node " << tHeader.GetSenderAddr() <<
 	      " generates SYN packet at " << Simulator::Now().GetSeconds());
   return pkt;
 }
@@ -1792,7 +1793,7 @@ AquaSimRMac::SendSYN()
 {
   Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
-  RMacHeader rHeader;
+  TMacHeader tHeader;
   AquaSimPtTag ptag;
 
   asHeader.SetSize(m_shortPacketSize);
@@ -1801,17 +1802,17 @@ AquaSimRMac::SendSYN()
   // addr_type()=NS_AF_ILINK;
   ptag.SetPacketType(AquaSimPtTag::PT_RMAC);
 
-  rHeader.SetPtype(P_SYN);
-  rHeader.SetPktNum(m_numSend);
-  rHeader.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
-  rHeader.SetDuration(m_duration);
+  tHeader.SetPtype(P_SYN);
+  tHeader.SetPktNum(m_numSend);
+  tHeader.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
+  tHeader.SetDuration(m_duration);
   m_numSend++;
 
   pkt->AddHeader(asHeader);
-  pkt->AddHeader(rHeader);
+  pkt->AddHeader(tHeader);
   pkt->AddPacketTag(ptag);
 
-  NS_LOG_INFO("AquaSimRMac:SendSYN: node " << rHeader.GetSenderAddr() <<
+  NS_LOG_INFO("AquaSimRMac:SendSYN: node " << tHeader.GetSenderAddr() <<
 	      " send SYN packet at " << Simulator::Now().GetSeconds());
   TxND(pkt, m_phaseTwoWindow);
 }
@@ -1843,7 +1844,7 @@ AquaSimRMac::SendND(int pkt_size)
   NS_LOG_FUNCTION(this << Simulator::Now().GetSeconds());
   Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
-  RMacHeader rHeader;
+  TMacHeader tHeader;
   AquaSimPtTag ptag;
 
   // additional 2*8 denotes the size of type,next-hop of the packet and
@@ -1856,13 +1857,13 @@ AquaSimRMac::SendND(int pkt_size)
   // addr_type()=NS_AF_ILINK;
   ptag.SetPacketType(AquaSimPtTag::PT_RMAC);
 
-  rHeader.SetPtype(P_ND);
-  rHeader.SetPktNum(m_numSend);
-  rHeader.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
+  tHeader.SetPtype(P_ND);
+  tHeader.SetPktNum(m_numSend);
+  tHeader.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
   m_numSend++;
 
   pkt->AddHeader(asHeader);
-  pkt->AddHeader(rHeader);
+  pkt->AddHeader(tHeader);
   pkt->AddPacketTag(ptag);
 
   //printf("rmac SendND:node(%d) send ND type is %d at %f\n", ndh->sender_addr,cmh->ptype_, NOW);
@@ -1879,12 +1880,12 @@ AquaSimRMac::SendShortAckND()
     {
       Ptr<Packet> pkt = Create<Packet>();
       AquaSimHeader asHeader;
-      RMacHeader rHeader;
+      TMacHeader tHeader;
       AquaSimPtTag ptag;
 
-      rHeader.SetPtype(P_SACKND);
-      rHeader.SetPktNum(m_numSend);
-      rHeader.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
+      tHeader.SetPtype(P_SACKND);
+      tHeader.SetPktNum(m_numSend);
+      tHeader.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
       m_numSend++;
 
       ptag.SetPacketType(AquaSimPtTag::PT_RMAC);
@@ -1905,8 +1906,8 @@ AquaSimRMac::SendShortAckND()
           arrival_table[i].arrival_time=arrival_table[i+1].arrival_time;
 	}
 
-      rHeader.SetArrivalTime(Seconds(t2));
-      rHeader.SetTs(t1);
+      tHeader.SetArrivalTime(t2);
+      tHeader.SetTS(t1);
   // additional 2*8 denotes the size of type,next-hop of the packet and
   // timestamp
       //not used.
@@ -1918,7 +1919,7 @@ AquaSimRMac::SendShortAckND()
       // addr_type()=NS_AF_ILINK;
 
       pkt->AddHeader(asHeader);
-      pkt->AddHeader(rHeader);
+      pkt->AddHeader(tHeader);
       pkt->AddPacketTag(ptag);
 
       Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
@@ -2037,11 +2038,11 @@ AquaSimRMac::TxND(Ptr<Packet> pkt, double window)
   NS_LOG_FUNCTION(this << m_device->GetAddress());
 
   AquaSimHeader asHeader;
-  RMacHeader rHeader;
+  TMacHeader tHeader;
   pkt->RemoveHeader(asHeader);
-  pkt->RemoveHeader(rHeader);
+  pkt->RemoveHeader(tHeader);
 
-  Time totalTxTime = Seconds( ((asHeader.GetSerializedSize() + rHeader.GetSerializedSize()) * m_encodingEfficiency
+  Time totalTxTime = Seconds( ((asHeader.GetSerializedSize() + tHeader.GetSerializedSize()) * m_encodingEfficiency
 			+ m_phyOverhead) / m_bitRate );
   asHeader.SetTxTime(totalTxTime);
 
@@ -2054,11 +2055,11 @@ AquaSimRMac::TxND(Ptr<Packet> pkt, double window)
       if(m_phaseStatus==PHASETWO)
 	{
 	  double t=Simulator::Now().GetDouble()-m_cycleStartTime;
-	  rHeader.SetInterval(m_nextPeriod-t);
+	  tHeader.SetInterval(m_nextPeriod-t);
 	}
 
       pkt->AddHeader(asHeader);
-      pkt->AddHeader(rHeader);
+      pkt->AddHeader(tHeader);
       SendDown(pkt);
       m_NDBackoffCounter=0;	//reset
 
@@ -2077,10 +2078,10 @@ AquaSimRMac::TxND(Ptr<Packet> pkt, double window)
       if(m_phaseStatus==PHASETWO)
 	{
 	  double t=Simulator::Now().GetDouble()-m_cycleStartTime;
-	  rHeader.SetInterval(m_nextPeriod-t);
+	  tHeader.SetInterval(m_nextPeriod-t);
 	}
       pkt->AddHeader(asHeader);
-      pkt->AddHeader(rHeader);
+      pkt->AddHeader(tHeader);
       SendDown(pkt);
       m_NDBackoffCounter=0;	//reset
       //  printf("broadcast %d Tx Idle set timer at %f tx is %f\n",node_->nodeid(),NOW,txtime);
@@ -2102,7 +2103,7 @@ AquaSimRMac::TxND(Ptr<Packet> pkt, double window)
 	  // printf("broadcast Tx set timer at %f backoff is %f\n",NOW,backoff);
 
 	  pkt->AddHeader(asHeader);
-	  pkt->AddHeader(rHeader);
+	  pkt->AddHeader(tHeader);
 	  Simulator::Schedule(Seconds(backoff), &AquaSimRMac::NDBackoffHandler, this, pkt);
 	  return;
 	}
@@ -2143,12 +2144,12 @@ AquaSimRMac::ProcessACKRevPacket(Ptr<Packet> pkt)
   NS_LOG_FUNCTION(this << Simulator::Now().GetSeconds());
 
   AquaSimHeader asHeader;
-  RMacHeader rHeader;
+  TMacHeader tHeader;
   pkt->PeekHeader(asHeader);
-  pkt->PeekHeader(rHeader);
+  pkt->PeekHeader(tHeader);
 
   AquaSimAddress dst=asHeader.GetNextHop();
-  int ptype=rHeader.GetPtype();
+  int ptype=tHeader.GetPtype();
 
   // since the node clearly receives the ACKrev, does not need to backoff,
   //  therefore, resets the carrier sense;
@@ -2169,10 +2170,10 @@ AquaSimRMac::ProcessACKRevPacket(Ptr<Packet> pkt)
   m_device->ResetCarrierId();
   m_carrierSense=false;
 
-  AquaSimAddress receiver_addr=rHeader.GetRecvAddr();
-  AquaSimAddress sender_addr=rHeader.GetSenderAddr();
-  double st=rHeader.GetSt();
-  double dt=rHeader.GetDuration() - st;
+  AquaSimAddress receiver_addr=tHeader.GetRecvAddr();
+  AquaSimAddress sender_addr=tHeader.GetSenderAddr();
+  double st=tHeader.GetST();
+  double dt=tHeader.GetDuration() - st;
 
   double  l=CheckLatency(short_latency_table,sender_addr);
   double  it=st-l;
@@ -2307,13 +2308,13 @@ void
 AquaSimRMac::ProcessRevPacket(Ptr<Packet> pkt)
 {
   NS_LOG_FUNCTION(this << m_device->GetAddress());
-  RMacHeader rHeader;
-  pkt->PeekHeader(rHeader);
+  TMacHeader tHeader;
+  pkt->PeekHeader(tHeader);
 
-  AquaSimAddress sender_addr=rHeader.GetSenderAddr();
-  double dt=rHeader.GetDuration();
-  double interval=rHeader.GetInterval();
-  int block=rHeader.GetBlockNum();
+  AquaSimAddress sender_addr=tHeader.GetSenderAddr();
+  double dt=tHeader.GetDuration();
+  double interval=tHeader.GetInterval();
+  int block=tHeader.GetBlockNum();
 
   pkt=0;
 
@@ -2343,11 +2344,11 @@ AquaSimRMac::ProcessNDPacket(Ptr<Packet> pkt)
 {
   NS_LOG_FUNCTION(this);
   AquaSimHeader asHeader;
-  RMacHeader rHeader;
+  TMacHeader tHeader;
   pkt->PeekHeader(asHeader);
-  pkt->PeekHeader(rHeader);
+  pkt->PeekHeader(tHeader);
 
-  AquaSimAddress sender=rHeader.GetSenderAddr();
+  AquaSimAddress sender=tHeader.GetSenderAddr();
   double time=Simulator::Now().ToDouble(Time::S);
   if(m_arrivalTableIndex>=R_TABLE_SIZE)
     {
@@ -2368,12 +2369,12 @@ void
 AquaSimRMac::ProcessDataPacket(Ptr<Packet> pkt)
 {
   NS_LOG_FUNCTION(this << m_device->GetAddress());
-  RMacHeader rHeader;
-  pkt->PeekHeader(rHeader);
+  TMacHeader tHeader;
+  pkt->PeekHeader(tHeader);
 
-  AquaSimAddress data_sender=rHeader.GetSenderAddr();
-  int bnum=rHeader.GetBlockNum();
-  int num=rHeader.GetDataNum();
+  AquaSimAddress data_sender=tHeader.GetSenderAddr();
+  int bnum=tHeader.GetBlockNum();
+  int num=tHeader.GetDataNum();
 
   m_recvBusy=true;
   Simulator::Cancel(m_timeoutEvent);
@@ -2428,7 +2429,7 @@ AquaSimRMac::ScheduleACKData(AquaSimAddress data_sender)
 
   Ptr<Packet> pkt = Create<Packet>(sizeof(m_bitMap));
   AquaSimHeader asHeader;
-  RMacHeader rHeader;
+  TMacHeader tHeader;
   AquaSimPtTag ptag;
 
   CopyBitmap(pkt, data_sender);
@@ -2439,13 +2440,13 @@ AquaSimRMac::ScheduleACKData(AquaSimAddress data_sender)
   ptag.SetPacketType(AquaSimPtTag::PT_RMAC);
   asHeader.SetSize(m_shortPacketSize);
 
-  rHeader.SetPtype(P_ACKDATA);
-  rHeader.SetPktNum(m_numSend);
-  rHeader.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
+  tHeader.SetPtype(P_ACKDATA);
+  tHeader.SetPktNum(m_numSend);
+  tHeader.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
   m_numSend++;
 
   pkt->AddHeader(asHeader);
-  pkt->AddHeader(rHeader);
+  pkt->AddHeader(tHeader);
   pkt->AddPacketTag(ptag);
 
   double t1=DetermineSendingTime(data_sender);
@@ -2492,9 +2493,9 @@ AquaSimRMac::TxACKData(Ptr<Packet> pkt)
   NS_LOG_FUNCTION(this << m_device->GetAddress() << Simulator::Now().GetSeconds());
 
   AquaSimHeader asHeader;
-  RMacHeader rHeader;
+  TMacHeader tHeader;
   pkt->RemoveHeader(asHeader);
-  pkt->PeekHeader(rHeader);
+  pkt->PeekHeader(tHeader);
 
   if(!IsSafe()) {
     // It is not safe to send this ACKData since it collides with reserved time  slot
@@ -2502,7 +2503,7 @@ AquaSimRMac::TxACKData(Ptr<Packet> pkt)
     return;
   }
 
-  Time totalTxTime = Seconds( ((asHeader.GetSerializedSize() + rHeader.GetSerializedSize()) * m_encodingEfficiency
+  Time totalTxTime = Seconds( ((asHeader.GetSerializedSize() + tHeader.GetSerializedSize()) * m_encodingEfficiency
 			+ m_phyOverhead) / m_bitRate );
   asHeader.SetTxTime(totalTxTime);
   m_macStatus=RMAC_IDLE;
@@ -2562,16 +2563,16 @@ AquaSimRMac::ProcessShortACKNDPacket(Ptr<Packet> pkt)
 {
   NS_LOG_FUNCTION(this << m_device->GetAddress());
   AquaSimHeader asHeader;
-  RMacHeader rHeader;
+  TMacHeader tHeader;
   pkt->PeekHeader(asHeader);
-  pkt->PeekHeader(rHeader);
+  pkt->PeekHeader(tHeader);
 
-  AquaSimAddress sender=rHeader.GetSenderAddr();
+  AquaSimAddress sender=tHeader.GetSenderAddr();
   double t4=Simulator::Now().ToDouble(Time::S);
   double t3=asHeader.GetTimeStamp().ToDouble(Time::S);
 
-  double t2=rHeader.GetArrivalTime().ToDouble(Time::S);
-  double t1=rHeader.GetTs();
+  double t2=tHeader.GetArrivalTime();
+  double t1=tHeader.GetTS();
 
   double latency=((t4-t1)-(t3-t2))/2.0;
   bool newone=true;
@@ -2620,12 +2621,12 @@ void
 AquaSimRMac::ProcessSYN(Ptr<Packet> pkt)
 {
   NS_LOG_FUNCTION(this);
-  RMacHeader rHeader;
-  pkt->PeekHeader(rHeader);
+  TMacHeader tHeader;
+  pkt->PeekHeader(tHeader);
 
-  AquaSimAddress sender=rHeader.GetSenderAddr();
-  double interval=rHeader.GetInterval();
-  double tduration=rHeader.GetDuration();
+  AquaSimAddress sender=tHeader.GetSenderAddr();
+  double interval=tHeader.GetInterval();
+  double tduration=tHeader.GetDuration();
   pkt=0;
 
   double t1=-1.0;
@@ -2696,14 +2697,14 @@ bool
 AquaSimRMac::RecvProcess(Ptr<Packet> pkt)
 {
   AquaSimHeader asHeader;
-  RMacHeader rHeader;
+  TMacHeader tHeader;
   AquaSimPtTag ptag;
   pkt->PeekHeader(asHeader);
-  pkt->PeekHeader(rHeader);
+  pkt->PeekHeader(tHeader);
   pkt->PeekPacketTag(ptag);
 
   AquaSimAddress dst=asHeader.GetNextHop();
-  int ptype=rHeader.GetPtype();
+  int ptype=tHeader.GetPtype();
   double elapsed_time=Simulator::Now().GetDouble()-m_cycleStartTime;
   double ack_window=m_maxShortPacketTransmissiontime+m_theta;
 
@@ -2782,20 +2783,20 @@ AquaSimRMac::TxData(AquaSimAddress receiver)
   Ptr<Packet> pkt = m_txBuffer.next();
 
   AquaSimHeader asHeader;
-  RMacHeader rHeader;
+  TMacHeader tHeader;
   AquaSimPtTag ptag;
   pkt->RemoveHeader(asHeader);
-  pkt->RemoveHeader(rHeader);
+  pkt->RemoveHeader(tHeader);
   pkt->RemovePacketTag(ptag);
   //hdr_uwvb* hdr2=hdr_uwvb::access(pkt);
 
   // printf("RMac:node %d TxData at time %f data type is %d offset is%d and size is %d and offset is %d and size is%d uwvb offset is %d and size is %d\n",index_,NOW,hdr2->mess_type,cmh,sizeof(hdr_cmn),datah,sizeof(hdr_rmac),hdr2,sizeof(hdr_uwvb));
 
-  rHeader.SetPtype(P_DATA);
-  rHeader.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
-  rHeader.SetPktNum( m_numSend);
-  rHeader.SetDataNum(m_numData);
-  rHeader.SetBlockNum(m_numBlock);
+  tHeader.SetPtype(P_DATA);
+  tHeader.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
+  tHeader.SetPktNum( m_numSend);
+  tHeader.SetDataNum(m_numData);
+  tHeader.SetBlockNum(m_numBlock);
 
   m_numSend++;
   m_numData++;
@@ -2806,17 +2807,17 @@ AquaSimRMac::TxData(AquaSimAddress receiver)
   //addr_type()=NS_AF_ILINK;
   ptag.SetPacketType(AquaSimPtTag::PT_RMAC);
 
-  Time totalTxTime = Seconds( ((asHeader.GetSerializedSize() + rHeader.GetSerializedSize()) * m_encodingEfficiency
+  Time totalTxTime = Seconds( ((asHeader.GetSerializedSize() + tHeader.GetSerializedSize()) * m_encodingEfficiency
  			+ m_phyOverhead) / m_bitRate );
   asHeader.SetTxTime(totalTxTime);
 
   NS_LOG_INFO("AquaSimRMac:TxData node " << m_device->GetAddress() << " at time " <<
 	      Simulator::Now().GetSeconds() << " packet data_num=" <<
-	      rHeader.GetDataNum() << " class data_num=" << m_numData);
+	      tHeader.GetDataNum() << " class data_num=" << m_numData);
   TransmissionStatus status=m_device->TransmissionStatus();
 
   pkt->AddHeader(asHeader);
-  pkt->AddHeader(rHeader);
+  pkt->AddHeader(tHeader);
   pkt->AddPacketTag(ptag);
 
   if(NIDLE==status)

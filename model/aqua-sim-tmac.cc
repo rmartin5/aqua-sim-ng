@@ -20,6 +20,7 @@
 
 #include "aqua-sim-tmac.h"
 #include "aqua-sim-header.h"
+#include "aqua-sim-header-mac.h"
 #include "aqua-sim-pt-tag.h"
 //#include "vbf/vectorbasedforward.h"
 
@@ -352,7 +353,7 @@ AquaSimTMac::GenerateSYN()
   ptag.SetPacketType(AquaSimPtTag::PT_TMAC);
 
   synh.SetPtype(PT_SYN);
-  synh.SetPkNum(m_numSend);
+  synh.SetPktNum(m_numSend);
   synh.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
   synh.SetDuration(m_duration);
   m_numSend++;
@@ -381,7 +382,7 @@ AquaSimTMac::SendSYN()
   ptag.SetPacketType(AquaSimPtTag::PT_TMAC);
 
   synh.SetPtype(PT_SYN);
-  synh.SetPkNum(m_numSend);
+  synh.SetPktNum(m_numSend);
   synh.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
   synh.SetDuration(m_duration);
   m_numSend++;
@@ -428,7 +429,7 @@ AquaSimTMac::SendND(int pkt_size)
   ptag.SetPacketType(AquaSimPtTag::PT_TMAC);
 
   ndh.SetPtype(PT_ND);
-  ndh.SetPkNum(m_numSend);
+  ndh.SetPktNum(m_numSend);
   ndh.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
   m_numSend++;
 
@@ -461,7 +462,7 @@ AquaSimTMac::SendShortAckND()
       AquaSimPtTag ptag;
 
       ackndh.SetPtype(PT_SACKND);
-      ackndh.SetPkNum(m_numSend);
+      ackndh.SetPktNum(m_numSend);
       ackndh.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
       m_numSend++;
 
@@ -528,7 +529,7 @@ AquaSimTMac::ProcessShortACKNDPacket(Ptr<Packet> pkt)
   ptag.SetPacketType(AquaSimPtTag::PT_TMAC);
 
   ackndh.SetPtype(PT_SYN);
-  ackndh.SetPkNum(m_numSend);
+  ackndh.SetPktNum(m_numSend);
   ackndh.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
   ackndh.SetDuration(m_duration);
   m_numSend++;
@@ -1217,10 +1218,10 @@ AquaSimTMac::SendRTS()
   ptag.SetPacketType(AquaSimPtTag::PT_TMAC);
 
   rtsh.SetPtype(PT_RTS);
-  rtsh.SetPkNum(m_numSend);
+  rtsh.SetPktNum(m_numSend);
   rtsh.SetDuration(dt);
   rtsh.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
-  rtsh.SetReceiverAddr(receiver_addr);
+  rtsh.SetRecvAddr(receiver_addr);
   m_numSend++;
 
   ash.SetTxTime(GetTxTime(ash.GetSerializedSize() + rtsh.GetSerializedSize()));
@@ -1359,7 +1360,7 @@ AquaSimTMac::ProcessCTSPacket(Ptr<Packet> pkt)
 	//hdr_cmn* cmh=HDR_CMN(pkt);
 
 	AquaSimAddress sender_addr=ctsh.GetSenderAddr();
-	AquaSimAddress receiver_addr=ctsh.GetReceiverAddr();
+	AquaSimAddress receiver_addr=ctsh.GetRecvAddr();
 	double dt=ctsh.GetDuration();
 	double l=CheckLatency(m_shortLatencyTable,sender_addr);
 	double t=dt-2*l;
@@ -1677,9 +1678,9 @@ AquaSimTMac::GenerateCTS(AquaSimAddress receiver_addr, double duration)
   ptag.SetPacketType(AquaSimPtTag::PT_TMAC);
 
   ctsh.SetPtype(PT_CTS);
-  ctsh.SetPkNum(m_numSend);
+  ctsh.SetPktNum(m_numSend);
   ctsh.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
-  ctsh.SetReceiverAddr(receiver_addr);
+  ctsh.SetRecvAddr(receiver_addr);
   ctsh.SetDuration(m_duration);
   m_numSend++;
 
@@ -1911,7 +1912,7 @@ AquaSimTMac::SendACKPacket()
   ptag.SetPacketType(AquaSimPtTag::PT_TMAC);
 
   revh.SetPtype(PT_ACKDATA);
-  revh.SetPkNum(m_numSend);
+  revh.SetPktNum(m_numSend);
   revh.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
   m_numSend++;
 
@@ -2038,7 +2039,7 @@ AquaSimTMac::TxData(AquaSimAddress receiver)
 	 */
 	datah.SetPtype(PT_DATA);
   datah.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
-  datah.SetPkNum(m_numSend);
+  datah.SetPktNum(m_numSend);
   datah.SetDataNum(m_numData);
 	m_numSend++;
 	m_numData++;

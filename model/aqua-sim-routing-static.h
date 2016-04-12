@@ -37,7 +37,7 @@ public:
   virtual ~AquaSimStaticRouting();
   static TypeId GetTypeId(void);
 
-	virtual bool Recv(Ptr<Packet> p);
+	virtual bool Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber);
 
   void SetRouteTable(char *routeFile);
 

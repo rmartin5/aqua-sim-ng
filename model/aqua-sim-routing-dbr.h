@@ -176,8 +176,8 @@ public:
 	virtual ~AquaSimDBR();
   static TypeId GetTypeId(void);
 
-	virtual bool Recv(Ptr<Packet>);
-	virtual bool Recv2(Ptr<Packet>);
+	virtual bool Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber);
+	virtual bool Recv2(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber);
 
 	//virtual void Tap(const Ptr<Packet> p);
 
@@ -186,7 +186,6 @@ public:
 	void Send_Callback(void);
 
 protected:
-	//TODO Trace *traceagent;	// Trace agent
 	//PortClassifier *dmux;
 
 	double m_bInt;		// beacon interval
@@ -205,7 +204,6 @@ protected:
   Ptr<UniformRandomVariable> m_rand;
 
 	void ForwardPacket(Ptr<Packet>, int = 0);
-	//void trace(char* fmt, ...);
 	Ptr<Packet> MakeBeacon(void);
 	void SendBeacon(void);
 	void BeaconIn(Ptr<Packet>);

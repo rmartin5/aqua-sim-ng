@@ -20,6 +20,7 @@
 
 #include "aqua-sim-mac-uwan.h"
 #include "aqua-sim-header.h"
+#include "aqua-sim-header-mac.h"
 #include "aqua-sim-pt-tag.h"
 //#include "vbf/vectorbasedforward.h"
 
@@ -194,7 +195,7 @@ AquaSimUwan::MakeSYNCPkt(Time CyclePeriod, AquaSimAddress Recver)
 	Ptr<Packet> p = Create<Packet>();
   UwanSyncHeader hdr_s;
   AquaSimHeader ash;
-  AlohaHeader mach;   //TODO change this...
+  MacHeader mach;
   AquaSimPtTag ptag;
 
 	hdr_s.SetCyclePeriod(CyclePeriod.ToDouble(Time::S));
@@ -208,9 +209,9 @@ AquaSimUwan::MakeSYNCPkt(Time CyclePeriod, AquaSimAddress Recver)
 	mach.SetDA(Recver);
 	mach.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 
+  p->AddHeader(mach);
   p->AddHeader(hdr_s);
   p->AddHeader(ash);
-  p->AddHeader(mach);
   p->AddPacketTag(ptag);
 	return p;
 }
@@ -361,12 +362,12 @@ AquaSimUwan::RecvProcess(Ptr<Packet> p)
 {
   UwanSyncHeader SYNC_h;
   AquaSimHeader ash;
-  AlohaHeader mach;   //TODO change this...
+  MacHeader mach;
   AquaSimPtTag ptag;
   p->PeekPacketTag(ptag);
-  p->PeekHeader(ash);
-  p->PeekHeader(mach);
+  p->RemoveHeader(ash);
   p->RemoveHeader(SYNC_h);
+  p->PeekHeader(mach);
 
 	AquaSimAddress dst = mach.GetDA();
 	AquaSimAddress src = mach.GetSA();
@@ -387,6 +388,7 @@ AquaSimUwan::RecvProcess(Ptr<Packet> p)
 
 	SYNC_h.SetCyclePeriod(SYNC_h.GetCyclePeriod() - PRE_WAKE_TIME);
   p->AddHeader(SYNC_h);
+  p->AddHeader(ash);
 
 	if( (ptag.GetPacketType() == AquaSimPtTag::PT_UWAN_HELLO) ||
         (ptag.GetPacketType() == AquaSimPtTag::PT_UWAN_SYNC) ) {
@@ -518,6 +520,8 @@ AquaSimUwan::SendoutPkt(Time NextCyclePeriod)
 
   AquaSimHeader ash;
   pkt->RemoveHeader(ash);
+  UwanSyncHeader hdr_s;
+  pkt->RemoveHeader(hdr_s);
 	//hdr_uwvb* vbh = hdr_uwvb::access(pkt);
 	/*next_hop() is set in IP layerequal to the */
 
@@ -539,13 +543,14 @@ AquaSimUwan::SendoutPkt(Time NextCyclePeriod)
 		//vbh->target_id.addr_ = ash.GetNextHop();
 	}
 
-  AlohaHeader mach;   //TODO change this...
+  MacHeader mach;
   pkt->RemoveHeader(mach);
 	mach.SetDA(ash.GetNextHop());
 	mach.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 
-  pkt->AddHeader(ash);
   pkt->AddHeader(mach);
+  pkt->AddHeader(hdr_s);
+  pkt->AddHeader(ash);
 	SendFrame(pkt, false);
 }
 
@@ -565,7 +570,7 @@ AquaSimUwan::ProcessMissingList(uint8_t *data, AquaSimAddress src)
 			Ptr<Packet> p = Create<Packet>();
       UwanSyncHeader hdr_s;
       AquaSimHeader ash;
-      AlohaHeader mach;   //TODO change this...
+      MacHeader mach;
       AquaSimPtTag ptag;
 
       hdr_s.SetCyclePeriod(m_nextCyclePeriod.ToDouble(Time::S) -
@@ -580,9 +585,9 @@ AquaSimUwan::ProcessMissingList(uint8_t *data, AquaSimAddress src)
       mach.SetDA(src);
     	mach.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 
-      p->AddHeader(ash);
-      p->AddHeader(mach);
       p->AddHeader(hdr_s);
+      p->AddHeader(mach);
+      p->AddHeader(ash);
       p->AddPacketTag(ptag);
 			//rand the sending slot and then send out
       double randHelloDelay = m_rand->GetValue(0,10)*m_helloTxLen.ToDouble(Time::S);

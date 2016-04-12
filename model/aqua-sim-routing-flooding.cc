@@ -41,7 +41,6 @@ AquaSimFloodingRouting::AquaSimFloodingRouting()
   // Initialize variables.
   //  printf("VB initialized\n");
   m_pkCount = 0;
-  //tracetarget = NULL;
 }
 
 TypeId
@@ -56,21 +55,50 @@ AquaSimFloodingRouting::GetTypeId()
 
 
 bool
-AquaSimFloodingRouting::Recv(Ptr<Packet> packet)
+AquaSimFloodingRouting::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber)
 {
-  NS_LOG_FUNCTION(this << packet);
+  NS_LOG_FUNCTION(this << packet << GetNetDevice()->GetAddress());
+
   VBHeader vbh;
-  packet->PeekHeader(vbh);
+  AquaSimHeader ash;
+  if (packet->GetSize() == 32)  //no headers
+  {
+    vbh.SetSenderAddr(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()));
+    vbh.SetPkNum(packet->GetUid());
+    vbh.SetMessType(AS_DATA);
+    vbh.SetTargetAddr(AquaSimAddress::ConvertFrom(dest));
+
+    ash.SetDirection(AquaSimHeader::DOWN);
+    ash.SetNextHop(AquaSimAddress::GetBroadcast());
+    ash.SetNumForwards(0);
+    ash.SetSAddr(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()));
+    ash.SetDAddr(AquaSimAddress::ConvertFrom(dest));
+    ash.SetErrorFlag(false);
+    ash.SetNumForwards(ash.GetNumForwards() + 1);
+    ash.SetUId(packet->GetUid());
+
+    packet->AddHeader(vbh);
+    packet->AddHeader(ash);
+  }
+  else
+  {
+    packet->RemoveHeader(ash);
+    packet->PeekHeader(vbh);
+    ash.SetNumForwards(ash.GetNumForwards() + 1);
+    packet->AddHeader(ash);
+  }
 
   /* unused variables
 	unsigned char msg_type =vbh.GetMessType();
 	unsigned int dtype =0;// vbh.GetDataType();
   */
 
+  std::cout << "\nFlooding @Recv check:\n";
+  packet->Print(std::cout);
+  std::cout << "\n";
+
 	// Packet Hash Table is used to keep info about experienced pkts.
-
-	vbf_neighborhood *hashPtr= PktTable.GetHash(vbh.GetSenderAddr(), vbh.GetPkNum());
-
+  vbf_neighborhood *hashPtr= PktTable.GetHash(vbh.GetSenderAddr(), packet->GetUid());
 	// Received this packet before ?
 
 	if (hashPtr != NULL) {
@@ -78,11 +106,8 @@ AquaSimFloodingRouting::Recv(Ptr<Packet> packet)
     return false;
   }
 	else {
-
 		PktTable.PutInHash(&vbh);
-
 		// Take action for a new pkt.
-
 		ConsiderNew(packet);
     return true;
 	}
@@ -91,10 +116,15 @@ AquaSimFloodingRouting::Recv(Ptr<Packet> packet)
 void
 AquaSimFloodingRouting::ConsiderNew(Ptr<Packet> pkt)
 {
+  NS_LOG_FUNCTION(this << pkt);
   VBHeader vbh;
+  AquaSimHeader ash;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
-	unsigned char msg_type =vbh.GetMessType();
-	/* unused variables
+  pkt->AddHeader(ash);
+	//unsigned char msg_type =vbh.GetMessType();
+
+  /* unused variables
     unsigned int dtype = 0;//vbh.GetDataType();
     double l,h;
   */
@@ -109,7 +139,7 @@ AquaSimFloodingRouting::ConsiderNew(Ptr<Packet> pkt)
 	//VBHeader *gen_vbh; //not used...
 	//   printf("uwflooding(%d,%d):it is data packet(%d)! it target id is %d  coordinate is %f,%f,%f and range is %f\n",here_.addr_,here_.port_,vbh->pk_num,vbh->target_id.addr_,vbh->info.tx, vbh->info.ty,vbh->info.tz,vbh->range);
 	//  printf("Vectorbasedforward:oops!\n");
-	switch (msg_type) {
+	switch (vbh.GetMessType()) {
 	case AS_DATA:
 		//    printf("uwflooding(%d,%d):it is data packet(%d)! it target id is %d  coordinate is %f,%f,%f and range is %f\n",here_.addr_,here_.port_,vbh->pk_num,vbh->target_id.addr_,vbh->info.tx, vbh->info.ty,vbh->info.tz,vbh->range);
 		nodeAddr = vbh.GetSenderAddr();
@@ -136,7 +166,6 @@ AquaSimFloodingRouting::ConsiderNew(Ptr<Packet> pkt)
 		return;
 
 	default:
-
     pkt=0;
     break;
 	}
@@ -199,7 +228,6 @@ AquaSimFloodingRouting::CreatePacket()
 
 Ptr<Packet>
 AquaSimFloodingRouting::PrepareMessage(unsigned int dtype, AquaSimAddress addr,  int msg_type)
-
 {
 	Ptr<Packet> pkt = Create<Packet>();
   VBHeader vbh;
@@ -223,8 +251,8 @@ AquaSimFloodingRouting::MACprepare(Ptr<Packet> pkt)
 {
   VBHeader vbh;
   AquaSimHeader ash;
-  pkt->RemoveHeader(vbh);
   pkt->RemoveHeader(ash);
+  pkt->RemoveHeader(vbh);
 	// hdr_ip*  iph = HDR_IP(pkt); // I am not sure if we need it
 
 	vbh.SetForwardAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
@@ -267,21 +295,5 @@ AquaSimFloodingRouting::DataForSink(Ptr<Packet> pkt)
 	if (!SendUp(pkt))
 		NS_LOG_WARN("DataForSink: Something went wrong when passing packet up to dmux.");
 }
-
-
-/*
-   void AquaSimFloodingRouting::trace (char *fmt,...)
-   {
-   va_list ap;
-
-   if (!tracetarget)
-    return;
-
-   va_start (ap, fmt);
-   vsprintf (tracetarget->pt_->buffer(), fmt, ap);
-   tracetarget->pt_->dump ();
-   va_end (ap);
-   }
- */
 
 // Some methods for Flooding Entry

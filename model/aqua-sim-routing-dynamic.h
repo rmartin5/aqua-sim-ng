@@ -111,7 +111,7 @@ public:
   AquaSimDynamicRouting();
   AquaSimDynamicRouting(AquaSimAddress);
   static TypeId GetTypeId(void);
-  virtual bool Recv(Ptr<Packet>);
+  virtual bool Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber);
   int m_coun;
 
 protected:

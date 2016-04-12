@@ -101,15 +101,16 @@ AquaSimPktHashTable::PutInHash(VBHeader * vbh)
   std::map<hash_entry,vbf_neighborhood*>::iterator it;
 
 	int k=pkNum-m_windowSize;
-	if(k>0)
+	if(k>0)    //TODO verify this in future work
 	{
 		for (int i=0; i<k; i++)
 		{
-			pkNum=i;
+      entry = std::make_pair(addr,i);
       if(m_htable.count(entry)>0)
       {
         it = m_htable.find(entry);
         hashPtr = it->second;
+        delete hashPtr;
         newPtr = false;
         m_htable.erase(it);
       }
@@ -244,7 +245,6 @@ AquaSimVBF::AquaSimVBF()
 	// Initialize variables.
 	//  printf("VB initialized\n");
 	m_pkCount = 0;
-	//tracetarget = NULL;
 	m_width=0;
 	m_counter=0;
 	m_priority=1.5;
@@ -279,7 +279,7 @@ AquaSimVBF::GetTypeId(void)
 
 
 bool
-AquaSimVBF::Recv(Ptr<Packet> packet)
+AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber)
 {
   VBHeader vbh;
   AquaSimPtTag ptag;
@@ -744,21 +744,6 @@ AquaSimVBF::DataForSink(Ptr<Packet> pkt)
     NS_LOG_WARN("DataForSink: Something went wrong when passing packet up to dmux.");
 }
 
-
-/*
-void AquaSimVBF::trace (char *fmt,...)
-{
-	va_list ap;
-
-	if (!tracetarget)
-		return;
-
-	va_start (ap, fmt);
-	vsprintf (tracetarget->pt_->buffer(), fmt, ap);
-	tracetarget->pt_->dump ();
-	va_end (ap);
-}
-*/
 
 void
 AquaSimVBF::SetDelayTimer(Ptr<Packet> pkt, double c)

@@ -30,6 +30,8 @@
 #include "ns3/packet.h"
 #include "ns3/nstime.h"
 #include "ns3/callback.h"
+#include "ns3/traced-callback.h"
+
 #include "aqua-sim-net-device.h"
 #include "aqua-sim-phy.h"
 #include "aqua-sim-routing.h"
@@ -88,16 +90,19 @@ public:
 
   virtual void SetTransDistance(double range); //to be overloaded for certain cases.
 
+  void NotifyRx(Ptr<const Packet> p);
+  void NotifyTx(Ptr<const Packet> p);
 private:
   // to receive packet from upper layer and lower layer
   //we hide this interface and demand derived classes to
   //override RecvProcess and TxProcess
   void Recv(Ptr<Packet> p);
 
+  TracedCallback<Ptr<const Packet> > m_macRxTrace;
+  TracedCallback<Ptr<const Packet> > m_macTxTrace;
   /*
    * virtual void Recv(Ptr<Packet>);	//handler not imlemented... handler can be 0 unless needed in operation
   */
-
 protected:
   Ptr<AquaSimNetDevice> m_device;// the device this mac is attached
   Ptr<AquaSimPhy> m_phy;

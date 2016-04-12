@@ -70,8 +70,8 @@ AquaSimSimplePropagation::ReceivedCopies (Ptr<AquaSimNetDevice> s,
   PktRecvUnit pru;
   double dist = 0;
 
-  AquaSimHeader asHeader;
-  p->PeekHeader(asHeader);
+  AquaSimPacketStamp pstamp;
+  p->PeekHeader(pstamp);
 
   Ptr<Object> sObject = s->GetNode();
   Ptr<MobilityModel> senderModel = sObject->GetObject<MobilityModel> ();
@@ -86,15 +86,15 @@ AquaSimSimplePropagation::ReceivedCopies (Ptr<AquaSimNetDevice> s,
     dist = senderModel->GetDistanceFrom(recvModel);
     pru.recver = dList[i];
     pru.pDelay = Time::FromDouble(dist / ns3::SOUND_SPEED_IN_WATER,Time::S);
-    pru.pR = RayleighAtt(dist, asHeader.GetFreq(), asHeader.GetPt());
+    pru.pR = RayleighAtt(dist, pstamp.GetFreq(), pstamp.GetPt());
     res->push_back(pru);
 
     NS_LOG_DEBUG("dist:" << dist
 		 << " recver:" << pru.recver
 		 << " pDelay" << pru.pDelay.GetMilliSeconds()
 		 << " pR" << pru.pR
-		 << " freq" << asHeader.GetFreq()
-		 << " Pt" << asHeader.GetPt());
+		 << " freq" << pstamp.GetFreq()
+		 << " Pt" << pstamp.GetPt());
   }
   return res;
 }

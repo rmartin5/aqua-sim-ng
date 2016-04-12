@@ -164,10 +164,10 @@ main (int argc, char *argv[])
   OnOffHelper app ("ns3::PacketSocketFactory", Address (socket));
   app.SetAttribute ("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
   app.SetAttribute ("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
-    //  pktSize/bitRate       50/  1/3
-    m_dataInterval = 10;
-  app.SetAttribute ("DataRate", DataRateValue (m_dataInterval));  //THIS XXX NOTE TODO ERROR 3   50
-  app.SetAttribute ("PacketSize", UintegerValue (m_packetSize));    //causing this node to rapid fire packets...
+
+  m_dataInterval = 10;  //remove...
+  app.SetAttribute ("DataRate", DataRateValue (m_dataInterval));
+  app.SetAttribute ("PacketSize", UintegerValue (m_packetSize));
 
   ApplicationContainer apps = app.Install (nodesCon.Get(0));
   apps.Start (Seconds (0.5));

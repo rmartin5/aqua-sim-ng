@@ -967,7 +967,7 @@ AquaSimDBR::BeaconIn(Ptr<Packet> p)
 
 #if 1
 bool
-AquaSimDBR::Recv(Ptr<Packet> p)
+AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
 {
   AquaSimHeader ash;
   DBRHeader dbrh;
@@ -1290,7 +1290,7 @@ AquaSimDBR::HandlePktForward(Ptr<Packet> p)
 #endif	// end of USE_FLOODING_ALG
 #else
 bool
-AquaSimDBR::Recv(Ptr<Packet> p)
+AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
 {
   AquaSimHeader ash;
   DBRHeader dbrh;
@@ -1406,7 +1406,7 @@ AquaSimDBR::Recv(Ptr<Packet> p)
 #endif
 
 bool
-AquaSimDBR::Recv2(Ptr<Packet> p)
+AquaSimDBR::Recv2(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
 {
   AquaSimHeader ash;
   DBRHeader dbrh;
@@ -1521,21 +1521,6 @@ AquaSimDBR::Recv2(Ptr<Packet> p)
 	ForwardPacket(p);
   return true;
 }
-
-/*
-void
-AquaSimDBR::trace(char* fmt, ...)
-{
-	va_list ap;
-
-	if (!traceagent) return;
-
-	va_start(ap, fmt);
-	vsprintf(traceagent->pt_->buffer(), fmt, ap);
-	traceagent->pt_->dump();
-	va_end(ap);
-}
-*/
 
 /*
 void

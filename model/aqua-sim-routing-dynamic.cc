@@ -235,7 +235,7 @@ AquaSimDynamicRouting::GetTypeId(void)
 
 
 bool
-AquaSimDynamicRouting::Recv(Ptr<Packet> p)
+AquaSimDynamicRouting::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
 {
 	AquaSimHeader ash;
   Ipv4Header iph;

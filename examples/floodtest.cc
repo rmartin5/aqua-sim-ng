@@ -56,7 +56,7 @@ public:
 
 LocalExperiment::LocalExperiment() :
   simStop(20), nodes(4), sinks(1),
-  m_dataRate(180), m_packetSize(32)
+  m_dataRate(20), m_packetSize(32)  //TODO datarate = 180
 {
 }
 
@@ -75,19 +75,6 @@ LocalExperiment::RecvPacket(Ptr<Socket> socket)
 void
 LocalExperiment::Run()
 {
-  /*
-   * **********
-   * Node -> NetDevice -> AquaSimNetDeive -> etc.
-   * Note: Nodelist keeps track of all nodes created.
-   * ---Also need to look into id of nodes and assignment of this
-   * ---need to look at assignment of address and making it unique per node.
-   *
-   *
-   *  Ensure to use NS_LOG when testing in terminal. ie. ./waf --run broadcastMAC_example NS_LOG=Node=level_all or export 'NS_LOG=*=level_all|prefix_func'
-   *  *********
-   */
-
-
   std::cout << "-----------Initializing simulation-----------\n";
 
   NodeContainer nodesCon;
@@ -102,8 +89,8 @@ LocalExperiment::Run()
   //establish layers using helper's pre-build settings
   AquaSimChannelHelper channel = AquaSimChannelHelper::Default();
   AquaSimHelper asHelper = AquaSimHelper::Default();
-  //AquaSimEnergyHelper energy;	//******this could instead be handled by node helper. ****/
   asHelper.SetChannel(channel.Create());
+  asHelper.SetRouting("ns3::AquaSimFloodingRouting");
 
   /*
    * Preset up mobility model for nodes and sinks here
@@ -177,7 +164,7 @@ LocalExperiment::Run()
   app.SetAttribute ("DataRate", DataRateValue (m_dataRate));
   app.SetAttribute ("PacketSize", UintegerValue (m_packetSize));
 
-  ApplicationContainer apps = app.Install (nodesCon);
+  ApplicationContainer apps = app.Install (nodesCon.Get(0));
   apps.Start (Seconds (0.5));
   apps.Stop (Seconds (simStop + 1));
 
@@ -197,10 +184,12 @@ LocalExperiment::Run()
   serverApp.Stop (Seconds (simStop + 1));
 */ //TODO implement application within this example...
 
+  Packet::EnablePrinting ();  //for debugging purposes
   std::cout << "-----------Running Simulation-----------\n";
   Simulator::Stop(Seconds(simStop + 1));
   Simulator::Run();
   Simulator::Destroy(); //null all nodes too??
+  std::cout << "-----------Printing Simulation Results-----------\n";
   asHelper.GetChannel()->PrintCounters();
   std::cout << "End.\n";
 }

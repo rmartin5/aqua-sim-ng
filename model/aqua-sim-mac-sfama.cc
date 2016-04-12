@@ -20,6 +20,7 @@
 
 #include "aqua-sim-mac-sfama.h"
 #include "aqua-sim-header.h"
+#include "aqua-sim-header-mac.h"
 #include "aqua-sim-pt-tag.h"
 
 #include "ns3/log.h"
@@ -102,9 +103,10 @@ bool
 AquaSimSFama::RecvProcess(Ptr<Packet> p)
 {
   SFamaHeader SFAMAh;
-  AlohaHeader mach;   //TODO change this...
-  p->PeekHeader(SFAMAh);
+  MacHeader mach;
+  p->RemoveHeader(SFAMAh);
   p->PeekHeader(mach);
+	p->AddHeader(SFAMAh);
 
   NS_LOG_DEBUG("Time:" << Simulator::Now().GetSeconds() << ",node:" << m_device->GetNode() <<
                 ",node " << mach.GetDA() << " recv from node " << mach.GetSA());
@@ -190,7 +192,7 @@ AquaSimSFama::MakeRTS(AquaSimAddress recver, int slot_num)
 	Ptr<Packet> rts_pkt = Create<Packet>();
   AquaSimHeader ash;
   SFamaHeader SFAMAh;
-  AlohaHeader mach;   //TODO change this...
+  MacHeader mach;
 	AquaSimPtTag ptag;
 
 	ash.SetSize(SFAMAh.GetSize(SFamaHeader::SFAMA_RTS));
@@ -209,9 +211,9 @@ AquaSimSFama::MakeRTS(AquaSimAddress recver, int slot_num)
 
 	//rts_pkt->next_ = NULL;
 
+	rts_pkt->AddHeader(SFAMAh);
+	rts_pkt->AddHeader(mach);
   rts_pkt->AddHeader(ash);
-  rts_pkt->AddHeader(SFAMAh);
-  rts_pkt->AddHeader(mach);
 	rts_pkt->AddPacketTag(ptag);
 	return rts_pkt;
 }
@@ -223,7 +225,7 @@ AquaSimSFama::MakeCTS(AquaSimAddress rts_sender, int slot_num)
 	Ptr<Packet> cts_pkt = Create<Packet>();
   AquaSimHeader ash;
   SFamaHeader SFAMAh;
-  AlohaHeader mach;   //TODO change this...
+  MacHeader mach;
 	AquaSimPtTag ptag;
 
 	ash.SetSize(SFAMAh.GetSize(SFamaHeader::SFAMA_CTS));
@@ -242,9 +244,9 @@ AquaSimSFama::MakeCTS(AquaSimAddress rts_sender, int slot_num)
 
   //cts_pkt->next_ = NULL;
 
-	cts_pkt->AddHeader(ash);
-	cts_pkt->AddHeader(SFAMAh);
 	cts_pkt->AddHeader(mach);
+	cts_pkt->AddHeader(SFAMAh);
+	cts_pkt->AddHeader(ash);
 	cts_pkt->AddPacketTag(ptag);
 	return cts_pkt;
 }
@@ -255,7 +257,7 @@ AquaSimSFama::FillDATA(Ptr<Packet> data_pkt)
 {
   AquaSimHeader ash;
   SFamaHeader SFAMAh;
-  AlohaHeader mach;   //TODO change this...
+  MacHeader mach;
   data_pkt->RemoveHeader(ash);
   data_pkt->RemoveHeader(SFAMAh);
   data_pkt->RemoveHeader(mach);
@@ -272,9 +274,9 @@ AquaSimSFama::FillDATA(Ptr<Packet> data_pkt)
   //SFAMAh->SA = index_;
   //SFAMAh->DA = ash.GetNextHop();
 
+	data_pkt->AddHeader(mach);
+	data_pkt->AddHeader(SFAMAh);
   data_pkt->AddHeader(ash);
-  data_pkt->AddHeader(SFAMAh);
-  data_pkt->AddHeader(mach);
 	return data_pkt;
 }
 
@@ -285,7 +287,7 @@ AquaSimSFama::MakeACK(AquaSimAddress data_sender)
   Ptr<Packet> ack_pkt = Create<Packet>();
   AquaSimHeader ash;
   SFamaHeader SFAMAh;
-  AlohaHeader mach;   //TODO change this...
+  MacHeader mach;
 	AquaSimPtTag ptag;
 
   ash.SetSize(SFAMAh.GetSize(SFamaHeader::SFAMA_ACK));
@@ -301,9 +303,9 @@ AquaSimSFama::MakeACK(AquaSimAddress data_sender)
   //SFAMAh->SA = index_;
   //SFAMAh->DA = data_sender;
 
-  ack_pkt->AddHeader(ash);
+	ack_pkt->AddHeader(mach);
   ack_pkt->AddHeader(SFAMAh);
-  ack_pkt->AddHeader(mach);
+	ack_pkt->AddHeader(ash);
 	ack_pkt->AddPacketTag(ptag);
 	return ack_pkt;
 }
@@ -315,13 +317,14 @@ void
 AquaSimSFama::ProcessRTS(Ptr<Packet> rts_pkt)
 {
   SFamaHeader SFAMAh;
-  AlohaHeader mach;   //TODO change this...
-  rts_pkt->PeekHeader(SFAMAh);
+  MacHeader mach;
+  rts_pkt->RemoveHeader(SFAMAh);
   rts_pkt->PeekHeader(mach);
+	rts_pkt->AddHeader(SFAMAh);
 
 	double time2comingslot = GetTime2ComingSlot(Simulator::Now().ToDouble(Time::S));
 
-	if( mach.GetDA() == m_device->GetAddress() ) {
+	if( mach.GetDA() == AquaSimAddress::ConvertFrom(m_device->GetAddress()) ) {
 		if ( (GetStatus() == IDLE_WAIT ||
 			GetStatus() == WAIT_SEND_RTS ||
 			GetStatus() == BACKOFF_FAIR )   		) {
@@ -351,13 +354,14 @@ void
 AquaSimSFama::ProcessCTS(Ptr<Packet> cts_pkt)
 {
   SFamaHeader SFAMAh;
-  AlohaHeader mach;   //TODO change this...
-  cts_pkt->PeekHeader(SFAMAh);
+  MacHeader mach;
+  cts_pkt->RemoveHeader(SFAMAh);
   cts_pkt->PeekHeader(mach);
+	cts_pkt->AddHeader(SFAMAh);
 
 	double time2comingslot = GetTime2ComingSlot(Simulator::Now().ToDouble(Time::S));
 
-	if( mach.GetDA() == m_device->GetAddress() && GetStatus() == WAIT_RECV_CTS ) {
+	if( mach.GetDA() == AquaSimAddress::ConvertFrom(m_device->GetAddress()) && GetStatus() == WAIT_RECV_CTS ) {
 
 		//send DATA
 		StopTimers();
@@ -392,10 +396,10 @@ AquaSimSFama::ProcessCTS(Ptr<Packet> cts_pkt)
 void
 AquaSimSFama::ProcessDATA(Ptr<Packet> data_pkt)
 {
-  AlohaHeader mach;   //TODO change this...
+  MacHeader mach;
   data_pkt->PeekHeader(mach);
 
-	if( mach.GetDA() == m_device->GetAddress() && GetStatus() == WAIT_RECV_DATA ) {
+	if( mach.GetDA() == AquaSimAddress::ConvertFrom(m_device->GetAddress()) && GetStatus() == WAIT_RECV_DATA ) {
 		//send ACK
 		StopTimers();
 		SetStatus(WAIT_SEND_ACK);
@@ -429,7 +433,7 @@ AquaSimSFama::ProcessDATA(Ptr<Packet> data_pkt)
 void
 AquaSimSFama::ProcessACK(Ptr<Packet> ack_pkt)
 {
-  AlohaHeader mach;   //TODO change this...
+  MacHeader mach;
   ack_pkt->PeekHeader(mach);
 
   NS_LOG_DEBUG("ProcessACK(before)");
@@ -438,7 +442,7 @@ AquaSimSFama::ProcessACK(Ptr<Packet> ack_pkt)
 #endif
   NS_LOG_DEBUG("ProcessACK: Status is " << GetStatus());
 
-	if( mach.GetDA() == m_device->GetAddress() && GetStatus() == WAIT_RECV_ACK ) {
+	if( mach.GetDA() == AquaSimAddress::ConvertFrom(m_device->GetAddress()) && GetStatus() == WAIT_RECV_ACK ) {
 		StopTimers();
 		SetStatus(IDLE_WAIT);
 
@@ -499,7 +503,7 @@ AquaSimSFama::PrepareSendingDATA()
 	}
 
 	if( !m_sendingPktQ.empty() && GetStatus() == IDLE_WAIT  ) {
-      AlohaHeader mach;   //TODO change this...
+      MacHeader mach;
       m_sendingPktQ.front()->PeekHeader(mach);
       recver_addr = mach.GetDA();
 
@@ -508,7 +512,7 @@ AquaSimSFama::PrepareSendingDATA()
 #ifdef AquaSimSFama_DEBUG
     NS_LOG_DEBUG(PrintAllQ());
 #endif
-    AlohaHeader mach;   //TODO change this...
+    MacHeader mach;
 
 		tmp_pkt = m_CachedPktQ.front();
     tmp_pkt->PeekHeader(mach);
@@ -609,7 +613,7 @@ AquaSimSFama::SendPkt(Ptr<Packet> pkt)
 {
   AquaSimHeader ash;
   SFamaHeader SFAMAh;
-  AlohaHeader mach;   //TODO change this...
+  MacHeader mach;
   pkt->RemoveHeader(ash);
   pkt->PeekHeader(SFAMAh);
 
@@ -636,7 +640,9 @@ AquaSimSFama::SendPkt(Ptr<Packet> pkt)
 		case NIDLE:
 			m_device->SetTransmissionStatus(SEND);
 			ash.SetTimeStamp(Simulator::Now());
+			pkt->RemoveHeader(SFAMAh);
 			pkt->PeekHeader(mach);
+			pkt->AddHeader(SFAMAh);
 			NS_LOG_DEBUG(Simulator::Now().GetSeconds() << ": node " << mach.GetSA() <<
 					       " send to node " << mach.GetDA() );
 			pkt->AddHeader(ash);
@@ -816,7 +822,8 @@ void
 AquaSimSFama::SendDataPkt(Ptr<Packet> pkt)
 {
   AquaSimHeader ash;
-  AlohaHeader mach;   //TODO change this...
+	SFamaHeader SFAMAh;
+	MacHeader mach;
   pkt->RemoveHeader(ash);
 
 	ash.SetDirection(AquaSimHeader::DOWN);
@@ -832,7 +839,9 @@ AquaSimSFama::SendDataPkt(Ptr<Packet> pkt)
 		case NIDLE:
 			m_device->SetTransmissionStatus(SEND);
 			ash.SetTimeStamp(Simulator::Now());
+			pkt->RemoveHeader(SFAMAh);
       pkt->PeekHeader(mach);
+			pkt->AddHeader(SFAMAh);
       NS_LOG_DEBUG(Simulator::Now().GetSeconds() << ": node " << mach.GetSA() <<
             " send to node " << mach.GetDA() );
       pkt->AddHeader(ash);

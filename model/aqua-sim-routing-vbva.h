@@ -96,7 +96,7 @@ class AquaSimVBVA : public AquaSimRouting {
 public:
   AquaSimVBVA();
   static TypeId GetTypeId(void);
-  virtual bool Recv(Ptr<Packet>);
+  virtual bool Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber);
 
   // Vectorbasedforward_Entry routing_table[MAX_DATA_TYPE];
 
