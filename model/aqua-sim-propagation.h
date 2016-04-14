@@ -62,10 +62,12 @@ public:
   virtual Time PDelay (Ptr<MobilityModel> s, Ptr<MobilityModel> r);
 
 protected:
-  virtual double RayleighAtt (double dist, double freq, double pT) = 0;
-  virtual double Rayleigh (double SL) = 0;
-  virtual double Thorp (double range, double freq) = 0;
-
+  double Rayleigh (double SL);
+  double Rayleigh (double d, double f);
+  double Thorp (double range, double freq);
+  //2.0 version below:
+  double Rayleigh2 (double SL);
+  double Thorp2 (double range, double freq);
 };  //class AquaSimPropagation
 
 }  // namespace ns3

@@ -113,6 +113,7 @@ public:
   virtual inline double GetLambda() { return m_lambda; }
 
   virtual Ptr<AquaSimSignalCache> GetSignalCache();
+  virtual int PktRecvCount();
 
 protected:
   virtual Ptr<Packet> PrevalidateIncomingPkt(Ptr<Packet> p);
@@ -187,6 +188,7 @@ private:
 
   uint32_t incPktCounter;
   uint32_t outPktCounter;
+  int pktRecvCounter;
 
 }; //AquaSimPhyCmn
 

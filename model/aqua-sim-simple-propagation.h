@@ -47,10 +47,10 @@ public:
 						     std::vector<Ptr<AquaSimNetDevice> > dList);
 
 protected:
-  virtual double RayleighAtt (double dist, double freq, double pT);
-  virtual double Rayleigh (double SL);
-  virtual double Rayleigh (double d, double f);
-  virtual double Thorp (double range, double freq);
+  double RayleighAtt (double dist, double freq, double pT);
+  //2.0 version below:
+  double RayleighAtt2 (double dist, double freq, double pT);
+
 };  //class AquaSimSimplePropagation
 
 }  // namespace ns3

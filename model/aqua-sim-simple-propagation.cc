@@ -113,82 +113,12 @@ AquaSimSimplePropagation::RayleighAtt (double dist, double freq, double pT)
    return pT/Rayleigh(dist,freq);
 }
 
+//2.0 version below:
 double
-AquaSimSimplePropagation::Rayleigh (double d, double f)
+AquaSimSimplePropagation::RayleighAtt2(double dist, double freq, double Pt)
 {
-  /* the distance unit used for absorption coefficient is km,
-     but for the attenuation, the used unit is meter
-   */
-  double k;
-  k=2;
-  /*
-  if (d <= 500) {
-   k = 3;
-  } else if (d <= 2000) {
-   k = 2;
-  } else {
-   k = 1.5;
-  }
-  */
-
-  double d1=d/1000.0; // convert to km
-  double t1=pow(d,k);
-  double alpha_f=Thorp(d,f);
-  //printf("the alpha_f is %f\n",alpha_f);
-  double alpha=pow(10.0,(alpha_f/10.0));
-  //printf("the alpha is %f\n",alpha);
-  double t3=pow(alpha,d1);
-  // printf("t1 is %f and  t3  is %f and attenuation is %f\n",t1,t3,t1*t3);
-  return t1*t3;
-}
-
-
-/**
- * @param SL sound level in dB
- * @return receiving power in J
- */
-double
-AquaSimSimplePropagation::Rayleigh (double SL)
-{
-  double mPr = std::pow(10, SL/20 - 6);  //signal strength (pressure in Pa)
-  double segma = pow(mPr, 2) * 2 / M_PI;
-
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
-
-  return -2 * segma * std::log(m_rand->GetValue());
-}
-
-/**
- * Thorp equation, calculating attenuation according
- *
- * @param dist  distance that signal travels
- * @param freq  central frequency
- * @return attentuation in dB *
- */
-double
-AquaSimSimplePropagation::Thorp (double dist, double freq)
-{
-  /*TODO re-evaluate all of this attenuation model (from 2.0)
-  double k, spre, abso;
-
-  if (dist <= 500) {
-    k = 3;
-  } else if (dist <= 2000) {
-    k = 2;
-  } else {
-    k = 1.5;
-  }
-
-  spre = 10 * k * log10(dist);
-
-  abso = dist/1000 * (0.11 * pow(freq,2) / (1 + pow(freq,2) )
-                + 44 * pow(freq,2) / (4100 + pow(freq,2) )
-                + 0.000275 * pow(freq,2) + 0.003 );
-  return spre + abso;
-  */
-  return (0.11 * pow(freq,2) / (1 + pow(freq,2) )
-      + 44 * pow(freq,2) / (4100 + pow(freq,2) )
-      + 0.000275 * pow(freq,2) + 0.0003 );
+	double SL = Pt - Thorp2(dist, freq);
+	return Rayleigh2(SL);
 }
 
 }  // namespace ns3

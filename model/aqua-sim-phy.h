@@ -114,6 +114,8 @@ namespace ns3 {
     virtual double GetL() const = 0;
     virtual double GetLambda() = 0;
 
+    virtual int PktRecvCount() = 0; //debugging
+
   protected:
     virtual Ptr<Packet> PrevalidateIncomingPkt(Ptr<Packet> p) = 0;
     virtual void UpdateTxEnergy(Time txTime, double pT, double pIdle) = 0;

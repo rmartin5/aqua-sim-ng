@@ -79,6 +79,7 @@ AquaSimPhyCmn::AquaSimPhyCmn(void) :
 
   incPktCounter = 0;	//debugging purposes only
   outPktCounter = 0;
+  pktRecvCounter = 0;
 
   Simulator::Schedule(Seconds(1), &AquaSimPhyCmn::UpdateIdleEnergy, this); //start energy drain
 }
@@ -578,6 +579,8 @@ AquaSimPhyCmn::SignalCacheCallback(Ptr<Packet> p) {
   asHeader.SetTxTime(Seconds(0.01));	//arbitrary processing time here
   p->AddHeader(asHeader);
 
+  pktRecvCounter++; //debugging...
+
   SendPktUp(p);
 }
 
@@ -708,5 +711,10 @@ AquaSimPhyCmn::CalcPktSize (double txTime, std::string * modName)
   return Modulation(modName)->PktSize (txTime - Preamble());
 }
 
+int
+AquaSimPhyCmn::PktRecvCount()
+{
+  return pktRecvCounter;
+}
 
 };  // namespace ns3

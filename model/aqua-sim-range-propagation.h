@@ -21,7 +21,7 @@
 #ifndef AQUA_SIM_RANGE_PROPAGATION_H
 #define AQUA_SIM_RANGE_PROPAGATION_H
 
-#include "aqua-sim-propagation.h"
+#include "aqua-sim-simple-propagation.h"
 
 namespace ns3 {
 
@@ -34,9 +34,14 @@ namespace ns3 {
  * MUST make sure Pt and tx_range are consistent at the physical layer!!
  */
 
-  /*
-   *find all nodes within range and they will receive a copy of pkt
-   */
+class AquaSimRangePropagation : public AquaSimSimplePropagation {
+public:
+  AquaSimRangePropagation();
+  virtual std::vector<PktRecvUnit> * ReceivedCopies (Ptr<AquaSimNetDevice> s,
+                 Ptr<Packet> p,
+                 std::vector<Ptr<AquaSimNetDevice> > dList);
+
+};  // class AquaSimRangePropagation
 
 }  // namespace ns3
 

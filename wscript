@@ -26,6 +26,7 @@ def build(bld):
         'model/aqua-sim-phy.cc',
         'model/aqua-sim-phy-cmn.cc',
         'model/aqua-sim-propagation.cc',
+        'model/aqua-sim-range-propagation.cc',
         'model/aqua-sim-simple-propagation.cc',
         'model/aqua-sim-routing.cc',
         'model/aqua-sim-signal-cache.cc',

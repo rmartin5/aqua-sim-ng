@@ -250,6 +250,15 @@ AquaSimChannel::PrintCounters()
   }
   std::cout << " (NetworkTotal) " << totalSendUpPkts << "\n";
 
+  int totalRecvPkts = 0;
+  std::cout << "Recv Pkts(@PhyLayer):\n";
+  for (std::vector<Ptr<AquaSimNetDevice> >::iterator it = m_deviceList.begin(); it != m_deviceList.end(); ++it)
+  {
+    totalRecvPkts += (*it)->GetPhy()->PktRecvCount();
+    std::cout << " (" << (*it)->GetAddress() << ") " << (*it)->GetPhy()->PktRecvCount() << "\n";
+  }
+  std::cout << " (NetworkTotal) " << totalRecvPkts << "\n";
+
   //****gather number of forwards for each pkt if possible.
   //possible look at phy-cmn layer namely AquaSimPhyCmn::PktTransmit()
 }

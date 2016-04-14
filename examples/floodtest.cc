@@ -55,7 +55,7 @@ public:
 };
 
 LocalExperiment::LocalExperiment() :
-  simStop(20), nodes(4), sinks(1),
+  simStop(100), nodes(4), sinks(1),
   m_dataRate(20), m_packetSize(32)  //TODO datarate = 180
 {
 }
