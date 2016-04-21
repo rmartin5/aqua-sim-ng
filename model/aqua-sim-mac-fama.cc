@@ -97,15 +97,14 @@ AquaSimFama::SendPkt(Ptr<Packet> pkt)
 
   Time txtime = asHeader.GetTxTime();
 
-  switch( m_device->TransmissionStatus() ) {
+  switch( m_device->GetTransmissionStatus() ) {
     case SLEEP:
       PowerOn();
     case NIDLE:
-      m_device->SetTransmissionStatus(SEND);
+      //m_device->SetTransmissionStatus(SEND);
       asHeader.SetTimeStamp(Simulator::Now());
       pkt->AddHeader(asHeader);
       SendDown(pkt);
-      Simulator::Schedule(txtime, &AquaSimFama::StatusProcess, this);
       break;
     case RECV:
       NS_LOG_WARN("RECV-SEND Collision!!!!!");
@@ -117,12 +116,6 @@ AquaSimFama::SendPkt(Ptr<Packet> pkt)
       pkt=0;
   }
   return;
-}
-
-void
-AquaSimFama::StatusProcess()
-{
-  m_device->SetTransmissionStatus(NIDLE);
 }
 
 bool
@@ -445,13 +438,11 @@ AquaSimFama::MakeCTS(AquaSimAddress RTS_Sender)
 bool
 AquaSimFama::CarrierDected()
 {
-  if( m_device->TransmissionStatus() == RECV
-	  || m_device->TransmissionStatus() == SEND )  {
+  if( m_device->GetTransmissionStatus() == RECV
+	  || m_device->GetTransmissionStatus() == SEND )  {
 	  return true;
   }
-  else {
-	  return false;
-  }
+	return false;
 }
 
 void

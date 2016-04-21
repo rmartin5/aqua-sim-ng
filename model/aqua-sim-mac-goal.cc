@@ -139,14 +139,6 @@ AquaSimGoal::SetTransDistance(double range)
 }
 
 //---------------------------------------------------------------------
-void AquaSimGoal::StatusProcess()
-{
-	if( SEND == m_device->TransmissionStatus() ){
-		m_device->SetTransmissionStatus(NIDLE);
-	}
-}
-
-//---------------------------------------------------------------------
 bool AquaSimGoal::RecvProcess(Ptr<Packet> pkt)
 {
 	AquaSimHeader ash;
@@ -1090,14 +1082,14 @@ AquaSimGoal::SendoutPkt(Ptr<Packet> pkt)
 
 	Time txtime=ash.GetTxTime();
 
-	switch( m_device->TransmissionStatus() ) {
+	switch( m_device->GetTransmissionStatus() ) {
 		case SLEEP:
 			PowerOn();
 		case RECV:
 			//interrupt reception
 			InterruptRecv(txtime.ToDouble(Time::S));
 		case NIDLE:
-			m_device->SetTransmissionStatus(SEND);
+			//m_device->SetTransmissionStatus(SEND);
       switch( ptag.GetPacketType() ) {
 				case AquaSimPtTag::PT_GOAL_REQ:
 					{
@@ -1127,7 +1119,6 @@ AquaSimGoal::SendoutPkt(Ptr<Packet> pkt)
 			ash.SetDirection(AquaSimHeader::DOWN);
       pkt->AddHeader(ash);
 			SendDown(pkt);
-      Simulator::Schedule(txtime, &AquaSimGoal::StatusProcess, this);
 			break;
 
 		//case RECV:

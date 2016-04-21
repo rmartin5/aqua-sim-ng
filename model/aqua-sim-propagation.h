@@ -25,14 +25,13 @@
 
 #include "ns3/nstime.h"
 #include "ns3/object.h"
-
 #include "aqua-sim-net-device.h"
 
 namespace ns3 {
 
+class AquaSimNetDevice;
 class Packet;
 class MobilityModel;
-//class AquaSimNetDevice;
 
 extern const double SOUND_SPEED_IN_WATER;
 

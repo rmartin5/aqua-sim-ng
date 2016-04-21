@@ -158,8 +158,8 @@ AquaSimUwan::TxPktProcess(AquaSimUwan_PktSendTimer* pkt_send_timer)
 {
 	Ptr<Packet> p = pkt_send_timer->m_p;
 	pkt_send_timer->m_p = NULL;
-	if( m_device->TransmissionStatus() == SEND
-			|| m_device->TransmissionStatus() == RECV ) {
+	if( m_device->GetTransmissionStatus() == SEND
+			|| m_device->GetTransmissionStatus() == RECV ) {
 		//if the status is not IDLE (SEND or RECV), the scheduled event cannot be
 		//execute on time. Thus, drop the packet.
     NS_LOG_WARN("Schedule failure. Dropping packet:" << p);
@@ -172,20 +172,14 @@ AquaSimUwan::TxPktProcess(AquaSimUwan_PktSendTimer* pkt_send_timer)
 	}
 
 
-	m_device->SetTransmissionStatus(SEND);
+	//m_device->SetTransmissionStatus(SEND);
+	AquaSimHeader ashLocal;
+	p->RemoveHeader(ashLocal);
+	ashLocal.SetTxTime(pkt_send_timer->GetTxTime());
+	p->AddHeader(ashLocal);
+
 	SendDown(p);
-  Simulator::Schedule(pkt_send_timer->GetTxTime(),&AquaSimUwan::StatusProcess,this);
 	m_pktSendTimerSet.erase(pkt_send_timer);
-}
-
-
-void
-AquaSimUwan::StatusProcess()
-{
-	if( SEND == m_device->TransmissionStatus() ){
-		m_device->SetTransmissionStatus(NIDLE);
-	}
-  	return;
 }
 
 
@@ -268,7 +262,7 @@ AquaSimUwan::Wakeup(AquaSimAddress node_id)
 {
 	Time now = Simulator::Now();
 
-	if( m_device->TransmissionStatus() == SLEEP )
+	if( m_device->GetTransmissionStatus() == SLEEP )
 		PowerOn();
 
 	m_wakeSchQueue.ClearExpired(now);
@@ -486,7 +480,7 @@ AquaSimUwan::Start()
 {
 	//init WakeSchQueue. Before sleep, Wake Schedule Queue will pop this value.
 	//m_wakeSchQueue.Push(0.0, index_, -1); //the timer will not start
-	m_device->SetTransmissionStatus(NIDLE);
+	//m_device->SetTransmissionStatus(NIDLE);
   UwanSyncHeader hdr_s;
 
 	SYNCSchedule(true);

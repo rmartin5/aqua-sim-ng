@@ -393,7 +393,6 @@ private:
 
 	virtual void SetTransDistance(double range); //overloaded for certain cases.
 protected:
-	void	StatusProcess();
 
 	friend class AquaSimGoal_CallbackHandler;
 	friend class AquaSimGoal_BackoffTimer;

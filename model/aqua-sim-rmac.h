@@ -323,7 +323,6 @@ public:
   void ScheduleACKData(AquaSimAddress dataSender);
   //void SendLargeAckND();
   void SendShortAckND();
-  void StatusProcess(TransmissionStatus state);
   void SendSYN();
   void MakeReservation();
   void ArrangeReservation();

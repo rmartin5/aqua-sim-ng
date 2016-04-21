@@ -223,7 +223,7 @@ public:
   void ResetMacStatus();
 
   void SendShortAckND();
-  void StatusProcess(TransmissionStatus);
+  void StatusProcess(TransStatus);
   void SendSYN();
   bool NewData(); // ture if there exist data needed to send, false otherwise
 
@@ -242,7 +242,7 @@ public:
   void TBackoffHandler(Ptr<Packet> pkt);
   void TNDHandler();
   void TStatusHandler();
-  void TStatusHandler_SetStatus(TransmissionStatus status);
+  void TStatusHandler_SetStatus(TransStatus status);
   void CTSHandler(Ptr<Packet> pkt);
 
   Ptr<Packet> GenerateSYN();
@@ -277,7 +277,7 @@ public:
 
 private:
   int m_tBackoffCounter;
-  TransmissionStatus m_localStatus;
+  TransStatus m_localStatus;
 
 };    // class AquaSimTMac
 } // namespace ns3

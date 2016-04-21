@@ -115,7 +115,7 @@ void AquaSimAloha::ProcessPassive()
 
 void AquaSimAloha::StatusProcess(bool isAck)
 {
-  m_device->SetTransmissionStatus(NIDLE);
+  //m_device->SetTransmissionStatus(NIDLE);
 
   if( m_blocked ) {
     m_blocked = false;
@@ -214,12 +214,12 @@ void AquaSimAloha::SendPkt(Ptr<Packet> pkt)
 
   Time txtime = asHeader.GetTxTime();
 
-  switch( m_device->TransmissionStatus() ) {
+  switch( m_device->GetTransmissionStatus() ) {
     case SLEEP:
       PowerOn();
 
     case NIDLE:
-      m_device->SetTransmissionStatus(SEND);
+      //m_device->SetTransmissionStatus(SEND);
       asHeader.SetTimeStamp(Simulator::Now()); //why?
       asHeader.SetDirection(AquaSimHeader::DOWN);	//already set...
 

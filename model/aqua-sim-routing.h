@@ -25,17 +25,20 @@
 #include "ns3/address.h"
 #include "ns3/nstime.h"
 #include "ns3/traced-callback.h"
+#include "ns3/packet.h"
 //#include "ns3/ipv4.h"
 //#include "ns3/ipv4-routing-protocol.h"
 //#include "ns3/ipv4-static-routing.h"
 
 #include "aqua-sim-address.h"
-#include "aqua-sim-mac.h"
+//#include "aqua-sim-mac.h"
 #include "aqua-sim-net-device.h"
 
 namespace ns3 {
 
-class Packet;
+//class Packet;
+//class AquaSimNetDevice;
+class AquaSimMac;
 
 class AquaSimRouting : public Object
 {

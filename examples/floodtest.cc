@@ -38,7 +38,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("ASBroadcastMac");
+NS_LOG_COMPONENT_DEFINE("FloodingMac");
 
 class LocalExperiment
 {
@@ -199,7 +199,7 @@ main (int argc, char *argv[])
 {
   LocalExperiment exp;
 
-  LogComponentEnable ("ASBroadcastMac", LOG_LEVEL_INFO);
+  LogComponentEnable ("FloodingMac", LOG_LEVEL_INFO);
   //to change on the fly
   CommandLine cmd;
   cmd.AddValue ("simStop", "Length of simulation", exp.simStop);

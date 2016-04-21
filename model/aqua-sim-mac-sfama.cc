@@ -629,7 +629,7 @@ AquaSimSFama::SendPkt(Ptr<Packet> pkt)
 		status_handler.is_ack() = true;
 	}*/
 
-	switch( m_device->TransmissionStatus() ) {
+	switch( m_device->GetTransmissionStatus() ) {
 		case SLEEP:
 			PowerOn();
 		case RECV:
@@ -638,7 +638,7 @@ AquaSimSFama::SendPkt(Ptr<Packet> pkt)
 			//do backoff??
 			break;
 		case NIDLE:
-			m_device->SetTransmissionStatus(SEND);
+			//m_device->SetTransmissionStatus(SEND);
 			ash.SetTimeStamp(Simulator::Now());
 			pkt->RemoveHeader(SFAMAh);
 			pkt->PeekHeader(mach);
@@ -662,7 +662,7 @@ AquaSimSFama::SendPkt(Ptr<Packet> pkt)
 void
 AquaSimSFama::StatusProcess(int slotnum)
 {
-	m_device->SetTransmissionStatus(NIDLE);
+	//m_device->SetTransmissionStatus(NIDLE);
 
 	switch(GetStatus()) {
 	  case WAIT_SEND_RTS:
@@ -828,7 +828,7 @@ AquaSimSFama::SendDataPkt(Ptr<Packet> pkt)
 
 	ash.SetDirection(AquaSimHeader::DOWN);
 
-	switch( m_device->TransmissionStatus() ) {
+	switch( m_device->GetTransmissionStatus() ) {
 		case SLEEP:
 			PowerOn();
 		case RECV:
@@ -837,7 +837,7 @@ AquaSimSFama::SendDataPkt(Ptr<Packet> pkt)
 			//do backoff??
 			break;
 		case NIDLE:
-			m_device->SetTransmissionStatus(SEND);
+			//m_device->SetTransmissionStatus(SEND);
 			ash.SetTimeStamp(Simulator::Now());
 			pkt->RemoveHeader(SFAMAh);
       pkt->PeekHeader(mach);

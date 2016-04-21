@@ -102,7 +102,6 @@ protected:
   void ProcessRemoteTimer();
   void NDTimerExpire();//periodically send out Neighbor discovery packet for 4 times.
 
-  void StatusProcess();
   void BackoffTimerExpire();
 
   bool CarrierDected();

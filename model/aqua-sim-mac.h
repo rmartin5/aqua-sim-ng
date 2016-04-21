@@ -22,8 +22,13 @@
 #ifndef AQUA_SIM_MAC_H
 #define AQUA_SIM_MAC_H
 
+#include "aqua-sim-net-device.h"
+//#include "aqua-sim-phy.h"
+//#include "aqua-sim-routing.h"
+#include "aqua-sim-address.h"
 
 #include <string>
+#include <queue>
 
 #include "ns3/object.h"
 #include "ns3/address.h"
@@ -32,13 +37,11 @@
 #include "ns3/callback.h"
 #include "ns3/traced-callback.h"
 
-#include "aqua-sim-net-device.h"
-#include "aqua-sim-phy.h"
-#include "aqua-sim-routing.h"
-#include "aqua-sim-address.h"
 
 namespace ns3{
 
+class AquaSimNetDevice;
+class AquaSimPhy;
 class AquaSimRouting;
 
 class AquaSimMac : public Object {
@@ -48,13 +51,13 @@ public:
 
   static TypeId GetTypeId(void);
 
-  Ptr<AquaSimNetDevice> Device() {return m_device; }
-  Ptr<AquaSimPhy> Phy() { return m_phy; }
-  Ptr<AquaSimRouting> Routing() { return m_rout;}
+  Ptr<AquaSimNetDevice> Device();
+  Ptr<AquaSimPhy> Phy();
+  Ptr<AquaSimRouting> Routing();
 
   virtual void SetDevice(Ptr<AquaSimNetDevice> device);
-  virtual void SetPhy(Ptr<AquaSimPhy> phy);
-  virtual void SetRouting(Ptr<AquaSimRouting> rout);
+  //virtual void SetPhy(Ptr<AquaSimPhy> phy);
+  //virtual void SetRouting(Ptr<AquaSimRouting> rout);
 
   virtual Address GetAddress(void) {return this->m_address; }
   virtual void SetAddress(AquaSimAddress addr);
@@ -74,7 +77,7 @@ public:
   //virtual void SetLinkUpCallback(Callback<void> linkUp);
   //virtual void SetLinkDownCallback(Callback<void> linkDown);
   virtual bool SendUp(Ptr<Packet> p);
-  virtual bool SendDown(Ptr<Packet> p);
+  virtual bool SendDown(Ptr<Packet> p, TransStatus afterTrans = NIDLE);
 
   void PowerOff(void);
   void PowerOn(void);
@@ -92,6 +95,9 @@ public:
 
   void NotifyRx(Ptr<const Packet> p);
   void NotifyTx(Ptr<const Packet> p);
+
+  bool SendQueueEmpty();
+  std::pair<Ptr<Packet>,TransStatus> SendQueuePop();
 private:
   // to receive packet from upper layer and lower layer
   //we hide this interface and demand derived classes to
@@ -105,9 +111,11 @@ private:
   */
 protected:
   Ptr<AquaSimNetDevice> m_device;// the device this mac is attached
-  Ptr<AquaSimPhy> m_phy;
-  Ptr<AquaSimRouting> m_rout;
+  //Ptr<AquaSimPhy> m_phy;
+  //Ptr<AquaSimRouting> m_rout;
   AquaSimAddress m_address;
+
+  std::queue<std::pair<Ptr<Packet>,TransStatus> > m_sendQueue;
 
   Callback<void,const AquaSimAddress&> m_callback;  // for the upper layer protocol
 };  //class AquaSimMac

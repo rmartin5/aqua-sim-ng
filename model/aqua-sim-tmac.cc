@@ -54,12 +54,12 @@ AquaSimTMac::TBackoffHandler(Ptr<Packet> pkt)
 void
 AquaSimTMac::TStatusHandler()
 {
-  if(m_localStatus!=SLEEP) StatusProcess(m_localStatus);
-  else PowerOff();
+  if(m_localStatus == SLEEP)
+    PowerOff();
 }
 
 void
-AquaSimTMac::TStatusHandler_SetStatus(TransmissionStatus status)
+AquaSimTMac::TStatusHandler_SetStatus(TransStatus status)
 {
   m_localStatus=status;
 }
@@ -761,7 +761,7 @@ AquaSimTMac::TxND(Ptr<Packet> pkt, double window)
 
   double txtime=hdr_cmn::access(pkt)->txtime();
 
-  if(SLEEP==n->TransmissionStatus()) {
+  if(SLEEP==n->GetTransmissionStatus()) {
   PowerOn();
   n->SetTransmissionStatus(SEND);
   cmh->ts_=Simulator::Now();
@@ -774,7 +774,7 @@ AquaSimTMac::TxND(Ptr<Packet> pkt, double window)
   return;
   }
 
-  if(NIDLE==n->TransmissionStatus()){
+  if(NIDLE==n->GetTransmissionStatus()){
 
   n->SetTransmissionStatus(SEND);
 
@@ -794,7 +794,7 @@ ler.clear();
   return;
   }
 
-  if(RECV==n->TransmissionStatus())
+  if(RECV==n->GetTransmissionStatus())
     {
       Scheduler& s=Scheduler::instance();
       double d1=window-(Simulator::Now()-m_cycleStartTime);
@@ -815,7 +815,7 @@ ler.clear();
 
     }
 
-if (SEND==n->TransmissionStatus())
+if (SEND==n->GetTransmissionStatus())
 {
   // this case is supposed not to  happen
     printf("AquaSimTMac: queue send data too fas\n");
@@ -844,9 +844,9 @@ AquaSimTMac::TxND(Ptr<Packet> pkt, double window)
 
 	Time txtime=ash.GetTxTime();
 
-	if(SLEEP==m_device->TransmissionStatus()) {
+	if(SLEEP==m_device->GetTransmissionStatus()) {
 		PowerOn();
-		m_device->SetTransmissionStatus(SEND);
+		//m_device->SetTransmissionStatus(SEND);
 		ash.SetTimeStamp(Simulator::Now());
 
 		if(m_phaseStatus==PHASETWO) {
@@ -865,9 +865,9 @@ AquaSimTMac::TxND(Ptr<Packet> pkt, double window)
 		return;
 	}
 
-	if(NIDLE==m_device->TransmissionStatus()) {
+	if(NIDLE==m_device->GetTransmissionStatus()) {
 
-		m_device->SetTransmissionStatus(SEND);
+		//m_device->SetTransmissionStatus(SEND);
 
 		//printf("TxND the data type is %d\n",MAC_BROADCAST);
 		//printf("broadcast : I am going to send the packet down tx is %f\n",txtime);
@@ -891,7 +891,7 @@ AquaSimTMac::TxND(Ptr<Packet> pkt, double window)
 		return;
 	}
 
-	if(RECV==m_device->TransmissionStatus())
+	if(RECV==m_device->GetTransmissionStatus())
 	{
 		double d1=window-(Simulator::Now().ToDouble(Time::S)-m_cycleStartTime);
 
@@ -913,7 +913,7 @@ AquaSimTMac::TxND(Ptr<Packet> pkt, double window)
 
 	}
 
-	if (SEND==m_device->TransmissionStatus())
+	if (SEND==m_device->GetTransmissionStatus())
 	{
 		// this case is supposed not to  happen
     NS_LOG_WARN("TMac:queue send data too fast");
@@ -932,7 +932,7 @@ AquaSimTMac::InitPhaseThree()
   PrintTable();
 
   m_macStatus=TMAC_SLEEP;
-  /* if(m_device->TransmissionStatus()==SLEEP)*/
+  /* if(m_device->GetTransmissionStatus()==SLEEP)*/
   Wakeup();
   return;
 }
@@ -944,7 +944,7 @@ AquaSimTMac::ResetMacStatus()
   NS_LOG_FUNCTION(this << m_device->GetAddress() << Simulator::Now().GetSeconds());
 
  // the node is receiving some data
-  if(m_device->TransmissionStatus()==RECV)
+  if(m_device->GetTransmissionStatus()==RECV)
    {
      m_macStatus=TMAC_IDLE;
      m_poweroffEvent = Simulator::Schedule(Seconds(m_taDuration),&AquaSimTMac::ResetMacStatus,this);
@@ -1275,10 +1275,10 @@ AquaSimTMac::TxRTS(Ptr<Packet> pkt,AquaSimAddress receiver_addr)
 	double l=CheckLatency(m_shortLatencyTable, receiver_addr);
 	double t=2.2*l+m_minBackoffWindow*2;
 
-	TransmissionStatus status=m_device->TransmissionStatus();
+	TransStatus status=m_device->GetTransmissionStatus();
 
 	if(NIDLE==status) {
-		m_device->SetTransmissionStatus(SEND);
+		//m_device->SetTransmissionStatus(SEND);
 
 		ash.SetTimeStamp(Simulator::Now());
     pkt->AddHeader(ash);
@@ -1740,10 +1740,10 @@ AquaSimTMac::TxCTS(Ptr<Packet> p)
 
 	for (int i=0; i<MAXIMUM_BUFFER; i++) m_bitMap[i]=0;
 
-	TransmissionStatus status=m_device->TransmissionStatus();
+	TransStatus status=m_device->GetTransmissionStatus();
 
 	if(NIDLE==status) {
-		m_device->SetTransmissionStatus(SEND);
+		//m_device->SetTransmissionStatus(SEND);
 
 		ash.SetTimeStamp(Simulator::Now());
     p->AddHeader(ash);
@@ -1942,14 +1942,14 @@ AquaSimTMac::TxACKData(Ptr<Packet> pkt)
 	m_poweroffEvent = Simulator::Schedule(Seconds(m_taDuration),&AquaSimTMac::ResetMacStatus,this);
 
 	//  printf("TxACKData, node %d is in  TMAC_IDLE at %f\n",index_,Simulator::Now());
-	TransmissionStatus status=m_device->TransmissionStatus();
+	TransStatus status=m_device->GetTransmissionStatus();
 
 	if(SLEEP==status) {
 		PowerOn();
-		m_device->SetTransmissionStatus(SEND);
+		//m_device->SetTransmissionStatus(SEND);
 		ash.SetTimeStamp(Simulator::Now());
     pkt->AddHeader(ash);
-		SendDown(pkt);
+		SendDown(pkt,SLEEP);
 
 		// printf("AquaSimTMac TxACKData node %d at %f\n",index_,Simulator::Now());
 		TStatusHandler_SetStatus(SLEEP);
@@ -1960,7 +1960,7 @@ AquaSimTMac::TxACKData(Ptr<Packet> pkt)
 	if(NIDLE==status) {
     NS_LOG_INFO("TxACKData node " << m_device->GetNode() <<
               " is idle state at " << Simulator::Now().GetSeconds());
-		m_device->SetTransmissionStatus(SEND);
+		//m_device->SetTransmissionStatus(SEND);
 
     ash.SetTimeStamp(Simulator::Now());
     pkt->AddHeader(ash);
@@ -2018,7 +2018,7 @@ AquaSimTMac::TxData(AquaSimAddress receiver)
 		return;
 	}
 
-	if(m_device->TransmissionStatus()==SLEEP) PowerOn();
+	if(m_device->GetTransmissionStatus()==SLEEP) PowerOn();
 
 	m_macStatus=TMAC_TRANSMISSION;
 
@@ -2060,12 +2060,12 @@ AquaSimTMac::TxData(AquaSimAddress receiver)
                /*" data type is " << hdr2->mess_type << */
                " packet data_num=" << datah.GetDataNum() <<
                " class data_num=" << m_numData);
-	TransmissionStatus status=m_device->TransmissionStatus();
+	TransStatus status=m_device->GetTransmissionStatus();
 
 
 	if(NIDLE==status)
 	{
-		m_device->SetTransmissionStatus(SEND);
+		//m_device->SetTransmissionStatus(SEND);
     pkt->AddHeader(datah);
     pkt->AddHeader(ash);
 		SendDown(pkt);
@@ -2231,11 +2231,11 @@ AquaSimTMac::RecvProcess(Ptr<Packet> pkt)
 
 
 void
-AquaSimTMac::StatusProcess(TransmissionStatus state)
+AquaSimTMac::StatusProcess(TransStatus state)
 {
   NS_LOG_FUNCTION(this << m_device->GetNode());
 
-	if(SLEEP==m_device->TransmissionStatus()) return;
+	if(SLEEP==m_device->GetTransmissionStatus()) return;
 
 	m_device->SetTransmissionStatus(state);
 

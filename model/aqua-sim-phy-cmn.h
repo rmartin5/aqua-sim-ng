@@ -33,20 +33,16 @@
 #include "ns3/object.h"
 
 #include "aqua-sim-phy.h"
-#include "aqua-sim-net-device.h"
 #include "aqua-sim-sinr-checker.h"
 #include "aqua-sim-signal-cache.h"
 #include "aqua-sim-energy-model.h"
 #include "aqua-sim-modulation.h"
-#include "aqua-sim-mac.h"
-#include "aqua-sim-channel.h"
 
 //Aqua Sim Phy Cmn
 
 namespace ns3 {
 
 class Packet;
-
 
 class AquaSimPhyCmn : public AquaSimPhy
 {
@@ -58,14 +54,9 @@ public:
   virtual void SetTxPower(double ptConsume);
   virtual void SetRxPower(double prConsume);
   virtual void SetIdlePower(double pIdle);
-
-  virtual void SetNetDevice(Ptr<AquaSimNetDevice> device);
-  virtual void SetChannel(Ptr<AquaSimChannel> channel);
-  virtual void SetMac(Ptr<AquaSimMac> mac);
   virtual void SetSinrChecker(Ptr<AquaSimSinrChecker> sinrChecker);
   virtual void SetSignalCache(Ptr<AquaSimSignalCache> sC);
   virtual void AddModulation(Ptr<AquaSimModulation> modulation, std::string modulationName);
-  virtual Ptr<AquaSimNetDevice> GetNetDevice ();
 
   virtual void Dump(void) const;
   virtual bool Decodable(double noise, double ps);
@@ -181,10 +172,8 @@ protected:
   virtual void DoDispose() {AquaSimPhy::DoDispose();}
 
 private:
-  Ptr<AquaSimChannel> m_channel;
-  Ptr<AquaSimMac> m_mac;
+  //Ptr<AquaSimMac> m_mac;
   //Ptr<AquaSimEnergyModel> m_eM;
-  Ptr<AquaSimNetDevice> m_device;
 
   uint32_t incPktCounter;
   uint32_t outPktCounter;

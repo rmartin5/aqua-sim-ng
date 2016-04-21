@@ -20,7 +20,6 @@
 
 #include "aqua-sim-mac.h"
 #include "aqua-sim-header.h"
-#include "aqua-sim-routing.h"
 
 #include "ns3/log.h"
 #include "ns3/pointer.h"
@@ -50,14 +49,14 @@ AquaSimMac::GetTypeId(void)
     PointerValue (),
     MakePointerAccessor (&AquaSimMac::m_device),
     MakePointerChecker<AquaSimMac> ())
-  .AddAttribute ("SetPhy", "A pointer to set the phy layer.",
+  /*.AddAttribute ("SetPhy", "A pointer to set the phy layer.",
     PointerValue (),
     MakePointerAccessor (&AquaSimMac::m_phy),
     MakePointerChecker<AquaSimMac> ())
   .AddAttribute ("SetRouting", "A pointer to set the routing layer.",
     PointerValue (),
     MakePointerAccessor (&AquaSimMac::m_rout),
-    MakePointerChecker<AquaSimMac> ())
+    MakePointerChecker<AquaSimMac> ())*/
   .AddTraceSource ("RoutingTx",
     "Trace source indicating a packet has started transmitting.",
     MakeTraceSourceAccessor (&AquaSimMac::m_macTxTrace))
@@ -82,7 +81,7 @@ AquaSimMac::SetDevice(Ptr<AquaSimNetDevice> device)
   NS_LOG_FUNCTION(this);
   m_device = device;
 }
-
+/*
 void
 AquaSimMac::SetPhy(Ptr<AquaSimPhy> phy){
   NS_LOG_FUNCTION(this << phy);
@@ -93,7 +92,7 @@ void
 AquaSimMac::SetRouting(Ptr<AquaSimRouting> rout){
   NS_LOG_FUNCTION(this << rout);
   m_rout = rout;
-}
+}*/
 
 void
 AquaSimMac::SetAddress(AquaSimAddress addr)
@@ -113,27 +112,39 @@ AquaSimMac::SetForwardUpCallback(Callback<void, const AquaSimAddress&> upCallbac
 bool
 AquaSimMac::SendUp(Ptr<Packet> p)
 {
-  NS_ASSERT(m_device && m_phy && m_rout);
+  NS_ASSERT(m_device);// && m_phy && m_rout);
   AquaSimHeader ash;
   p->PeekHeader(ash);
-  return m_rout->Recv(p,ash.GetDAddr(),0);
+  return Routing()->Recv(p,ash.GetDAddr(),0);
 }
 
 bool
-AquaSimMac::SendDown(Ptr<Packet> p)
+AquaSimMac::SendDown(Ptr<Packet> p, TransStatus afterTrans)
 {
-  NS_ASSERT(m_device && m_phy && m_rout);
+  NS_ASSERT(m_device);// && m_phy && m_rout);
 
   std::cout << "\nMac @SendDown check:\n";
   p->Print(std::cout);
   std::cout << "\n";
+  if (m_device->GetTransmissionStatus() == SLEEP) {
+      return false;
+   }
 
-  //slightly awkard but for phy header Buffer
-  AquaSimPacketStamp pstamp;
-  p->AddHeader(pstamp);
+  if (m_device->GetTransmissionStatus() == RECV) {
+      m_sendQueue.push(std::make_pair(p,afterTrans));
+      return true;
+  }
+  else {
+      m_device->SetTransmissionStatus(SEND);
+      AquaSimHeader ash;
+      p->PeekHeader(ash);
+      Simulator::Schedule(ash.GetTxTime(), &AquaSimNetDevice::SetTransmissionStatus,m_device,afterTrans);
 
-
-  return m_phy->Recv(p);
+      //slightly awkard but for phy header Buffer
+      AquaSimPacketStamp pstamp;
+      p->AddHeader(pstamp);
+      return Phy()->Recv(p);
+  }
 }
 
 void
@@ -145,7 +156,7 @@ AquaSimMac::HandleIncomingPkt(Ptr<Packet> p) {
   p->RemoveHeader(asHeader);
 
   Time txTime = asHeader.GetTxTime();
-  if (Phy()->Status() != PHY_SEND) {
+  if (Device()->GetTransmissionStatus() != SEND) {
       m_device->SetCarrierSense(true);
   }
   p->AddHeader(asHeader);
@@ -169,7 +180,7 @@ void
 AquaSimMac::Recv(Ptr<Packet> p) {
   //assert(initialized());
   NS_LOG_FUNCTION(this);
-  NS_ASSERT(m_device && m_phy && m_rout);
+  NS_ASSERT(m_device);// && m_phy && m_rout);
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
 
@@ -234,9 +245,11 @@ AquaSimMac::GetSizeByTxTime(double txTime, std::string * modName) {
 
 void AquaSimMac::InterruptRecv(double txTime){
   //assert(initialized());
-  NS_ASSERT(m_device && m_phy && m_rout);
+  NS_ASSERT(m_device);// && m_phy && m_rout);
 
-  if (PHY_RECV == Phy()->Status()){
+  //FIXME Isn't this violating the busy terminal problem???
+  //transmission is already being overheard and therefore can not stop receiving in order to send
+  if (RECV == Device()->GetTransmissionStatus()){
 	  Phy()->StatusShift(txTime);
   }
 }
@@ -256,6 +269,38 @@ void
 AquaSimMac::NotifyTx (Ptr<const Packet> p)
 {
   m_macTxTrace(p);
+}
+
+bool
+AquaSimMac::SendQueueEmpty()
+{
+  return m_sendQueue.empty();
+}
+
+std::pair<Ptr<Packet>,TransStatus>
+AquaSimMac::SendQueuePop()
+{
+  std::pair<Ptr<Packet>,TransStatus> element = m_sendQueue.front();
+  m_sendQueue.pop();
+  return element;
+}
+
+Ptr<AquaSimNetDevice>
+AquaSimMac::Device()
+{
+  return m_device;
+}
+
+Ptr<AquaSimPhy>
+AquaSimMac::Phy()
+{
+  return m_device->GetPhy();
+}
+
+Ptr<AquaSimRouting>
+AquaSimMac::Routing()
+{
+  return m_device->GetRouting();
 }
 
 } // namespace ns3

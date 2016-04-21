@@ -22,10 +22,11 @@
 #include "ns3/log.h"
 
 #include "aqua-sim-phy.h"
+#include "aqua-sim-net-device.h"
 #include "aqua-sim-signal-cache.h"
+#include "aqua-sim-mac.h"
 
-namespace ns3
-{
+using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("AquaSimPhy");
 NS_OBJECT_ENSURE_REGISTERED(AquaSimPhy);
@@ -52,10 +53,28 @@ AquaSimPhy::DoDispose()
   Object::Dispose();
 }
 
-void
-AquaSimPhy::SetPhyStatus(PhyStatus status)
+Ptr<AquaSimNetDevice>
+AquaSimPhy::GetNetDevice()
 {
-  NS_LOG_FUNCTION(this << status);
-  m_status = status;
+  return m_device;
 }
-} //ns3 namespace
+
+Ptr<AquaSimMac>
+AquaSimPhy::GetMac()
+{
+  return m_device->GetMac();
+}
+
+void
+AquaSimPhy::SetNetDevice(Ptr<AquaSimNetDevice> device)
+{
+  NS_LOG_FUNCTION(this);
+  m_device = device;
+}
+
+void
+AquaSimPhy::SetChannel(Ptr<AquaSimChannel> channel)
+{
+  NS_LOG_FUNCTION(this);
+  m_channel = channel;
+}

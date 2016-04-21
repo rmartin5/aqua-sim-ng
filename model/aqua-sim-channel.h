@@ -31,6 +31,7 @@
 
 namespace ns3 {
 
+class AquaSimNetDevice;
 class AquaSimPhy;
 class Packet;
 class AquaSimPropagation;

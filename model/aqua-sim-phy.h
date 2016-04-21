@@ -25,7 +25,8 @@
 
 #include <string>
 
-//#include "aqua-sim-net-device.h"
+#include "aqua-sim-net-device.h"
+#include "aqua-sim-channel.h"
 //#include "aqua-sim-sinr-checker.h"
 //#include "aqua-sim-signal-cache.h"
 //#include "aqua-sim-modulation.h"
@@ -36,7 +37,8 @@
  */
 namespace ns3 {
 
-  enum PhyStatus {
+   //Using net device as device status singleton
+  /*enum PhyStatus {
   	PHY_RECV,
   	PHY_SEND,
   	PHY_IDLE,
@@ -44,7 +46,7 @@ namespace ns3 {
   	PHY_TRIG,
   	PHY_NONE,
   	PHY_DISABLE
-  	};
+  	};*/
 
   class AquaSimNetDevice;
   class AquaSimChannel;
@@ -64,13 +66,13 @@ namespace ns3 {
     virtual void SetRxPower(double prConsume) = 0;
     virtual void SetIdlePower(double pIdle) = 0;
 
-    virtual void SetNetDevice(Ptr<AquaSimNetDevice> device) = 0;
-    virtual void SetChannel(Ptr<AquaSimChannel> channel) = 0;
-    virtual void SetMac(Ptr<AquaSimMac> mac) = 0;
+    void SetNetDevice(Ptr<AquaSimNetDevice> device);
+    void SetChannel(Ptr<AquaSimChannel> channel);
     virtual void SetSinrChecker(Ptr<AquaSimSinrChecker> sinrChecker) = 0;
     virtual void SetSignalCache(Ptr<AquaSimSignalCache> sC) = 0;
     virtual void AddModulation(Ptr<AquaSimModulation> modulation, std::string modulationName) = 0;
-    virtual Ptr<AquaSimNetDevice> GetNetDevice () = 0;
+    Ptr<AquaSimNetDevice> GetNetDevice ();
+    Ptr<AquaSimMac> GetMac();
 
     virtual void Dump() const = 0;
     virtual bool Decodable (double noise, double ps) = 0;
@@ -96,8 +98,8 @@ namespace ns3 {
     virtual double Trigger() = 0;
     virtual double Preamble() = 0;
 
-    inline PhyStatus & Status() {return m_status;}
-    void SetPhyStatus(PhyStatus status);
+    //inline PhyStatus & Status() {return m_status;}
+    //void SetPhyStatus(PhyStatus status);
 
     virtual Ptr<AquaSimSignalCache> GetSignalCache() = 0;
 
@@ -125,12 +127,14 @@ namespace ns3 {
 
     void AttachPhyToSignalCache(Ptr<AquaSimSignalCache> sC, Ptr<AquaSimPhy> phy);
 
-
     virtual void DoDispose();
+
+    Ptr<AquaSimChannel> m_channel;
+    Ptr<AquaSimNetDevice> m_device;
 
     friend class AquaSimEnergyModel;
 
-    PhyStatus m_status;	// status of modem
+    //PhyStatus m_status;	// status of modem
   }; //AquaSimPhy class
 
 } //ns3 namespace

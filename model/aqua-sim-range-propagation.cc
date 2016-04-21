@@ -21,6 +21,7 @@
 #include "aqua-sim-range-propagation.h"
 #include "aqua-sim-header.h"
 #include "ns3/log.h"
+#include "ns3/mobility-model.h"
 
 using namespace ns3;
 

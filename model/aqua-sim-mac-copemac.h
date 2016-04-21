@@ -256,7 +256,6 @@ protected:
   void CtrlPktInsert(Ptr<Packet> ctrl_p, Time delay);
 
   //timeout functions & Events
-  void StatusProcess();
 
   void NDProcessInitor();
 void DataSendTimerExpire();

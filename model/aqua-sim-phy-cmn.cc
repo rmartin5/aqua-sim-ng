@@ -31,11 +31,10 @@
 #include "aqua-sim-header.h"
 #include "aqua-sim-energy-model.h"
 #include "aqua-sim-phy-cmn.h"
-#include "aqua-sim-phy.h"
 
 //Aqua Sim Phy Cmn
 
-namespace ns3 {
+using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("AquaSimPhyCmn");
 NS_OBJECT_ENSURE_REGISTERED(AquaSimPhyCmn);
@@ -49,10 +48,11 @@ AquaSimPhyCmn::AquaSimPhyCmn(void) :
   m_updateEnergyTime = Simulator::Now().GetSeconds();
   m_preamble = 1.5;
   m_trigger = 0.45;
-  SetPhyStatus(PHY_IDLE);
+  //GetNetDevice()->SetTransmissionStatus(NIDLE);
+  //SetPhyStatus(PHY_IDLE);
   //m_ant = NULL;
   m_channel = NULL;
-  m_mac = NULL;
+  //m_mac = NULL;
 
   m_ptLevel = 0;
   m_ptConsume = 0.660;
@@ -196,26 +196,13 @@ AquaSimPhyCmn::SetAntenna(Ptr<AquaSimAntenna> ant)
 }
 */
 
-void
-AquaSimPhyCmn::SetNetDevice(Ptr<AquaSimNetDevice> device)
-{
-  NS_LOG_FUNCTION(this);
-  m_device = device;
-}
-
-void
-AquaSimPhyCmn::SetChannel(Ptr<AquaSimChannel> channel)
-{
-  NS_LOG_FUNCTION(this);
-  m_channel = channel;
-}
-
+/*
 void
 AquaSimPhyCmn::SetMac(Ptr<AquaSimMac> mac)
 {
   NS_LOG_FUNCTION(this);
   m_mac = mac;
-}
+}*/
 
 void
 AquaSimPhyCmn::SetSinrChecker(Ptr<AquaSimSinrChecker> sinrChecker)
@@ -253,12 +240,6 @@ AquaSimPhyCmn::AddModulation(Ptr<AquaSimModulation> modulation, std::string modu
 
     m_modulations[modulationName] = modulation;
   }
-}
-
-Ptr<AquaSimNetDevice>
-AquaSimPhyCmn::GetNetDevice()
-{
-  return m_device;
 }
 
 /**
@@ -311,9 +292,9 @@ AquaSimPhyCmn::UpdateRxEnergy(Time txTime, bool errorFlag) {
 
   if (EM()->GetEnergy() <= 0) {
     EM()->SetEnergy(-1);
-    //m_device->LogEnergy(0);
+    //GetNetDevice()->LogEnergy(0);
     //NS_LOG_INFO("AquaSimPhyCmn::UpdateRxEnergy: -t " << Simulator::Now().GetSeconds() <<
-      //" -n " << m_device->GetAddress() << " -e 0");
+      //" -n " << GetNetDevice()->GetAddress() << " -e 0");
   }
 }
 
@@ -330,14 +311,14 @@ AquaSimPhyCmn::UpdateIdleEnergy()
 
   // log device energy
   if (EM()->GetEnergy() > 0) {
-    //m_device->LogEnergy(1);
+    //GetNetDevice()->LogEnergy(1);
     //NS_LOG_INFO("AquaSimPhyCmn::UpdateRxEnergy: -t " << Simulator::Now().GetSeconds() <<
-      //" -n " << m_device->GetAddress() << " -e " << EM()->GetEnergy());
+      //" -n " << GetNetDevice()->GetAddress() << " -e " << EM()->GetEnergy());
   }
   else {
-    //m_device->LogEnergy(0);
+    //GetNetDevice()->LogEnergy(0);
     //NS_LOG_INFO("AquaSimPhyCmn::UpdateRxEnergy: -t " << Simulator::Now().GetSeconds() <<
-      //" -n " << m_device->GetAddress() << " -e 0");
+      //" -n " << GetNetDevice()->GetAddress() << " -e 0");
   }
 
   Simulator::Schedule(Seconds(1), &AquaSimPhyCmn::UpdateIdleEnergy, this);
@@ -385,9 +366,9 @@ AquaSimPhyCmn::Recv(Ptr<Packet> p)
 {
   NS_LOG_FUNCTION(this << p << "at time" << Simulator::Now().GetSeconds());
 
-  std::cout << "\nPhyCmn: @Recv check:\n";
+  /*std::cout << "\nPhyCmn: @Recv check:\n";
   p->Print(std::cout);
-  std::cout << "\n";
+  std::cout << "\n";*/
 
   AquaSimPacketStamp pstamp;
   AquaSimHeader asHeader;
@@ -399,7 +380,7 @@ AquaSimPhyCmn::Recv(Ptr<Packet> p)
 
   if (asHeader.GetDirection() == AquaSimHeader::DOWN) {
     NS_LOG_DEBUG("Phy_Recv DOWN. Pkt counter(" << outPktCounter++ << ") on node(" <<
-		 m_device->GetAddress() << ")");
+		 GetNetDevice()->GetAddress() << ")");
     PktTransmit(p);
   }
   else {
@@ -409,7 +390,7 @@ AquaSimPhyCmn::Recv(Ptr<Packet> p)
     }
 
     NS_LOG_DEBUG("Phy_Recv UP. Pkt counter(" << incPktCounter++ << ") on node(" <<
-		 m_device->GetAddress() << ")");
+		 GetNetDevice()->GetAddress() << ")");
     p = PrevalidateIncomingPkt(p);
 
     if (p != NULL) {
@@ -449,15 +430,15 @@ AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p)
   NS_LOG_DEBUG ("TxTime=" << asHeader.GetTxTime());
   Time txTime = asHeader.GetTxTime();
 
-  if (m_device->FailureStatus()) {
-    NS_LOG_WARN("AquaSimPhyCmn: nodeId=" << m_device->GetNode()->GetId() << " fails!\n");
+  if (GetNetDevice()->FailureStatus()) {
+    NS_LOG_WARN("AquaSimPhyCmn: nodeId=" << GetNetDevice()->GetNode()->GetId() << " fails!\n");
     p = 0;
     return NULL;
   }
 
   if (!MatchFreq(pstamp.GetFreq())) {
     NS_LOG_WARN("AquaSimPhyCmn: Cannot match freq(" << pstamp.GetFreq() << ") on node(" <<
-		m_device->GetNode() << ")");
+		GetNetDevice()->GetNode() << ")");
     p = 0;
     return NULL;
   }
@@ -466,8 +447,8 @@ AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p)
   * any packet error set here result from that a packet
   * cannot be detected by the modem, so modem's status doesn't receive
   */
-  if ((EM() && EM()->GetEnergy() <= 0) || Status() == PHY_SLEEP
-				      || Status() == PHY_SEND
+  if ((EM() && EM()->GetEnergy() <= 0) || GetNetDevice()->GetTransmissionStatus() == SLEEP
+				      || GetNetDevice()->GetTransmissionStatus() == SEND
 				      || pstamp.GetPr() < m_RXThresh)
   {
     /**
@@ -478,7 +459,8 @@ AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p)
     asHeader.SetErrorFlag(true);
   }
   else {
-    SetPhyStatus(PHY_RECV);
+      GetNetDevice()->SetTransmissionStatus(RECV);
+      //SetPhyStatus(PHY_RECV);
   }
 
   UpdateRxEnergy(txTime, (bool)asHeader.GetErrorFlag());
@@ -501,33 +483,33 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
   p->RemoveHeader(pstamp);  //awkward but for universal encapsulation.
   p->PeekHeader(asHeader);
 
-  if (m_device->FailureStatus()) {
-    NS_LOG_WARN("AquaSimPhyCmn nodeId=" << m_device->GetNode()->GetId() << " fails!\n");
+  if (GetNetDevice()->FailureStatus()) {
+    NS_LOG_WARN("AquaSimPhyCmn nodeId=" << GetNetDevice()->GetNode()->GetId() << " fails!\n");
     p = 0;
     return false;
   }
 
-  if (Status() == PHY_SLEEP || (NULL != EM() && EM()->GetEnergy() <= 0))
+  if (GetNetDevice()->GetTransmissionStatus() == SLEEP || (NULL != EM() && EM()->GetEnergy() <= 0))
   {
     NS_LOG_DEBUG("Unable to reach phy layer (sleep/disable)");
     p = 0;
     return false;
   }
 
-  switch (Status()){
-  case PHY_SEND:
+  switch (GetNetDevice()->GetTransmissionStatus()){
+  case SEND:
     UpdateTxEnergy(asHeader.GetTxTime(), m_ptConsume, m_pIdle);
     break;
-  case PHY_IDLE:
+  case NIDLE:
     /*
      * Something went wrong here...
      */
-    NS_LOG_WARN("AquaSimPhyCmn node(" << m_device->GetNode() << "," <<  m_device->GetNode()->GetId()
+    NS_LOG_WARN("AquaSimPhyCmn node(" << GetNetDevice()->GetNode() << "," <<  GetNetDevice()->GetNode()->GetId()
 		<< "):mac forgot to change the status at time " << Simulator::Now());
     return false;
     break;
-  case PHY_SLEEP:
-    NS_LOG_WARN("AquaSimPhyCmn node(" << m_device->GetNode()->GetId() << ") is sleeping! (dropping pkt)");
+  case SLEEP:
+    NS_LOG_WARN("AquaSimPhyCmn node(" << GetNetDevice()->GetNode()->GetId() << ") is sleeping! (dropping pkt)");
     return false;
     break;
   default:
@@ -541,7 +523,8 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
   StampTxInfo(p);
 
   Time txSendDelay = this->CalcTxTime(p->GetSize(), &m_modulationName );
-  Simulator::Schedule(txSendDelay, &AquaSimPhyCmn::SetPhyStatus, this, PHY_IDLE);
+  Simulator::Schedule(txSendDelay, &AquaSimNetDevice::SetTransmissionStatus, GetNetDevice(), NIDLE);
+  //Simulator::Schedule(txSendDelay, &AquaSimPhyCmn::SetPhyStatus, this, PHY_IDLE);
 
   /**
   * here we simulate multi-channel (different frequencies),
@@ -560,7 +543,7 @@ void
 AquaSimPhyCmn::SendPktUp(Ptr<Packet> p) {
   NS_LOG_FUNCTION(this);
 
-  if (!m_mac->RecvProcess(p))
+  if (!GetMac()->RecvProcess(p))
     NS_LOG_DEBUG(this << "Mac Recv error");
 }
 
@@ -570,8 +553,8 @@ AquaSimPhyCmn::SendPktUp(Ptr<Packet> p) {
 void
 AquaSimPhyCmn::SignalCacheCallback(Ptr<Packet> p) {
   NS_LOG_FUNCTION(this << p);
-  std::cout << " SignalCacheCallback: device(" << GetNetDevice()->GetAddress() << ") p_id:" << p->GetUid()
-            << " at:" << Simulator::Now().GetSeconds()<<"\n";
+  NS_LOG_DEBUG("PhyCmn::SignalCacheCallback: device(" << GetNetDevice()->GetAddress()
+            << ") p_id:" << p->GetUid() << " at:" << Simulator::Now().GetSeconds()<<"\n");
   //TODO check for packet collision at signal cache before calling this
 
   AquaSimHeader asHeader;
@@ -588,12 +571,13 @@ void
 AquaSimPhyCmn::PowerOn() {
   NS_LOG_FUNCTION(this);
 
-  if (Status() == PHY_DISABLE)
-    NS_LOG_FUNCTION(this << " Node " << m_device->GetNode() << " is disabled.");
+  if (GetNetDevice()->GetTransmissionStatus() == DISABLE)
+    NS_LOG_FUNCTION(this << " Node " << GetNetDevice()->GetNode() << " is disabled.");
   else
   {
     m_PoweredOn = true;
-    SetPhyStatus(PHY_IDLE);
+    GetNetDevice()->SetTransmissionStatus(NIDLE);
+    //SetPhyStatus(PHY_IDLE);
     if (EM() != NULL) {
 	    //minus the energy consumed by power on
 	    EM()->SetEnergy(std::max(0.0, EM()->GetEnergy() - m_EnergyTurnOn));
@@ -606,12 +590,13 @@ void
 AquaSimPhyCmn::PowerOff() {
   NS_LOG_FUNCTION(this);
 
-  if (Status() == PHY_DISABLE)
-    NS_LOG_FUNCTION(this << " Node " << m_device->GetNode() << " is disabled.");
+  if (GetNetDevice()->GetTransmissionStatus() == DISABLE)
+    NS_LOG_FUNCTION(this << " Node " << GetNetDevice()->GetNode() << " is disabled.");
   else
   {
     m_PoweredOn = false;
-    SetPhyStatus(PHY_SLEEP);
+    GetNetDevice()->SetTransmissionStatus(SLEEP);
+    //SetPhyStatus(PHY_SLEEP);
     if (EM() == NULL)
 	    return;
 
@@ -688,7 +673,7 @@ AquaSimPhyCmn::Modulation(std::string * modName) {
 void
 AquaSimPhyCmn::EnergyDeplete() {
   //NS_LOG_FUNCTION(this);
-  //NS_LOG_DEBUG("Energy is depleted on node " << m_device->GetNode());
+  //NS_LOG_DEBUG("Energy is depleted on node " << GetNetDevice()->GetNode());
 
   //TODO fix energy model and then allow this   SetPhyStatus(PHY_DISABLE);
 }
@@ -716,5 +701,3 @@ AquaSimPhyCmn::PktRecvCount()
 {
   return pktRecvCounter;
 }
-
-};  // namespace ns3

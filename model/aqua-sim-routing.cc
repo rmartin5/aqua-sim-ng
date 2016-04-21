@@ -22,13 +22,12 @@
 #include "ns3/attribute.h"
 #include "ns3/simulator.h"
 #include "ns3/ptr.h"
-#include "ns3/packet.h"
 #include "ns3/pointer.h"
 #include "ns3/trace-source-accessor.h"
 
 #include "aqua-sim-header.h"
 #include "aqua-sim-routing.h"
-//#include "aqua-sim-mac.h"
+#include "aqua-sim-mac.h"
 
 //Aqua Sim Routing
 

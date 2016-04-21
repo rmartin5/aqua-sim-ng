@@ -27,16 +27,17 @@
 #include "ns3/integer.h"
 #include "ns3/pointer.h"
 #include "ns3/simulator.h"
+#include "ns3/mobility-model.h"
 
 #include "aqua-sim-net-device.h"
-#include "aqua-sim-phy.h"
 #include "aqua-sim-mac.h"
-#include "aqua-sim-routing.h"
 #include "aqua-sim-channel.h"
 #include "aqua-sim-signal-cache.h"
 #include "aqua-sim-address.h"
 
-namespace ns3 {
+#include <utility>
+
+using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("AquaSimNetDevice");
 NS_OBJECT_ENSURE_REGISTERED (AquaSimNetDevice);
@@ -46,7 +47,6 @@ AquaSimNetDevice::AquaSimNetDevice ()
     m_nextHop(1), //-10?
     m_setHopStatus(0),
     m_sinkStatus(0),
-    m_transStatus(NIDLE),
     m_statusChangeTime(0.0),
     m_failureStatus(false), //added by peng xie
     m_failurePro(0.0), //added by peng xie
@@ -61,6 +61,8 @@ AquaSimNetDevice::AquaSimNetDevice ()
     m_distCST(3000),
     m_totalSentPkts(0)
 {
+  m_transStatus = NIDLE;
+  std::cout << "transstatus set to nidle\n";
   m_configComplete = false;
   NS_LOG_FUNCTION(this);
 }
@@ -167,14 +169,14 @@ AquaSimNetDevice::ConnectLayers()
 {
   if (m_phy != 0 && m_mac != 0)
     {
-      m_phy->SetMac(m_mac);
-      m_mac->SetPhy(m_phy);
+      //m_phy->SetMac(m_mac);
+      //m_mac->SetPhy(m_phy);
       NS_LOG_DEBUG("Phy/Mac layers set");
     }
 
   if (m_mac != 0 && m_routing != 0)
     {
-      m_mac->SetRouting(m_routing);
+      //m_mac->SetRouting(m_routing);
       m_routing->SetMac(m_mac);
       m_mac->SetTransDistance(m_distCST);
       m_routing->SetTransDistance(m_distCST);
@@ -544,4 +546,25 @@ AquaSimNetDevice::GetNextHop()
   return m_nextHop;
 }
 
-}  // namespace ns3
+
+void
+AquaSimNetDevice::SetTransmissionStatus(TransStatus status)
+{
+  if (GetTransmissionStatus() == SLEEP){
+      m_mac->PowerOff();
+      return;
+  }
+
+  m_transStatus = status;
+
+ if (!m_mac->SendQueueEmpty()) {
+     std::pair<Ptr<Packet>,TransStatus> sendPacket = m_mac->SendQueuePop();
+     m_mac->SendDown(sendPacket.first,sendPacket.second);
+ }
+}
+
+TransStatus
+AquaSimNetDevice::GetTransmissionStatus(void)
+{
+  return m_transStatus;
+}

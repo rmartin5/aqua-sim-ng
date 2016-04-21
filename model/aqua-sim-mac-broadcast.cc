@@ -68,9 +68,9 @@ different versions.
 bool
 AquaSimBroadcastMac::RecvProcess (Ptr<Packet> pkt)
 {
-  std::cout << "\nBMac @RecvProcess check:\n";
+  /*std::cout << "\nBMac @RecvProcess check:\n";
   pkt->Print(std::cout);
-  std::cout << "\n";
+  std::cout << "\n";*/
 
 	AquaSimHeader ash;
   MacHeader mach;
@@ -136,22 +136,20 @@ AquaSimBroadcastMac::TxProcess(Ptr<Packet> pkt)
 
   ash.SetTxTime(GetTxTime(pkt));
 
-  switch( m_device->TransmissionStatus() )
+  switch( m_device->GetTransmissionStatus() )
   {
   case SLEEP:
       PowerOn();
       break;
   case NIDLE:
-      m_device->SetTransmissionStatus(SEND);
       ash.SetDirection(AquaSimHeader::DOWN);
       //ash->addr_type()=NS_AF_ILINK;
       //add the sync hdr
       pkt->AddHeader(mach);
       pkt->AddHeader(ash);
-      Phy()->SetPhyStatus(PHY_SEND);
+      //Phy()->SetPhyStatus(PHY_SEND);
       SendDown(pkt);
       m_backoffCounter=0;
-      Simulator::Schedule(ash.GetTxTime(),&AquaSimBroadcastMac::StatusProcess,this);
       return true;
   case RECV:
     {
@@ -171,22 +169,9 @@ AquaSimBroadcastMac::TxProcess(Ptr<Packet> pkt)
       */
     break;
   }
-  return true;
+  return true;  //may be bug due to Sleep/default cases
 }
 
-
-void
-AquaSimBroadcastMac::StatusProcess()
-{
-  if(SLEEP==m_device->TransmissionStatus())
-    {
-      //s.schedule(&callback_handler,&callback_event,BC_CALLBACK_DELAY);
-      return;
-    }
-  m_device->SetTransmissionStatus(NIDLE);
-  //s.schedule(&callback_handler,&callback_event,BC_CALLBACK_DELAY);
-  return;
-}
 
 void
 AquaSimBroadcastMac::BackoffHandler(Ptr<Packet> pkt)

@@ -396,7 +396,7 @@ AquaSimCopeMac::~AquaSimCopeMac()
 void
 AquaSimCopeMac::Start()
 {
-  m_device->SetTransmissionStatus(NIDLE);
+  //m_device->SetTransmissionStatus(NIDLE);
 
   m_dataStartTime = 3*m_NDInterval + Seconds(7);
   Time MaxRTT = Seconds(2*1000/1500.0);
@@ -570,17 +570,16 @@ AquaSimCopeMac::SendPkt(Ptr<Packet> pkt)
 
   ash.SetTxTime(GetTxTime(ash.GetSerializedSize()+ch.GetSerializedSize()));
 
-  switch( m_device->TransmissionStatus() ) {
+  switch( m_device->GetTransmissionStatus() ) {
     case SLEEP:
 	PowerOn();
     case NIDLE:
-	m_device->SetTransmissionStatus(SEND);
+	//m_device->SetTransmissionStatus(SEND);
 	ash.SetTimeStamp(Simulator::Now());
 	ash.SetDirection(AquaSimHeader::DOWN);
 	pkt->AddHeader(ash);
 	SendDown(pkt);
 	m_backoffCounter=0;	//clear
-	Simulator::Schedule(ash.GetTxTime(),&AquaSimCopeMac::StatusProcess,this);
 	break;
     case RECV:
 	/*printf("node %d backoff at %f\n", index_, NOW);
@@ -1304,17 +1303,6 @@ AquaSimCopeMac::ProcessDataAck(Ptr<Packet> pkt)
 	  data += sizeof(int);
       }
   }
-}
-
-
-void
-AquaSimCopeMac::StatusProcess()
-{
-  //perhaps not right
-  if( SEND == m_device->TransmissionStatus() ){
-      m_device->SetTransmissionStatus(NIDLE);
-  }
-  return;
 }
 
 

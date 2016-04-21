@@ -193,7 +193,6 @@ public:
 
 protected:
 	void	SendFrame(Ptr<Packet> p, bool IsMacPkt, Time delay = Seconds(0.0));
-	void	StatusProcess();
 	void	TxPktProcess(AquaSimUwan_PktSendTimer* pkt_send_timer);
 
 

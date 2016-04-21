@@ -93,9 +93,9 @@ AquaSimFloodingRouting::Recv(Ptr<Packet> packet, const Address &dest, uint16_t p
 	unsigned int dtype =0;// vbh.GetDataType();
   */
 
-  std::cout << "\nFlooding @Recv check:\n";
+  /*std::cout << "\nFlooding @Recv check:\n";
   packet->Print(std::cout);
-  std::cout << "\n";
+  std::cout << "\n";*/
 
 	// Packet Hash Table is used to keep info about experienced pkts.
   vbf_neighborhood *hashPtr= PktTable.GetHash(vbh.GetSenderAddr(), packet->GetUid());

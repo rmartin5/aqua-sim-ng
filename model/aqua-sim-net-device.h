@@ -21,6 +21,11 @@
 #ifndef AQUA_SIM_NET_DEVICE_H
 #define AQUA_SIM_NET_DEVICE_H
 
+namespace ns3 {
+  // early declare for aqua-sim-mac sake
+  enum TransStatus {SLEEP, NIDLE, SEND, RECV, NSTATUS, DISABLE };
+}
+
 #include "ns3/net-device.h"
 #include "ns3/node.h"
 #include "ns3/nstime.h"
@@ -31,11 +36,14 @@
 
 #include "aqua-sim-address.h"
 #include "aqua-sim-phy.h"
-#include "aqua-sim-mac.h"
 #include "aqua-sim-energy-model.h"
-#include "aqua-sim-channel.h"
+//#include "aqua-sim-channel.h"
+#include "aqua-sim-routing.h"
+#include "aqua-sim-mac.h"
+
 
 namespace ns3 {
+
 
 /**
  * \Underwater net device structure.
@@ -43,14 +51,13 @@ namespace ns3 {
  * A basic underwater net device structure. Ported from UWSN Lab's Aqua-Sim on NS2.
  */
 
-enum TransmissionStatus{SLEEP, NIDLE, SEND, RECV, NSTATUS };
-
 class Channel;
 class PromiscReceiveCallback;
 class MobilityModel;
 
+class AquaSimPhy;
 class AquaSimRouting;
-class AquaSimMac;
+//class AquaSimMac;
 class AquaSimChannel;
 
 class AquaSimNetDevice : public NetDevice
@@ -133,10 +140,8 @@ public:
   inline double FailurePro(void) { return m_failurePro; }
   inline double FailureStatusPro(void) { return m_failureStatusPro; }
 
-  inline void SetTransmissionStatus(enum TransmissionStatus status) {
-    m_transStatus = status;
-  }
-  inline enum TransmissionStatus TransmissionStatus(void) { return m_transStatus; }
+  void SetTransmissionStatus(TransStatus status);
+  TransStatus GetTransmissionStatus(void);
 
   inline bool CarrierSense(void) { return m_carrierSense; }
   inline void ResetCarrierSense(void) { m_carrierSense = false; }
@@ -184,7 +189,7 @@ private:
   /*
    * From AquaSimNode
    */
-  enum  TransmissionStatus m_transStatus;
+  TransStatus m_transStatus;
   double m_statusChangeTime;  //the time when changing m_preTransStatus to m_transStatus
 
   bool	m_failureStatus;// 1 if node fails, 0 otherwise

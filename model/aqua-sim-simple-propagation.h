@@ -26,7 +26,6 @@
 
 namespace ns3 {
 
-class AquaSimNetDevice;
 class Packet;
 
 //extern const double SOUND_SPEED_IN_WATER;

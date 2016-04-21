@@ -21,6 +21,7 @@
 #include "ns3/nstime.h"
 #include "ns3/mobility-model.h"
 #include "ns3/random-variable-stream.h"
+#include "ns3/packet.h"
 
 #include "aqua-sim-simple-propagation.h"
 #include "aqua-sim-header.h"

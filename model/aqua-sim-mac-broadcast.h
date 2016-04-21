@@ -41,7 +41,6 @@ public:
 
   // to process the incoming packet
   virtual bool RecvProcess (Ptr<Packet>);
-  void StatusProcess ();
   void CallbackProcess ();
   void DropPacket (Ptr<Packet>);
 
