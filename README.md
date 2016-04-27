@@ -37,7 +37,7 @@ Further documentation and installation steps can be found under [Aqua-Sim NG Doc
 - **Synchronization support**
 - **Localization support**
 - **Transmission range uncertainty module**
-- **Busy terminal model**
+- ~~_Busy terminal model_~~
 
 
 Current protcol support includes: (MAC layer:) BroadcastMAC, Underwater ALOHA, CopeMAC, Underwater FAMA, Underwater Slotted FAMA, GOAL, UWAN, RMac, Tmac, (Routing Layer:) DBR, Static, Dynamic, Flooding, VBF, and VBVA. Furthermore, Aqua-Sim NG core continues to support basic underwater functions such as half-duplex, long propagation delays, and acoustic signal attenuation. 
