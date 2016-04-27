@@ -40,6 +40,7 @@ namespace ns3 {
 //#include "aqua-sim-channel.h"
 #include "aqua-sim-routing.h"
 #include "aqua-sim-mac.h"
+#include "aqua-sim-synchronization.h"
 
 
 namespace ns3 {
@@ -59,6 +60,7 @@ class AquaSimPhy;
 class AquaSimRouting;
 //class AquaSimMac;
 class AquaSimChannel;
+class AquaSimSync;
 
 class AquaSimNetDevice : public NetDevice
 {
@@ -84,6 +86,7 @@ public:
   //Ptr<AquaSimApp> GetApp (void);
         //Not currently implemented
   Ptr<AquaSimChannel> DoGetChannel(void) const;
+  Ptr<AquaSimSync> GetMacSync(void);
 
   virtual void DoDispose (void);
   virtual void DoInitialize (void);
@@ -180,6 +183,7 @@ private:
   Ptr<Node> m_node;
   Ptr<UniformRandomVariable> m_uniformRand;
   Ptr<AquaSimEnergyModel> m_energyModel;
+  Ptr<AquaSimSync> m_macSync;
 
   NetDevice::ReceiveCallback m_forwardUp;
   bool m_configComplete;

@@ -48,7 +48,6 @@ class AquaSimHeader : public Header
 public:
 
   enum dir_t { DOWN = 0, NONE = 1, UP = 2 };
-  //PACKET TYPE.
 
   AquaSimHeader();
   virtual ~AquaSimHeader();
@@ -117,7 +116,6 @@ class AquaSimPacketStamp : public Header
 {
 public:
   enum PacketStatus { RECEPTION = 0, COLLISION = 1, INVALID = 2};
-  enum AquaSimMacDemuxPktType{ UWPTYPE_LOC, UWPTYPE_SYNC, UWPTYPE_OTHER };
 
   AquaSimPacketStamp();
   static TypeId GetTypeId(void);
@@ -129,10 +127,7 @@ public:
   double GetNoise();
   //std::string GetModName();
   uint8_t GetPacketStatus();	// default is INVALID
-  /*
-  * Demux feature needs to be implemented
-  AquaSimMacDemuxPktType & MacDemuxPType(void) { return m_macDemuxPType; }
-  */
+
 
   void SetTxRange(double txRange);
   void SetPt(double pt);
@@ -164,10 +159,6 @@ private:
   double m_noise;	//background noise at the receiver side
   //std::string m_modName;
   uint8_t m_status;  // 0=reception, 1=collision, 2=invalid
-  /*
-  * Demux features needs to be implemented
-  *AquaSimMacDemuxPktType m_macDemuxPType;
-  */
 
 }; //class AquaSimPacketStamp
 

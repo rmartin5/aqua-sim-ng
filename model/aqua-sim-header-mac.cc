@@ -30,7 +30,8 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("MacHeader");
 NS_OBJECT_ENSURE_REGISTERED(MacHeader);
 
-MacHeader::MacHeader()
+MacHeader::MacHeader() :
+  m_demuxPType(UWPTYPE_OTHER)
 {
 }
 
@@ -50,6 +51,7 @@ MacHeader::Deserialize(Buffer::Iterator start)
   Buffer::Iterator i = start;
   m_sa = (AquaSimAddress) i.ReadU8();
   m_da = (AquaSimAddress) i.ReadU8();
+  m_demuxPType = i.ReadU8();
 
   return GetSerializedSize();
 }
@@ -58,7 +60,7 @@ uint32_t
 MacHeader::GetSerializedSize(void) const
 {
   //reserved bytes for header
-  return (2);
+  return (3);
 }
 
 void
@@ -67,12 +69,20 @@ MacHeader::Serialize(Buffer::Iterator start) const
   Buffer::Iterator i = start;
   i.WriteU8(m_sa.GetAsInt());
   i.WriteU8(m_da.GetAsInt());
+  i.WriteU8(m_demuxPType);
 }
 
 void
 MacHeader::Print(std::ostream &os) const
 {
-  os << "Mac Header is: SA=" << m_sa << " DA=" << m_da << "\n";
+  os << "Mac Header is: SA=" << m_sa << " DA=" << m_da << " DemuxPType=";
+  switch (m_demuxPType){
+    case UWPTYPE_OTHER:   os << "OTHER";  break;
+    case UWPTYPE_LOC:     os << "LOC";    break;
+    case UWPTYPE_SYNC:    os << "SYNC";   break;
+    case UWPTYPE_SYNC_BEACON: os << "SYNC-BEACON"; break;
+  }
+  os << "\n";
 }
 
 TypeId
@@ -91,6 +101,11 @@ MacHeader::GetDA()
 {
   return m_da;
 }
+uint8_t
+MacHeader::GetDemuxPType()
+{
+  return m_demuxPType;
+}
 void
 MacHeader::SetSA(AquaSimAddress sa)
 {
@@ -100,6 +115,11 @@ void
 MacHeader::SetDA(AquaSimAddress da)
 {
   m_da = da;
+}
+void
+MacHeader::SetDemuxPType(uint8_t demuxPType)
+{
+  m_demuxPType = demuxPType;
 }
 
 

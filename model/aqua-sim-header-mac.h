@@ -41,13 +41,17 @@ namespace ns3 {
 class MacHeader : public Header
 {
 public:
+  enum AquaSimMacDemuxPktType{ UWPTYPE_OTHER, UWPTYPE_LOC, UWPTYPE_SYNC, UWPTYPE_SYNC_BEACON };
+
   MacHeader();
   static TypeId GetTypeId(void);
 
   void SetSA(AquaSimAddress sa);
   void SetDA(AquaSimAddress da);
+  void SetDemuxPType(uint8_t demuxPType);
   AquaSimAddress GetSA();
   AquaSimAddress GetDA();
+  uint8_t GetDemuxPType();
 
   //inherited methods
   virtual uint32_t GetSerializedSize(void) const;
@@ -59,6 +63,7 @@ public:
 private:
   AquaSimAddress m_sa;
   AquaSimAddress m_da;
+  uint8_t m_demuxPType;
 };  // MacHeader
 
 

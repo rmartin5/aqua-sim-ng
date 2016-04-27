@@ -211,6 +211,11 @@ AquaSimNetDevice::SetMac (Ptr<AquaSimMac> mac)
       m_mac = mac;
       m_mac->SetDevice (Ptr<AquaSimNetDevice> (this));
 
+      /* MacDemux TODO this should probably be handled within helper*/
+      Ptr<AquaSimSync> sync = Create<AquaSimSync>();  //Should be setting type to child class of sync
+      m_macSync = sync;
+      sync->SetDevice(Ptr<AquaSimNetDevice>(this));
+
       CompleteConfig ();
     }
   else
@@ -301,6 +306,12 @@ Ptr<AquaSimMac>
 AquaSimNetDevice::GetMac (void)
 {
   return m_mac;
+}
+
+Ptr<AquaSimSync>
+AquaSimNetDevice::GetMacSync(void)
+{
+  return m_macSync;
 }
 
 Ptr<AquaSimRouting>

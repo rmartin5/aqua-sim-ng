@@ -29,6 +29,7 @@
 #include "ns3/pointer.h"
 
 #include "aqua-sim-header.h"
+#include "aqua-sim-header-mac.h"
 #include "aqua-sim-energy-model.h"
 #include "aqua-sim-phy-cmn.h"
 
@@ -540,11 +541,32 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
 * but actually go to trace module first
 */
 void
-AquaSimPhyCmn::SendPktUp(Ptr<Packet> p) {
+AquaSimPhyCmn::SendPktUp(Ptr<Packet> p)
+{
   NS_LOG_FUNCTION(this);
+  AquaSimHeader ash;
+  MacHeader mach;
+	p->RemoveHeader(ash);
+  p->PeekHeader(mach);
+  p->AddHeader(ash);
 
-  if (!GetMac()->RecvProcess(p))
-    NS_LOG_DEBUG(this << "Mac Recv error");
+  switch (mach.GetDemuxPType()){
+  case MacHeader::UWPTYPE_OTHER:
+    if (!GetMac()->RecvProcess(p))
+      NS_LOG_DEBUG(this << "Mac Recv error");
+    break;
+  case MacHeader::UWPTYPE_LOC:
+    NS_LOG_DEBUG("SendPktUp: LOC not implemented yet.");
+    break;
+  case MacHeader::UWPTYPE_SYNC:
+    GetNetDevice()->GetMacSync()->RecvSync(p);
+    break;
+  case MacHeader::UWPTYPE_SYNC_BEACON:
+    GetNetDevice()->GetMacSync()->RecvSyncBeacon(p);
+    break;
+  default:
+    NS_LOG_DEBUG("SendPKtUp: Something went wrong.");
+  }
 }
 
 /**

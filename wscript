@@ -53,6 +53,7 @@ def build(bld):
         'model/aqua-sim-routing-vbva.cc',
         'model/aqua-sim-mobility-kinematic.cc',
         'model/aqua-sim-mobility-rwp.cc',
+        'model/aqua-sim-synchronization.cc',
         ]
 
     module_test = bld.create_ns3_module_test_library('aqua-sim-ng')
@@ -108,6 +109,7 @@ def build(bld):
         'model/aqua-sim-routing-vbva.h',
         'model/aqua-sim-mobility-kinematic.h',
         'model/aqua-sim-mobility-rwp.h',
+        'model/aqua-sim-synchronization.h',
         ]
 
     if bld.env.ENABLE_EXAMPLES:
