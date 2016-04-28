@@ -18,7 +18,7 @@ Work supported by the UWSN Lab at University of Connecticut.
 --------------------------------------
 
 #### Requirements
-This code is meant to be as a add-on to current NS3 software and therefore requires NS-3 and all pre-requirements of said software. Current work of Aqua-Sim Next Generation is in early stages and therefore will be buggy (so use with caution). 
+This code is meant to be as a add-on to current NS3 software and therefore requires NS-3 and all pre-requirements of said software. Current work of Aqua-Sim Next Generation is in early stages and therefore will be buggy (so use with caution).
 
 --------------------------------------
 
@@ -34,13 +34,13 @@ Further documentation and installation steps can be found under [Aqua-Sim NG Doc
 - **Extensive example port**
 - **Enhanced channel model support**
 - **Trace driven support**
-- **Synchronization support**
+- ~~_Synchronization support_~~
 - **Localization support**
 - **Transmission range uncertainty module**
-- **Busy terminal model**
+- ~~_Busy terminal model_~~
 
 
-Current protcol support includes: (MAC layer:) BroadcastMAC, Underwater ALOHA, CopeMAC, Underwater FAMA, Underwater Slotted FAMA, GOAL, UWAN, RMac, Tmac, (Routing Layer:) DBR, Static, Dynamic, Flooding, VBF, and VBVA. Furthermore, Aqua-Sim NG core continues to support basic underwater functions such as half-duplex, long propagation delays, and acoustic signal attenuation. 
+Current protcol support includes: (MAC layer:) BroadcastMAC, Underwater ALOHA, CopeMAC, Underwater FAMA, Underwater Slotted FAMA, GOAL, UWAN, RMac, Tmac, (Routing Layer:) DBR, Static, Dynamic, Flooding, VBF, and VBVA. Furthermore, Aqua-Sim NG core continues to support basic underwater functions such as half-duplex, long propagation delays, and acoustic signal attenuation.
 
 ###### Enhanced Channel Models
 Supporting additional propagation models such as [Bellhop](http://oalib.hlsresearch.com/Rays/) ray tracing model for acoustic communications. Our goal here is to depict better accuracy to real world scenarios in our simulation results.

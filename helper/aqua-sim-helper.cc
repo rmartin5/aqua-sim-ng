@@ -157,6 +157,7 @@ AquaSimHelper::AquaSimHelper() :
   m_mac.SetTypeId("ns3::AquaSimBroadcastMac");
   m_routing.SetTypeId("ns3::AquaSimStaticRouting");
   m_energyM.SetTypeId("ns3::AquaSimEnergyModel");
+  m_sync.SetTypeId("ns3::AquaSimSync");
 }
 
 AquaSimHelper
@@ -276,6 +277,30 @@ AquaSimHelper::SetEnergyModel (std::string type,
   m_energyM = factory;
 }
 
+void
+AquaSimHelper::SetSync (std::string type,
+                                              std::string n0, const AttributeValue &v0,
+                                              std::string n1, const AttributeValue &v1,
+                                              std::string n2, const AttributeValue &v2,
+                                              std::string n3, const AttributeValue &v3,
+                                              std::string n4, const AttributeValue &v4,
+                                              std::string n5, const AttributeValue &v5,
+                                              std::string n6, const AttributeValue &v6,
+                                              std::string n7, const AttributeValue &v7)
+{
+  ObjectFactory factory;
+  factory.SetTypeId (type);
+  factory.Set (n0,v0);
+  factory.Set (n1,v1);
+  factory.Set (n2,v2);
+  factory.Set (n3,v3);
+  factory.Set (n4,v4);
+  factory.Set (n5,v5);
+  factory.Set (n6,v6);
+  factory.Set (n7,v7);
+  m_energyM = factory;
+}
+
 Ptr<AquaSimNetDevice>
 AquaSimHelper::Create(Ptr<Node> node, Ptr<AquaSimNetDevice> device)
 {
@@ -283,9 +308,11 @@ AquaSimHelper::Create(Ptr<Node> node, Ptr<AquaSimNetDevice> device)
   Ptr<AquaSimMac> mac = m_mac.Create<AquaSimMac>();
   Ptr<AquaSimRouting> routing = m_routing.Create<AquaSimRouting>();
   Ptr<AquaSimEnergyModel> energyM = m_energyM.Create<AquaSimEnergyModel>();
+  //Ptr<AquaSimSync> sync = m_sync.Create<AquaSimSync>();
 
   device->SetPhy(phy);
   device->SetMac(mac);
+  //device->SetMac(mac,sync);
   device->SetRouting(routing);
   device->ConnectLayers();
 

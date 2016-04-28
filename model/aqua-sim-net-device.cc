@@ -202,7 +202,7 @@ AquaSimNetDevice::SetPhy (Ptr<AquaSimPhy> phy)
 }
 
 void
-AquaSimNetDevice::SetMac (Ptr<AquaSimMac> mac)
+AquaSimNetDevice::SetMac (Ptr<AquaSimMac> mac, Ptr<AquaSimSync> sync)
 {
   //currently only supporting single layer per net device
   if (m_mac == 0)
@@ -211,10 +211,12 @@ AquaSimNetDevice::SetMac (Ptr<AquaSimMac> mac)
       m_mac = mac;
       m_mac->SetDevice (Ptr<AquaSimNetDevice> (this));
 
-      /* MacDemux TODO this should probably be handled within helper*/
-      Ptr<AquaSimSync> sync = Create<AquaSimSync>();  //Should be setting type to child class of sync
-      m_macSync = sync;
-      sync->SetDevice(Ptr<AquaSimNetDevice>(this));
+      if (sync != NULL)
+      {
+        sync = Create<AquaSimSync>();
+        m_macSync = sync;
+        sync->SetDevice(Ptr<AquaSimNetDevice>(this));
+      }
 
       CompleteConfig ();
     }

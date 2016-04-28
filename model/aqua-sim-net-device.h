@@ -72,7 +72,7 @@ public:
   //attach
   void ConnectLayers(void);
   void SetPhy (Ptr<AquaSimPhy> phy);
-  void SetMac (Ptr<AquaSimMac> mac);
+  void SetMac (Ptr<AquaSimMac> mac, Ptr<AquaSimSync> sync = NULL);
   void SetRouting (Ptr<AquaSimRouting> routing);
   void SetChannel (Ptr<AquaSimChannel> channel);
   //void SetApp (Ptr<AquaSimApp> app);

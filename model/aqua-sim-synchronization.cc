@@ -122,7 +122,7 @@ AquaSimSync::SendSync()
 {
   Simulator::ScheduleNow(&AquaSimSync::SyncSend, this, false);
   Simulator::Schedule(m_periodicSyncInterval, &AquaSimSync::SendSync, this);
-  //NOTE can and SHOULD be overloaded for protocol purposes
+  //NOTE can and SHOULD be overloaded for sync protocol purposes
 }
 
 void
