@@ -792,3 +792,71 @@ UwanSyncHeader::GetInstanceTypeId(void) const
 {
   return GetTypeId();
 }
+
+
+/*
+ * LocalizationHeader
+ */
+LocalizationHeader::LocalizationHeader()
+{
+}
+
+LocalizationHeader::~LocalizationHeader()
+{
+}
+
+TypeId
+LocalizationHeader::GetTypeId()
+{
+  static TypeId tid = TypeId("ns3::LocalizationHeader")
+    .SetParent<Header>()
+    .AddConstructor<LocalizationHeader>()
+  ;
+  return tid;
+}
+
+void
+LocalizationHeader::SetNodePosition(Vector nodePosition)
+{
+  m_nodePosition = nodePosition;
+}
+Vector
+LocalizationHeader::GetNodePosition()
+{
+  return m_nodePosition;
+}
+
+uint32_t
+LocalizationHeader::GetSerializedSize(void) const
+{
+  return 12;
+}
+void
+LocalizationHeader::Serialize (Buffer::Iterator start) const
+{
+  Buffer::Iterator i = start;
+  i.WriteU32 ((uint32_t)(m_nodePosition.x*1000.0));
+  i.WriteU32 ((uint32_t)(m_nodePosition.y*1000.0));
+  i.WriteU32 ((uint32_t)(m_nodePosition.z*1000.0));
+}
+uint32_t
+LocalizationHeader::Deserialize (Buffer::Iterator start)
+{
+  Buffer::Iterator i = start;
+  m_nodePosition.x = ( (double) i.ReadU32() ) / 1000.0;
+  m_nodePosition.y = ( (double) i.ReadU32() ) / 1000.0;
+  m_nodePosition.z = ( (double) i.ReadU32() ) / 1000.0;
+
+  return GetSerializedSize();
+}
+void
+LocalizationHeader::Print (std::ostream &os) const
+{
+  os << "Localization Header: nodePosition(" << m_nodePosition.x <<
+      "," << m_nodePosition.y << "," << m_nodePosition.z << ")\n";
+}
+TypeId
+LocalizationHeader::GetInstanceTypeId(void) const
+{
+  return GetTypeId();
+}

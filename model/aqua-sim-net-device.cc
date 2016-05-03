@@ -202,7 +202,7 @@ AquaSimNetDevice::SetPhy (Ptr<AquaSimPhy> phy)
 }
 
 void
-AquaSimNetDevice::SetMac (Ptr<AquaSimMac> mac, Ptr<AquaSimSync> sync)
+AquaSimNetDevice::SetMac (Ptr<AquaSimMac> mac, Ptr<AquaSimSync> sync, Ptr<AquaSimLocalization> loc)
 {
   //currently only supporting single layer per net device
   if (m_mac == 0)
@@ -216,6 +216,13 @@ AquaSimNetDevice::SetMac (Ptr<AquaSimMac> mac, Ptr<AquaSimSync> sync)
         sync = Create<AquaSimSync>();
         m_macSync = sync;
         sync->SetDevice(Ptr<AquaSimNetDevice>(this));
+      }
+
+      if (loc != NULL)
+      {
+        loc = Create<AquaSimLocalization>();
+        m_macLoc = loc;
+        loc->SetDevice(Ptr<AquaSimNetDevice>(this));
       }
 
       CompleteConfig ();
@@ -314,6 +321,12 @@ Ptr<AquaSimSync>
 AquaSimNetDevice::GetMacSync(void)
 {
   return m_macSync;
+}
+
+Ptr<AquaSimLocalization>
+AquaSimNetDevice::GetMacLoc(void)
+{
+  return m_macLoc;
 }
 
 Ptr<AquaSimRouting>

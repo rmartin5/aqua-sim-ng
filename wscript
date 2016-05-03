@@ -54,6 +54,7 @@ def build(bld):
         'model/aqua-sim-mobility-kinematic.cc',
         'model/aqua-sim-mobility-rwp.cc',
         'model/aqua-sim-synchronization.cc',
+        'model/aqua-sim-localization.cc',
         ]
 
     module_test = bld.create_ns3_module_test_library('aqua-sim-ng')
@@ -110,6 +111,7 @@ def build(bld):
         'model/aqua-sim-mobility-kinematic.h',
         'model/aqua-sim-mobility-rwp.h',
         'model/aqua-sim-synchronization.h',
+        'model/aqua-sim-localization.h',
         ]
 
     if bld.env.ENABLE_EXAMPLES:

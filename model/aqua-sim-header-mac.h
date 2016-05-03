@@ -41,7 +41,11 @@ namespace ns3 {
 class MacHeader : public Header
 {
 public:
-  enum AquaSimMacDemuxPktType{ UWPTYPE_OTHER, UWPTYPE_LOC, UWPTYPE_SYNC, UWPTYPE_SYNC_BEACON };
+  enum AquaSimMacDemuxPktType{
+    UWPTYPE_OTHER,
+    UWPTYPE_LOC,
+    UWPTYPE_SYNC,
+    UWPTYPE_SYNC_BEACON };
 
   MacHeader();
   static TypeId GetTypeId(void);
@@ -310,6 +314,31 @@ private:
   double m_cyclePeriod;
 };  // class UwanSyncHeader
 
+
+/**
+*   Localization Header
+*/
+class LocalizationHeader : public Header
+{
+public:
+  LocalizationHeader();
+  virtual ~LocalizationHeader();
+  static TypeId GetTypeId(void);
+
+  Vector GetNodePosition();
+  void SetNodePosition(Vector nodePosition);
+  //components for AoA???
+
+  //inherited methods
+  virtual uint32_t GetSerializedSize(void) const;
+  virtual void Serialize (Buffer::Iterator start) const;
+  virtual uint32_t Deserialize (Buffer::Iterator start);
+  virtual void Print (std::ostream &os) const;
+  virtual TypeId GetInstanceTypeId(void) const;
+
+private:
+  Vector m_nodePosition;
+};  // class LocalizationHeader
 
 } // namespace ns3
 

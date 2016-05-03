@@ -466,6 +466,12 @@ AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p)
 
   UpdateRxEnergy(txTime, (bool)asHeader.GetErrorFlag());
 
+  MacHeader mach;
+  p->PeekHeader(mach);
+  if(mach.GetDemuxPType() == MacHeader::UWPTYPE_LOC) {
+    GetNetDevice()->GetMacLoc()->SetPr(pstamp.GetPr());
+  }
+
   p->AddHeader(asHeader);
   //p->AddHeader(pstamp); no longer needed.
 

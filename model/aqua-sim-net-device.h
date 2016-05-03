@@ -41,6 +41,7 @@ namespace ns3 {
 #include "aqua-sim-routing.h"
 #include "aqua-sim-mac.h"
 #include "aqua-sim-synchronization.h"
+#include "aqua-sim-localization.h"
 
 
 namespace ns3 {
@@ -61,6 +62,7 @@ class AquaSimRouting;
 //class AquaSimMac;
 class AquaSimChannel;
 class AquaSimSync;
+class AquaSimLocalization;
 
 class AquaSimNetDevice : public NetDevice
 {
@@ -72,7 +74,7 @@ public:
   //attach
   void ConnectLayers(void);
   void SetPhy (Ptr<AquaSimPhy> phy);
-  void SetMac (Ptr<AquaSimMac> mac, Ptr<AquaSimSync> sync = NULL);
+  void SetMac (Ptr<AquaSimMac> mac, Ptr<AquaSimSync> sync = NULL, Ptr<AquaSimLocalization> loc = NULL);
   void SetRouting (Ptr<AquaSimRouting> routing);
   void SetChannel (Ptr<AquaSimChannel> channel);
   //void SetApp (Ptr<AquaSimApp> app);
@@ -87,6 +89,7 @@ public:
         //Not currently implemented
   Ptr<AquaSimChannel> DoGetChannel(void) const;
   Ptr<AquaSimSync> GetMacSync(void);
+  Ptr<AquaSimLocalization> GetMacLoc(void);
 
   virtual void DoDispose (void);
   virtual void DoInitialize (void);
@@ -184,6 +187,7 @@ private:
   Ptr<UniformRandomVariable> m_uniformRand;
   Ptr<AquaSimEnergyModel> m_energyModel;
   Ptr<AquaSimSync> m_macSync;
+  Ptr<AquaSimLocalization> m_macLoc;
 
   NetDevice::ReceiveCallback m_forwardUp;
   bool m_configComplete;
