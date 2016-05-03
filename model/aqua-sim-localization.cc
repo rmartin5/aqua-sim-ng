@@ -84,6 +84,9 @@ void
 AquaSimLocalization::Recv(Ptr<Packet> p)
 {
   NS_LOG_FUNCTION(this << p);
+
+  Vector aoa = GetAngleOfArrival(p);
+
   AquaSimHeader ash;
   MacHeader mach;
   LocalizationHeader loch;
@@ -92,14 +95,9 @@ AquaSimLocalization::Recv(Ptr<Packet> p)
   p->PeekHeader(loch);
 
   LocalizationStructure ls;
-  /*TODO angle of arrival....
-      //how to determine this??? //XXX How can this be figured out???
-      ***look into work that uses AoA to figure out how they handle this
-      and what the requirements are for figuring it out...
-      i.e. special equipment, 1 source/ 2 recv nodes, etc.?
-  */
+
   ls.m_RSSI = m_pr;
-  ls.m_AoA = Vector(0,0,0);//lh.AoA XXX
+  ls.m_AoA = aoa;
   ls.m_TDoA = ash.GetTimeStamp();
   ls.m_ToA = Simulator::Now();
   ls.m_knownLocation = loch.GetNodePosition();
@@ -150,4 +148,12 @@ AquaSimLocalization::Lateration()
   //compute localization using stored local/neighbor node info;
 
   ClearLocalizationList();
+}
+
+Vector
+AquaSimLocalization::GetAngleOfArrival(Ptr<Packet> p)
+{
+  NS_LOG_FUNCTION(this << p << "Dummy angle of arrival computation.");
+
+  return Vector(0,0,0);
 }

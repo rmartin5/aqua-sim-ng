@@ -53,6 +53,7 @@ protected:
   std::list<LocalizationStructure> GetLocalizationList();
   void ClearLocalizationList();
   virtual void Lateration();
+  virtual Vector GetAngleOfArrival(Ptr<Packet> p);  //should be overloaded
 
   Time m_localizationRefreshRate;
   Vector m_nodePosition;  //last known position, may vary due to mobility
