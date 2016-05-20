@@ -254,4 +254,22 @@ AquaSimRouting::NotifyTx (Ptr<const Packet> p)
   m_routingTxTrace(p);
 }
 
+
+void
+AquaSimRouting::AssignInternalData(std::vector<std::string> collection)
+{
+  NS_ASSERT(!collection.empty());
+
+  m_data = collection;
+}
+
+void
+AquaSimRouting::AssignInternalDataPath(std::vector<std::string> collection)
+{
+  NS_ASSERT(!collection.empty());
+
+  m_knownDataPath = collection;
+}
+
+
 }  //namespace ns3

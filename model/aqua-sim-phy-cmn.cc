@@ -462,6 +462,8 @@ AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p)
   else {
       GetNetDevice()->SetTransmissionStatus(RECV);
       //SetPhyStatus(PHY_RECV);
+      //finish recv packet
+      Simulator::Schedule(CalcTxTime(p->GetSize()),&AquaSimNetDevice::SetTransmissionStatus,GetNetDevice(),NIDLE);
   }
 
   UpdateRxEnergy(txTime, (bool)asHeader.GetErrorFlag());
@@ -709,7 +711,7 @@ AquaSimPhyCmn::EnergyDeplete() {
 /**
  * calculate transmission time of a packet of size pktsize
  * we consider the preamble
- */
+*/
 Time
 AquaSimPhyCmn::CalcTxTime (uint32_t pktSize, std::string * modName)
 {

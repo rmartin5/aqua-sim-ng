@@ -189,6 +189,34 @@ private:
   double m_depth;		// the depth of last hop
 };  // class DBRHeader
 
+
+/*
+ *  DDoS Routing Header
+ */
+class DDOSHeader : public Header
+{
+public:
+  enum DdosPacketType { Interest, Data, NACK, Alert };
+
+  DDOSHeader();
+  virtual ~DDOSHeader();
+  static TypeId GetTypeId();
+
+  void SetPacketType(uint8_t pt);
+  uint8_t GetPacketType();
+
+  //inherited methods
+  virtual uint32_t GetSerializedSize(void) const;
+  virtual void Serialize (Buffer::Iterator start) const;
+  virtual uint32_t Deserialize (Buffer::Iterator start);
+  virtual void Print (std::ostream &os) const;
+  virtual TypeId GetInstanceTypeId(void) const;
+
+private:
+  uint8_t m_pt;
+
+};  // class DDOSHeader
+
 }  // namespace ns3
 
 #endif /* AQUA_SIM_HEADER_ROUTING_H */

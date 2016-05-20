@@ -574,3 +574,78 @@ DBRHeader::GetDepth()
 {
   return m_depth;
 }
+
+
+/*
+ * DDoS Routing Header
+ */
+NS_OBJECT_ENSURE_REGISTERED(DDOSHeader);
+
+DDOSHeader::DDOSHeader()
+{
+}
+
+DDOSHeader::~DDOSHeader()
+{
+}
+
+TypeId
+DDOSHeader::GetTypeId()
+{
+  static TypeId tid = TypeId("ns3::DDOSHeader")
+    .SetParent<Header>()
+    .AddConstructor<DDOSHeader>()
+  ;
+  return tid;
+}
+
+uint32_t
+DDOSHeader::Deserialize(Buffer::Iterator start)
+{
+  m_pt = start.ReadU8();
+
+  return GetSerializedSize();
+}
+
+uint32_t
+DDOSHeader::GetSerializedSize() const
+{
+  return 1;
+}
+
+void
+DDOSHeader::Serialize(Buffer::Iterator start) const
+{
+  start.WriteU8(m_pt);
+}
+
+void
+DDOSHeader::Print(std::ostream &os) const
+{
+  os << "DDoS Header is: PacketType=";
+  switch (m_pt){
+    case Interest:  os << "INTEREST"; break;
+    case Data:      os << "DATA";     break;
+    case NACK:      os << "NACK";     break;
+    case Alert:     os << "ALERT";    break;
+  }
+  os << "\n";
+}
+
+TypeId
+DDOSHeader::GetInstanceTypeId() const
+{
+  return GetTypeId();
+}
+
+uint8_t
+DDOSHeader::GetPacketType()
+{
+  return m_pt;
+}
+
+void
+DDOSHeader::SetPacketType(uint8_t pt)
+{
+  m_pt = pt;
+}

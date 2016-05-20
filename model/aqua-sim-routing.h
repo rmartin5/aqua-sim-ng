@@ -60,6 +60,10 @@ public:
   virtual void SetTransDistance(double range); //does nothing. overload for certain cases
 
   int SendUpPktCount() {return m_sendUpPktCount;}
+  
+  virtual void AssignInternalData(std::vector<std::string> collection);
+  virtual void AssignInternalDataPath(std::vector<std::string> collection);
+
 protected:
   /*send packet up to port-demux*/
   virtual bool SendUp(Ptr<Packet> p);			//demux not implemented yet.
@@ -85,6 +89,10 @@ protected:
   //NsObject *ll;			//pointer to link layer object
   //NsObject *port_dmux;
 
+  //DDoS Routing usage:
+  std::vector<std::string> m_data;
+  std::vector<std::string> m_knownDataPath;   //low key FIB, known path for certain data name.
+
 private:
   Ptr<AquaSimMac> m_mac;
 
@@ -92,6 +100,7 @@ private:
   TracedCallback<Ptr<const Packet> > m_routingTxTrace;
 
   int m_sendUpPktCount;
+
 };  //AquaSimRouting class
 
 }  //namespace ns3

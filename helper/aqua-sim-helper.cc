@@ -348,7 +348,6 @@ AquaSimHelper::Create(Ptr<Node> node, Ptr<AquaSimNetDevice> device)
   device->SetEnergyModel(energyM);
   device->SetAddress(AquaSimAddress::Allocate());
 
-
   node->AddDevice(device);
 
   NS_LOG_DEBUG(this << "Create Dump. Phy:" << device->GetPhy() << " Mac:"
