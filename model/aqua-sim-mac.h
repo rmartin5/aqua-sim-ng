@@ -93,8 +93,10 @@ public:
 
   virtual void SetTransDistance(double range); //to be overloaded for certain cases.
 
-  void NotifyRx(Ptr<const Packet> p);
-  void NotifyTx(Ptr<const Packet> p);
+  typedef void (* RxCallback)(std::string path, Ptr<Packet> p);
+  typedef void (* TxCallback)(std::string path, Ptr<Packet> p);
+  void NotifyRx(std::string context, Ptr<Packet> p);
+  void NotifyTx(std::string context, Ptr<Packet> p);
 
   bool SendQueueEmpty();
   std::pair<Ptr<Packet>,TransStatus> SendQueuePop();

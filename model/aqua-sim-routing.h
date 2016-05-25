@@ -81,8 +81,10 @@ protected:
   virtual Ptr<AquaSimNetDevice> GetNetDevice();
   virtual Ptr<AquaSimMac> GetMac();
 
-  void NotifyRx(Ptr<const Packet> p);
-  void NotifyTx(Ptr<const Packet> p);
+  typedef void (* RxCallback)(std::string path, Ptr<Packet> p);
+  typedef void (* TxCallback)(std::string path, Ptr<Packet> p, AquaSimAddress nextHop, Time delay);
+  void NotifyRx(std::string path, Ptr<Packet> p);
+  void NotifyTx(std::string path, Ptr<Packet> p, AquaSimAddress nextHop, Time delay);
 protected:
   AquaSimAddress m_myAddr;  //the ip address of this node
   Ptr<AquaSimNetDevice> m_device;

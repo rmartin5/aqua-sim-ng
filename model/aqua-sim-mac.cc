@@ -59,10 +59,12 @@ AquaSimMac::GetTypeId(void)
     MakePointerChecker<AquaSimMac> ())*/
   .AddTraceSource ("RoutingTx",
     "Trace source indicating a packet has started transmitting.",
-    MakeTraceSourceAccessor (&AquaSimMac::m_macTxTrace))
+    MakeTraceSourceAccessor (&AquaSimMac::m_macTxTrace),
+    "ns3::AquaSimMac::TxCallback")
   .AddTraceSource ("RoutingRx",
     "Trace source indicating a packet has been received.",
-    MakeTraceSourceAccessor (&AquaSimMac::m_macRxTrace))
+    MakeTraceSourceAccessor (&AquaSimMac::m_macRxTrace),
+    "ns3::AquaSimMac::RxCallback")
   ;
   return tid;
 }
@@ -260,15 +262,19 @@ AquaSimMac::SetTransDistance(double range)
 }
 
 void
-AquaSimMac::NotifyRx (Ptr<const Packet> p)
+AquaSimMac::NotifyRx (std::string context, Ptr<Packet> p)
 {
-  m_macRxTrace(p);
+  SendUp(p);
+  NS_LOG_UNCOND(context << " RX " << p->ToString());
+  //m_macRxTrace(p);
 }
 
 void
-AquaSimMac::NotifyTx (Ptr<const Packet> p)
+AquaSimMac::NotifyTx (std::string context, Ptr<Packet> p)
 {
-  m_macTxTrace(p);
+  SendDown(p);
+  NS_LOG_UNCOND(context << " TX " << p->ToString());
+  //m_macTxTrace(p);
 }
 
 bool

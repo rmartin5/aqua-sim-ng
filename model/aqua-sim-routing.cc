@@ -48,10 +48,12 @@ AquaSimRouting::GetTypeId(void)
       MakePointerChecker<AquaSimRouting> ())
     .AddTraceSource ("RoutingTx",
       "Trace source indicating a packet has started transmitting.",
-      MakeTraceSourceAccessor (&AquaSimRouting::m_routingTxTrace))
+      MakeTraceSourceAccessor (&AquaSimRouting::m_routingTxTrace),
+      "ns3::AquaSimRouting::TxCallback")
     .AddTraceSource ("RoutingRx",
       "Trace source indicating a packet has been received.",
-      MakeTraceSourceAccessor (&AquaSimRouting::m_routingRxTrace))
+      MakeTraceSourceAccessor (&AquaSimRouting::m_routingRxTrace),
+      "ns3::AquaSimRouting::RxCallback")
     //set my_addr, on-node lookup, add-ll, port-dmux
   ;
   return tid;
@@ -243,15 +245,19 @@ AquaSimRouting::SetTransDistance(double range)
 }
 
 void
-AquaSimRouting::NotifyRx (Ptr<const Packet> p)
+AquaSimRouting::NotifyRx (std::string path, Ptr<Packet> p)
 {
-  m_routingRxTrace(p);
+  SendUp(p);
+  NS_LOG_UNCOND(path << " RX " << p->ToString());
+  //m_routingRxTrace(p);
 }
 
 void
-AquaSimRouting::NotifyTx (Ptr<const Packet> p)
+AquaSimRouting::NotifyTx (std::string path, Ptr<Packet> p, AquaSimAddress nextHop, Time delay)
 {
-  m_routingTxTrace(p);
+  SendDown(p, nextHop, delay);
+  NS_LOG_UNCOND(path << " TX " << p->ToString());
+  //m_routingTxTrace(p);
 }
 
 
