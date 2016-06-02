@@ -248,8 +248,6 @@ private:
 	std::set<AquaSimUwan_PktSendTimer *> m_pktSendTimerSet;
 
   Ptr<UniformRandomVariable> m_rand;
-  double m_bitRate;
-  double m_encodingEfficiency;
 
 }; // AquaSimUwan
 

@@ -60,7 +60,9 @@ public:
   virtual void SetTransDistance(double range); //does nothing. overload for certain cases
 
   int SendUpPktCount() {return m_sendUpPktCount;}
-  
+  int SendCount() {return appSendCount;}
+  int SinkCount() {return sinkCounter;}
+
   virtual void AssignInternalData(std::vector<std::string> collection);
   virtual void AssignInternalDataPath(std::vector<std::string> collection);
 
@@ -94,6 +96,11 @@ protected:
   //DDoS Routing usage:
   std::vector<std::string> m_data;
   std::vector<std::string> m_knownDataPath;   //low key FIB, known path for certain data name.
+
+
+  //XXX remove these varialbes and create proper tracers. (should trace whenever a change in throttle/pushback occurs)
+  int appSendCount;
+  int sinkCounter;
 
 private:
   Ptr<AquaSimMac> m_mac;

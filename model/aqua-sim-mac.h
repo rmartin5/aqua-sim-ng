@@ -100,6 +100,9 @@ public:
 
   bool SendQueueEmpty();
   std::pair<Ptr<Packet>,TransStatus> SendQueuePop();
+
+  double GetBitRate();
+  double GetEncodingEff();
 private:
   // to receive packet from upper layer and lower layer
   //we hide this interface and demand derived classes to
@@ -112,10 +115,15 @@ private:
    * virtual void Recv(Ptr<Packet>);	//handler not imlemented... handler can be 0 unless needed in operation
   */
 protected:
+  void SetBitRate(double bitRate);
+  void SetEncodingEff(double encodingEff);
+
   Ptr<AquaSimNetDevice> m_device;// the device this mac is attached
   //Ptr<AquaSimPhy> m_phy;
   //Ptr<AquaSimRouting> m_rout;
   AquaSimAddress m_address;
+  double m_bitRate;
+  double m_encodingEfficiency;
 
   std::queue<std::pair<Ptr<Packet>,TransStatus> > m_sendQueue;
 

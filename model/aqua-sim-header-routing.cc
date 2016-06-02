@@ -603,20 +603,21 @@ uint32_t
 DDOSHeader::Deserialize(Buffer::Iterator start)
 {
   m_pt = start.ReadU8();
-
+  m_index = (uint32_t) start.ReadU8();
   return GetSerializedSize();
 }
 
 uint32_t
 DDOSHeader::GetSerializedSize() const
 {
-  return 1;
+  return 2;
 }
 
 void
 DDOSHeader::Serialize(Buffer::Iterator start) const
 {
   start.WriteU8(m_pt);
+  start.WriteU8((uint8_t) m_index);
 }
 
 void
@@ -629,7 +630,7 @@ DDOSHeader::Print(std::ostream &os) const
     case NACK:      os << "NACK";     break;
     case Alert:     os << "ALERT";    break;
   }
-  os << "\n";
+  os << " RowIndex=" << m_index << "\n";
 }
 
 TypeId
@@ -644,8 +645,20 @@ DDOSHeader::GetPacketType()
   return m_pt;
 }
 
+uint32_t
+DDOSHeader::GetRowIndex()
+{
+  return m_index;
+}
+
 void
 DDOSHeader::SetPacketType(uint8_t pt)
 {
   m_pt = pt;
+}
+
+void
+DDOSHeader::SetRowIndex(uint32_t index)
+{
+  m_index = index;
 }

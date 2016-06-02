@@ -65,7 +65,6 @@ protected:
   int m_dataPktSize;
   int m_neighborId; //use this value to pick the next hop one by one
 
-  double m_bitRate; //bit rate of MAC
   double m_transmitDistance;
     //distCST_ from ns2. this should be NOT be manual and instead be calc within channel.
   Time m_maxPropDelay;

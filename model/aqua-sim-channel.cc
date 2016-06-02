@@ -28,6 +28,8 @@
 #include "aqua-sim-header.h"
 #include "aqua-sim-header-routing.h"
 
+#include <cstdio>
+
 #define FLOODING_TEST 1
 
 namespace ns3 {
@@ -261,6 +263,32 @@ AquaSimChannel::PrintCounters()
 
   //****gather number of forwards for each pkt if possible.
   //possible look at phy-cmn layer namely AquaSimPhyCmn::PktTransmit()
+}
+
+void
+AquaSimChannel::FilePrintCounters()
+{
+  FILE * pFile;
+  pFile = fopen ("outputFile.txt", "a");
+  if (pFile!=NULL)
+  {
+    fputs ("End Results:",pFile);
+
+    for (std::vector<Ptr<AquaSimNetDevice> >::iterator it = m_deviceList.begin(); it != m_deviceList.end(); ++it)
+    {
+      if ((*it)->GetRouting()->SendCount() > 0 || (*it)->GetRouting()->SinkCount() > 0) {
+        fprintf (pFile, "Node(%i) Sent=%i Sink=%i\n",
+            AquaSimAddress::ConvertFrom((*it)->GetAddress()).GetAsInt(),
+            (*it)->GetRouting()->SendCount(),
+            (*it)->GetRouting()->SinkCount());
+      }
+      //attacker created packets counter.	(1 or multi attackers)		//if counter>0 then print to file (to ignore intermediate nodes).
+      //legit network created packets counter.	(assuming a single sink)	//hard coded to ignore attack IDs
+      //sink received packets counter.						//if counter>0 then print to file.
+    }
+
+    fclose (pFile);
+  }
 }
 
 Time

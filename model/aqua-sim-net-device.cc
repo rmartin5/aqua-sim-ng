@@ -62,7 +62,6 @@ AquaSimNetDevice::AquaSimNetDevice ()
     m_totalSentPkts(0)
 {
   m_transStatus = NIDLE;
-  std::cout << "transstatus set to nidle\n";
   m_configComplete = false;
   NS_LOG_FUNCTION(this);
 }
@@ -529,7 +528,7 @@ AquaSimNetDevice::SetAddress (Address address)
 }
 
 void
-AquaSimNetDevice::SetIfIndex (const uint32_t index)
+AquaSimNetDevice::SetIfIndex (uint32_t index)
 {
   m_ifIndex = index;
 }

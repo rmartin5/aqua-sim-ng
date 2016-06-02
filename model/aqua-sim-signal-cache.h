@@ -65,14 +65,14 @@ struct PktSubmissionUnit{
 */
 class PktSubmissionTimer : public Timer{
 private:
-  std::priority_queue<PktSubmissionUnit> m_waitingList;
+  //std::priority_queue<PktSubmissionUnit> m_waitingList; not necessary.
   Ptr<AquaSimSignalCache> m_sC;
 public:
   PktSubmissionTimer(Ptr<AquaSimSignalCache> sC);
   virtual ~PktSubmissionTimer(void);
   static TypeId GetTypeId(void);
 
-  virtual void Expire(void);
+  virtual void Expire(IncomingPacket* inPkt);
   void AddNewSubmission(IncomingPacket* inPkt);
 };  // class PktSubmissionTimer
 

@@ -57,13 +57,17 @@ PktSubmissionTimer::GetTypeId (void)
 }
 
 void
-PktSubmissionTimer::Expire(void)
+PktSubmissionTimer::Expire(IncomingPacket* inPkt)
 {
-  IncomingPacket* inPkt = m_waitingList.top().inPkt;
+  /*IncomingPacket* inPkt = m_waitingList.top().inPkt;
   m_waitingList.pop();
+  if(!m_waitingList.empty())
+  {
+    Simulator::Schedule(m_waitingList.top().endT, &PktSubmissionTimer::Expire, this);
+  }
+  */
 
-  NS_LOG_DEBUG("Expire. time:" << Simulator::Now().GetSeconds() << "inPkt:" << inPkt);
-
+  NS_LOG_DEBUG("Expire. time:" << Simulator::Now().ToDouble(Time::S) << " inPkt:" << inPkt);
   m_sC->SubmitPkt(inPkt);
 }
 
@@ -71,20 +75,22 @@ void
 PktSubmissionTimer::AddNewSubmission(IncomingPacket* inPkt) {
   AquaSimHeader asHeader;
   (inPkt->packet)->PeekHeader(asHeader);
-  NS_LOG_FUNCTION(this << "incomingPkt:" << inPkt << "txtime:" << asHeader.GetTxTime());
+  Time transmissionDelay = Seconds(inPkt->packet->GetSize() * 8 *      /*Byte conversion*/
+                           m_sC->m_phy->GetMac()->GetEncodingEff() /
+                           m_sC->m_phy->GetMac()->GetBitRate() );
 
-  /* Figure out exactly what this is doing here... */
- // if (m_waitingList.empty() || m_waitingList.top().endT > endT_) {
- //   Simulator::Schedule(Seconds(asHeader.GetTxTime()), &PktSubmissionTimer::AddNewSubmission, this, inPkt);
-  //}
+  NS_LOG_FUNCTION(this << "incomingPkt:" << inPkt << "txtime:" <<
+                    asHeader.GetTxTime() << " transmissionDelay:" <<
+                    transmissionDelay.ToDouble(Time::S));
 
-  m_waitingList.push(PktSubmissionUnit(inPkt, asHeader.GetTxTime()));
+  Simulator::Schedule(transmissionDelay, &PktSubmissionTimer::Expire, this, inPkt);
 
-  if (!m_waitingList.empty())
+  /*if (m_waitingList.empty() || m_waitingList.top().endT > transmissionDelay)
   {
-      Simulator::Schedule(asHeader.GetTxTime(), &PktSubmissionTimer::Expire, this);
+      Simulator::Schedule(transmissionDelay, &PktSubmissionTimer::Expire, this);
   }
-
+  m_waitingList.push(PktSubmissionUnit(inPkt, transmissionDelay));
+  */
 }
 
 

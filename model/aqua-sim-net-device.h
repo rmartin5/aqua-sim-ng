@@ -116,7 +116,7 @@ public:
   virtual bool SendFrom (Ptr<Packet> packet, const Address &source,
                            const Address &dest, uint16_t protocolNumber);
   virtual void SetAddress (Address address);
-  virtual void SetIfIndex (const uint32_t index);
+  virtual void SetIfIndex (uint32_t index);
   virtual bool SetMtu (const uint16_t mtu);
   virtual void SetNode (Ptr<Node> node);
   virtual void SetPromiscReceiveCallback (PromiscReceiveCallback cb);

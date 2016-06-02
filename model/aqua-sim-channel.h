@@ -59,6 +59,7 @@ public:
   Ptr<AquaSimNoiseGen> GetNoiseGen();
 
   void PrintCounters();
+  void FilePrintCounters();
 
 private:
   bool SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp);

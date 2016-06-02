@@ -23,6 +23,7 @@
 
 #include "ns3/log.h"
 #include "ns3/pointer.h"
+#include "ns3/double.h"
 #include "ns3/aqua-sim-address.h"
 #include "ns3/ptr.h"
 #include "ns3/simulator.h"
@@ -49,6 +50,14 @@ AquaSimMac::GetTypeId(void)
     PointerValue (),
     MakePointerAccessor (&AquaSimMac::m_device),
     MakePointerChecker<AquaSimMac> ())
+  .AddAttribute ("BitRate", "Bit rate of MAC layer.",
+    DoubleValue(1e4),
+    MakeDoubleAccessor(&AquaSimMac::m_bitRate),
+    MakeDoubleChecker<double>())
+  .AddAttribute ("EncodingEfficiency", "Ratio of encoding",
+    DoubleValue(1),
+    MakeDoubleAccessor(&AquaSimMac::m_encodingEfficiency),
+    MakeDoubleChecker<double>())
   /*.AddAttribute ("SetPhy", "A pointer to set the phy layer.",
     PointerValue (),
     MakePointerAccessor (&AquaSimMac::m_phy),
@@ -69,7 +78,8 @@ AquaSimMac::GetTypeId(void)
   return tid;
 }
 
-AquaSimMac::AquaSimMac()
+AquaSimMac::AquaSimMac() :
+  m_bitRate(1e4)/*10kbps*/, m_encodingEfficiency(1)
 {
 }
 
@@ -125,9 +135,12 @@ AquaSimMac::SendDown(Ptr<Packet> p, TransStatus afterTrans)
 {
   NS_ASSERT(m_device);// && m_phy && m_rout);
 
+  /*  For debugging:
   std::cout << "\nMac @SendDown check:\n";
   p->Print(std::cout);
   std::cout << "\n";
+  */
+
   if (m_device->GetTransmissionStatus() == SLEEP) {
       return false;
    }
@@ -307,6 +320,29 @@ Ptr<AquaSimRouting>
 AquaSimMac::Routing()
 {
   return m_device->GetRouting();
+}
+double
+AquaSimMac::GetBitRate()
+{
+  return m_bitRate;
+}
+
+double
+AquaSimMac::GetEncodingEff()
+{
+  return m_encodingEfficiency;
+}
+
+void
+AquaSimMac::SetBitRate(double bitRate)
+{
+  m_bitRate = bitRate;
+}
+
+void
+AquaSimMac::SetEncodingEff(double encodingEff)
+{
+  m_encodingEfficiency = encodingEff;
 }
 
 } // namespace ns3

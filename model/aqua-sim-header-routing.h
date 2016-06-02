@@ -203,7 +203,9 @@ public:
   static TypeId GetTypeId();
 
   void SetPacketType(uint8_t pt);
+  void SetRowIndex(uint32_t index);
   uint8_t GetPacketType();
+  uint32_t GetRowIndex();
 
   //inherited methods
   virtual uint32_t GetSerializedSize(void) const;
@@ -214,6 +216,7 @@ public:
 
 private:
   uint8_t m_pt;
+  uint32_t m_index;  //used to mimic naming hierarchy without intensive naming splitting
 
 };  // class DDOSHeader
 

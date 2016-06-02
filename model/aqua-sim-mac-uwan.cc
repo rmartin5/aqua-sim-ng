@@ -101,14 +101,6 @@ AquaSimUwan::GetTypeId(void)
       TimeValue(MilliSeconds(1)),
       MakeTimeAccessor(&AquaSimUwan::m_stdCyclePeriod),
       MakeTimeChecker ())
-    .AddAttribute ("BitRate", "Bit rate of MAC layer.",
-      DoubleValue(1.0e4),
-      MakeDoubleAccessor(&AquaSimUwan::m_bitRate),
-      MakeDoubleChecker<double>())
-    .AddAttribute ("EncodingEfficiency", "Ratio of encoding",
-      DoubleValue(1),
-      MakeDoubleAccessor(&AquaSimUwan::m_encodingEfficiency),
-      MakeDoubleChecker<double>())
     ;
   return tid;
 }

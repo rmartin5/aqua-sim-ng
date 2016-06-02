@@ -389,7 +389,6 @@ AquaSimPhyCmn::Recv(Ptr<Packet> p)
       NS_LOG_WARN("Direction for pkt-flow not specified, "
 	      "sending pkt up the stack on default.");
     }
-
     NS_LOG_DEBUG("Phy_Recv UP. Pkt counter(" << incPktCounter++ << ") on node(" <<
 		 GetNetDevice()->GetAddress() << ")");
     p = PrevalidateIncomingPkt(p);

@@ -62,6 +62,7 @@ AquaSimRouting::GetTypeId(void)
 AquaSimRouting::AquaSimRouting() :
   m_sendUpPktCount(0)
 {
+  m_data.clear(); //just in case.
   NS_LOG_FUNCTION(this);
   //m_tracetarget=NULL;		//to be implemented
   //ll(NULL), port_dmux(NULL)

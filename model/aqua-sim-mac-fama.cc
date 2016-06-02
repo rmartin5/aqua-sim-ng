@@ -39,7 +39,7 @@ NS_OBJECT_ENSURE_REGISTERED(AquaSimFama);
 
 AquaSimFama::AquaSimFama(): FamaStatus(PASSIVE), m_NDPeriod(4.0), m_maxBurst(1),
 		m_dataPktInterval(0.00001), m_estimateError(0.001),m_dataPktSize(1600),
-		m_neighborId(0), m_bitRate(1.0e4), m_waitCTSTimer(Timer::CANCEL_ON_DESTROY),
+		m_neighborId(0), m_waitCTSTimer(Timer::CANCEL_ON_DESTROY),
 		m_backoffTimer(Timer::CANCEL_ON_DESTROY), m_remoteTimer(Timer::CANCEL_ON_DESTROY),
 		m_remoteExpireTime(-1), m_famaNDCounter(4)
 		//, backoff_timer(this), status_handler(this), NDTimer(this),

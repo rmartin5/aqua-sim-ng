@@ -142,14 +142,6 @@ AquaSimRMac::GetTypeId()
   static TypeId tid = TypeId("ns3::AquaSimRMac")
     .SetParent<AquaSimMac>()
     .AddConstructor<AquaSimRMac>()
-    .AddAttribute ("BitRate", "Bit rate of MAC layer.",
-      DoubleValue(1.0e4),
-      MakeDoubleAccessor(&AquaSimRMac::m_bitRate),
-      MakeDoubleChecker<double>())
-    .AddAttribute ("EncodingEfficiency", "Ratio of encoding",
-      DoubleValue(1),
-      MakeDoubleAccessor(&AquaSimRMac::m_encodingEfficiency),
-      MakeDoubleChecker<double>())
     .AddAttribute ("NDWindow", "Window to send ND",
       DoubleValue(1),
       MakeDoubleAccessor(&AquaSimRMac::m_NDwindow),

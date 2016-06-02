@@ -161,9 +161,6 @@ public:
   int m_ctsNum;
   Ptr<UniformRandomVariable> m_rand;
 
-  double m_bitRate; //bit rate of MAC
-  double m_encodingEfficiency; //ratio of encoding
-
   int m_phaseOneCycle; // number of cycles in phase one
   int m_phaseTwoCycle; // number of cycles in phase two
   int m_phaseStatus;
