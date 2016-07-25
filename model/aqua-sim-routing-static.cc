@@ -87,7 +87,7 @@ AquaSimStaticRouting::ReadRouteTable(char *filename)
 	while( !feof(stream) ) {
 		fscanf(stream, "%d:%d:%d", &current_node, &dst_node, &nxt_hop);
 
-		if( m_myAddr == AquaSimAddress(current_node) ) {
+		if( AquaSimAddress::ConvertFrom(m_device->GetAddress()).GetAsInt() == current_node ) {
 			m_rTable[AquaSimAddress(dst_node)] = AquaSimAddress(nxt_hop);
 		}
 	}

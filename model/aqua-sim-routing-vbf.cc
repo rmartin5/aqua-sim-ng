@@ -281,7 +281,9 @@ AquaSimVBF::GetTypeId(void)
 bool
 AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber)
 {
+  std::cout << "size:" << packet->GetSize() << "\n";
   VBHeader vbh;
+  if (packet->GetSize() == 50) packet->AddHeader(vbh);
   AquaSimPtTag ptag;
   packet->PeekHeader(vbh);
 

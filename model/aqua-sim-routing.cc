@@ -60,7 +60,7 @@ AquaSimRouting::GetTypeId(void)
 }
 
 AquaSimRouting::AquaSimRouting() :
-  m_sendUpPktCount(0)
+  trafficPkts(0), trafficBytes(0), lastTrafficTrace(0), m_sendUpPktCount(0)
 {
   m_data.clear(); //just in case.
   NS_LOG_FUNCTION(this);
@@ -140,10 +140,12 @@ AquaSimRouting::SendDown(Ptr<Packet> p, AquaSimAddress nextHop, Time delay)
   if(header.GetUId() == -1) header.SetUId(p->GetUid());
   header.SetDirection(AquaSimHeader::DOWN);
   header.SetNextHop(nextHop);
-  header.SetSAddr(m_myAddr);
+  header.SetSAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
   p->AddHeader(header);
 
   //trace here...
+  if (AquaSimAddress::ConvertFrom(m_device->GetAddress()).GetAsInt() == 255) std::cout << "\nHUH???? on device " << m_device->GetAddress() << "\n";
+
 
   //send down after given delay
 
@@ -161,13 +163,6 @@ AquaSimRouting::SendDown(Ptr<Packet> p, AquaSimAddress nextHop, Time delay)
   Simulator::Schedule(delay, &AquaSimRouting::SendPacket, this, p);
   return true;
 }
-
-void
-AquaSimRouting::SetMyAddr(AquaSimAddress myAddr)
-{
-  m_myAddr = myAddr;
-}
-
 
 void
 AquaSimRouting::SendPacket(Ptr<Packet> p)
@@ -190,7 +185,7 @@ AquaSimRouting::IsDeadLoop(Ptr<Packet> p)
   NS_LOG_FUNCTION(this);
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
-  return (asHeader.GetSAddr()==m_myAddr) && (asHeader.GetNumForwards() > 0);
+  return (asHeader.GetSAddr()==AquaSimAddress::ConvertFrom(m_device->GetAddress())) && (asHeader.GetNumForwards() > 0);
 }
 
 
@@ -206,7 +201,7 @@ AquaSimRouting::AmISrc(const Ptr<Packet> p)
   NS_LOG_FUNCTION(this);
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
-  return (asHeader.GetSAddr()==m_myAddr) && (asHeader.GetNumForwards() == 0);
+  return (asHeader.GetSAddr()==AquaSimAddress::ConvertFrom(m_device->GetAddress())) && (asHeader.GetNumForwards() == 0);
 }
 
 /**
@@ -221,7 +216,7 @@ AquaSimRouting::AmIDst(const Ptr<Packet> p)
   NS_LOG_FUNCTION(this);
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
-  return ((asHeader.GetDirection()==AquaSimHeader::UP) && (asHeader.GetDAddr() == m_myAddr));
+  return ((asHeader.GetDirection()==AquaSimHeader::UP) && (asHeader.GetDAddr() == AquaSimAddress::ConvertFrom(m_device->GetAddress())));
 }
 
 /**
@@ -237,7 +232,7 @@ AquaSimRouting::AmINextHop(const Ptr<Packet> p)
   NS_LOG_FUNCTION(this);
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
-  return ((asHeader.GetNextHop() == m_myAddr)|| ( asHeader.GetNextHop() == AquaSimAddress::GetBroadcast() ));
+  return ((asHeader.GetNextHop() == AquaSimAddress::ConvertFrom(m_device->GetAddress()))|| ( asHeader.GetNextHop() == AquaSimAddress::GetBroadcast() ));
 }
 
 void
@@ -277,6 +272,18 @@ AquaSimRouting::AssignInternalDataPath(std::vector<std::string> collection)
 
   m_knownDataPath = collection;
 }
+
+int AquaSimRouting::TrafficInBytes(bool diff)
+{
+  if (diff) //diff from last trace.
+  {
+    int byteDiff = trafficBytes - lastTrafficTrace;
+    lastTrafficTrace = trafficBytes;
+    return byteDiff;
+  }
+  return trafficBytes;
+}
+
 
 
 }  //namespace ns3

@@ -55,13 +55,12 @@ public:
   virtual bool Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber)=0;	//handler not implemented
   /*send packet p to next_hop after delay*/
   virtual bool SendDown(Ptr<Packet> p, AquaSimAddress nextHop, Time delay);
-  virtual void SetMyAddr(AquaSimAddress myAddr);
 
   virtual void SetTransDistance(double range); //does nothing. overload for certain cases
 
   int SendUpPktCount() {return m_sendUpPktCount;}
-  int SendCount() {return appSendCount;}
-  int SinkCount() {return sinkCounter;}
+  int TrafficInPkts() {return trafficPkts;}
+  int TrafficInBytes(bool diff);
 
   virtual void AssignInternalData(std::vector<std::string> collection);
   virtual void AssignInternalDataPath(std::vector<std::string> collection);
@@ -88,7 +87,7 @@ protected:
   void NotifyRx(std::string path, Ptr<Packet> p);
   void NotifyTx(std::string path, Ptr<Packet> p, AquaSimAddress nextHop, Time delay);
 protected:
-  AquaSimAddress m_myAddr;  //the ip address of this node
+  //AquaSimAddress m_myAddr;  //the ip address of this node
   Ptr<AquaSimNetDevice> m_device;
   //NsObject *ll;			//pointer to link layer object
   //NsObject *port_dmux;
@@ -98,9 +97,10 @@ protected:
   std::vector<std::string> m_knownDataPath;   //low key FIB, known path for certain data name.
 
 
-  //XXX remove these varialbes and create proper tracers. (should trace whenever a change in throttle/pushback occurs)
-  int appSendCount;
-  int sinkCounter;
+  //XXX remove these varialbes and create proper tracers. (should trace whenever a change in throttle/pushback occurs in routing-ddos)
+  int trafficPkts;
+  int trafficBytes;
+  int lastTrafficTrace;
 
 private:
   Ptr<AquaSimMac> m_mac;

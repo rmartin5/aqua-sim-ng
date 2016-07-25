@@ -29,6 +29,7 @@
 #include "aqua-sim-header-routing.h"
 
 #include <cstdio>
+#include <fstream>
 
 #define FLOODING_TEST 1
 
@@ -217,7 +218,6 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
      * }
      *
      */
-
   }
 
   p = 0; //smart pointer will unref automatically once out of scope
@@ -266,29 +266,20 @@ AquaSimChannel::PrintCounters()
 }
 
 void
-AquaSimChannel::FilePrintCounters()
-{
-  FILE * pFile;
-  pFile = fopen ("outputFile.txt", "a");
-  if (pFile!=NULL)
+AquaSimChannel::FilePrintCounters(double simTime, int attSlot)
+{ //XXX remove & use tracers...
+
+  //output layerout:
+  // SimTime | N0_Pkts | N0_Bytes | N0_DiffFromLastTrace | N1_Pkts | ... | Sink_Sent | Sink_Recv | Att0_Sent
+  std::ofstream csvFile;
+  csvFile.open("ddos_3A_M_Spread_NoML.csv", std::ios_base::app);
+  csvFile << simTime;
+  for (std::vector<Ptr<AquaSimNetDevice> >::iterator ite = m_deviceList.begin(); ite != m_deviceList.end(); ++ite)
   {
-    fputs ("End Results:",pFile);
-
-    for (std::vector<Ptr<AquaSimNetDevice> >::iterator it = m_deviceList.begin(); it != m_deviceList.end(); ++it)
-    {
-      if ((*it)->GetRouting()->SendCount() > 0 || (*it)->GetRouting()->SinkCount() > 0) {
-        fprintf (pFile, "Node(%i) Sent=%i Sink=%i\n",
-            AquaSimAddress::ConvertFrom((*it)->GetAddress()).GetAsInt(),
-            (*it)->GetRouting()->SendCount(),
-            (*it)->GetRouting()->SinkCount());
-      }
-      //attacker created packets counter.	(1 or multi attackers)		//if counter>0 then print to file (to ignore intermediate nodes).
-      //legit network created packets counter.	(assuming a single sink)	//hard coded to ignore attack IDs
-      //sink received packets counter.						//if counter>0 then print to file.
-    }
-
-    fclose (pFile);
+    csvFile << "," << (*ite)->GetRouting()->TrafficInBytes(true);
   }
+  csvFile << "\n";
+  csvFile.close();
 }
 
 Time

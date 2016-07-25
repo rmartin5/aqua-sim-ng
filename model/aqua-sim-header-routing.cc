@@ -172,12 +172,12 @@ VBHeader::Deserialize(Buffer::Iterator start)
   m_range = ((double) i.ReadU32()) / 1000.0;
 
   //This is bloated.
-  m_info.o.x = ( (double) i.ReadU32() ) / 1000.0;
-  m_info.o.y = ( (double) i.ReadU32() ) / 1000.0;
-  m_info.o.z = ( (double) i.ReadU32() ) / 1000.0;
-  m_info.f.x = ( (double) i.ReadU32() ) / 1000.0;
-  m_info.f.y = ( (double) i.ReadU32() ) / 1000.0;
-  m_info.f.z = ( (double) i.ReadU32() ) / 1000.0;
+  m_info.o = Vector( (((double) i.ReadU32())/1000.0),
+                     (((double) i.ReadU32())/1000.0),
+                     (((double) i.ReadU32())/1000.0) );
+  m_info.f = Vector( ( ( (double) i.ReadU32() ) / 1000.0),
+                     ( ( (double) i.ReadU32() ) / 1000.0),
+                     ( ( (double) i.ReadU32() ) / 1000.0) );
   m_info.t.x = ( (double) i.ReadU32() ) / 1000.0;
   m_info.t.y = ( (double) i.ReadU32() ) / 1000.0;
   m_info.t.z = ( (double) i.ReadU32() ) / 1000.0;
@@ -192,7 +192,7 @@ uint32_t
 VBHeader::GetSerializedSize(void) const
 {
   //reserved bytes for header
-  return (1+4+1+1+1+1+12+4+4+4 +48);
+  return (1+4+1+1+1+1+12+4+4+4+48);
 }
 
 void
@@ -211,23 +211,23 @@ VBHeader::Serialize(Buffer::Iterator start) const
   i.WriteU32 ((uint32_t)(m_originalSource.y*1000.0));
   i.WriteU32 ((uint32_t)(m_originalSource.z*1000.0));
 
-  i.WriteU32((uint32_t)(m_token*1000.0 + 0.5));
-  i.WriteU32((uint32_t)(m_ts*1000.0 + 0.5));
-  i.WriteU32((uint32_t)(m_range*1000.0 + 0.5));
+  i.WriteU32((uint32_t)(m_token*1000.0));
+  i.WriteU32((uint32_t)(m_ts*1000.0));
+  i.WriteU32((uint32_t)(m_range*1000.0));
 
   //bloated.
-  i.WriteU32 ((uint32_t)(m_info.o.x*1000.0 +0.5));
-  i.WriteU32 ((uint32_t)(m_info.o.y*1000.0 +0.5));
-  i.WriteU32 ((uint32_t)(m_info.o.z*1000.0 +0.5));
-  i.WriteU32 ((uint32_t)(m_info.f.x*1000.0 +0.5));
-  i.WriteU32 ((uint32_t)(m_info.f.y*1000.0 +0.5));
-  i.WriteU32 ((uint32_t)(m_info.f.z*1000.0 +0.5));
-  i.WriteU32 ((uint32_t)(m_info.t.x*1000.0 +0.5));
-  i.WriteU32 ((uint32_t)(m_info.t.y*1000.0 +0.5));
-  i.WriteU32 ((uint32_t)(m_info.t.z*1000.0 +0.5));
-  i.WriteU32 ((uint32_t)(m_info.d.x*1000.0 +0.5));
-  i.WriteU32 ((uint32_t)(m_info.d.y*1000.0 +0.5));
-  i.WriteU32 ((uint32_t)(m_info.d.z*1000.0 +0.5));
+  i.WriteU32 ((uint32_t)(m_info.o.x*1000.0));
+  i.WriteU32 ((uint32_t)(m_info.o.y*1000.0));
+  i.WriteU32 ((uint32_t)(m_info.o.z*1000.0));
+  i.WriteU32 ((uint32_t)(m_info.f.x*1000.0));
+  i.WriteU32 ((uint32_t)(m_info.f.y*1000.0));
+  i.WriteU32 ((uint32_t)(m_info.f.z*1000.0));
+  i.WriteU32 ((uint32_t)(m_info.t.x*1000.0));
+  i.WriteU32 ((uint32_t)(m_info.t.y*1000.0));
+  i.WriteU32 ((uint32_t)(m_info.t.z*1000.0));
+  i.WriteU32 ((uint32_t)(m_info.d.x*1000.0));
+  i.WriteU32 ((uint32_t)(m_info.d.y*1000.0));
+  i.WriteU32 ((uint32_t)(m_info.d.z*1000.0));
 }
 
 void

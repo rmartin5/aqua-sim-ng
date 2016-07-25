@@ -495,7 +495,8 @@ AquaSimNetDevice::Send (Ptr< Packet > packet, const Address &dest, uint16_t prot
     {//Note : https://www.nsnam.org/docs/release/3.24/doxygen/uan-mac-cw_8cc_source.html#l00123
       if(m_mac)
       {
-	      m_routing->SetMyAddr(AquaSimAddress::ConvertFrom(m_mac->GetAddress()));
+          //redudant
+	      //m_routing->SetMyAddr(AquaSimAddress::ConvertFrom(m_mac->GetAddress()));
         return m_routing->Recv(packet, dest, protocolNumber);
         //return m_routing->SendDown(packet, AquaSimAddress::ConvertFrom(dest), Seconds(0));
       }

@@ -155,8 +155,8 @@ AquaSimBroadcastMac::TxProcess(Ptr<Packet> pkt)
     {
       Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable> ();
       double backoff=rand->GetValue()*BC_BACKOFF;
+      NS_LOG_DEBUG("BACKOFF time:" << backoff << " on node:" << m_device->GetAddress() << "\n");
       //pkt->AddHeader(mach);
-      std::cout << "BACKOFF:" << backoff << "\n";
       pkt->AddHeader(ash);
       Simulator::Schedule(Seconds(backoff),&AquaSimBroadcastMac::BackoffHandler,this,pkt);
     }
