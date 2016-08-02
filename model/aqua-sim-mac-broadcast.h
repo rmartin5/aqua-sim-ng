@@ -25,8 +25,8 @@
 
 namespace ns3 {
 
-#define BC_BACKOFF  0.5 //default is 0.1 the maximum time period for backoff
-#define BC_MAXIMUMCOUNTER 10 //default is 4 the maximum number of backoff
+#define BC_BACKOFF  0.1 //default is 0.1 the maximum time period for backoff
+#define BC_MAXIMUMCOUNTER 4 //default is 4 the maximum number of backoff
 #define BC_CALLBACK_DELAY 0.0001 // the interval between two consecutive sendings
 
 

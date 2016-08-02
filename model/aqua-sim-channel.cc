@@ -271,6 +271,8 @@ AquaSimChannel::FilePrintCounters(double simTime, int attSlot)
 
   //output layerout:
   // SimTime | N0_Pkts | N0_Bytes | N0_DiffFromLastTrace | N1_Pkts | ... | Sink_Sent | Sink_Recv | Att0_Sent
+  
+  /* //out of date file creation & data collection.
   std::ofstream csvFile;
   csvFile.open("ddos_3A_M_Spread_NoML.csv", std::ios_base::app);
   csvFile << simTime;
@@ -280,6 +282,7 @@ AquaSimChannel::FilePrintCounters(double simTime, int attSlot)
   }
   csvFile << "\n";
   csvFile.close();
+  */
 }
 
 Time
