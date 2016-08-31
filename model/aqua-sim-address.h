@@ -26,31 +26,36 @@
 #ifndef AQUA_SIM_ADDRESS_H
 #define AQUA_SIM_ADDRESS_H
 
+#include <stdint.h>
 #include "ns3/address.h"
 #include <iostream>
+#include <cstring>
+
 
 namespace ns3 {
+
+class Address;
 
 class AquaSimAddress
 {
 public:
   /** Constructor */
   AquaSimAddress ();
-  AquaSimAddress (uint8_t addr);
+  AquaSimAddress (uint16_t addr);
   virtual ~AquaSimAddress ();
 
   static AquaSimAddress ConvertFrom (const Address &address);
   static bool IsMatchingType  (const Address &address);
   operator Address () const;
-  void CopyFrom (const uint8_t *pBuffer);
-  void CopyTo (uint8_t *pBuffer);
-  uint8_t GetAsInt (void) const;
+  void CopyFrom (const uint8_t pBuffer[2]);
+  void CopyTo (uint8_t pBuffer[2]) const;
+  uint16_t GetAsInt (void) const;
   static AquaSimAddress GetBroadcast (void);
 
   static AquaSimAddress Allocate ();
 
 private:
-  uint8_t m_address;
+  uint8_t m_address[2]; //16-bit address
   static uint8_t GetType (void);
   Address ConvertTo (void) const;
 
@@ -70,7 +75,11 @@ private:
  * \param b Second address to compare.
  * \return True if a < b.
  */
-bool operator < (const AquaSimAddress &a, const AquaSimAddress &b);
+inline bool operator < (const AquaSimAddress &a, const AquaSimAddress &b)
+{
+  return memcmp (a.m_address, b.m_address, 2) < 0;
+}
+
 
 /**
  * Address comparison, equalit.
@@ -79,7 +88,10 @@ bool operator < (const AquaSimAddress &a, const AquaSimAddress &b);
  * \param b Second address to compare.
  * \return True if a == b.
  */
-bool operator == (const AquaSimAddress &a, const AquaSimAddress &b);
+inline bool operator == (const AquaSimAddress &a, const AquaSimAddress &b)
+{
+  return memcmp (a.m_address, b.m_address, 2) == 0;
+}
 
 /**
  * Address comparison, unequal.
@@ -88,7 +100,10 @@ bool operator == (const AquaSimAddress &a, const AquaSimAddress &b);
  * \param b Second address to compare.
  * \return True if a != b.
  */
-bool operator != (const AquaSimAddress &a, const AquaSimAddress &b);
+inline bool operator != (const AquaSimAddress &a, const AquaSimAddress &b)
+{
+  return memcmp (a.m_address, b.m_address, 2) != 0;
+}
 
 /**
  * Write \pname{address} to stream \pname{os} as 8 bit integer.

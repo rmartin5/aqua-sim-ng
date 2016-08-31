@@ -43,7 +43,7 @@ int
 main (int argc, char *argv[])
 {
   double simStop = 20; //seconds
-  int nodes = 2;
+  int nodes = 3;
   int sinks = 1;
   uint32_t m_dataRate = 180;
   uint32_t m_packetSize = 32;
@@ -107,7 +107,8 @@ main (int argc, char *argv[])
 
       NS_LOG_DEBUG("Node: " << *i << " newDevice: " << newDevice << " Position: " <<
 		     boundry.x << "," << boundry.y << "," << boundry.z <<
-		     " freq:" << newDevice->GetPhy()->GetFrequency());
+		     " freq:" << newDevice->GetPhy()->GetFrequency() << " addr:" <<
+         AquaSimAddress::ConvertFrom(newDevice->GetAddress()).GetAsInt() );
 		     //<<
 		     //" NDtypeid:" << newDevice->GetTypeId() <<
 		     //" Ptypeid:" << newDevice->GetPhy()->GetTypeId());
