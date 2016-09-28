@@ -76,7 +76,6 @@ AquaSimUwan::AquaSimUwan():
 {
 	m_cycleCounter = 1;
 	m_numPktSend = 0;
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   m_sleepTimer.SetFunction(&AquaSimUwan_SleepTimer::expire,&m_sleepTimer);
   m_startTimer.SetFunction(&AquaSimUwan_StartTimer::expire,&m_startTimer);
 	m_startTimer.Schedule(Seconds(0.001));
@@ -163,7 +162,6 @@ AquaSimUwan::TxPktProcess(AquaSimUwan_PktSendTimer* pkt_send_timer)
 		return;
 	}
 
-
 	//m_device->SetTransmissionStatus(SEND);
 	AquaSimHeader ashLocal;
 	p->RemoveHeader(ashLocal);
@@ -184,7 +182,13 @@ AquaSimUwan::MakeSYNCPkt(Time CyclePeriod, AquaSimAddress Recver)
   MacHeader mach;
   AquaSimPtTag ptag;
 
-	hdr_s.SetCyclePeriod(CyclePeriod.ToDouble(Time::S));
+  //Assuming this shouldnt be negative...
+  if (CyclePeriod.IsNegative()) {
+    hdr_s.SetCyclePeriod(-1*CyclePeriod.ToDouble(Time::S));
+  }
+  else {
+    hdr_s.SetCyclePeriod(CyclePeriod.ToDouble(Time::S));
+  }
 
 	ash.SetSize(hdr_s.GetSize());
   ash.SetNextHop(Recver);  //the sent packet??
@@ -199,6 +203,7 @@ AquaSimUwan::MakeSYNCPkt(Time CyclePeriod, AquaSimAddress Recver)
   p->AddHeader(hdr_s);
   p->AddHeader(ash);
   p->AddPacketTag(ptag);
+
 	return p;
 }
 
@@ -229,6 +234,7 @@ AquaSimUwan::FillMissingList(Ptr<Packet> p)
   Ptr<Packet> tempPacket = Create<Packet>(data,size);
   p->AddAtEnd(tempPacket);
   p->AddHeader(ash);
+
   return p;
 }
 
@@ -245,6 +251,7 @@ AquaSimUwan::FillSYNCHdr(Ptr<Packet> p, Time CyclePeriod)
   ash.SetSize(ash.GetSize() + hdr_s.GetSize());
   p->AddHeader(hdr_s);
   p->AddHeader(ash);
+
   return p;
 }
 
@@ -335,6 +342,7 @@ AquaSimUwan::GenNxCyclePeriod()
   double avgCyclePeriod = m_avgCyclePeriod.ToDouble(Time::S);
   double stdCyclePeriod = m_stdCyclePeriod.ToDouble(Time::S);
 
+  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 	return m_nextCyclePeriod + Seconds(m_rand->GetValue(avgCyclePeriod-stdCyclePeriod,
 						avgCyclePeriod+stdCyclePeriod));
 }
@@ -431,6 +439,7 @@ AquaSimUwan::TxProcess(Ptr<Packet> p)
   p->RemoveHeader(ash);
   ash.SetSize(1600);
   p->AddHeader(ash);
+
   m_packetQueue.push(p);
   //callback to higher level, should be implemented differently
 	//Scheduler::instance().schedule(&callback_handler,&callback_event, UWAN_CALLBACK_DELAY);
@@ -445,6 +454,7 @@ AquaSimUwan::SYNCSchedule(bool initial)
 	Time now = Simulator::Now();
 	m_nextCyclePeriod = m_initialCyclePeriod + now;
 	if( initial ) {
+    Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 		Time RandomDelay = Seconds(m_rand->GetValue(0.0, m_initialCyclePeriod.ToDouble(Time::S)) );
 		m_wakeSchQueue.Push(m_nextCyclePeriod+RandomDelay, AquaSimAddress::ConvertFrom(m_device->GetAddress()) , m_nextCyclePeriod+RandomDelay-now);
 		//m_wakeSchQueue.Print(2*m_maxPropTime, m_maxTxTime, true, index_);
@@ -537,6 +547,7 @@ AquaSimUwan::SendoutPkt(Time NextCyclePeriod)
   pkt->AddHeader(mach);
   pkt->AddHeader(hdr_s);
   pkt->AddHeader(ash);
+
 	SendFrame(pkt, false);
 }
 
@@ -574,8 +585,10 @@ AquaSimUwan::ProcessMissingList(uint8_t *data, AquaSimAddress src)
       p->AddHeader(hdr_s);
       p->AddHeader(mach);
       p->AddHeader(ash);
+
       p->AddPacketTag(ptag);
 			//rand the sending slot and then send out
+      Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
       double randHelloDelay = m_rand->GetValue(0,10)*m_helloTxLen.ToDouble(Time::S);
 			SendFrame(p, true, Seconds(randHelloDelay));   //hello should be delayed!!!!!!
 			return;
