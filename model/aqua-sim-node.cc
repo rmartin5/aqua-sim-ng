@@ -35,12 +35,12 @@
 #include "ns3/double.h"
 #include "ns3/integer.h"
 #include "ns3/boolean.h"
-//#include "trace.h"		//TODO include trace
+//#include "trace.h"	
 //#include "arp.h"
 //#include "ll.h"
 //#include "connector.h"
 //#include "delay.h"
-//#include "god.h"			
+//#include "god.h"
 
 //...
 
@@ -93,7 +93,7 @@ node->position_update_interval_);
 *
 
 AquaSimNode::AquaSimNode(void)
-{	
+{
   m_MP = NULL;		//MobileNode()
 
   m_id = 0;
@@ -331,31 +331,31 @@ AquaSimNode::GetApplication(uint32_t index) const
   NS_LOG_FUNCTION(this);
   return m_applications[index];
 }
-Ptr<AquaSimNetDevice> 
+Ptr<AquaSimNetDevice>
 AquaSimNode::GetDevice(uint32_t index) const
 {
   NS_LOG_FUNCTION(this);
   return m_devices[index];
 }
-uint32_t 
+uint32_t
 AquaSimNode::GetId(void) const
 {
   NS_LOG_FUNCTION(this);
   return m_id;
 }
-uint32_t 
+uint32_t
 AquaSimNode::GetSystemId(void) const
 {
   NS_LOG_FUNCTION(this);
   return m_sid;
 }
-uint32_t 
+uint32_t
 AquaSimNode::GetNApplications(void) const
 {
   NS_LOG_FUNCTION(this);
   return m_applications.size();
 }
-uint32_t 
+uint32_t
 AquaSimNode::GetNDevices(void) const
 {
   NS_LOG_FUNCTION(this);

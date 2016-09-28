@@ -185,6 +185,7 @@ AquaSimMac::HandleOutgoingPkt(Ptr<Packet> p) {
   //m_callback = h;
   /*
   *  TODO Handle busy terminal problem before trying to tx packet
+  *     NOTE this is done in SendDown()...
   */
   //m_phy->SetPhyStatus(PHY_SEND);
 

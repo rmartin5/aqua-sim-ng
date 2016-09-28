@@ -265,13 +265,18 @@ AquaSimChannel::PrintCounters()
   //possible look at phy-cmn layer namely AquaSimPhyCmn::PktTransmit()
 }
 
+/*
+  While outdated due to the use of tracers within Routing layer, this is left
+  due to potential legacy issues.
+*/
 void
 AquaSimChannel::FilePrintCounters(double simTime, int attSlot)
-{ //XXX remove & use tracers...
-
+{
+  NS_LOG_FUNCTION(this << "Does not implement anything.");
+  
   //output layerout:
   // SimTime | N0_Pkts | N0_Bytes | N0_DiffFromLastTrace | N1_Pkts | ... | Sink_Sent | Sink_Recv | Att0_Sent
-  
+
   /* //out of date file creation & data collection.
   std::ofstream csvFile;
   csvFile.open("ddos_3A_M_Spread_NoML.csv", std::ios_base::app);

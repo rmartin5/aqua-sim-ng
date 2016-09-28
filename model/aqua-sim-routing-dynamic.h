@@ -133,7 +133,7 @@ private:
   AquaSimAddress m_raAddr;
   // uw_drouting_state state_;//?????????define state
   //AquaSimDynamicRoutingTable rtable_;//????????define table
-  AquaSimDynamicRoutingTable  m_rTable;//add by jun
+  AquaSimDynamicRoutingTable m_rTable;//add by jun
 
   int m_accessibleVar;
   uint8_t m_seqNum;

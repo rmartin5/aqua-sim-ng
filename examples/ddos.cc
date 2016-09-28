@@ -29,61 +29,69 @@
 #include <math.h>
 #include <sstream>
 
+#include <iostream>
+#include <fstream>
 /*
  *  Tree like topography
  *
- *  Currently only supporting base case...
- *    InterestSource -> N -> N -> DataSource
- *                    ( /\ Attacker)
+ *  Protocol description can be found at:
+ *  Robert Martin, Sanguthevar Rajasekaran, "Data Centric Approach to
+ *    Analyzing Security Threats in Underwater Sensor Networks,"
+ *    in Proceedings of IEEE/MTS OCEANS, Monterey, California, USA, 2016 (to appear).
  */
 
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("DdosSim");
 
-class LocalExperiment
+static void
+TrafficTracer (Ptr<OutputStreamWrapper> stream, uint32_t oldval, uint32_t newval)
 {
-public:
-  LocalExperiment();
-  void Run();
-  void RecvPacket(Ptr<Socket> socket);
-
-  double simStop; //seconds
-  double preStop; //seconds
-  int nodes;
-  int attackers;
-  //int sinks;
-  uint32_t m_dataRate;
-  uint32_t m_packetSize;
-  int totalDataSegments;
-  int traceFreq;
-};
-
-LocalExperiment::LocalExperiment() :
-  simStop(7200), preStop(60), nodes(15), attackers(3),
-  m_dataRate(45), m_packetSize(32),
-  //NOTE dataRate = 360bps(45Bps)
-  //NOTE pktSize = (interest) 320 b (40 Bytes) / (data) 1 kb (128 Bytes)
-  totalDataSegments(1500), traceFreq(30)
-{
+  *stream->GetStream () << oldval << " " << newval << std::endl;
 }
 
-void
-LocalExperiment::RecvPacket(Ptr<Socket> socket)
+static void
+TraceTraffic (std::string trafficTrFileName)
 {
-  //not used.
-  Ptr<Packet> packet;
-  while ((packet = socket->Recv ()))
-  {
-    std::cout << "Recv a packet of size " << packet->GetSize() << "\n";
-    //m_bytesTotal += packet->GetSize ();
-  }
+  AsciiTraceHelper ascii;
+  if (trafficTrFileName.compare ("") == 0)
+    {
+      NS_LOG_DEBUG ("No trace file for traffic provided");
+      return;
+    }
+  else
+    {
+      Ptr<OutputStreamWrapper> stream = ascii.CreateFileStream (trafficTrFileName.c_str ());
+      Config::ConnectWithoutContext ("/NodeList/1/ns3::AquaSimNetDevice/AquaSimRouting/TrafficPkts",MakeBoundCallback (&TrafficTracer, stream));
+    }
 }
 
-void
-LocalExperiment::Run()
+int
+main (int argc, char *argv[])
 {
   std::cout << "-----------Initializing simulation-----------\n";
+
+  double simStop=7200; //seconds
+  double preStop=60; //seconds
+  int nodes=15;
+  int attackers=3;
+  //int sinks;
+  uint32_t m_dataRate=45;
+  uint32_t m_packetSize=32;
+  //NOTE dataRate = 360bps(45Bps)
+  //NOTE pktSize = (interest) 320 b (40 Bytes) / (data) 1 kb (128 Bytes)
+  int totalDataSegments=1500;
+  int traceFreq=30;
+
+  std::string trafficTrFileName = "ddos.tr";
+
+  LogComponentEnable ("DdosSim", LOG_LEVEL_INFO);
+  //to change on the fly
+  CommandLine cmd;
+  cmd.AddValue ("simStop", "Length of simulation", simStop);
+  cmd.AddValue ("nodes", "Amount of regular underwater nodes", nodes);
+  //cmd.AddValue ("sinks", "Amount of underwater sinks", sinks);
+  cmd.Parse(argc,argv);
 
   NodeContainer nodesCon;
   NodeContainer attackerCon;
@@ -137,6 +145,10 @@ LocalExperiment::Run()
   }
 
   std::cout << "-----------Creating Nodes-----------\n";
+
+  /*
+  *     This should be automated...
+  */
 
   //sink
   Ptr<AquaSimNetDevice> newDevice0 = CreateObject<AquaSimNetDevice>();
@@ -285,25 +297,6 @@ LocalExperiment::Run()
   attacker2->SetIfIndex(2);
   devices.Add(attacker2);
 
-  /*
-      TODO Expand current network topography, test and see how it handles this with 1 sink.
-        Then expand to have multiple traffic generators and see if anything weird happens,
-        such as how code handles duplicate packet requests and so on.
-        Then expand to requesting data that does not exist on network and see how that is handled.
-        -Do timeout occur? -Does throttle/pushback occur? -Are alerts sent out?
-
-        Side note:
-          -check busy terminal queue to make sure nothing is stuck
-          -make sure PIT entries are deleted properly (pretty sure they are)
-
-        TODO: Why does there seem to be doubled delay in simulation? From where?
-            RTT (simulation, const) = 31.9472 s
-            RTT (theoretic, prop speed only) = 15.9752 s
-            -Phy to Channel to Phy seems correct
-            -Routing to Phy is showing no delay at all
-            -***From PhyUp to mac/routing to PhyDown shows this delay*** why? where??
-  */
-
   int id = 0;
   for (NetDeviceContainer::Iterator i = devices.Begin(); i != devices.End(); i++)
   {
@@ -381,7 +374,7 @@ LocalExperiment::Run()
 
   Ptr<Socket> sinkSocket = Socket::CreateSocket (sinkNode, psfid);
   sinkSocket->Bind (socket);
-  sinkSocket->SetRecvCallback (MakeCallback (&LocalExperiment::RecvPacket, this));
+  //sinkSocket->SetRecvCallback (MakeCallback (&LocalExperiment::RecvPacket, this));
 
 /*
   ApplicationContainer serverApp;
@@ -393,6 +386,10 @@ LocalExperiment::Run()
 
   Packet::EnablePrinting ();  //for debugging purposes
   std::cout << "-----------Running Simulation-----------\n";
+
+  Simulator::Schedule (Seconds (0.00001), &TraceTraffic, trafficTrFileName);
+  //XXX should be changed and handled by tracers... and FileHandler API.
+
   Simulator::Stop(Seconds(simStop +1));
   for (int i = traceFreq; i < simStop; i += traceFreq )
   {
@@ -403,26 +400,10 @@ LocalExperiment::Run()
   Simulator::Destroy(); //null all nodes too??
   std::cout << "-----------Printing Simulation Results-----------\n";
 
-  //XXX should be changed and handled by tracers... and FileHandler API.
   asHelper.GetChannel()->PrintCounters();
   asHelper.GetChannel()->FilePrintCounters(simStop,15);
 
   std::cout << "End.\n";
-}
 
-int
-main (int argc, char *argv[])
-{
-  LocalExperiment exp;
-
-  LogComponentEnable ("DdosSim", LOG_LEVEL_INFO);
-  //to change on the fly
-  CommandLine cmd;
-  cmd.AddValue ("simStop", "Length of simulation", exp.simStop);
-  cmd.AddValue ("nodes", "Amount of regular underwater nodes", exp.nodes);
-  //cmd.AddValue ("sinks", "Amount of underwater sinks", exp.sinks);
-  cmd.Parse(argc,argv);
-
-  exp.Run();
   return 0;
 }

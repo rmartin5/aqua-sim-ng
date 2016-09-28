@@ -772,7 +772,7 @@ UwanSyncHeader::GetSerializedSize(void) const
 void
 UwanSyncHeader::Serialize (Buffer::Iterator start) const
 {
-  start.WriteU32 ((uint32_t)m_cyclePeriod * 1000.0 + 0.5);
+  start.WriteU32 ((uint32_t)m_cyclePeriod * 1000.0);
 }
 uint32_t
 UwanSyncHeader::Deserialize (Buffer::Iterator start)

@@ -141,8 +141,8 @@ AquaSimDDOS::SendInterest(Ptr<Packet> p)
   pkt->AddHeader(ash);
 
   m_totalPktSent++;
-  trafficPkts++;        
-  trafficBytes += p->GetSize();
+  trafficPktsTrace++;
+  trafficBytesTrace += p->GetSize();
   Simulator::Schedule(Seconds(0), &AquaSimRouting::SendDown,this,
                         pkt,AquaSimAddress::GetBroadcast(),Seconds(0));
 }
@@ -173,8 +173,8 @@ AquaSimDDOS::SendData(Ptr<Packet> p)
                         p->Copy(),AquaSimAddress::GetBroadcast(),Seconds(0));
 
   m_totalPktSent++;
-  trafficPkts++;
-  trafficBytes += p->GetSize();
+  trafficPktsTrace++;
+  trafficBytesTrace += p->GetSize();
 }
 
 void
@@ -352,7 +352,7 @@ AquaSimDDOS::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumb
     NS_LOG_DEBUG("Data Pkt recved on node " << GetNetDevice()->GetAddress());
     if (entryFound) {
       if(GetNetDevice()->GetSinkStatus()) {
-        //TODO callback needs to be integrated, count # of pkts recv 
+        //TODO callback needs to be integrated, count # of pkts recv
         NS_LOG_INFO("Sink(" << GetNetDevice()->GetAddress() << ") recved interest:"
             << interest << " at time " << Simulator::Now().ToDouble(Time::S));
       }
@@ -728,4 +728,3 @@ AquaSimDDOS::FilePrintout(bool pushback, int nodeID, int attackerID)
   }
 }
 */
-

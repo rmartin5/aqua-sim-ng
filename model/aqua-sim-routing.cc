@@ -54,13 +54,20 @@ AquaSimRouting::GetTypeId(void)
       "Trace source indicating a packet has been received.",
       MakeTraceSourceAccessor (&AquaSimRouting::m_routingRxTrace),
       "ns3::AquaSimRouting::RxCallback")
-    //set my_addr, on-node lookup, add-ll, port-dmux
+    .AddTraceSource ("TrafficPkts",
+      "Amount of network traffic in packets.",
+      MakeTraceSourceAccessor (&AquaSimRouting::trafficPktsTrace),
+      "ns3::TracedValueCallback::Uint32")
+    .AddTraceSource ("TrafficBytes",
+      "Amount of network traffic in bytes",
+      MakeTraceSourceAccessor (&AquaSimRouting::trafficBytesTrace),
+      "ns3::TracedValueCallback::Uint32")
   ;
   return tid;
 }
 
 AquaSimRouting::AquaSimRouting() :
-  trafficPkts(0), trafficBytes(0), lastTrafficTrace(0), m_sendUpPktCount(0)
+  trafficPktsTrace(0), trafficBytesTrace(0), m_sendUpPktCount(0)
 {
   m_data.clear(); //just in case.
   NS_LOG_FUNCTION(this);
@@ -143,7 +150,6 @@ AquaSimRouting::SendDown(Ptr<Packet> p, AquaSimAddress nextHop, Time delay)
   header.SetSAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
   p->AddHeader(header);
 
-  //trace here...
   if (AquaSimAddress::ConvertFrom(m_device->GetAddress()).GetAsInt() == 255) std::cout << "\nHUH???? on device " << m_device->GetAddress() << "\n";
 
 
@@ -243,17 +249,17 @@ AquaSimRouting::SetTransDistance(double range)
 void
 AquaSimRouting::NotifyRx (std::string path, Ptr<Packet> p)
 {
+  m_routingRxTrace = p;
   SendUp(p);
   NS_LOG_UNCOND(path << " RX " << p->ToString());
-  //m_routingRxTrace(p);
 }
 
 void
 AquaSimRouting::NotifyTx (std::string path, Ptr<Packet> p, AquaSimAddress nextHop, Time delay)
 {
+  m_routingTxTrace = p;
   SendDown(p, nextHop, delay);
   NS_LOG_UNCOND(path << " TX " << p->ToString());
-  //m_routingTxTrace(p);
 }
 
 
@@ -273,6 +279,7 @@ AquaSimRouting::AssignInternalDataPath(std::vector<std::string> collection)
   m_knownDataPath = collection;
 }
 
+/*
 int AquaSimRouting::TrafficInBytes(bool diff)
 {
   if (diff) //diff from last trace.
@@ -282,7 +289,7 @@ int AquaSimRouting::TrafficInBytes(bool diff)
     return byteDiff;
   }
   return trafficBytes;
-}
+}*/
 
 
 

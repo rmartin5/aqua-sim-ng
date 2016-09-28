@@ -24,7 +24,7 @@
 #include "ns3/object.h"
 #include "ns3/address.h"
 #include "ns3/nstime.h"
-#include "ns3/traced-callback.h"
+#include "ns3/traced-value.h"
 #include "ns3/packet.h"
 //#include "ns3/ipv4.h"
 //#include "ns3/ipv4-routing-protocol.h"
@@ -59,8 +59,8 @@ public:
   virtual void SetTransDistance(double range); //does nothing. overload for certain cases
 
   int SendUpPktCount() {return m_sendUpPktCount;}
-  int TrafficInPkts() {return trafficPkts;}
-  int TrafficInBytes(bool diff);
+  int TrafficInPkts() {return trafficPktsTrace;}
+  int TrafficInBytes(bool trafficBytesTrace);
 
   virtual void AssignInternalData(std::vector<std::string> collection);
   virtual void AssignInternalDataPath(std::vector<std::string> collection);
@@ -96,17 +96,14 @@ protected:
   std::vector<std::string> m_data;
   std::vector<std::string> m_knownDataPath;   //low key FIB, known path for certain data name.
 
-
-  //XXX remove these varialbes and create proper tracers. (should trace whenever a change in throttle/pushback occurs in routing-ddos)
-  int trafficPkts;
-  int trafficBytes;
-  int lastTrafficTrace;
+  TracedValue<uint32_t> trafficPktsTrace;
+  TracedValue<uint32_t> trafficBytesTrace;
 
 private:
   Ptr<AquaSimMac> m_mac;
 
-  TracedCallback<Ptr<const Packet> > m_routingRxTrace;
-  TracedCallback<Ptr<const Packet> > m_routingTxTrace;
+  TracedValue<Ptr<const Packet> > m_routingRxTrace;
+  TracedValue<Ptr<const Packet> > m_routingTxTrace;
 
   int m_sendUpPktCount;
 
