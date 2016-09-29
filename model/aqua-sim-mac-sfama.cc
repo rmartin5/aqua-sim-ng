@@ -65,6 +65,8 @@ AquaSimSFama::AquaSimSFama():m_status(IDLE_WAIT), m_guardTime(0.00001),
   m_waitSendTimer(this), m_waitReplyTimer(this),
   m_backoffTimer(this), m_datasendTimer(this)
 {
+	NS_LOG_FUNCTION(this);
+
   m_slotNumHandler = 0;
 
   Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
@@ -189,6 +191,8 @@ AquaSimSFama::GetTime2ComingSlot(double t)
 Ptr<Packet>
 AquaSimSFama::MakeRTS(AquaSimAddress recver, int slot_num)
 {
+	NS_LOG_FUNCTION(this << recver.GetAsInt() << slot_num);
+
 	Ptr<Packet> rts_pkt = Create<Packet>();
   AquaSimHeader ash;
   SFamaHeader SFAMAh;
@@ -211,8 +215,8 @@ AquaSimSFama::MakeRTS(AquaSimAddress recver, int slot_num)
 
 	//rts_pkt->next_ = NULL;
 
-	rts_pkt->AddHeader(SFAMAh);
 	rts_pkt->AddHeader(mach);
+	rts_pkt->AddHeader(SFAMAh);
   rts_pkt->AddHeader(ash);
 	rts_pkt->AddPacketTag(ptag);
 	return rts_pkt;
@@ -222,6 +226,8 @@ AquaSimSFama::MakeRTS(AquaSimAddress recver, int slot_num)
 Ptr<Packet>
 AquaSimSFama::MakeCTS(AquaSimAddress rts_sender, int slot_num)
 {
+	NS_LOG_FUNCTION(this << rts_sender.GetAsInt() << slot_num);
+
 	Ptr<Packet> cts_pkt = Create<Packet>();
   AquaSimHeader ash;
   SFamaHeader SFAMAh;
@@ -255,6 +261,9 @@ AquaSimSFama::MakeCTS(AquaSimAddress rts_sender, int slot_num)
 Ptr<Packet>
 AquaSimSFama::FillDATA(Ptr<Packet> data_pkt)
 {
+	NS_LOG_FUNCTION(this);
+	data_pkt->Print(std::cout);
+
   AquaSimHeader ash;
   SFamaHeader SFAMAh;
   MacHeader mach;
@@ -284,6 +293,8 @@ AquaSimSFama::FillDATA(Ptr<Packet> data_pkt)
 Ptr<Packet>
 AquaSimSFama::MakeACK(AquaSimAddress data_sender)
 {
+	NS_LOG_FUNCTION(this << data_sender.GetAsInt());
+
   Ptr<Packet> ack_pkt = Create<Packet>();
   AquaSimHeader ash;
   SFamaHeader SFAMAh;
@@ -316,6 +327,9 @@ AquaSimSFama::MakeACK(AquaSimAddress data_sender)
 void
 AquaSimSFama::ProcessRTS(Ptr<Packet> rts_pkt)
 {
+	NS_LOG_FUNCTION(this);
+	rts_pkt->Print(std::cout);
+
   SFamaHeader SFAMAh;
   MacHeader mach;
   rts_pkt->RemoveHeader(SFAMAh);
@@ -353,6 +367,9 @@ AquaSimSFama::ProcessRTS(Ptr<Packet> rts_pkt)
 void
 AquaSimSFama::ProcessCTS(Ptr<Packet> cts_pkt)
 {
+	NS_LOG_FUNCTION(this);
+	cts_pkt->Print(std::cout);
+
   SFamaHeader SFAMAh;
   MacHeader mach;
   cts_pkt->RemoveHeader(SFAMAh);
@@ -396,6 +413,8 @@ AquaSimSFama::ProcessCTS(Ptr<Packet> cts_pkt)
 void
 AquaSimSFama::ProcessDATA(Ptr<Packet> data_pkt)
 {
+	NS_LOG_FUNCTION(this);
+
   MacHeader mach;
   data_pkt->PeekHeader(mach);
 
@@ -411,10 +430,12 @@ AquaSimSFama::ProcessDATA(Ptr<Packet> data_pkt)
 		/*send packet to upper layer*/
     SFamaHeader SFAMAh;
     AquaSimHeader ash;
+		data_pkt->RemoveHeader(SFAMAh);
     data_pkt->RemoveHeader(ash);
-    data_pkt->PeekHeader(SFAMAh);
-    ash.SetSize(SFAMAh.GetSize(SFamaHeader::SFAMA_DATA));
+		ash.SetSize(SFAMAh.GetSize(SFamaHeader::SFAMA_DATA));
     data_pkt->AddHeader(ash);
+		data_pkt->AddHeader(SFAMAh);
+
 		SendUp(data_pkt->Copy()); /*the original one will be released*/
 	}
 	else {
@@ -611,6 +632,9 @@ AquaSimSFama::RandBackoffSlots()
 void
 AquaSimSFama::SendPkt(Ptr<Packet> pkt)
 {
+	NS_LOG_FUNCTION(this);
+	pkt->Print(std::cout);
+
   AquaSimHeader ash;
   SFamaHeader SFAMAh;
   MacHeader mach;
@@ -645,7 +669,6 @@ AquaSimSFama::SendPkt(Ptr<Packet> pkt)
 			pkt->AddHeader(SFAMAh);
 			NS_LOG_DEBUG(Simulator::Now().GetSeconds() << ": node " << mach.GetSA() <<
 					       " send to node " << mach.GetDA() );
-			pkt->AddHeader(ash);
 			SendDown(pkt);
 			Simulator::Schedule(txtime, &AquaSimSFama::SlotInitHandler,this);
 			break;
@@ -821,6 +844,9 @@ AquaSimSFama::DataSendTimerProcess()
 void
 AquaSimSFama::SendDataPkt(Ptr<Packet> pkt)
 {
+	NS_LOG_FUNCTION(this);
+	pkt->Print(std::cout);
+
   AquaSimHeader ash;
 	SFamaHeader SFAMAh;
 	MacHeader mach;
@@ -842,9 +868,9 @@ AquaSimSFama::SendDataPkt(Ptr<Packet> pkt)
 			pkt->RemoveHeader(SFAMAh);
       pkt->PeekHeader(mach);
 			pkt->AddHeader(SFAMAh);
+			pkt->AddHeader(ash);
       NS_LOG_DEBUG(Simulator::Now().GetSeconds() << ": node " << mach.GetSA() <<
             " send to node " << mach.GetDA() );
-      pkt->AddHeader(ash);
 			SendDown(pkt);
 			break;
 		default:
