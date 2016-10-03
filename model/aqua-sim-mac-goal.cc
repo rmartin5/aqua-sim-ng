@@ -141,6 +141,8 @@ AquaSimGoal::SetTransDistance(double range)
 //---------------------------------------------------------------------
 bool AquaSimGoal::RecvProcess(Ptr<Packet> pkt)
 {
+	NS_LOG_FUNCTION(this);
+
 	AquaSimHeader ash;
 	MacHeader mach;
   AquaSimGoalAckHeader goalAckh;
@@ -200,10 +202,13 @@ bool AquaSimGoal::RecvProcess(Ptr<Packet> pkt)
 //---------------------------------------------------------------------
 bool AquaSimGoal::TxProcess(Ptr<Packet> pkt)
 {
+	NS_LOG_FUNCTION(this);
 	std::cout << "hitxProcess";
 	//this node must be the origin
   AquaSimHeader ash;
 	VBHeader vbh;
+	MacHeader mach;
+	AquaSimGoalAckHeader goalAckh;
   pkt->RemoveHeader(ash);
 	pkt->RemoveHeader(vbh);
 
@@ -233,8 +238,10 @@ bool AquaSimGoal::TxProcess(Ptr<Packet> pkt)
 	vbh.SetExtraInfo_t(tModel->GetPosition());
 
 	m_originPktSet[ash.GetUId()] = Simulator::Now();
-  pkt->AddHeader(ash);
 	pkt->AddHeader(vbh);
+	pkt->AddHeader(goalAckh);	//should have goalAck header right?
+	pkt->AddHeader(mach);
+  pkt->AddHeader(ash);
 	Insert2PktQs(pkt);
 
   //callback to higher level, should be implemented differently
@@ -247,6 +254,7 @@ bool AquaSimGoal::TxProcess(Ptr<Packet> pkt)
 Ptr<Packet>
 AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Time TxTime)
 {
+	NS_LOG_FUNCTION(this);
 	//m_device->UpdatePosition();  //out of date.
 	Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader ash;
@@ -255,6 +263,7 @@ AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Ti
 	AquaSimPtTag ptag;
 	VBHeader vbh;
 	Ptr<Packet> DataPkt = *(DataPktSet.begin());
+	DataPkt->RemoveHeader(ash);	//test to ensure this isn't a null header buffer at this point
 	DataPkt->PeekHeader(vbh);
 	Ptr<MobilityModel> model = m_device->GetNode()->GetObject<MobilityModel>();
 
@@ -297,8 +306,8 @@ AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Ti
 	}
   Ptr<Packet> tempPacket = Create<Packet>(data,size);
   pkt->AddAtEnd(tempPacket);
-	pkt->AddHeader(mach);
 	pkt->AddHeader(goalReqh);
+	pkt->AddHeader(mach);
   pkt->AddHeader(ash);
 	pkt->AddPacketTag(ptag);
 	return pkt;
@@ -309,8 +318,17 @@ AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Ti
 void
 AquaSimGoal::ProcessReqPkt(Ptr<Packet> ReqPkt)
 {
-  AquaSimGoalReqHeader goalReqh;
-  ReqPkt->PeekHeader(goalReqh);
+	NS_LOG_FUNCTION(this);
+
+	AquaSimHeader ash;
+	MacHeader mach;
+	AquaSimGoalReqHeader goalReqh;
+	ReqPkt->RemoveHeader(ash);
+	ReqPkt->RemoveHeader(mach);
+	ReqPkt->PeekHeader(goalReqh);
+	ReqPkt->AddHeader(mach);
+	ReqPkt->AddHeader(ash);
+
 	int		PktID;
 	bool	IsLoop = false;
 
@@ -343,9 +361,9 @@ AquaSimGoal::ProcessReqPkt(Ptr<Packet> ReqPkt)
 	if( !DuplicatedPktSet.empty() ) {
 		//make Ack packet with PUSH flag and send immediately
 		Ptr<Packet> AckPkt = MakeAckPkt(DuplicatedPktSet, true, goalReqh.GetReqID());
-    AquaSimHeader ash;
-    AckPkt->PeekHeader(ash);
-		Time Txtime = GetTxTime(ash.GetSize());
+    AquaSimHeader ash_;
+    AckPkt->PeekHeader(ash_);
+		Time Txtime = GetTxTime(ash_.GetSize());
 		Time SendTime = m_TSQ.GetAvailableTime(Simulator::Now(), Txtime);
 		m_TSQ.Insert(SendTime, SendTime+Txtime);
 		PreSendPkt(AckPkt, SendTime-Simulator::Now());
@@ -448,7 +466,8 @@ AquaSimGoal::ProcessReqPkt(Ptr<Packet> ReqPkt)
 Ptr<Packet>
 AquaSimGoal::MakeRepPkt(Ptr<Packet> ReqPkt, Time BackoffTime)
 {
-	//m_device->UpdatePosition();  //out of date
+	NS_LOG_FUNCTION(this);
+		//m_device->UpdatePosition();  //out of date
   AquaSimGoalReqHeader reqPktHeader;
   ReqPkt->PeekHeader(reqPktHeader);
 	Ptr<Packet> pkt = Create<Packet>();
@@ -477,8 +496,8 @@ AquaSimGoal::MakeRepPkt(Ptr<Packet> ReqPkt, Time BackoffTime)
 	mach.SetDA(repH.GetRA());
 	mach.SetSA(repH.GetSA());
 
+	pkt->AddHeader(repH);
 	pkt->AddHeader(mach);
-  pkt->AddHeader(repH);
 	pkt->AddHeader(ash);
 	pkt->AddPacketTag(ptag);
 	return pkt;
@@ -489,8 +508,15 @@ AquaSimGoal::MakeRepPkt(Ptr<Packet> ReqPkt, Time BackoffTime)
 void
 AquaSimGoal::ProcessRepPkt(Ptr<Packet> RepPkt)
 {
+	AquaSimHeader ash;
+	MacHeader mach;
   AquaSimGoalRepHeader repH;
+	RepPkt->RemoveHeader(ash);
+	RepPkt->RemoveHeader(mach);
   RepPkt->PeekHeader(repH);
+	RepPkt->AddHeader(mach);
+	RepPkt->AddHeader(ash);
+
 	//here only process the RepPkt for this node( the request sender)
 	std::set<AquaSimGoalDataSendTimer*>::iterator pos = m_dataSendTimerSet.begin();
 
@@ -518,12 +544,22 @@ AquaSimGoal::ProcessOverhearedRepPkt(Ptr<Packet> RepPkt)
 	//process the overheared reply packet
 	//if this node received the corresponding req before,
 	//cancel the timer
-  AquaSimGoalRepHeader repH;
-  RepPkt->PeekHeader(repH);
+	AquaSimHeader ash;
+	MacHeader mach;
+	AquaSimGoalRepHeader repH;
+	RepPkt->RemoveHeader(ash);
+	RepPkt->RemoveHeader(mach);
+	RepPkt->PeekHeader(repH);
+	RepPkt->AddHeader(mach);
+	RepPkt->AddHeader(ash);
+
   AquaSimGoalRepHeader repHLocal;
 	std::set<AquaSimGoal_BackoffTimer*>::iterator pos = m_backoffTimerSet.begin();
 	while( pos != m_backoffTimerSet.end() ) {
+			(*pos)->ReqPkt()->RemoveHeader(ash);	//expensive...
+			(*pos)->ReqPkt()->RemoveHeader(mach);
 	    (*pos)->ReqPkt()->PeekHeader(repHLocal);
+
 		if( repHLocal.GetReqID() == repH.GetReqID()) {
 
 			/*if( repH.GetBackoffTime() < (*pos)->GetBackoffTime() ) {
@@ -549,7 +585,6 @@ AquaSimGoal::ProcessOverhearedRepPkt(Ptr<Packet> RepPkt)
 	//reserve time slot for the corresponding Data Sending event.
 	//avoid recv-recv collision at neighbors
 	Vector ThisNode;
-  AquaSimHeader ash;
   RepPkt->PeekHeader(ash);
 	//m_device->UpdatePosition();  //out of date
   Ptr<MobilityModel> model = m_device->GetNode()->GetObject<MobilityModel>();
@@ -569,6 +604,7 @@ AquaSimGoal::PrepareDataPkts()
 		return;*/
   AquaSimGoalReqHeader reqH;
   AquaSimHeader ash;
+	MacHeader mach;
 
 	//int		SinkAddr = -1;  //not used.
 	Time DataTxTime = Seconds(0);
@@ -619,7 +655,12 @@ AquaSimGoal::PrepareDataPkts()
 	DataSendTime = m_TSQ.GetAvailableTime(Simulator::Now()+m_maxBackoffTime+2*m_maxDelay+m_estimateError, DataTxTime, true);
 	DataSendTimer->SetSE( m_TSQ.Insert(DataSendTime, DataSendTime+DataTxTime) );
 
-  ReqPkt->PeekHeader(reqH);
+	ReqPkt->RemoveHeader(ash);
+	ReqPkt->RemoveHeader(mach);
+	ReqPkt->PeekHeader(reqH);
+	ReqPkt->AddHeader(mach);
+	ReqPkt->AddHeader(ash);
+
 	DataSendTimer->SetReqID(reqH.GetReqID());
 	DataSendTimer->TxTime() = DataTxTime;
 	DataSendTimer->MinBackoffTime() = Seconds(100000.0);
@@ -637,6 +678,8 @@ AquaSimGoal::PrepareDataPkts()
 void
 AquaSimGoal::SendDataPkts(std::set<Ptr<Packet> > DataPktSet, AquaSimAddress NxtHop, Time TxTime)
 {
+	NS_LOG_FUNCTION(this << NxtHop.GetAsInt());
+
 	std::set<Ptr<Packet> >::iterator pos = DataPktSet.begin();
 	Time DelayTime = Seconds(0.00001);  //the delay of sending data packet
   AquaSimHeader ash;
@@ -672,9 +715,11 @@ AquaSimGoal::ProcessDataPkt(Ptr<Packet> DataPkt)
 {
   AquaSimHeader ash;
   MacHeader mach;
+	AquaSimGoalAckHeader goalAckh;
 	VBHeader vbh;
   DataPkt->RemoveHeader(ash);
   DataPkt->RemoveHeader(mach);
+	DataPkt->RemoveHeader(goalAckh);
 	DataPkt->PeekHeader(vbh);
 	//hdr_uwvb* vbh = hdr_uwvb::access(DataPkt);
 
@@ -704,6 +749,7 @@ AquaSimGoal::ProcessDataPkt(Ptr<Packet> DataPkt)
 		else {
 			m_sinkRecvedList.insert(ash.GetUId());
 			ash.SetSize(ash.GetSize() - sizeof(AquaSimAddress)*2);
+			DataPkt->AddHeader(goalAckh);
 			DataPkt->AddHeader(mach);
 			DataPkt->AddHeader(ash);
 			SendUp(DataPkt);
@@ -713,6 +759,7 @@ AquaSimGoal::ProcessDataPkt(Ptr<Packet> DataPkt)
 	else {
 		//forward this packet later
     ash.SetNumForwards(0);
+		DataPkt->AddHeader(goalAckh);
 		DataPkt->AddHeader(mach);
 		DataPkt->AddHeader(ash);
 		Insert2PktQs(DataPkt);
@@ -723,6 +770,8 @@ AquaSimGoal::ProcessDataPkt(Ptr<Packet> DataPkt)
 Ptr<Packet>
 AquaSimGoal::MakeAckPkt(std::set<int> AckSet, bool PSH,  int ReqID)
 {
+	NS_LOG_FUNCTION(this << PSH << ReqID);
+
 	Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader ash;
   MacHeader mach;
@@ -759,8 +808,8 @@ AquaSimGoal::MakeAckPkt(std::set<int> AckSet, bool PSH,  int ReqID)
 	}
   Ptr<Packet> tempPacket = Create<Packet>(data,size);
   pkt->AddAtEnd(tempPacket);
+	pkt->AddHeader(goalAckh);
 	pkt->AddHeader(mach);
-  pkt->AddHeader(goalAckh);
   pkt->AddHeader(ash);
 	pkt->AddPacketTag(ptag);
   return pkt;
@@ -831,8 +880,18 @@ AquaSimGoal::ProcessAckPkt(Ptr<Packet> AckPkt)
 void
 AquaSimGoal::ProcessPSHAckPkt(Ptr<Packet> AckPkt)
 {
-  AquaSimGoalAckHeader goalAckh;
-  AckPkt->PeekHeader(goalAckh);
+	NS_LOG_FUNCTION(this);
+
+	AquaSimHeader ash;
+	MacHeader mach;
+	AquaSimGoalAckHeader goalAckh;
+	AquaSimPtTag ptag;
+	AckPkt->RemoveHeader(ash);
+	AckPkt->RemoveHeader(mach);
+	AckPkt->PeekHeader(goalAckh);
+	AckPkt->AddHeader(mach);
+	AckPkt->AddHeader(ash);
+
 	int ReqID = goalAckh.GetReqID();
 	AquaSimGoalDataSendTimer* DataSendTimer=NULL;
 	std::set<AquaSimGoalDataSendTimer*>::iterator pos = m_dataSendTimerSet.begin();
@@ -892,10 +951,15 @@ AquaSimGoal::ProcessPSHAckPkt(Ptr<Packet> AckPkt)
 void
 AquaSimGoal::Insert2PktQs(Ptr<Packet> DataPkt, bool FrontPush)
 {
+	NS_LOG_FUNCTION(this);
 	VBHeader vbh;
   AquaSimHeader ash;
+	MacHeader mach;
+	AquaSimGoalAckHeader goalAckh;
   DataPkt->RemoveHeader(ash);
-	DataPkt->PeekHeader(ash);
+	DataPkt->RemoveHeader(mach);
+	DataPkt->RemoveHeader(goalAckh);
+	DataPkt->PeekHeader(vbh);
 
 	if( ash.GetNumForwards() > m_maxRetransTimes ) {
 		DataPkt=0;
@@ -905,7 +969,9 @@ AquaSimGoal::Insert2PktQs(Ptr<Packet> DataPkt, bool FrontPush)
 	    uint8_t tmp = ash.GetNumForwards();
 	    tmp++;
 	    ash.SetNumForwards(tmp);	//bit awkward.
-    DataPkt->AddHeader(ash);
+			DataPkt->AddHeader(goalAckh);
+			DataPkt->AddHeader(mach);
+    	DataPkt->AddHeader(ash);
 	}
 
 	if( FrontPush )
@@ -980,7 +1046,7 @@ AquaSimGoal::ProcessSinkAccumAckTimeout()
 	Ptr<Packet> AckPkt = MakeAckPkt( SinkAccumAckTimer.AckSet() );
 	SinkAccumAckTimer.AckSet().clear();
   AquaSimHeader ash;
-  AckPkt->PeekHeader(ash);
+	AckPkt->PeekHeader(ash);
 	Time AckTxtime = GetTxTime(ash.GetSize());
 	Time AckSendTime = m_TSQ.GetAvailableTime(Simulator::Now()+JitterStartTime(AckTxtime), AckTxtime);
 	m_TSQ.Insert(AckSendTime, AckSendTime+AckTxtime);
@@ -1071,7 +1137,10 @@ AquaSimGoal::PreSendPkt(Ptr<Packet> pkt, Time delay)
 void
 AquaSimGoal::SendoutPkt(Ptr<Packet> pkt)
 {
+	NS_LOG_FUNCTION(this);
+
   AquaSimHeader ash;
+	MacHeader mach;
 	AquaSimPtTag ptag;
   pkt->RemoveHeader(ash);
 	pkt->PeekPacketTag(ptag);
@@ -1094,21 +1163,25 @@ AquaSimGoal::SendoutPkt(Ptr<Packet> pkt)
 				case AquaSimPtTag::PT_GOAL_REQ:
 					{
 						AquaSimGoalReqHeader goalReqh;
+						pkt->RemoveHeader(mach);
 						pkt->RemoveHeader(goalReqh);
 
 						Time temp = goalReqh.GetSendTime() - (Simulator::Now() - ash.GetTimeStamp());
 						goalReqh.SetSendTime(temp);
 						pkt->AddHeader(goalReqh);
+						pkt->AddHeader(mach);
 					}
 					break;
 				case AquaSimPtTag::PT_GOAL_REP:
 					{
 						AquaSimGoalRepHeader goalReph;
+						pkt->RemoveHeader(mach);
 						pkt->RemoveHeader(goalReph);
 
 						Time temp = goalReph.GetSendTime() - (Simulator::Now() - ash.GetTimeStamp());
 						goalReph.SetSendTime(temp);
-						pkt->AddHeader(goalReph);;
+						pkt->AddHeader(goalReph);
+						pkt->AddHeader(mach);
 					}
 					break;
 				default:
@@ -1153,8 +1226,16 @@ AquaSimGoal::Dist(Vector Pos1, Vector Pos2)
 Time
 AquaSimGoal::GetBackoffTime(Ptr<Packet> ReqPkt)
 {
-  AquaSimGoalReqHeader goalReqh;
-  ReqPkt->PeekHeader(goalReqh);
+	//do we really need to send the entire packet for something like this???
+
+	AquaSimHeader ash;
+	MacHeader mach;
+	AquaSimGoalReqHeader goalReqh;
+	ReqPkt->RemoveHeader(ash);
+	ReqPkt->RemoveHeader(mach);
+	ReqPkt->PeekHeader(goalReqh);
+	//ReqPkt->AddHeader(mach);
+	//ReqPkt->AddHeader(ash);
 	double BackoffTime;
 
 	switch( m_backoffType ) {
@@ -1274,9 +1355,6 @@ AquaSimGoal::JitterStartTime(Time Txtime)
 	Time BeginTime = 5*Txtime*m_rand->GetValue();
 	return BeginTime;
 }
-
-} // namespace ns3
-
 
 
 //---------------------------------------------------------------------
@@ -1458,3 +1536,6 @@ ns3::TimeSchedQueue::Print(char* filename)
 	//fprintf(stream, "\n");
 	//fclose(stream);
 }
+
+
+} // namespace ns3
