@@ -165,8 +165,8 @@ bool AquaSimAloha::TxProcess(Ptr<Packet> pkt)
       alohaH.SetDA(asHeader.GetNextHop());
     }
 
+	pkt->AddHeader(alohaH);
   pkt->AddHeader(asHeader);
-  pkt->AddHeader(alohaH);
 
   PktQ_.push(pkt);//push packet to the queue
 
@@ -276,8 +276,9 @@ bool AquaSimAloha::RecvProcess(Ptr<Packet> pkt)
 {
   AquaSimHeader asHeader;
   AlohaHeader alohaH;
-  pkt->PeekHeader(asHeader);
+  pkt->RemoveHeader(asHeader);
   pkt->PeekHeader(alohaH);
+	pkt->AddHeader(asHeader);
 
   AquaSimAddress recver = alohaH.GetDA();
 
@@ -323,8 +324,12 @@ bool AquaSimAloha::RecvProcess(Ptr<Packet> pkt)
 
 void AquaSimAloha::ReplyACK(Ptr<Packet> pkt)//sendACK
 {
+	//wouldn't it make more sense to just include aloha header SA instead of pkt for parameters?
   AlohaHeader alohaH;
-  pkt->PeekHeader(alohaH);
+	AquaSimHeader asHeader;
+	pkt->RemoveHeader(asHeader);
+	pkt->PeekHeader(alohaH);
+	pkt->AddHeader(asHeader);
   AquaSimAddress Data_Sender = alohaH.GetSA();
 
   SendPkt(MakeACK(Data_Sender));
@@ -350,8 +355,8 @@ Ptr<Packet> AquaSimAloha::MakeACK(AquaSimAddress Data_Sender)
   alohaH.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
   alohaH.SetDA(Data_Sender);
 
+	pkt->AddHeader(alohaH);
   pkt->AddHeader(asHeader);
-  pkt->AddHeader(alohaH);
 	pkt->AddPacketTag(ptag);
   return pkt;
 }
