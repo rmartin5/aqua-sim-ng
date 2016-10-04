@@ -22,7 +22,7 @@
 #include "aqua-sim-header.h"
 #include "aqua-sim-header-mac.h"
 #include "aqua-sim-pt-tag.h"
-//#include "vbf/vectorbasedforward.h"
+//#include "vbf/vectorbasedforward.h" //not used.
 
 #include "ns3/log.h"
 #include "ns3/integer.h"
@@ -382,8 +382,6 @@ AquaSimCopeMac::AquaSimCopeMac():
     m_pktSize(200), m_isParallel(1), m_NDProcessMaxTimes(3), m_backoffCounter(0)
 
 {
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
-
   Simulator::Schedule(Seconds(0.002), &AquaSimCopeMac::NDProcessInitor, this); // start the nd process
   Simulator::Schedule(Seconds(0.001), &AquaSimCopeMac::Start, this);
 }
@@ -402,6 +400,7 @@ AquaSimCopeMac::Start()
   Time MaxRTT = Seconds(2*1000/1500.0);
   m_ackTimeOut = m_revAckAccumTime + m_dataAckAccumTime + 2*MaxRTT + Seconds(5); //5 is time error
 
+  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   Simulator::Schedule(m_dataAccuPeriod+Seconds(m_rand->GetValue()),&AquaSimCopeMac::DataSendTimerExpire,this);
   //Random::seed_heuristically();
 }
@@ -472,9 +471,8 @@ AquaSimCopeMac::TxProcess(Ptr<Packet> pkt)
   ch.SetDA(ash.GetNextHop());
   ch.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 
-  pkt->AddHeader(ash);
   pkt->AddHeader(ch);
-
+  pkt->AddHeader(ash);
   //insert packet into packet warehouse
   m_PktWH.Insert2PktQs(pkt);
   /*if (DataSendTimer.IsRunning()) {
@@ -493,8 +491,9 @@ AquaSimCopeMac::RecvProcess(Ptr<Packet> pkt)
 	AquaSimHeader ash;
 	CopeHeader ch;
 	AquaSimPtTag ptag;
-	pkt->PeekHeader(ash);
+	pkt->RemoveHeader(ash);
 	pkt->PeekHeader(ch);
+  pkt->AddHeader(ash);
 	pkt->PeekPacketTag(ptag);
 
 	AquaSimAddress dst = ch.GetDA();
@@ -645,8 +644,8 @@ AquaSimCopeMac::MakeND()
 
   NS_LOG_DEBUG("MakeND: packet size=" << pkt->GetSize());
 
-  pkt->AddHeader(ash);
   pkt->AddHeader(ch);
+  pkt->AddHeader(ash);
   pkt->AddPacketTag(ptag);
   return pkt;
 }
@@ -657,8 +656,9 @@ AquaSimCopeMac::ProcessND(Ptr<Packet> pkt)
 {
   AquaSimHeader ash;
   CopeHeader ch;
-  pkt->PeekHeader(ash);
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(ch);
+  pkt->AddHeader(ash);
 
   //printf("node %d recve ND from node %d\n", index_, mh->macSA());
 
@@ -731,8 +731,8 @@ AquaSimCopeMac::MakeNDReply()
   ch.SetDA(ash.GetNextHop());
   ch.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 
-  pkt->AddHeader(ash);
   pkt->AddHeader(ch);
+  pkt->AddHeader(ash);
   pkt->AddPacketTag(ptag);
 
   ProcessNDReply(pkt);
@@ -746,8 +746,9 @@ AquaSimCopeMac::ProcessNDReply(Ptr<Packet> pkt)
 {
   AquaSimHeader ash;
   CopeHeader ch;
-  pkt->PeekHeader(ash);
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(ch);
+  pkt->AddHeader(ash);
   NS_LOG_FUNCTION(this << m_device->GetNode() << ch.GetSA() << Simulator::Now().GetSeconds());
 
   uint32_t size = pkt->GetSize();
@@ -965,8 +966,8 @@ AquaSimCopeMac::MakeMultiRev()
 
   Ptr<Packet> tempPacket = Create<Packet>(data,size);
   pkt->AddAtEnd(tempPacket);
-  pkt->AddHeader(ash);
   pkt->AddHeader(ch);
+  pkt->AddHeader(ash);
   pkt->AddPacketTag(ptag);
 
   return pkt;
@@ -981,8 +982,9 @@ AquaSimCopeMac::ProcessMultiRev(Ptr<Packet> pkt)
 
   AquaSimHeader ash;
   CopeHeader ch;
-  pkt->PeekHeader(ash);
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(ch);
+  pkt->AddHeader(ash);
 
   uint32_t size = pkt->GetSize();
   uint8_t *data = new uint8_t[size];
@@ -1126,8 +1128,8 @@ AquaSimCopeMac::MakeMultiRevAck()
 
   Ptr<Packet> tempPacket = Create<Packet>(data,size);
   pkt->AddAtEnd(tempPacket);
-  pkt->AddHeader(ash);
   pkt->AddHeader(ch);
+  pkt->AddHeader(ash);
   pkt->AddPacketTag(ptag);
   return pkt;
 }
@@ -1141,8 +1143,9 @@ AquaSimCopeMac::ProcessMultiRevAck(Ptr<Packet> pkt)
   //start the the timer in the rev_elem
   AquaSimHeader ash;
   CopeHeader ch;
-  pkt->PeekHeader(ash);
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(ch);
+  pkt->AddHeader(ash);
 
   uint32_t size = pkt->GetSize();
   uint8_t *data = new uint8_t[size];
@@ -1194,8 +1197,9 @@ AquaSimCopeMac::RecordDataPkt(Ptr<Packet> pkt)
 {
   AquaSimHeader ash;
   CopeHeader ch;
-  pkt->PeekHeader(ash);
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(ch);
+  pkt->AddHeader(ash);
 
   DataAck* tmp = new DataAck;
   tmp->Sender = ch.GetSA();
@@ -1254,8 +1258,8 @@ AquaSimCopeMac::MakeDataAck()
 
   Ptr<Packet> tempPacket = Create<Packet>(data,size);
   pkt->AddAtEnd(tempPacket);
-  pkt->AddHeader(ash);
   pkt->AddHeader(ch);
+  pkt->AddHeader(ash);
   pkt->AddPacketTag(ptag);
   return pkt;
 }
@@ -1403,6 +1407,7 @@ AquaSimCopeMac::PrintDelayTable()
 void
 AquaSimCopeMac::NDProcessInitor()
 {
+  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   CtrlPktInsert(MakeND(), FemtoSeconds(m_rand->GetValue(0.0,m_NDWin)));
   if( m_NDProcessMaxTimes > 0 ) {
       Simulator::Schedule(FemtoSeconds(m_NDWin+0.9), &AquaSimCopeMac::NDProcessInitor, this);
@@ -1415,6 +1420,7 @@ AquaSimCopeMac::DataSendTimerExpire()
 {
   //is below calling self?
   //resched(mac_->m_dataAccuPeriod+Random::uniform(2.0));
+  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   Simulator::Schedule(m_dataAccuPeriod+Seconds(m_rand->GetValue(0.0,2.0)),&AquaSimCopeMac::DataSendTimerExpire,this);
   StartHandShake();
 }
