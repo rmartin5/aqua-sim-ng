@@ -89,8 +89,8 @@ protected:
   Ptr<Packet> MakeRTS(AquaSimAddress Recver);
   Ptr<Packet> MakeCTS(AquaSimAddress RTS_Sender);
 
-  void ProcessND(Ptr<Packet> pkt);
-  void ProcessRTS(Ptr<Packet> pkt);
+  void ProcessND(AquaSimAddress sa);
+  void ProcessRTS(AquaSimAddress sa);
 
   void SendRTS(Time DeltaTime);
   void SendPkt(Ptr<Packet> pkt);

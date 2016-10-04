@@ -23,7 +23,7 @@
 #include "aqua-sim-header-mac.h"
 #include "aqua-sim-pt-tag.h"
 #include "aqua-sim-address.h"
-//include vbf once created.
+#include "aqua-sim-header-routing.h"
 
 #include "ns3/log.h"
 #include "ns3/simulator.h"
@@ -82,8 +82,10 @@ AquaSimFama::NDTimerExpire()
   SendPkt(MakeND());
   m_famaNDCounter--;
 
-  if (m_famaNDCounter > 0)
+  if (m_famaNDCounter > 0) {
+		Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
     Simulator::Schedule(Seconds(m_rand->GetValue(0.0,m_NDPeriod)), &AquaSimFama::NDTimerExpire, this);
+	}
 }
 
 void
@@ -130,10 +132,12 @@ AquaSimFama::TxProcess(Ptr<Packet> pkt)
   }
   //figure out how to cache the packet will be sent out!!!!!!!
   AquaSimHeader asHeader;
-  //vbf header
+	VBHeader vbh;
   FamaHeader FamaH;
+	MacHeader mach;
 	AquaSimPtTag ptag;
   pkt->RemoveHeader(asHeader);
+	pkt->RemoveHeader(mach);
   pkt->RemoveHeader(FamaH);
 	pkt->RemovePacketTag(ptag);
 
@@ -147,14 +151,15 @@ AquaSimFama::TxProcess(Ptr<Packet> pkt)
   m_neighborId = (m_neighborId+1)%NeighborList.size();
 	ptag.SetPacketType(AquaSimPtTag::PT_FAMA);
 
-  //vbh->target_id.addr_ = asheader next_hop();
+  vbh.SetTargetAddr(asHeader.GetNextHop());
 
   FamaH.SetPType(FamaHeader::FAMA_DATA);
   FamaH.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
   FamaH.SetDA(asHeader.GetNextHop());
 
+	pkt->AddHeader(FamaH);
+	pkt->AddHeader(mach);
   pkt->AddHeader(asHeader);
-  pkt->AddHeader(FamaH);
 	pkt->AddPacketTag(ptag);
   PktQ.push(pkt);
 
@@ -176,14 +181,19 @@ AquaSimFama::TxProcess(Ptr<Packet> pkt)
 bool
 AquaSimFama::RecvProcess(Ptr<Packet> pkt)
 {
+	NS_LOG_FUNCTION(this);
+
   AquaSimHeader asHeader;
+	MacHeader mach;
   FamaHeader FamaH;
 	AquaSimPtTag ptag;
-  pkt->PeekHeader(asHeader);
+  pkt->RemoveHeader(asHeader);
+	pkt->RemoveHeader(mach);
   pkt->PeekHeader(FamaH);
 	pkt->PeekPacketTag(ptag);
+	pkt->AddHeader(mach);
+	pkt->AddHeader(asHeader);
   AquaSimAddress dst = FamaH.GetDA();
-
 
 
   if( m_backoffTimer.IsRunning() ) {
@@ -198,7 +208,7 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
    *So we do not care wether it collides with others
    */
   if( ( ptag.GetPacketType() == AquaSimPtTag::PT_FAMA)&& (FamaH.GetPType()==FamaHeader::ND) ) {
-      ProcessND(pkt);
+      ProcessND(FamaH.GetSA());
       pkt=0;
       return false;
   }
@@ -237,7 +247,7 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
 	case FamaHeader::RTS:
 	  //printf("%f: node %d receive RTS\n", NOW, index_);
 	  if( dst == m_device->GetAddress() ) {
-	      ProcessRTS(pkt);
+	      ProcessRTS(FamaH.GetSA());
 	  }
 	  DoRemote(m_CTSTxTime+2*m_maxPropDelay+m_estimateError);
 	  break;
@@ -267,6 +277,8 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
 void
 AquaSimFama::SendDataPkt()
 {
+	NS_LOG_FUNCTION(this);
+
   int PktQ_Size = PktQ.size();
   int SentPkt = 0;
   Time StartTime = Simulator::Now();
@@ -321,8 +333,11 @@ AquaSimFama::ProcessDataBackoffTimer()
 Ptr<Packet>
 AquaSimFama::MakeND()
 {
+	NS_LOG_FUNCTION(this);
+
   Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
+	MacHeader mach;
   FamaHeader FamaH;
 	AquaSimPtTag ptag;
 
@@ -337,20 +352,20 @@ AquaSimFama::MakeND()
   FamaH.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
   FamaH.SetDA(AquaSimAddress::GetBroadcast());
 
+	pkt->AddHeader(FamaH);
+	pkt->AddHeader(mach);
   pkt->AddHeader(asHeader);
-  pkt->AddHeader(FamaH);
 	pkt->AddPacketTag(ptag);
   return pkt;
 }
 
 
 void
-AquaSimFama::ProcessND(Ptr<Packet> pkt)
+AquaSimFama::ProcessND(AquaSimAddress sa)
 {
-  FamaHeader FamaH;
-  pkt->PeekHeader(FamaH);
-  NeighborList.push_back(FamaH.GetSA());
-  return;
+  //FamaHeader FamaH;
+  //pkt->PeekHeader(FamaH);
+	NeighborList.push_back(sa);
 }
 
 
@@ -361,6 +376,7 @@ AquaSimFama::MakeRTS(AquaSimAddress Recver)
 
   Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
+	MacHeader mach;
   FamaHeader FamaH;
 	AquaSimPtTag ptag;
 
@@ -375,8 +391,9 @@ AquaSimFama::MakeRTS(AquaSimAddress Recver)
   FamaH.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
   FamaH.SetDA(Recver);
 
+	pkt->AddHeader(FamaH);
+	pkt->AddHeader(mach);
   pkt->AddHeader(asHeader);
-  pkt->AddHeader(FamaH);
 	pkt->AddPacketTag(ptag);
   return pkt;
 }
@@ -398,11 +415,11 @@ AquaSimFama::SendRTS(Time DeltaTime)
 
 
 void
-AquaSimFama::ProcessRTS(Ptr<Packet> pkt)
+AquaSimFama::ProcessRTS(AquaSimAddress sa)
 {
-  FamaHeader FamaH;
-  pkt->PeekHeader(FamaH);
-  SendPkt( MakeCTS(FamaH.GetSA()));
+  //FamaHeader FamaH;
+  //pkt->PeekHeader(FamaH);
+  SendPkt( MakeCTS(sa) );
   FamaStatus = WAIT_DATA;
 }
 
@@ -412,9 +429,11 @@ Ptr<Packet>
 AquaSimFama::MakeCTS(AquaSimAddress RTS_Sender)
 {
   NS_LOG_FUNCTION(this << RTS_Sender);
+
   Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
-  FamaHeader FamaH;
+	MacHeader mach;
+	FamaHeader FamaH;
 	AquaSimPtTag ptag;
 
   asHeader.SetSize(GetSizeByTxTime(m_CTSTxTime.ToDouble(Time::S)));
@@ -428,8 +447,9 @@ AquaSimFama::MakeCTS(AquaSimAddress RTS_Sender)
   FamaH.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
   FamaH.SetDA(RTS_Sender);
 
+	pkt->AddHeader(FamaH);
+	pkt->AddHeader(mach);
   pkt->AddHeader(asHeader);
-  pkt->AddHeader(FamaH);
 	pkt->AddPacketTag(ptag);
   return pkt;
 }
@@ -448,6 +468,7 @@ AquaSimFama::CarrierDected()
 void
 AquaSimFama::DoBackoff()
 {
+	Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   Time backoffTime = MilliSeconds(m_rand->GetValue(0.0,10 * m_RTSTxTime.ToDouble(Time::MS)));
   FamaStatus = BACKOFF;
   if( m_backoffTimer.IsRunning() ) {
