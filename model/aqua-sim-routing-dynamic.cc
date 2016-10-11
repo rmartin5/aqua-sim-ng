@@ -156,6 +156,7 @@ NS_OBJECT_ENSURE_REGISTERED(AquaSimDynamicRouting);
 
 AquaSimDynamicRouting::AquaSimDynamicRouting() : m_pktTimer(this, 50)
 {
+  //should be implemented from helper/example script during node creation.
   AquaSimDynamicRouting(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()));
 }
 
@@ -239,7 +240,14 @@ AquaSimDynamicRouting::Recv(Ptr<Packet> p, const Address &dest, uint16_t protoco
 {
 	AquaSimHeader ash;
   Ipv4Header iph;
+  DRoutingHeader drh;
 	AquaSimPtTag ptag;
+  if (p->GetSize() <= 32)
+  {
+    p->AddHeader(iph);
+    p->AddHeader(drh);
+    p->AddHeader(ash);
+  }
 	p->RemoveHeader(ash);
   p->PeekPacketTag(ptag);
 	//struct hdr_cmn* ch = HDR_CMN(p);
@@ -279,6 +287,8 @@ AquaSimDynamicRouting::Recv(Ptr<Packet> p, const Address &dest, uint16_t protoco
 	// Otherwise, must forward the packet (unless TTL has reached zero)
 	else
   {
+    p->RemoveHeader(ash);
+    p->RemoveHeader(drh);
     p->RemoveHeader(iph);
     uint8_t ttl = iph.GetTtl() - 1;
 		if (ttl == 0) {
@@ -289,6 +299,8 @@ AquaSimDynamicRouting::Recv(Ptr<Packet> p, const Address &dest, uint16_t protoco
 		}
     iph.SetTtl(ttl);
     p->AddHeader(iph);
+    p->AddHeader(drh);
+    p->AddHeader(ash);
 		ForwardData(p);
 	}
   return true;
@@ -298,7 +310,10 @@ void
 AquaSimDynamicRouting::RecvDRoutingPkt(Ptr<Packet> p)
 {
 	DRoutingHeader drh;
+  AquaSimHeader ash;
+  p->RemoveHeader(ash);
 	p->PeekHeader(drh);
+  p->AddHeader(ash);
 
 	// All routing messages are sent from and to port RT_PORT,
 	// so we check it.
@@ -406,9 +421,9 @@ AquaSimDynamicRouting::SendDRoutingPkt()
 	//ash.addr_type() = NS_AF_INET;
 	//ash.uw_flag() = true;
 
-  p->AddHeader(ash);
-  p->AddHeader(drh);
   p->AddHeader(iph);
+  p->AddHeader(drh);
+  p->AddHeader(ash);
   p->AddPacketTag(ptag);
   Time jitter = Seconds(m_rand->GetValue()*0.5);
   Simulator::Schedule(jitter,&AquaSimRouting::SendDown,this,p,ash.GetNextHop(),jitter);

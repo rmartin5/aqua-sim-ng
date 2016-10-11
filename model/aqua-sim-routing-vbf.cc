@@ -282,10 +282,14 @@ bool
 AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber)
 {
   std::cout << "size:" << packet->GetSize() << "\n";
+  AquaSimHeader ash;
   VBHeader vbh;
-  if (packet->GetSize() == 50) packet->AddHeader(vbh);
+  if (packet->GetSize() <= 50)
+  {
+    packet->AddHeader(vbh);
+    packet->AddHeader(ash);
+  }
   AquaSimPtTag ptag;
-  packet->PeekHeader(vbh);
 
 	//unsigned char msg_type =vbh.GetMessType();  //unused
 	//unsigned int dtype = vbh.GetDataType();  //unused
@@ -299,8 +303,11 @@ AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumbe
 
   if (!vbh.GetMessType())
   {
+    packet->RemoveHeader(ash);
+    packet->RemoveHeader(vbh);
     vbh.SetMessType(AS_DATA);
     packet->AddHeader(vbh);
+    packet->AddHeader(ash);
   }
 
 	if( !m_enableRouting ) {
@@ -346,12 +353,14 @@ AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumbe
     Ptr<MobilityModel> fModel = fNode->GetNode()->GetObject<MobilityModel>();
     Ptr<MobilityModel> thisModel = thisNode->GetNode()->GetObject<MobilityModel>();
 
+    packet->RemoveHeader(ash);
     packet->RemoveHeader(vbh);
     Vector d = Vector(thisModel->GetPosition().x - fModel->GetPosition().x,
                           thisModel->GetPosition().y - fModel->GetPosition().y,
                           thisModel->GetPosition().z - fModel->GetPosition().z);
     vbh.SetExtraInfo_d(d);
     packet->AddHeader(vbh);
+    packet->AddHeader(ash);
 		ConsiderNew(packet);
 	}
 
@@ -368,8 +377,11 @@ AquaSimVBF::SetTransDistance(double range)
 void
 AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 {
+  AquaSimHeader ash;
   VBHeader vbh;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
 	unsigned char msg_type =vbh.GetMessType();
 	//unsigned int dtype = vbh.GetDataType();  //unused
 	double l;//,h;  //unused
@@ -421,9 +433,11 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 				//    if (!SendUp(p))
       	//	     NS_LOG_WARN("DataForSink: Something went wrong when passing packet up to dmux.");
 				//  printf("vectorbasedforward:%d send out the source-discovery \n",here_.addr_);
+        pkt->RemoveHeader(ash);
         pkt->RemoveHeader(vbh);
         vbh.SetMessType(SOURCE_DISCOVERY);
         pkt->AddHeader(vbh);
+        pkt->AddHeader(ash);
 				SetDelayTimer(pkt,l*JITTER);
 				// !!! need to re-think
 			}
@@ -609,8 +623,6 @@ AquaSimVBF::CreatePacket()
   AquaSimHeader ash;
   VBHeader vbh;
 	ash.SetSize(36);
-
-  pkt->RemoveHeader(vbh);
 	vbh.SetTs(Simulator::Now().ToDouble(Time::S));
 
 	//!! I add new part
@@ -621,8 +633,8 @@ AquaSimVBF::CreatePacket()
 	vbh.SetExtraInfo_o(curPos);
 	vbh.SetExtraInfo_f(curPos);
 
-  pkt->AddHeader(ash);
   pkt->AddHeader(vbh);
+  pkt->AddHeader(ash);
 	return pkt;
 }
 
@@ -634,7 +646,7 @@ AquaSimVBF::PrepareMessage(unsigned int dtype,
 {
 	Ptr<Packet> pkt = Create<Packet>();
   VBHeader vbh;
-  pkt->RemoveHeader(vbh);
+  AquaSimHeader ash;
 
 	vbh.SetMessType(msg_type);
 	vbh.SetPkNum(m_pkCount);
@@ -655,6 +667,7 @@ AquaSimVBF::PrepareMessage(unsigned int dtype,
 	   iph->dst_ = to_addr;
 	 */
   pkt->AddHeader(vbh);
+  pkt->AddHeader(ash);
 	return pkt;
 }
 
@@ -690,8 +703,8 @@ AquaSimVBF::MACprepare(Ptr<Packet> pkt)
 	}
   vbh.SetExtraInfo_f(f);
 
-  pkt->AddHeader(ash);
   pkt->AddHeader(vbh);
+  pkt->AddHeader(ash);
 	// printf("vectorbasedforward: last line MACprepare\n");
 }
 
@@ -732,8 +745,8 @@ AquaSimVBF::MACsend(Ptr<Packet> pkt, double delay)
 	//printf("vectorbased: the address type is :%d uid is %d\n", ash->addr_type(),pkt->uid_);
 	//printf("vectorbased: the packet type is :%d\n", ptag.GetPacketType());
 	// ll->handle(pkt);
-  pkt->AddHeader(ash);
   pkt->AddHeader(vbh);
+  pkt->AddHeader(ash);
   Simulator::Schedule(Seconds(delay),&AquaSimRouting::SendDown,this,
                         pkt,ash.GetNextHop(),Seconds(0));
 }
@@ -757,7 +770,10 @@ void
 AquaSimVBF::Timeout(Ptr<Packet> pkt)
 {
   VBHeader vbh;
+  AquaSimHeader ash;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
 	unsigned char msg_type =vbh.GetMessType();
 	vbf_neighborhood  *hashPtr;
 	//Ptr<Packet> p1;
@@ -849,7 +865,10 @@ void
 AquaSimVBF::CalculatePosition(Ptr<Packet> pkt)
 {
   VBHeader vbh;
+  AquaSimHeader ash;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
 	double fx=vbh.GetExtraInfo().f.x;
 	double fy=vbh.GetExtraInfo().f.y;
 	double fz=vbh.GetExtraInfo().f.z;
@@ -868,7 +887,10 @@ double
 AquaSimVBF::CalculateDelay(Ptr<Packet> pkt,Vector* p1)
 {
   VBHeader vbh;
+  AquaSimHeader ash;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
 	double fx=p1->x;
 	double fy=p1->y;
 	double fz=p1->z;
@@ -903,7 +925,10 @@ double
 AquaSimVBF::Distance(Ptr<Packet> pkt)
 {
   VBHeader vbh;
+  AquaSimHeader ash;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
   double tx=vbh.GetExtraInfo().f.x;
 	double ty=vbh.GetExtraInfo().f.y;
 	double tz=vbh.GetExtraInfo().f.z;
@@ -919,7 +944,10 @@ double
 AquaSimVBF::Advance(Ptr<Packet> pkt)
 {
   VBHeader vbh;
+  AquaSimHeader ash;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
 	double tx=vbh.GetExtraInfo().t.x;
 	double ty=vbh.GetExtraInfo().t.y;
 	double tz=vbh.GetExtraInfo().t.z;
@@ -935,7 +963,10 @@ double
 AquaSimVBF::Projection(Ptr<Packet> pkt)
 {
   VBHeader vbh;
+  AquaSimHeader ash;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
 	double tx=vbh.GetExtraInfo().t.x;
 	double ty=vbh.GetExtraInfo().t.y;
 	double tz=vbh.GetExtraInfo().t.z;
@@ -984,7 +1015,10 @@ bool
 AquaSimVBF::IsTarget(Ptr<Packet> pkt)
 {
   VBHeader vbh;
+  AquaSimHeader ash;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
 	if (vbh.GetTargetAddr().GetAsInt()==0) {
 
 		//  printf("vectorbased: advanced is %lf and my range is %f\n",Advance(pkt),vbh.GetRange());
@@ -998,7 +1032,10 @@ bool
 AquaSimVBF::IsCloseEnough(Ptr<Packet> pkt)
 {
   VBHeader vbh;
+  AquaSimHeader ash;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
   //double range=vbh.GetRange();  //unused
 	//double range=m_width;
 

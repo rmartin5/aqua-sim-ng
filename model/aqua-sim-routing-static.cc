@@ -102,7 +102,6 @@ AquaSimStaticRouting::Recv (Ptr<Packet> p, const Address &dest, uint16_t protoco
   NS_LOG_FUNCTION(this << p);
   AquaSimHeader ash;
   //struct hdr_ip* ih = HDR_IP(p);
-  p->PeekHeader (ash);
 
   if (IsDeadLoop (p))
     {
@@ -113,8 +112,10 @@ AquaSimStaticRouting::Recv (Ptr<Packet> p, const Address &dest, uint16_t protoco
     }
   else if (AmISrc (p))
     {
+			p->RemoveHeader(ash);
       ash.SetSize(ash.GetSize() + SR_HDR_LEN); //add the overhead of static routing's header
-    }
+			p->AddHeader(ash);
+		}
   else if (!AmINextHop (p))
     {
       NS_LOG_INFO("Dropping packet " << p << " due to duplicate");
@@ -127,7 +128,7 @@ AquaSimStaticRouting::Recv (Ptr<Packet> p, const Address &dest, uint16_t protoco
   p->RemoveHeader (ash);
   uint8_t numForwards = ash.GetNumForwards () + 1;
   ash.SetNumForwards (numForwards);
-  p->AddHeader (ash);
+  p->AddHeader(ash);
 
   if (AmIDst (p))
     {

@@ -119,6 +119,8 @@ AquaSimRouting::SendUp(Ptr<Packet> p)
   /*TODO this needs to be fully implemented with the multiplexer
 		  Or at least sent up for further processing
 		  ie. Sync, Localization, Application driven
+
+    NOTE: AquaSimPhyCmn::SendPktUp()
   */
   return true;
 }

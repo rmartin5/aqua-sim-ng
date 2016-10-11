@@ -101,7 +101,10 @@ MyPacketQueue::update(Ptr<Packet> p, double t)
 	uint32_t curID;
 	std::deque<QueueItem*>::iterator iter;
   DBRHeader dbrh;
+	AquaSimHeader ash;
+	p->RemoveHeader(ash);
   p->PeekHeader(dbrh);
+	p->AddHeader(ash);
 
 	// get current packet ID
 	curID = dbrh.GetPacketID();
@@ -110,7 +113,9 @@ MyPacketQueue::update(Ptr<Packet> p, double t)
 	iter = m_dq.begin();
 	while (iter != m_dq.end())
 	{
+		((*iter)->m_p)->RemoveHeader(ash);
     ((*iter)->m_p)->PeekHeader(dbrh);
+		((*iter)->m_p)->AddHeader(ash);
 		if (dbrh.GetPacketID() == curID)
 		{ // entry found
 			if ((*iter)->m_sendTime > t)
@@ -138,7 +143,10 @@ MyPacketQueue::purge(Ptr<Packet> p)
 	uint32_t curID;
 	std::deque<QueueItem*>::iterator iter;
   DBRHeader dbrh;
+	AquaSimHeader ash;
+	p->RemoveHeader(ash);
   p->PeekHeader(dbrh);
+	p->AddHeader(ash);
 
 	// get current packet ID
 	curID = dbrh.GetPacketID();
@@ -147,7 +155,9 @@ MyPacketQueue::purge(Ptr<Packet> p)
 	iter = m_dq.begin();
 	while (iter != m_dq.end())
 	{
+		((*iter)->m_p)->RemoveHeader(ash);
     ((*iter)->m_p)->PeekHeader(dbrh);
+		((*iter)->m_p)->AddHeader(ash);
 		if (dbrh.GetPacketID() == curID)
 		{
 			m_dq.erase(iter);
@@ -164,12 +174,15 @@ void MyPacketQueue::dump()
 {
 	std::deque<QueueItem*>::iterator iter;
   DBRHeader dbrh;
+	AquaSimHeader ash;
 	int i = 0;
 
 	iter = m_dq.begin();
 	while (iter != m_dq.end())
 	{
+		((*iter)->m_p)->RemoveHeader(ash);
     ((*iter)->m_p)->PeekHeader(dbrh);
+		((*iter)->m_p)->AddHeader(ash);
     NS_LOG_INFO("MyPacketQueue::dump:[" << i << "] packetID " <<
       dbrh.GetPacketID() << ", send time " << (*iter)->m_sendTime);
 		iter++;
@@ -687,8 +700,8 @@ AquaSimDBR::MakeBeacon(void)
   dbrh.SetMode(DBRH_BEACON);
 	dbrh.SetNHops(1);
 
+	p->AddHeader(dbrh);
   p->AddHeader(ash);
-  p->AddHeader(dbrh);
   p->AddPacketTag(ptag);
 	return p;
 }
@@ -724,6 +737,7 @@ AquaSimDBR::Send_Callback(void)
 {
 	QueueItem *q;
   DBRHeader dbrh;
+	AquaSimHeader ash;
 
 	// we're done if there is no packet in queue
 	if (m_pq.empty())
@@ -736,7 +750,9 @@ AquaSimDBR::Send_Callback(void)
                         q->m_p,AquaSimAddress::GetBroadcast(),Seconds(0));
 
 	// put the packet into cache
+	(q->m_p)->RemoveHeader(ash);
   (q->m_p)->PeekHeader(dbrh);
+	(q->m_p)->AddHeader(ash);
 	m_pc->AddPacket(dbrh.GetPacketID());
 
 	// reschedule the timer if there are
@@ -926,8 +942,8 @@ AquaSimDBR::ForwardPacket(Ptr<Packet> p, int flag)
 
 	// schedule the sending
 	NS_ASSERT(!ash.GetErrorFlag());
+	p->AddHeader(dbrh);
   p->AddHeader(ash);
-  p->AddHeader(dbrh);
   p->AddPacketTag(ptag);
   Simulator::Schedule(Seconds(delay),&AquaSimRouting::SendDown,this,
                         p,ash.GetNextHop(),Seconds(0));
@@ -939,8 +955,9 @@ AquaSimDBR::BeaconIn(Ptr<Packet> p)
 {
   AquaSimHeader ash;
   DBRHeader dbrh;
-  p->PeekHeader(ash);
+  p->RemoveHeader(ash);
   p->PeekHeader(dbrh);
+	p->AddHeader(ash);
 
   AquaSimAddress src = ash.GetSAddr();
 	//nsaddr_t src = Address::instance().get_nodeaddr(iph->saddr());
@@ -973,9 +990,17 @@ AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
   DBRHeader dbrh;
   Ipv4Header iph;
   AquaSimPtTag ptag;
-  p->PeekHeader(ash);
+
+	if (p->GetSize() <= 32)
+	{
+		p->AddHeader(iph);
+		p->AddHeader(dbrh);
+		p->AddHeader(ash);
+	}
+	
+  p->RemoveHeader(ash);
   p->PeekHeader(dbrh);
-  p->PeekHeader(iph);
+  p->AddHeader(ash);
   p->PeekPacketTag(ptag);
 
 	//double x, y, z;
@@ -1031,9 +1056,9 @@ AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
 
 	// broadcasting the pkt
 	NS_ASSERT(!ash.GetErrorFlag());
+	p->AddHeader(iph);
+	p->AddHeader(dbrh);
   p->AddHeader(ash);
-  p->AddHeader(dbrh);
-  p->AddHeader(iph);
   p->AddPacketTag(ptag);
   Simulator::Schedule(Seconds(0),&AquaSimRouting::SendDown,this,
                         p,ash.GetNextHop(),Seconds(0));
@@ -1059,10 +1084,6 @@ AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
     NS_LOG_DEBUG("AquaSimDBR::Recv: address:" <<
         GetNetDevice()->GetAddress() << ": packet is delivered!");
 
-    p->AddHeader(ash);
-    p->AddHeader(dbrh);
-    p->AddHeader(iph);
-    p->AddPacketTag(ptag);
 		// we may need to send it to upper layer agent
     if (!SendUp(p))
 		  NS_LOG_WARN("DataForSink: Something went wrong when passing packet up to dmux.");
@@ -1081,7 +1102,6 @@ AquaSimDBR::HandlePktForward(Ptr<Packet> p)
 {
   p->RemoveHeader(ash);
   p->PeekHeader(dbrh);
-  p->PeekHeader(iph);
   p->RemovePacketTag(ptag);
 
 	if (--(iph.GetTtl()) == 0)
@@ -1187,8 +1207,8 @@ AquaSimDBR::HandlePktForward(Ptr<Packet> p)
 		// only forward the packet from lower level
 		if (delta < DBR_DEPTH_THRESHOLD)
 		{
+			p->AddHeader(dbrh);
       p->AddHeader(ash);
-      p->AddHeader(dbrh);
       p->AddPacketTag(ptag);
 			m_pq.purge(p);
       p=0;
@@ -1254,8 +1274,8 @@ AquaSimDBR::HandlePktForward(Ptr<Packet> p)
 	// put the packet into sending queue
 	double expected_send_time = Simulator::Now().ToDouble(Time::S) + delay;
 
+	p->AddHeader(dbrh);
   p->AddHeader(ash);
-  p->AddHeader(dbrh);
   p->AddPacketTag(ptag);
 	QueueItem *q = new QueueItem(p, expected_send_time);
 
@@ -1295,9 +1315,16 @@ AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
   AquaSimHeader ash;
   DBRHeader dbrh;
   Ipv4Header iph;
-  p->PeekHeader(ash);
+	if (p->GetSize() <= 32)
+	{
+		p->AddHeader(iph);
+		p->AddHeader(dbrh);
+		p->AddHeader(ash);
+	}
+
+  p->RemoveHeader(ash);
   p->PeekHeader(dbrh);
-  p->PeekHeader(iph);
+	p->AddHeader(ash);
 
   AquaSimAddress src = ash.GetSAddr();
   AquaSimAddress dst = ash.GetDAddr();
@@ -1350,9 +1377,9 @@ AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
 	{// packet is for me
 
     NS_LOG_DEBUG("Packet is delivered!");
+		p->AddHeader(iph);
+		p->AddHeader(dbrh);
     p->AddHeader(ash);
-    p->AddHeader(dbrh);
-    p->AddHeader(iph);
 		// we may need to send it to upper layer agent
 		if (!SendUp(p))
 		  NS_LOG_WARN("DataForSink: Something went wrong when passing packet up to dmux.");
@@ -1397,9 +1424,9 @@ AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
     << dbrh.GetPrevHop() << ", cur:" << GetNetDevice()->GetAddress());
 
 	// it's time to forward the pkt now
+	p->AddHeader(iph);
+	p->AddHeader(dbrh);
   p->AddHeader(ash);
-  p->AddHeader(dbrh);
-  p->AddHeader(iph);
 	ForwardPacket(p);
   return true;
 }
@@ -1411,9 +1438,16 @@ AquaSimDBR::Recv2(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
   AquaSimHeader ash;
   DBRHeader dbrh;
   Ipv4Header iph;
-  p->PeekHeader(ash);
+	if (p->GetSize() <= 32)
+	{
+		p->AddHeader(iph);
+		p->AddHeader(dbrh);
+		p->AddHeader(ash);
+	}
+
+  p->RemoveHeader(ash);
   p->PeekHeader(dbrh);
-  p->PeekHeader(iph);
+	p->AddHeader(ash);
 
   AquaSimAddress src = ash.GetSAddr();
   AquaSimAddress dst = ash.GetDAddr();
@@ -1468,9 +1502,9 @@ AquaSimDBR::Recv2(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
 	{// packet is for me
 
     NS_LOG_DEBUG("Packet is delivered!");
+		p->AddHeader(iph);
+		p->AddHeader(dbrh);
     p->AddHeader(ash);
-    p->AddHeader(dbrh);
-    p->AddHeader(iph);
 		// we may need to send it to upper layer agent
 		if (!SendUp(p))
 		  NS_LOG_WARN("DataForSink: Something went wrong when passing packet up to dmux.");
@@ -1515,9 +1549,9 @@ AquaSimDBR::Recv2(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
     << dbrh.GetPrevHop() << ", cur:" << GetNetDevice()->GetAddress());
 
 	// it's time to forward the pkt now
+	p->AddHeader(iph);
+	p->AddHeader(dbrh);
   p->AddHeader(ash);
-  p->AddHeader(dbrh);
-  p->AddHeader(iph);
 	ForwardPacket(p);
   return true;
 }

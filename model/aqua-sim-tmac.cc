@@ -510,8 +510,9 @@ AquaSimTMac::ProcessShortACKNDPacket(Ptr<Packet> pkt)
   AquaSimHeader ash;
   AquaSimPtTag ptag;
 
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(ackndh);
-  pkt->PeekHeader(ash);
+  pkt->AddHeader(ash);
   pkt->RemovePacketTag(ptag);
 
   //ash.size()=m_shortPacketSize;
@@ -583,8 +584,11 @@ void
 AquaSimTMac::ProcessSYN(Ptr<Packet> pkt)
 {
   NS_LOG_FUNCTION(this << m_device->GetNode());
+  AquaSimHeader ash;
   TMacHeader synh;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(synh);
+  pkt->AddHeader(ash);
   //hdr_cmn* cmh=HDR_CMN(pkt);
 
   AquaSimAddress sender=synh.GetSenderAddr();
@@ -826,8 +830,8 @@ AquaSimTMac::TxND(Ptr<Packet> pkt, double window)
 	NS_LOG_FUNCTION(this << m_device->GetAddress());
 	TMacHeader synh;
 	AquaSimHeader ash;
-	pkt->RemoveHeader(synh);
   pkt->RemoveHeader(ash);
+	pkt->RemoveHeader(synh);
 
   ash.SetTxTime(GetTxTime(ash.GetSerializedSize() + synh.GetSerializedSize()));
 	//hdr_cmn::access(pkt)->txtime()=getTxTime(cmh->size());
@@ -847,8 +851,8 @@ AquaSimTMac::TxND(Ptr<Packet> pkt, double window)
 
 			synh.SetInterval(m_nextPeriod-t);
 		}
-    pkt->AddHeader(ash);
     pkt->AddHeader(synh);
+    pkt->AddHeader(ash);
 		SendDown(pkt);
 		m_tBackoffCounter=0; //clear
 
@@ -871,8 +875,8 @@ AquaSimTMac::TxND(Ptr<Packet> pkt, double window)
 			synh.SetInterval(m_nextPeriod-t);
 
 		}
-    pkt->AddHeader(ash);
     pkt->AddHeader(synh);
+    pkt->AddHeader(ash);
 		SendDown(pkt);
 		m_tBackoffCounter=0; //clear
 
@@ -890,8 +894,8 @@ AquaSimTMac::TxND(Ptr<Packet> pkt, double window)
 		if(d1>0) {
 			double backoff=m_rand->GetValue()*d1;
 			m_tBackoffWindow=window;
-      pkt->AddHeader(ash);
       pkt->AddHeader(synh);
+      pkt->AddHeader(ash);
 			// printf("broadcast Tx set timer at %f backoff is %f\n",Simulator::Now(),backoff);
 			Simulator::Schedule(Seconds(backoff),&AquaSimTMac::TBackoffHandler,this,pkt);
 			return;
@@ -1184,8 +1188,8 @@ AquaSimTMac::SendRTS()
 	Ptr<Packet> p=m_txbuffer.head();
   TMacHeader rtsh;
   AquaSimHeader ash;
+  p->RemoveHeader(ash);
   p->RemoveHeader(rtsh);
-  p->PeekHeader(ash);
 	AquaSimAddress receiver_addr=ash.GetNextHop();
 
 	m_txbuffer.LockBuffer();
@@ -1346,9 +1350,12 @@ void
 AquaSimTMac::ProcessCTSPacket(Ptr<Packet> pkt)
 {
   NS_LOG_FUNCTION(this << m_device->GetAddress() << Simulator::Now().GetSeconds());
-
+  AquaSimHeader ash;
   TMacHeader ctsh;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(ctsh);
+  pkt->AddHeader(ash);
+
 	//hdr_cmn* cmh=HDR_CMN(pkt);
 
 	AquaSimAddress sender_addr=ctsh.GetSenderAddr();
@@ -1517,8 +1524,9 @@ AquaSimTMac::ProcessRTSPacket(Ptr<Packet> pkt)
 
   TMacHeader rtsh;
   AquaSimHeader ash;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(rtsh);
-  pkt->PeekHeader(ash);
+  pkt->AddHeader(ash);
 
 	AquaSimAddress sender_addr=rtsh.GetSenderAddr();
 	AquaSimAddress receiver_addr=ash.GetNextHop();
@@ -1796,8 +1804,9 @@ AquaSimTMac::ProcessNDPacket(Ptr<Packet> pkt)
   NS_LOG_FUNCTION(this << m_device->GetAddress());
   TMacHeader ndh;
   AquaSimHeader ash;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(ndh);
-  pkt->PeekHeader(ash);
+  pkt->AddHeader(ash);
 
 	AquaSimAddress sender=ndh.GetSenderAddr();
 	if(m_arrivalTableIndex>=T_TABLE_SIZE) {
@@ -1822,8 +1831,9 @@ AquaSimTMac::ProcessDataPacket(Ptr<Packet> pkt)
 	//hdr_uwvb* vbh=HDR_UWVB(pkt);
 	TMacHeader tmach;
 	AquaSimHeader ash;
+  pkt->RemoveHeader(ash);
 	pkt->PeekHeader(tmach);
-	pkt->PeekHeader(ash);
+	pkt->AddHeader(ash);
 
 	AquaSimAddress dst=ash.GetNextHop();
 	m_dataSender=tmach.GetSenderAddr();
@@ -2018,8 +2028,8 @@ AquaSimTMac::TxData(AquaSimAddress receiver)
   TMacHeader datah;
   AquaSimHeader ash;
   AquaSimPtTag ptag;
-  pkt->RemoveHeader(datah);
   pkt->RemoveHeader(ash);
+  pkt->RemoveHeader(datah);
   pkt->RemovePacketTag(ptag);
 	//hdr_uwvb* hdr2=hdr_uwvb::access(pkt);
 
@@ -2163,8 +2173,9 @@ AquaSimTMac::RecvProcess(Ptr<Packet> pkt)
 {
   TMacHeader tmac;
   AquaSimHeader ash;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(tmac);
-  pkt->PeekHeader(ash);
+  pkt->AddHeader(ash);
 	AquaSimAddress dst=ash.GetNextHop();
 	int ptype=tmac.GetPtype();
 	AquaSimAddress receiver_addr=tmac.GetSenderAddr();

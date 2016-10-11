@@ -123,7 +123,7 @@ void AquaSimVBVAPktHashTable::MarkNextHopStatus(AquaSimAddress senderAddr,
 {
 	//Tcl_HashEntry *entryPtr;
 
-	neighborhood* hashPtr;
+	neighborhood* hashPtr = new neighborhood();
 	//unsigned int key[3];
 	//int newPtr;
 	// unsigned int forwarder_id=forwarder_id;
@@ -153,7 +153,7 @@ void
 AquaSimVBVAPktHashTable::PutInHash(VBHeader * vbh)
 {
 	//Tcl_HashEntry *entryPtr;
-	neighborhood* hashPtr;
+	neighborhood* hashPtr = new neighborhood();
   AquaSimAddress addr;
   unsigned int addrAsInt;
   unsigned int pkNum;
@@ -269,7 +269,7 @@ AquaSimVBVAPktHashTable::PutInHash(VBHeader * vbh)
 void AquaSimVBVAPktHashTable::PutInHash(VBHeader * vbh, Vector3D* sp, Vector3D* tp, Vector3D* fp, unsigned int status)
 {
 	//Tcl_HashEntry *entryPtr;
-	neighborhood* hashPtr;
+	neighborhood* hashPtr = new neighborhood();
 	//unsigned int key[3];
   unsigned int pkNum;
   AquaSimAddress addr;
@@ -474,8 +474,21 @@ bool AquaSimVBVA::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protoco
 
   NS_LOG_FUNCTION(this << GetNetDevice()->GetAddress() << Simulator::Now().GetSeconds());
 
+  AquaSimHeader ash;
   VBHeader vbh;
-  packet->PeekHeader(vbh);
+
+  //cheap hack for newly created packets from application layer
+  if (packet->GetSize() <= 32)
+  {
+    packet->AddHeader(vbh);
+    packet->AddHeader(ash);
+  }
+  else
+  {
+    packet->RemoveHeader(ash);
+    packet->PeekHeader(vbh);
+    packet->AddHeader(ash);
+  }
 
 	unsigned int msg_type =vbh.GetMessType();
 	double t1=vbh.GetTs();
@@ -615,8 +628,11 @@ void AquaSimVBVA::ProcessCenteredPacket(Ptr<Packet> pkt)
 		return;
 	}
 
+  AquaSimHeader ash;
   VBHeader vbh;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
 
 	AquaSimAddress source=vbh.GetSenderAddr();
 	unsigned pkt_num=vbh.GetPkNum();
@@ -684,6 +700,7 @@ void AquaSimVBVA::ProcessCenteredPacket(Ptr<Packet> pkt)
       " can not generate the corresponding packet");
 		return;
 	}
+  tpacket->RemoveHeader(ash);
   tpacket->RemoveHeader(vbh);
 
   Vector3D o = Vector3D(mp.x,mp.y,mp.z);
@@ -696,6 +713,7 @@ void AquaSimVBVA::ProcessCenteredPacket(Ptr<Packet> pkt)
 	//     printf("vectorbased:node %d sets its timer for %f at %f\n", here_.addr_, delay,NOW);
 
   tpacket->AddHeader(vbh);
+  tpacket->AddHeader(ash);
   Simulator::Schedule(Seconds(delay),&AquaSimVBVA::ProcessSelfcenteredTimeout,this,tpacket);
 
 	// added by peng xie 20071118
@@ -713,8 +731,11 @@ void AquaSimVBVA::ProcessBackpressurePacket(Ptr<Packet> pkt)
     return;
   }
 
+  AquaSimHeader ash;
   VBHeader vbh;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
 
   //unsigned int msg_type =vbh.GetMessType();
 
@@ -839,8 +860,11 @@ void AquaSimVBVA::ProcessBackpressurePacket(Ptr<Packet> pkt)
 
 void AquaSimVBVA::ConsiderNew(Ptr<Packet> pkt)
 {
+  AquaSimHeader(ash);
   VBHeader vbh;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
 	unsigned char msg_type =vbh.GetMessType();
 	AquaSimAddress source=vbh.GetSenderAddr();
 	unsigned int pkt_num=vbh.GetPkNum();
@@ -900,9 +924,11 @@ void AquaSimVBVA::ConsiderNew(Ptr<Packet> pkt)
 
 				//  send_to_demux(pkt,0);
 				//  printf("vectorbasedvoidavoidance:%d send out the source-discovery \n",here_.addr_);
+        pkt->RemoveHeader(ash);
         pkt->RemoveHeader(vbh);
         vbh.SetMessType(SOURCE_DISCOVERY);
         pkt->AddHeader(vbh);
+        pkt->AddHeader(ash);
 				SetForwardDelayTimer(pkt,l*JITTER);
 				// !!! need to re-think
 			}
@@ -1114,9 +1140,8 @@ void AquaSimVBVA::MACprepare(Ptr<Packet> pkt)
 }
 vbh.SetExtraInfo_f(f);
 
-pkt->AddHeader(ash);
 pkt->AddHeader(vbh);
-
+pkt->AddHeader(ash);
 }
 
 
@@ -1130,16 +1155,20 @@ void AquaSimVBVA::MACsend(Ptr<Packet> pkt, double delay)
   //pkt->RemovePacketTag(ptag);
 
   // ash->size() +=m_controlPacketSize;
-  pkt->AddHeader(ash);
   pkt->AddHeader(vbh);
+  pkt->AddHeader(ash);
+
   Simulator::Schedule(Seconds(delay),&AquaSimRouting::SendDown,this,
                         pkt,ash.GetNextHop(),Seconds(0));
 }
 
 bool AquaSimVBVA::IsControlMessage(const Ptr<Packet> pkt)
 {
+  AquaSimHeader ash;
   VBHeader vbh;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
   if ((vbh.GetMessType() == AS_DATA)||(vbh.GetMessType()==FLOODING))
       return false;
   else
@@ -1197,8 +1226,11 @@ void AquaSimVBVA::SetShiftTimer(Ptr<Packet> pkt, double c)
 		return;
 	}
 
+  AquaSimHeader ash;
   VBHeader vbh;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
 
 	AquaSimAddress source=vbh.GetSenderAddr();
 	unsigned int pkt_num=vbh.GetPkNum();
@@ -1238,7 +1270,9 @@ void AquaSimVBVA::SetShiftTimer(Ptr<Packet> pkt, double c)
 		return;
 	}
   VBHeader vbh1;
+  p->RemoveHeader(ash);
   p->PeekHeader(vbh1);
+  p->AddHeader(ash);
 	if((*status)==CENTER_FORWARDED) vbh1.SetMessType(EXPENSION);
 
 	//printf ("vectorbasedvoidavoidance (%d): sets void_avoidance timer at %f and delay is %f\n ",here_.addr_,NOW,c);
@@ -1258,8 +1292,9 @@ void AquaSimVBVA::ProcessBackpressureTimeout(Ptr<Packet> pkt)
 
   VBHeader vbh;
   AquaSimHeader ash;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
-  pkt->PeekHeader(ash);
+  pkt->AddHeader(ash);
 
 	int size=ash.GetSize();
 
@@ -1314,8 +1349,11 @@ void AquaSimVBVA::ProcessSelfcenteredTimeout(Ptr<Packet> pkt)
     AquaSimAddress source;
     AquaSimAddress forward;
     unsigned int pkt_num;
+    AquaSimHeader ash;
     VBHeader vbh;
+    pkt->RemoveHeader(ash);
     pkt->PeekHeader(vbh);
+    pkt->AddHeader(ash);
 
     source=vbh.GetSenderAddr();
     forward=vbh.GetForwardAddr();
@@ -1388,8 +1426,11 @@ void AquaSimVBVA::ProcessSelfcenteredTimeout(Ptr<Packet> pkt)
 void AquaSimVBVA::ProcessForwardTimeout(Ptr<Packet>  pkt)
 {
   //printf("vectorbased: node (%d) pkt  self-adaption timeout at %f\n", here_.addr_,NOW);
+  AquaSimHeader ash;
   VBHeader vbh;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
  unsigned char msg_type =vbh.GetMessType();
  neighborhood  *hashPtr;
  //int c=0;	//unused
@@ -1504,7 +1545,9 @@ void AquaSimVBVA::MakeCopy(Ptr<Packet> pkt)
 
 void AquaSimVBVA::SendFloodingPacket(Ptr<Packet> pkt)
 {
+  AquaSimHeader ash;
   VBHeader vbh;
+  pkt->RemoveHeader(ash);
   pkt->RemoveHeader(vbh);
 
   vbh.SetMessType(FLOODING);
@@ -1517,6 +1560,7 @@ void AquaSimVBVA::SendFloodingPacket(Ptr<Packet> pkt)
 
   vbh.SetForwardAddr(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()));
   pkt->AddHeader(vbh);
+  pkt->AddHeader(ash);
   //     printf ("vectorbasedvoidavoidance(%d): sends the flooding packet at %f !\n ",here_.addr_, NOW);
   MACprepare(pkt);
   MACsend(pkt,0);
@@ -1532,8 +1576,11 @@ void AquaSimVBVA::ProcessVoidAvoidanceTimeout(Ptr<Packet> pkt)
     //printf ("vectorbasedvoidavoidance(%d): void_avoidance timeout at  %f ! and the packet is empty\n ",here_.addr_, NOW);
  return;
   }
+  AquaSimHeader ash;
   VBHeader vbh;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
     AquaSimAddress source=vbh.GetSenderAddr();
     AquaSimAddress forward=vbh.GetForwardAddr();
     unsigned int pkt_num=vbh.GetPkNum();
@@ -1620,8 +1667,11 @@ void AquaSimVBVA::ProcessVoidAvoidanceTimeout(Ptr<Packet> pkt)
 
 void AquaSimVBVA::SendDataTermination(const Ptr<Packet> p)
 {
+  AquaSimHeader ash2;
   VBHeader vbh2;
+  p->RemoveHeader(ash2);
   p->PeekHeader(vbh2);
+  p->AddHeader(ash2);
      AquaSimAddress source=vbh2.GetSenderAddr();
      unsigned int pkt_num=vbh2.GetPkNum();
 
@@ -1661,8 +1711,8 @@ void AquaSimVBVA::SendDataTermination(const Ptr<Packet> p)
         //ash->addr_type() = NS_AF_ILINK;
         ash.SetDirection(AquaSimHeader::DOWN);
 
-        pkt->AddHeader(ash);
         pkt->AddHeader(vbh);
+        pkt->AddHeader(ash);
         pkt->AddPacketTag(ptag);
         MACsend(pkt, 0);
         NS_LOG_WARN("AquaSimVBVA: " << GetNetDevice()->GetAddress() <<
@@ -1727,8 +1777,8 @@ return NULL;
       //ash->addr_type() = NS_AF_ILINK;
       ash.SetDirection(AquaSimHeader::DOWN);
 
-      v_shift->AddHeader(ash);
       v_shift->AddHeader(vbh);
+      v_shift->AddHeader(ash);
       v_shift->AddPacketTag(ptag);
 	return v_shift;
 }
@@ -1752,6 +1802,9 @@ return NULL;
   VBHeader vbh;
   AquaSimHeader ash;
   AquaSimPtTag ptag;
+  vD->RemoveHeader(ash);
+  vD->RemoveHeader(vbh);
+  vD->RemovePacketTag(ptag);
 
   ptag.SetPacketType(AquaSimPtTag::PT_UWVB);
 
@@ -1769,8 +1822,8 @@ return NULL;
   //ash->addr_type() = NS_AF_ILINK;
   ash.SetDirection(AquaSimHeader::DOWN);
 
-  vD->AddHeader(ash);
   vD->AddHeader(vbh);
+  vD->AddHeader(ash);
   vD->AddPacketTag(ptag);
 	return vD;
 }
@@ -1794,6 +1847,9 @@ return NULL;
   VBHeader vbh;
   AquaSimHeader ash;
   AquaSimPtTag ptag;
+  backpressure->RemoveHeader(ash);
+  backpressure->RemoveHeader(vbh);
+  backpressure->RemovePacketTag(ptag);
 
   ptag.SetPacketType(AquaSimPtTag::PT_UWVBVA);
 
@@ -1812,8 +1868,8 @@ return NULL;
   //ash->addr_type() = NS_AF_ILINK;
   ash.SetDirection(AquaSimHeader::DOWN);
 
-  backpressure->AddHeader(ash);
   backpressure->AddHeader(vbh);
+  backpressure->AddHeader(ash);
   backpressure->AddPacketTag(ptag);
 	return backpressure;
 }
@@ -1834,8 +1890,11 @@ double AquaSimVBVA::CalculateFloodingDesirableness(const Ptr<Packet> pkt)
 
 double AquaSimVBVA::CalculateDesirableness(const Ptr<Packet> pkt)
 {
+  AquaSimHeader ash;
   VBHeader vbh;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
     Vector3D sp,tp,fp, mp;
 
 
@@ -2208,8 +2267,11 @@ void AquaSimVBVA::CalculatePosition(Ptr<Packet> pkt)
 
 double AquaSimVBVA::CalculateDelay(Ptr<Packet> pkt,Vector3D* p1)
 {
+  AquaSimHeader ash;
   VBHeader vbh;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
  double fx=p1->x;
  double fy=p1->y;
  double fz=p1->z;
@@ -2243,8 +2305,11 @@ double AquaSimVBVA::CalculateDelay(Ptr<Packet> pkt,Vector3D* p1)
 
 double AquaSimVBVA::Distance(const Ptr<Packet> pkt)
 {
+  AquaSimHeader ash;
   VBHeader vbh;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
   double tx=vbh.GetExtraInfo().f.x;
 	double ty=vbh.GetExtraInfo().f.y;
 	double tz=vbh.GetExtraInfo().f.z;
@@ -2260,8 +2325,11 @@ double AquaSimVBVA::Distance(const Ptr<Packet> pkt)
 
 double AquaSimVBVA::Advance(Ptr<Packet> pkt)
 {
+  AquaSimHeader ash;
   VBHeader vbh;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
   double tx=vbh.GetExtraInfo().t.x;
 	double ty=vbh.GetExtraInfo().t.y;
 	double tz=vbh.GetExtraInfo().t.z;
@@ -2276,8 +2344,11 @@ double AquaSimVBVA::Advance(Ptr<Packet> pkt)
 
 double AquaSimVBVA::Projection(Ptr<Packet> pkt)
 {
+  AquaSimHeader ash;
   VBHeader vbh;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
 	double tx=vbh.GetExtraInfo().t.x;
 	double ty=vbh.GetExtraInfo().t.y;
 	double tz=vbh.GetExtraInfo().t.z;
@@ -2310,8 +2381,11 @@ double AquaSimVBVA::Projection(Ptr<Packet> pkt)
 
 bool AquaSimVBVA::IsTarget(Ptr<Packet> pkt)
 {
+  AquaSimHeader ash;
   VBHeader vbh;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
   if (vbh.GetTargetAddr().GetAsInt()==0) {
     //  printf("vectorbased: advanced is %lf and my range is %f\n",advance(pkt),vbh->range);
     return (Advance(pkt)<vbh.GetRange());
@@ -2321,8 +2395,11 @@ bool AquaSimVBVA::IsTarget(Ptr<Packet> pkt)
 
 bool AquaSimVBVA::IsCloseEnough(Ptr<Packet> pkt)
 {
+  AquaSimHeader ash;
   VBHeader vbh;
+  pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
+  pkt->AddHeader(ash);
   //double range=vbh.GetRange();  //unused
 
   Vector3D sp, tp,p;
