@@ -37,6 +37,11 @@ namespace ns3 {
 
 class AquaSimNetDevice;
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Energy model class to assist in recording and keeping state of node's energy.
+ */
 class AquaSimEnergyModel : public DeviceEnergyModel
 {
 public:
@@ -59,18 +64,19 @@ public:
 
 
   //include callback if energy is <= 0.0 during decreasing... to call energy depleted on Phy using device...
-
+  ///Initial energy setters or for resetting
   void SetRxPower(double rxP);
   void SetTxPower(double txP);
   void SetIdlePower(double idleP);
   void SetEnergy(double energy);
   void SetInitialEnergy(double initialEnergy);
-
+  ///Energy getters
   double GetRxPower(void);
   double GetTxPower(void);
   double GetIdlePower(void);
   double GetEnergy(void);
   double GetInitialEnergy(void);
+  ///To be called after an event occurs
   void DecrIdleEnergy(double t, double idleP);
   void DecrRcvEnergy(double t, double rcv);
   void DecrTxEnergy(double t, double pT);

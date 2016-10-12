@@ -40,13 +40,6 @@
 
 namespace ns3 {
 
-/*
-  AquaSimDDOS is implemented to detect and throttle distributed
-    denial of service (DDoS) attacks in a spread and focused attack style.
-    Emulated to mimic certain components of Named Data Network (NDN),
-    particularly naming prefix of data, interest/data packets,
-    and Pending Interest Table (PIT)
-*/
 
 struct DdosTable{
   int nodeID;
@@ -87,6 +80,15 @@ struct MachineLearningStruct{
 class Packet;
 class Address;
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief   AquaSimDDOS is implemented to detect and throttle distributed
+ *   denial of service (DDoS) attacks in a spread and focused attack style.
+ *   Emulated to mimic certain components of Named Data Network (NDN),
+ *   particularly naming prefix of data, interest/data packets,
+ *   and Pending Interest Table (PIT)
+ */
 class AquaSimDDOS : public AquaSimRouting {
 public:
   AquaSimDDOS();

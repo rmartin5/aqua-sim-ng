@@ -44,6 +44,11 @@ namespace ns3 {
 
 class Packet;
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Common phy layer class. Currently only supports a single phy component per node. 
+ */
 class AquaSimPhyCmn : public AquaSimPhy
 {
 public:

@@ -36,6 +36,13 @@ class AquaSimPhy;
 class Packet;
 class AquaSimPropagation;
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Underwater channel support for adaptive environmental affects.
+ *
+ * Currently single channel support, but multi-channel in future updates.
+ */
 class AquaSimChannel : public Channel
 {
 	//friend class Topography;
@@ -45,10 +52,11 @@ public:
         //virtual int command(int argc, const char*const* argv);
   static TypeId GetTypeId (void);
 
+ /**
+  * Set/Get environmental factors and devices
+  */
   void SetNoiseGenerator (Ptr<AquaSimNoiseGen> noiseGen);
   void SetPropagation (Ptr<AquaSimPropagation> prop);
-  bool Recv(Ptr<Packet>, Ptr<AquaSimPhy>);
-
   void AddDevice (Ptr<AquaSimNetDevice> device);
   void RemoveDevice(Ptr<AquaSimNetDevice> device);
 
@@ -58,14 +66,18 @@ public:
   virtual uint32_t GetNDevices (void) const;
   Ptr<AquaSimNoiseGen> GetNoiseGen();
 
+  /// Incoming packet from specified phy layer (device)
+  bool Recv(Ptr<Packet>, Ptr<AquaSimPhy>);
+
   void PrintCounters();
   void FilePrintCounters(double,int);
 
 private:
+  /// Outgoing packet to speicified phy layer (device)
   bool SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp);
+  
   Time GetPropDelay (Ptr<AquaSimNetDevice> tdevice, Ptr<AquaSimNetDevice> rdevice);
   Ptr<MobilityModel> GetMobilityModel(Ptr<AquaSimNetDevice> device);
-
   double Distance(Ptr<AquaSimNetDevice> tdevice, Ptr<AquaSimNetDevice> rdevice);
 	/* For list-keeper, channel keeps list of mobilenodes
 	   listening on to it */

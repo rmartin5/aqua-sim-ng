@@ -32,7 +32,11 @@ typedef struct AquaSimRoutingBufferCell {
   double arrival_time;
 } routing_buffer_cell;
 
-
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Buffer helper class for underwater routing
+ */
 class AquaSimRoutingBuffer {
 public:
   AquaSimRoutingBuffer(int size=10, int myuser=1)

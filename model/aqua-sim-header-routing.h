@@ -38,9 +38,11 @@
 
 namespace ns3 {
 
-/*
- *  Dynamic routing
- */
+ /**
+  * \ingroup aqua-sim-ng
+  *
+  * \brief Dynamic routing header
+  */
 class DRoutingHeader : public Header
 {
 public:
@@ -72,9 +74,10 @@ private:
   //add by jun-------routing table
 }; // class DRoutingHeader
 
-/*
- *  Vector Based Routing
- */
+ /**
+  * \brief Vector Based routing header
+  * Protocol paper: engr.uconn.edu/~jcui/UWSN_papers/vbf_networking2006.pdf
+  */
 class VBHeader : public Header
 {
 public:
@@ -140,9 +143,10 @@ private:
 };  // class VBHeader
 
 
-/*
- *  Depth Based Routing Header
- */
+ /**
+  * \brief Depth Based routing header
+  * Protocol paper:  http://www.cse.uconn.edu/~jcui/UWSN_papers/Networking08_DBR.pdf
+  */
 class DBRHeader : public Header
 {
 public:
@@ -190,9 +194,10 @@ private:
 };  // class DBRHeader
 
 
-/*
- *  DDoS Routing Header
- */
+ /**
+  * \brief DDoS routing header
+  * Protocol paper: Data Centric Approach to Analyzing Security Threats in Underwater Sensor Networks
+  */
 class DDOSHeader : public Header
 {
 public:

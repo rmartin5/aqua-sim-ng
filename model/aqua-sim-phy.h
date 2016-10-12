@@ -57,6 +57,13 @@ namespace ns3 {
   class Packet;
   class Time;
 
+  /**
+   * \ingroup aqua-sim-ng
+   *
+   * \brief Base class for Phy layer.
+   *
+   * Overall modem status can be found under AquaSimNetDevice
+   */
   class AquaSimPhy : public Object
   {
   public:

@@ -48,7 +48,6 @@
 
  */
 
-//Geo-rOuting Aware MAC protocoL (GOAL)
 
 #include "ns3/random-variable-stream.h"
 #include "ns3/packet.h"
@@ -88,6 +87,11 @@ struct SchedElem{
 };
 
 //---------------------------------------------------------------------
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Helper timer for GOAL
+ */
 class AquaSimGoal_PreSendTimer: public Timer{
 public:
 	AquaSimGoal_PreSendTimer(AquaSimGoal* mac): Timer(), mac_(mac) {
@@ -105,6 +109,9 @@ protected:
 };
 
 //---------------------------------------------------------------------
+/**
+* \brief Helper timer for GOAL
+*/
 class AquaSimGoal_BackoffTimer: public Timer{
 public:
 	AquaSimGoal_BackoffTimer(AquaSimGoal* mac): Timer(), mac_(mac) {
@@ -135,6 +142,9 @@ protected:
 
 
 //---------------------------------------------------------------------
+/**
+* \brief Helper timer for GOAL
+*/
 class AquaSimGoal_AckTimeoutTimer: public Timer{
 public:
 	AquaSimGoal_AckTimeoutTimer(AquaSimGoal* mac): Timer(), mac_(mac) {
@@ -160,6 +170,9 @@ protected:
 };
 
 //---------------------------------------------------------------------
+/**
+* \brief Helper timer for GOAL
+*/
 class AquaSimGoal_NxtRoundTimer: public Timer{
 public:
 	AquaSimGoal_NxtRoundTimer(AquaSimGoal* mac): Timer(), mac_(mac) {
@@ -172,6 +185,9 @@ protected:
 };
 
 //---------------------------------------------------------------------
+/**
+* \brief Helper timer for GOAL
+*/
 class AquaSimGoalDataSendTimer: public Timer{
 public:
 	AquaSimGoalDataSendTimer(AquaSimGoal* mac): Timer(), mac_(mac) {
@@ -235,7 +251,11 @@ protected:
 
 
 //---------------------------------------------------------------------
-//used for accumulative Ack
+/**
+* \brief Helper timer for GOAL
+*
+* Used for accumulative ACK
+*/
 class AquaSimGoal_SinkAccumAckTimer: public Timer{
 public:
 	AquaSimGoal_SinkAccumAckTimer(AquaSimGoal* mac): Timer(), mac_(mac) {
@@ -261,7 +281,9 @@ struct RecvedInfo{
 	Time		RecvTime;
 };
 
-
+/**
+* \brief Helper queue for GOAL
+*/
 class TimeSchedQueue{
 private:
   std::list<SchedElem*> m_SchedQ;
@@ -284,6 +306,10 @@ public:
 
 //---------------------------------------------------------------------
 //check if the destination is same. If same, schedule the data together!
+
+/**
+* \brief Geo-rOuting Aware MAC protocoL (GOAL)
+*/
 class AquaSimGoal: public AquaSimMac{
 public:
 	AquaSimGoal();

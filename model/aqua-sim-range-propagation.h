@@ -25,15 +25,19 @@
 
 namespace ns3 {
 
-/**
- * Each node within the range specified by packet will receive a copy
- * still calculates attenuatin using rayleigh model
- * this would speed up the simulation if we don't expect
- * a very high accuracy in terms of collisions
- *
- * MUST make sure Pt and tx_range are consistent at the physical layer!!
- */
-
+ /**
+  * \ingroup aqua-sim-ng
+  *
+  * \brief Helper class used to detect which nodes are within propagation range of the sender.
+  *
+  *
+  * Each node within the range specified by packet will receive a copy
+  * still calculates attenuatin using rayleigh model
+  * this would speed up the simulation if we don't expect
+  * a very high accuracy in terms of collisions
+  *
+  * MUST make sure Pt and tx_range are consistent at the physical layer!!
+  */
 class AquaSimRangePropagation : public AquaSimSimplePropagation {
 public:
   AquaSimRangePropagation();

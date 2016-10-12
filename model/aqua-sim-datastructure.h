@@ -79,6 +79,11 @@
 
 namespace ns3 {
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Data structures and macros used by Aqua-Sim protocols.
+ */
 typedef struct RoutingVector{
    Vector start;
    Vector end;

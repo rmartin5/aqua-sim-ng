@@ -104,7 +104,11 @@ struct t_latency_record{
   double last_update_time; // the time of last update
 };
 
-
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief TMac, Timeout MAC, is an adaptive energy efficient MAC protocol to help minimize idle listening
+ */
 class AquaSimTMac: public AquaSimMac {
 
 public:

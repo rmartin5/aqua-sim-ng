@@ -61,8 +61,10 @@ struct PktSubmissionUnit{
 };
 
 /**
-* submit packets in signal cache to upper layer
-*/
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Helper timer to submit packets in signal cache to upper layer
+ */
 class PktSubmissionTimer : public Timer{
 private:
   //std::priority_queue<PktSubmissionUnit> m_waitingList; not necessary.
@@ -77,9 +79,8 @@ public:
 };  // class PktSubmissionTimer
 
 /**
-* this SignalCache simulates the way that how modems handle
-* signals without considering multi-path effect
-*/
+ * \brief Signal Cache class which simulates the way that modems handle signals without considering multi-path effect
+ */
 class AquaSimSignalCache : public Object {
 public:
   AquaSimSignalCache(void);
@@ -124,11 +125,14 @@ private:
 };  //class AquaSimSignalCache
 
 
-/**
-* this class considers multi-path effect, what's the difference?
-*/
-class AquaSimMultiPathSignalCache : public AquaSimSignalCache {
 
+/**
+ * \brief Multi-path signal cache. Planned to be implemented in future updates.
+ */
+class AquaSimMultiPathSignalCache : public AquaSimSignalCache {
+  /**
+  * this class considers multi-path effect, what's the difference?
+  */
   //TODO - in future work.
 
 };  //class AquaSimMultiPathSignalCache

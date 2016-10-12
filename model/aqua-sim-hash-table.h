@@ -35,7 +35,11 @@ struct ValueRecord{
   int num;
 };
 
-
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Basic hash table
+ */
 class AquaSimHashTable : public Object {
 public:
   AquaSimHashTable()

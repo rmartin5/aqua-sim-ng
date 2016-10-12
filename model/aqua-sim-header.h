@@ -39,14 +39,15 @@ struct addr_t {
   int32_t port;   /* Currently not used */
 };
 
-/**
- *  Aqua-Sim Header
- */
-
+ /**
+  * \ingroup aqua-sim-ng
+  *
+  * \brief Generic Aqua-Sim header
+  */
 class AquaSimHeader : public Header
 {
 public:
-
+  /// packet direction within device's stack
   enum dir_t { DOWN = 0, NONE = 1, UP = 2 };
 
   AquaSimHeader();
@@ -111,7 +112,9 @@ private:
 
 }; //class AquaSimHeader
 
-
+/**
+ * \brief Packet stamp used by lower layers
+ */
 class AquaSimPacketStamp : public Header
 {
 public:

@@ -45,6 +45,11 @@ but for this port this ns2 version will suffix
 
 class AquaSimMobilityPattern;
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Position Helper for mobility model
+ */
 class AquaSimPosUpdateHelper : public Timer {
 public:
   AquaSimPosUpdateHelper(AquaSimMobilityPattern *mP) : Timer() {
@@ -71,6 +76,9 @@ public:
 };  // class Location3D
 */
 
+/**
+* \brief Speed Helper for mobility model
+*/
 class Speed{
 private:
   Vector m_speedVect;
@@ -98,6 +106,9 @@ struct LocationCacheElem {
   }
 };
 
+/**
+* \brief Location Helper for mobility model
+*/
 class LocationCache{
 private:
   std::vector<LocationCacheElem> m_locations;
@@ -131,10 +142,8 @@ public:
 
 
 /**
-* base class of mobility pattern
-* AquaSimNode will possess a member of this type
+* \brief Base class for mobility pattern.
 */
-
 class AquaSimMobilityPattern : public MobilityModel {
 public:
   AquaSimMobilityPattern();
@@ -173,7 +182,7 @@ private:
   virtual void DoSetPosition (const Vector &position);
   virtual Vector DoGetVelocity (void) const;
 
-protected:  
+protected:
   LocationCache *m_lc;
   double m_updateInterval;
   AquaSimPosUpdateHelper m_posUpdateHelper;

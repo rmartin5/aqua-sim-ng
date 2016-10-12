@@ -34,9 +34,10 @@
 
 namespace ns3 {
 
-
-/*
- *  Generic Mac Header
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Generic MAC header with demux
  */
 class MacHeader : public Header
 {
@@ -70,11 +71,10 @@ private:
   uint8_t m_demuxPType;
 };  // MacHeader
 
-
 /**
-*  TMAC Header
-*     (RMAC uses same header, due to similarity)
-*/
+ * \brief TMAC header
+ *     (RMAC uses same header, due to similarity)
+ */
 class TMacHeader : public Header
 {
 public:
@@ -130,10 +130,9 @@ private:
 };  // class TMacHeader
 
 
-/**
- *  Aloha Header
- */
-
+ /**
+  * \brief Aloha header
+  */
 class AlohaHeader : public Header
 {
 public:
@@ -167,11 +166,9 @@ private:
   uint8_t m_pType;
 };  // class AlohaHeader
 
-
-/**
- *  FAMA Header
- */
-    //this is almost identical to AlohaHeader and could probably be condensed.
+ /**
+  * \brief FAMA header
+  */
 class FamaHeader : public Header
 {
 public:
@@ -208,10 +205,9 @@ private:
 };  // class FamaHeader
 
 
-/**
- *  COPE-MAC Header
- */
-//this is almost identical to AlohaHeader and could probably be condensed.
+ /**
+  * \brief COPE-MAC header
+  */
 class CopeHeader : public Header
 {
 public:
@@ -251,9 +247,8 @@ private:
 
 
 /**
-*  Slotted FAMA Header
-*/
-//this is almost identical to AlohaHeader and could probably be condensed.
+ * \brief Slotted FAMA header
+ */
 class SFamaHeader : public Header
 {
 public:
@@ -289,10 +284,9 @@ private:
 
 };  // class SFamaHeader
 
-
 /**
-*  UWAN SYNC Header
-*/
+ * \brief UWAN SYNC header
+ */
 class UwanSyncHeader : public Header
 {
 public:
@@ -316,8 +310,8 @@ private:
 
 
 /**
-*   Localization Header
-*/
+ * \brief Localization header
+ */
 class LocalizationHeader : public Header
 {
 public:

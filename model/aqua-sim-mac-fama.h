@@ -36,6 +36,11 @@ class Time;
 class Packet;
 class AquaSimAddress;
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief FAMA implementation 
+ */
 class AquaSimFama: public AquaSimMac {
 public:
   AquaSimFama();

@@ -29,7 +29,11 @@ namespace ns3 {
 #define BC_MAXIMUMCOUNTER 4 //default is 4 the maximum number of backoff
 #define BC_CALLBACK_DELAY 0.0001 // the interval between two consecutive sendings
 
-
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Broadcast MAC using basic backoff mechanism
+ */
 class AquaSimBroadcastMac : public AquaSimMac
 {
 public:

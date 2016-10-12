@@ -40,6 +40,11 @@ namespace ns3 {
 //class AquaSimNetDevice;
 class AquaSimMac;
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Base class for underwater routing. Consists of basic routing components, setters/getters, and send up/down to other layers.
+ */
 class AquaSimRouting : public Object
 {
 public:

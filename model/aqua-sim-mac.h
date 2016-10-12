@@ -44,6 +44,15 @@ class AquaSimNetDevice;
 class AquaSimPhy;
 class AquaSimRouting;
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Base class for underwater MAC protocols
+ *  Mainly supports incoming/outgoing of packets among stack
+ *
+ *  Implemented with a sender queue to delay packets if the device's status is set to busy (currently receiving or sending).
+ *  This is meant to remove the "Busy Terminal Problem".
+ */
 class AquaSimMac : public Object {
 public:
   AquaSimMac(void);

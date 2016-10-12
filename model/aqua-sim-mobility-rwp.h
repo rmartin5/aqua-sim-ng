@@ -25,6 +25,11 @@
 
 namespace ns3{
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief RWP mobility model
+ */
 class AquaSimMobilityRWP : public AquaSimMobilityPattern {
 public:
 	AquaSimMobilityRWP();

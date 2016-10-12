@@ -46,13 +46,6 @@ namespace ns3 {
 
 namespace ns3 {
 
-
-/**
- * \Underwater net device structure.
- *
- * A basic underwater net device structure. Ported from UWSN Lab's Aqua-Sim on NS2.
- */
-
 class Channel;
 class PromiscReceiveCallback;
 class MobilityModel;
@@ -64,6 +57,11 @@ class AquaSimChannel;
 class AquaSimSync;
 class AquaSimLocalization;
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Underwater NetDevice structure. Ported from UWSN Lab's Aqua-Sim on NS-2.
+ */
 class AquaSimNetDevice : public NetDevice
 {
 public:

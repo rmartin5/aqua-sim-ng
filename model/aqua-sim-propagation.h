@@ -35,13 +35,6 @@ class MobilityModel;
 
 extern const double SOUND_SPEED_IN_WATER;
 
-/*
- * \ Underwater propagation model base class.
- *
- * Calculates the Pr by which the receiver will get a packet sent by
- * the node that applied the tx PacketStamp for a given interface type
- */
-
 
 struct PktRecvUnit {
   double pR;
@@ -50,6 +43,14 @@ struct PktRecvUnit {
   PktRecvUnit () : pR(-1), pDelay(-1), recver(NULL) {}
 };
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Base class for underwater propagation model.
+ *
+ * Calculates the Pr by which the receiver will get a packet sent by
+ * the node that applied the tx PacketStamp for a given interface type
+ */
 class AquaSimPropagation : public Object
 {
 public:

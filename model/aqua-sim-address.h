@@ -19,8 +19,7 @@
  */
 
 /************
-    Inspired by UanAddress but implemented for future modification
-    to adhere to aqua-sim modification.
+
 *************/
 
 #ifndef AQUA_SIM_ADDRESS_H
@@ -35,7 +34,13 @@
 namespace ns3 {
 
 class Address;
-
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Specialized address for distinguishing nodes and protocol support. 16 bit addresses supported.
+ *
+ * Inspired by UanAddress but implemented for future modification to adhere to aqua-sim modification.
+ */
 class AquaSimAddress
 {
 public:

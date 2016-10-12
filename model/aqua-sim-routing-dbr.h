@@ -167,6 +167,12 @@ private:
 	int m_maxSize;				// max cache size
 };  // class ASPktCache
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Depth Based Routing protocol
+ * http://www.cse.uconn.edu/~jcui/UWSN_papers/Networking08_DBR.pdf
+ */
 class AquaSimDBR : public AquaSimRouting {
 	friend class DBR_BeaconTimer;
 	friend class DBR_SendingTimer;

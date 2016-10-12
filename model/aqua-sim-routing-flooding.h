@@ -33,6 +33,11 @@ class AquaSimAddress;
 class Packet;
 class Time;
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Flooding routing approach. 
+ */
 class AquaSimFloodingRouting : public AquaSimRouting {
  public:
   AquaSimFloodingRouting();

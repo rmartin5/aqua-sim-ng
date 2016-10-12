@@ -83,7 +83,11 @@ struct PktList{
 
 class AquaSimCopeMac;
 
-//all pending packets are stored in this data structure
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Stores all pending packets within this data structure
+ */
 class PktWareHouse{
   friend class AquaSimCopeMac;
 private:
@@ -125,6 +129,9 @@ struct DataAck{
 };
 
 //---------------------------------------------------
+/**
+ * \brief Helper timer for COPE
+ */
 class PktSendTimer: public Timer{
 public:
   PktSendTimer(Ptr<AquaSimCopeMac> mac, Ptr<Packet> pkt): Timer() {
@@ -166,7 +173,9 @@ struct RevElem{
   ~RevElem();
 };
 
-
+/**
+ * \brief Helper queue for COPE
+ */
 class RevQueues : public Object{
 private:
   RevElem* Head_;
@@ -200,7 +209,9 @@ struct NDRecord{
 	Time nd_recvtime;
 };
 
-
+/**
+ * \brief Helper timer for COPE
+ */
 class AckWaitTimer: public Timer {
 public:
   AckWaitTimer():Timer() {}
@@ -209,7 +220,9 @@ public:
   Timer m_ackWaitTimer;
 };
 
-
+/**
+ * \brief COPE-MAC implementation
+ */
 class AquaSimCopeMac: public AquaSimMac {
 public:
   AquaSimCopeMac();

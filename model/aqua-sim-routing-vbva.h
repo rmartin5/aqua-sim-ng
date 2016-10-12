@@ -52,6 +52,11 @@ typedef std::pair<AquaSimAddress, unsigned int> hash_entry;
 
 class VBHeader;
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Packet Hash table for VBVA to assist in specialized tables.
+ */
 class AquaSimVBVAPktHashTable {
 public:
   std::map<hash_entry,neighborhood*> m_htable;
@@ -73,7 +78,9 @@ public:
   neighborhood* GetHash(AquaSimAddress senderAddr, unsigned int pkt_num);
 };  // class AquaSimVBVAPktHashTable
 
-
+/**
+ * \brief Data Hash table for VBVA to assist in specialized tables.
+ */
 class AquaSimVBVADataHashTable {
 public:
   std::map<hash_entry,unsigned int*> m_htable;
@@ -89,8 +96,11 @@ public:
   unsigned int *GetHash(AquaSimAddress, unsigned int);
 };  // class AquaSimVBVADataHashTable
 
-/*
- *  Vectorbased Void Avoidance
+
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Vector Based Void Avoidance class.
  */
 class AquaSimVBVA : public AquaSimRouting {
 public:

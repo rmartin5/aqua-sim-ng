@@ -33,7 +33,11 @@ struct buffer_cell{
   double delay;
 };
 
-
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Transmission buffer helper 
+ */
 class TransmissionBuffer {
 public:
   TransmissionBuffer(){

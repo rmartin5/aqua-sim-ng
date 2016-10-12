@@ -25,6 +25,11 @@
 
 namespace ns3 {
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Modulation class to assist channel/physical simulation.
+ */
 class AquaSimModulation : public Object {
 
 public:

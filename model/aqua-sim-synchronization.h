@@ -27,22 +27,16 @@
 
 namespace ns3 {
 
-/*remove XXX
-//sender-reciever TSHL-RS
-//receiver-reciever RBS-UW
-
-//base class...
-//clock skew/skew correction (PHASE1) (beacon messages)
-//clock offset/clock correction (PHASE2)
-*/
-
-/***
-  Currently is strictly applying synchronization techniques
-  without simulating the need for them (i.e. no internal clocks
-  are handled since we rely on the simulator clock).
-***/
 class Packet;
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Syncronization class for underwater.
+ *
+ * Currently is strictly applying synchronization techniques without simulating the need for them (i.e. no internal clocks
+ *  are handled since we rely on the simulator clock).
+ */
 class AquaSimSync : public Object {
 public:
   AquaSimSync();

@@ -26,6 +26,11 @@
 
 namespace ns3{
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Kinematic Mobility Model
+ */
 class AquaSimMobilityKinematic : public AquaSimMobilityPattern {
 public:
 	AquaSimMobilityKinematic();

@@ -40,6 +40,11 @@ enum BackoffType{
       HH_VBF
 };
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief GOAL requester header
+ */
 class AquaSimGoalReqHeader : public Header {
 public:
   AquaSimGoalReqHeader();
@@ -48,12 +53,14 @@ public:
 
   static uint32_t size(BackoffType type);
 
+  /// Sender / Receiver / Destination addresses
   void SetSA(AquaSimAddress sa);
   void SetRA(AquaSimAddress ra);
   void SetDA(AquaSimAddress da);
   void SetSendTime(Time sendtime);
   void SetTxTime(Time txtime);
   void SetReqID(uint8_t reqid);
+  /// Sender's / Sink's / Source's position
   void SetSenderPos(Vector senderPos);
   void SetSinkPos(Vector sinkPos);
   void SetSourcePos(Vector sourcePos);
@@ -91,7 +98,9 @@ private:
 
 }; // class AquaSimGoalReqHeader
 
-
+/**
+ * \brief GOAL replyer header
+ */
 class AquaSimGoalRepHeader : public Header {
 public:
   AquaSimGoalRepHeader();
@@ -142,6 +151,9 @@ private:
 }; // class AquaSimGoalRepHeader
 
 
+/**
+ * \brief GOAL ACK header
+ */
 /*only the destination use this message*/
 class AquaSimGoalAckHeader : public Header {
 public:

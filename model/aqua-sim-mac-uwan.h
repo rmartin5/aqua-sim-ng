@@ -40,6 +40,11 @@ namespace ns3{
 class AquaSimUwan;
 struct ScheduleTime;
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Helper timer class for UWAN
+ */
 class AquaSimUwan_WakeTimer: public Timer {
 friend class AquaSimUwan;
 friend class ScheduleQueue;
@@ -82,8 +87,9 @@ struct ScheduleTime {
 };
 
 
-/*The SendTime in SYNC should be translated to absolute time
- *and then insert into ScheduleQueue
+/**
+ * \brief Helper scheduling class for UWAN
+ * The SendTime in SYNC should be translated to absolute time and then insert into ScheduleQueue
  */
 class ScheduleQueue{
 private:
@@ -116,7 +122,9 @@ public:
 };
 
 
-
+/**
+ * \brief Helper timer class for UWAN
+ */
 class AquaSimUwan_SleepTimer: public Timer {
 friend class AquaSimUwan;
 public:
@@ -128,7 +136,9 @@ protected:
 	void expire();
 };
 
-
+/**
+ * \brief Helper timer class for UWAN
+ */
 class AquaSimUwan_PktSendTimer: public Timer {
 friend class AquaSimUwan;
 public:
@@ -154,7 +164,9 @@ protected:
 	void expire();
 };
 
-
+/**
+ * \brief Helper timer class for UWAN
+ */
 class AquaSimUwan_StartTimer: public Timer {
 friend class AquaSimUwan;
 public:
@@ -167,7 +179,9 @@ protected:
 	void expire();
 };
 
-
+/**
+ * \brief UWAN protocol implementation
+ */
 class AquaSimUwan: public AquaSimMac{
 	friend class AquaSimUwan_CallbackHandler;
 	friend class AquaSimUwan_WakeTimer;

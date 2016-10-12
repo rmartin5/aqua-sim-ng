@@ -38,7 +38,11 @@ namespace ns3 {
 class AquaSimSFama;
 class AquaSimAddress;
 
-
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Helper timer class for SFAMA
+ */
 class AquaSimSFama_Wait_Send_Timer: public Timer {
   friend class AquaSimSFama;
 public:
@@ -70,7 +74,9 @@ protected:
 	void expire();
 };
 
-
+/**
+ * \brief Helper timer class for SFAMA
+ */
 class AquaSimSFama_Wait_Reply_Timer: public Timer {
   friend class AquaSimSFama;
 public:
@@ -90,7 +96,9 @@ protected:
 	void expire();
 };
 
-
+/**
+ * \brief Helper timer class for SFAMA
+ */
 class AquaSimSFama_Backoff_Timer: public Timer{
   friend class AquaSimSFama;
 public:
@@ -109,6 +117,9 @@ protected:
 	void expire();
 };
 
+/**
+ * \brief Helper timer class for SFAMA
+ */
 class AquaSimSFama_DataSend_Timer: public Timer {
   friend class AquaSimSFama;
 public:
@@ -133,6 +144,9 @@ enum AquaSimSFama_Status{
 	  BACKOFF_FAIR
 };
 
+/**
+ * \brief Slotted FAMA protocol
+ */
 class AquaSimSFama: public AquaSimMac{
 public:
 	AquaSimSFama();
@@ -187,12 +201,13 @@ private:
 
   int m_slotNumHandler;
 protected:
+  /// creating packets, with the appropriate headers, using the assigned parameter(s)
 	Ptr<Packet> MakeRTS(AquaSimAddress recver, int slot_num);
 	Ptr<Packet> MakeCTS(AquaSimAddress rts_sender, int slot_num);
 	Ptr<Packet> FillDATA(Ptr<Packet> data_pkt);
 	Ptr<Packet> MakeACK(AquaSimAddress data_sender);
 
-
+  /// handle different packet types
 	void ProcessRTS(Ptr<Packet> rts_pkt);
 	void ProcessCTS(Ptr<Packet> cts_pkt);
 	void ProcessDATA(Ptr<Packet> data_pkt);

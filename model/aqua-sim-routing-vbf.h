@@ -42,6 +42,11 @@ struct vbf_neighborhood{
 
 typedef std::pair<AquaSimAddress, unsigned int> hash_entry;
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Packet Hash table for VBF to assist in specialized tables.
+ */
 class AquaSimPktHashTable {
 public:
   std::map<hash_entry,vbf_neighborhood*> m_htable;
@@ -63,6 +68,9 @@ public:
 //int lower_counter;
 };  // class AquaSimPktHashTable
 
+/**
+ * \brief Packet Hash table for VBF to assist in specialized tables.
+ */
 class AquaSimDataHashTable {
 public:
   std::map<int*,int*> m_htable;
@@ -77,7 +85,10 @@ public:
   int* GetHash(int *attr);
 };  // class AquaSimDataHashTable
 
-
+/**
+ * \brief Vector Based Forwarding
+ * http://engr.uconn.edu/~jcui/UWSN_papers/vbf_networking2006.pdf
+ */
 class AquaSimVBF : public AquaSimRouting {
 public:
   AquaSimVBF();

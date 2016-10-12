@@ -25,6 +25,11 @@
 
 namespace ns3 {
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Generic packet tag used to assist in declaring protocols used for each packet
+ */
 class AquaSimPtTag : public Tag
 {
 public:

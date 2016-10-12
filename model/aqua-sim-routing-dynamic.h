@@ -42,7 +42,11 @@ struct DN {
 class AquaSimDynamicRouting;
 typedef std::map<AquaSimAddress, DN> t_table;//should be defined
 
-
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Helper table for dynamic routing protocol.
+ */
 class AquaSimDynamicRoutingTable {
 
 friend class AquaSimDynamicRouting;
@@ -78,6 +82,9 @@ public:
 
 /* Timers */
 
+/**
+ * \brief Helper timer for dynamic routing protocol.
+ */
 class AquaSimDynamicRouting_PktTimer : public Timer {
 public:
   AquaSimDynamicRouting_PktTimer(AquaSimDynamicRouting* routing, double updateInterval)
@@ -103,6 +110,9 @@ protected:
   friend class AquaSimDynamicRouting;
 };
 
+/**
+ * \brief Dynamic routing protocol 
+ */
 class AquaSimDynamicRouting : public AquaSimRouting {
 
 friend class AquaSimDynamicRouting_PktTimer;

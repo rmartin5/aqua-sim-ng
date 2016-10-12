@@ -42,6 +42,11 @@ namespace ns3 {
 class AquaSimAloha;
 class AquaSimAddress;
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief ACK retry assistance for Aloha protocol
+ */
 class AquaSimAlohaAckRetry : public Timer
 {
 public:
@@ -67,7 +72,11 @@ protected:
   static long m_idGenerator;
 };
 
-
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Implementation of ALOHA (backoff assisted) protocol in underwater
+ */
 class AquaSimAloha: public AquaSimMac
 {
 public:

@@ -200,6 +200,11 @@ struct hdr_ack_nd{
 
 */
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Reservation Based MAC protocol (RMAC)
+ */
 class AquaSimRMac: public AquaSimMac {
 
 public:

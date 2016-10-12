@@ -28,12 +28,12 @@ namespace ns3 {
 
 class Packet;
 
-//extern const double SOUND_SPEED_IN_WATER;
-/**
- * This propagation model calculates attenuation using rayleigh model
- * and allows all nodes in the network to receive a copy.
- */
-
+ /**
+  * \ingroup aqua-sim-ng
+  *
+  * \brief Simple propagation model. This propagation model calculates attenuation using rayleigh model and allows all nodes in the network to receive a copy.
+  *   Depenedent on transmission factors (range/power/noise/etc.) other parts of simulator will determine if copy is decodable.
+  */
 class AquaSimSimplePropagation : public AquaSimPropagation
 {
 public:

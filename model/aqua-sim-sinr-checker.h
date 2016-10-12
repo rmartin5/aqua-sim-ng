@@ -25,14 +25,20 @@
 
 namespace ns3 {
 
-//interface of Aqua Sim SINR Checker
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Base interface of Aqua Sim SINR (signal to noise plus interference ratio) checker
+ */
 class AquaSimSinrChecker : public Object{
 public:
   static TypeId GetTypeId (void);
   virtual bool Decodable (double sinr) = 0;
 };
 
-
+/**
+* \brief Threshold checking for SINR
+*/
 class AquaSimThresholdSinrChecker : public AquaSimSinrChecker {
 public:
   static TypeId GetTypeId (void);

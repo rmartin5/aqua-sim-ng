@@ -32,10 +32,11 @@ class Time;
    * TODO Add more class variations i.e. fluctuating noise, random noise, etc.
    */
 
-  /*
-   * Noise Generator Base Class
-   */
-
+ /**
+  * \ingroup aqua-sim-ng
+  *
+  * \brief Noise Generator Base class
+  */
 class AquaSimNoiseGen : public Object {
 public:
   static TypeId GetTypeId (void);
@@ -45,6 +46,9 @@ public:
   virtual double Noise (void) = 0;
 };	//class AquaSimNoiseGen
 
+/**
+ * \brief Constant noise generator 
+ */
 class AquaSimConstNoiseGen : public AquaSimNoiseGen {
 public:
   AquaSimConstNoiseGen ();

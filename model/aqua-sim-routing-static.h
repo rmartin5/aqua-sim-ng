@@ -30,6 +30,11 @@ namespace ns3 {
 /*header length of Static routing*/
 #define SR_HDR_LEN (3*sizeof(AquaSimAddress)+sizeof(int))
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Static routing implementation
+ */
 class AquaSimStaticRouting: public AquaSimRouting {
 public:
 	AquaSimStaticRouting();

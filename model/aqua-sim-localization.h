@@ -38,6 +38,11 @@ struct LocalizationStructure{
   int m_nodeID;
 };
 
+/**
+ * \ingroup aqua-sim-ng
+ *
+ * \brief Basic components for underwater localization
+ */
 class AquaSimLocalization : public Object {
 public:
   AquaSimLocalization();
