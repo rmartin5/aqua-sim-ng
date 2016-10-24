@@ -48,7 +48,13 @@ AquaSimPropagation::PDelay (Ptr<MobilityModel> s, Ptr<MobilityModel> r)
   return Time::FromDouble((s->GetDistanceFrom(r) / ns3::SOUND_SPEED_IN_WATER), Time::S);
 }
 
-
+/*
+ *  Attentuation Model:
+ *  A(l,f) = l^k * (10^(a(f)/10))^l
+ *
+ *  l=distance, f=frequency, k=spread factor,
+ *  a(f)=absorpotion coefficient (Thorp's equation)
+*/
 double
 AquaSimPropagation::Rayleigh (double d, double f)
 {
@@ -56,7 +62,7 @@ AquaSimPropagation::Rayleigh (double d, double f)
      but for the attenuation, the used unit is meter
    */
   double k;
-  k=2;
+  k=2;  //static practical spreading type
   /*
   if (d <= 500) {
    k = 3;
@@ -70,11 +76,13 @@ AquaSimPropagation::Rayleigh (double d, double f)
   double d1=d/1000.0; // convert to km
   double t1=pow(d,k);
   double alpha_f=Thorp(d,f);
-  //printf("the alpha_f is %f\n",alpha_f);
   double alpha=pow(10.0,(alpha_f/10.0));
-  //printf("the alpha is %f\n",alpha);
   double t3=pow(alpha,d1);
-  // printf("t1 is %f and  t3  is %f and attenuation is %f\n",t1,t3,t1*t3);
+  NS_LOG_DEBUG("Rayleigh dump: distance(km):" << d1 <<
+                  ", k:" << k <<
+                  ", f:" << f <<
+                  ", a(f):" << alpha_f <<
+                  ", A(l,f):" << t1*t3);
   return t1*t3;
 }
 

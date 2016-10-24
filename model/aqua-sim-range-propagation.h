@@ -37,14 +37,29 @@ namespace ns3 {
   * a very high accuracy in terms of collisions
   *
   * MUST make sure Pt and tx_range are consistent at the physical layer!!
+  *
+  * Additional acoutic models are provided.
   */
 class AquaSimRangePropagation : public AquaSimSimplePropagation {
 public:
+  static TypeId GetTypeId (void);
   AquaSimRangePropagation();
   virtual std::vector<PktRecvUnit> * ReceivedCopies (Ptr<AquaSimNetDevice> s,
                  Ptr<Packet> p,
                  std::vector<Ptr<AquaSimNetDevice> > dList);
+  double AcousticSpeed(double depth);
+  double Urick(Ptr<AquaSimNetDevice> sender, Ptr<AquaSimNetDevice> recver);
 
+  void SetBandwidth(double bandwidth);
+  void SetTemp(double temp);
+  void SetSalinity(double salinity);
+  void SetNoiseLvl(double noiseLvl);
+
+private:
+  double m_bandwidth;
+  double m_temp;
+  double m_salinity;
+  double m_noiseLvl;
 };  // class AquaSimRangePropagation
 
 }  // namespace ns3

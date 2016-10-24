@@ -31,7 +31,7 @@
 #include <cstdio>
 #include <fstream>
 
-#define FLOODING_TEST 1
+#define FLOODING_TEST 0
 
 namespace ns3 {
 
@@ -273,7 +273,7 @@ void
 AquaSimChannel::FilePrintCounters(double simTime, int attSlot)
 {
   NS_LOG_FUNCTION(this << "Does not implement anything.");
-  
+
   //output layerout:
   // SimTime | N0_Pkts | N0_Bytes | N0_DiffFromLastTrace | N1_Pkts | ... | Sink_Sent | Sink_Recv | Att0_Sent
 
