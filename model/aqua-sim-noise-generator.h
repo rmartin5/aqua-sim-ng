@@ -28,10 +28,6 @@ namespace ns3 {
 
 class Time;
 
-  /*
-   * TODO Add more class variations i.e. fluctuating noise, random noise, etc.
-   */
-
  /**
   * \ingroup aqua-sim-ng
   *
@@ -44,10 +40,15 @@ public:
   // return the noise strength at location (x,y,z) at time t
   virtual double Noise (Time t, Vector vector) = 0;
   virtual double Noise (void) = 0;
+  double Noise(double frequency);
+
+private:
+  double m_windNoise;
+  double m_shippingNoise;
 };	//class AquaSimNoiseGen
 
 /**
- * \brief Constant noise generator 
+ * \brief Constant noise generator
  */
 class AquaSimConstNoiseGen : public AquaSimNoiseGen {
 public:
@@ -61,6 +62,27 @@ public:
 private:
   double m_noise;
 };	// class AquaSimConstNoiseGen
+
+/**
+ * \brief Random noise generator
+ *    Random noise within the set bounds.
+ *    Seed OR run # must be different to obtain randomness between simulation runs.
+ */
+class AquaSimRandNoiseGen : public AquaSimNoiseGen {
+public:
+  AquaSimRandNoiseGen ();
+  ~AquaSimRandNoiseGen ();
+  static TypeId GetTypeId (void);
+
+  virtual double Noise (Time t, Vector vector);
+  virtual double Noise (void);
+  void SetBounds(double min, double max);
+
+private:
+  double m_noise;
+  double m_min;
+  double m_max;
+};	// class AquaSimRandNoiseGen
 
 }  //namespace ns3
 
