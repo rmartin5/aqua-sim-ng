@@ -29,26 +29,26 @@ Further documentation and installation steps can be found under [Aqua-Sim NG Doc
 ## Ongoing Work
 
 1. NS3 Architecture Support
-..* ~~_Core Aqua-Sim revamp_~~
-..* ~~_Example/helper scripts_~~
+  * ~~_Core Aqua-Sim revamp_~~
+  * ~~_Example/helper scripts_~~
 
 2. Protocol Port
-..* ~~_Extensive protocol port_~~
+  * ~~_Extensive protocol port_~~
 
 3. Real-World Features
-..* ~~_Synchronization support_~~
-..* ~~_Busy terminal model_~~
-..* ~~_Fluctuating SNR_~~
-..* **Enhanced channel model support**
-..* **Trace driven support**
-..* **Localization support**
-..* **Transmission range uncertainty module**
-..* **Security features**
+  * ~~_Synchronization support_~~
+  * ~~_Busy terminal model_~~
+  * ~~_Fluctuating SNR_~~
+  * **Enhanced channel model support**
+  * **Trace driven support**
+  * **Localization support**
+  * **Transmission range uncertainty module**
+  * **Security features**
 
 4. Information-Centric Integration
-..* **Adapted Named Data Network components**
-..* **Protocol integration**
-..* **Helper/test scripts**
+  * **Adapted Named Data Network components**
+  * **Protocol integration**
+  * **Helper/test scripts**
 
 
 
