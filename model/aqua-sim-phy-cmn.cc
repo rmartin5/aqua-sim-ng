@@ -52,7 +52,7 @@ AquaSimPhyCmn::AquaSimPhyCmn(void) :
   //GetNetDevice()->SetTransmissionStatus(NIDLE);
   //SetPhyStatus(PHY_IDLE);
   //m_ant = NULL;
-  m_channel = NULL;
+  m_channel.clear();
   //m_mac = NULL;
 
   m_ptLevel = 0;
@@ -483,7 +483,7 @@ AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p)
 * pass packet p to channel
 */
 bool
-AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
+AquaSimPhyCmn::PktTransmit(Ptr<Packet> p, int channelId) {
   NS_LOG_FUNCTION(this << p);
 
   AquaSimPacketStamp pstamp;
@@ -538,9 +538,11 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p) {
   * here we simulate multi-channel (different frequencies),
   * not multiple tranceiver, so we pass the packet to channel_ directly
   * p' uw_txinfo_ carries channel frequency information
+  *
+  * NOTE channelId must be set by upper layer and AquaSimPhyCmn::Recv() should be edited accordingly.
   */
 
-  return m_channel->Recv(p, this);
+  return m_channel.at(channelId)->Recv(p, this);
 }
 
 /**
@@ -643,7 +645,7 @@ AquaSimPhyCmn::PowerOff() {
 void
 AquaSimPhyCmn::Dump(void) const
 {
-  NS_LOG_DEBUG("AquaSimPhyCmn Dump: Channel(" << m_channel << ") " <<
+  NS_LOG_DEBUG("AquaSimPhyCmn Dump: Channel_default(" << m_channel.at(0) << ") " <<
 	       "Pt(" << m_pT << ") " <<
 	       //"Gt(" << m_ant->GetTxGain(0, 0, 0, m_lambda) << ") " <<
 	       "lambda(" << m_lambda << ") " <<

@@ -39,7 +39,7 @@ Further documentation and installation steps can be found under [Aqua-Sim NG Doc
   * ~~_Synchronization support_~~
   * ~~_Busy terminal model_~~
   * ~~_Fluctuating SNR_~~
-  * **Enhanced channel model support**
+  * ~~_Enhanced channel model support_~~
   * **Trace driven support**
   * **Localization support**
   * **Transmission range uncertainty module**

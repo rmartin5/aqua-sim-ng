@@ -47,7 +47,7 @@ class Packet;
 /**
  * \ingroup aqua-sim-ng
  *
- * \brief Common phy layer class. Currently only supports a single phy component per node. 
+ * \brief Common phy layer class. Currently only supports a single phy component per node.
  */
 class AquaSimPhyCmn : public AquaSimPhy
 {
@@ -66,7 +66,10 @@ public:
   virtual void Dump(void) const;
   virtual bool Decodable(double noise, double ps);
   virtual void SendPktUp(Ptr<Packet> p);
-  virtual bool PktTransmit(Ptr<Packet> p);
+  virtual bool PktTransmit(Ptr<Packet> p, int channelId = 0);
+    /*
+     * PktTransmit defaults to single channel if not specified
+    */
 
   virtual void UpdateIdleEnergy(void);
 

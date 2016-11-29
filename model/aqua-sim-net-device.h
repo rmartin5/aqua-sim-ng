@@ -75,6 +75,7 @@ public:
   void SetMac (Ptr<AquaSimMac> mac, Ptr<AquaSimSync> sync = NULL, Ptr<AquaSimLocalization> loc = NULL);
   void SetRouting (Ptr<AquaSimRouting> routing);
   void SetChannel (Ptr<AquaSimChannel> channel);
+  void SetChannel (std::vector<Ptr<AquaSimChannel> > channel); //for multi-channel support
   //void SetApp (Ptr<AquaSimApp> app);
   void SetEnergyModel (Ptr<AquaSimEnergyModel> energyModel);
   double TransmitDistance();  //should be static
@@ -85,6 +86,7 @@ public:
   Ptr<AquaSimRouting> GetRouting (void);
   //Ptr<AquaSimApp> GetApp (void);
         //Not currently implemented
+  Ptr<AquaSimChannel> DoGetChannel (int channelId) const;
   Ptr<AquaSimChannel> DoGetChannel(void) const;
   Ptr<AquaSimSync> GetMacSync(void);
   Ptr<AquaSimLocalization> GetMacLoc(void);
@@ -180,7 +182,7 @@ private:
   Ptr<AquaSimMac> m_mac;
   Ptr<AquaSimRouting> m_routing;
   //Ptr<AquaSimApp> m_app;
-  Ptr<AquaSimChannel> m_channel;
+  std::vector<Ptr<AquaSimChannel> > m_channel;
   Ptr<Node> m_node;
   Ptr<UniformRandomVariable> m_uniformRand;
   Ptr<AquaSimEnergyModel> m_energyModel;

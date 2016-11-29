@@ -30,6 +30,10 @@ namespace ns3 {
 class AquaSimNetDevice;
 class Node;
 
+/*
+ * NOTE: AquaSimChannelHelper is used for populating a single channel.
+ *       If want to use multiple channels will have to make multiple ChannelHelpers.
+ */
 class AquaSimChannelHelper
 {
 public:
@@ -79,7 +83,7 @@ public:
   static AquaSimHelper Default(void);
 
   void SetChannel(Ptr<AquaSimChannel> channel);
-  Ptr<AquaSimChannel> GetChannel();
+  Ptr<AquaSimChannel> GetChannel(int channelId = 0);
   void SetPhy (std::string name,
 			     std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue (),
 			     std::string n1 = "", const AttributeValue &v1 = EmptyAttributeValue (),
@@ -137,7 +141,7 @@ public:
 
     Ptr<AquaSimNetDevice> Create (Ptr<Node> node, Ptr<AquaSimNetDevice> device);
 private:
-  Ptr<AquaSimChannel> m_channel;
+  std::vector<Ptr<AquaSimChannel> > m_channel;
   ObjectFactory m_phy;
   ObjectFactory m_mac;
   ObjectFactory m_routing;

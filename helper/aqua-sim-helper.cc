@@ -141,9 +141,9 @@ AquaSimChannelHelper::AssignStreams (Ptr<AquaSimChannel> c, int64_t stream)
 }
 */
 
-AquaSimHelper::AquaSimHelper() :
-    m_channel(0)
+AquaSimHelper::AquaSimHelper()
 {
+  m_channel.clear();
   /*
    * Protocol prefix setting
    */
@@ -174,13 +174,14 @@ AquaSimHelper::Default()
 void
 AquaSimHelper::SetChannel(Ptr<AquaSimChannel> channel)
 {
-  m_channel = channel;
+  NS_ASSERT_MSG(channel, "provided channel pointer is null");
+  m_channel.push_back(channel);
 }
 
 Ptr<AquaSimChannel>
-AquaSimHelper::GetChannel()
+AquaSimHelper::GetChannel(int channelId)
 {
-  return m_channel;
+  return m_channel.at(channelId);
 }
 void
 AquaSimHelper::SetPhy (std::string type,
@@ -342,7 +343,7 @@ AquaSimHelper::Create(Ptr<Node> node, Ptr<AquaSimNetDevice> device)
   device->SetRouting(routing);
   device->ConnectLayers();
 
-  NS_ASSERT(m_channel);
+  NS_ASSERT(!m_channel.empty());
   device->SetChannel(m_channel);
 
   device->SetEnergyModel(energyM);

@@ -73,7 +73,7 @@ AquaSimPhy::SetNetDevice(Ptr<AquaSimNetDevice> device)
 }
 
 void
-AquaSimPhy::SetChannel(Ptr<AquaSimChannel> channel)
+AquaSimPhy::SetChannel(std::vector<Ptr<AquaSimChannel> > channel)
 {
   NS_LOG_FUNCTION(this);
   m_channel = channel;

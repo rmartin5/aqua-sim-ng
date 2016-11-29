@@ -74,7 +74,7 @@ namespace ns3 {
     virtual void SetIdlePower(double pIdle) = 0;
 
     void SetNetDevice(Ptr<AquaSimNetDevice> device);
-    void SetChannel(Ptr<AquaSimChannel> channel);
+    void SetChannel(std::vector<Ptr<AquaSimChannel> > channel);
     virtual void SetSinrChecker(Ptr<AquaSimSinrChecker> sinrChecker) = 0;
     virtual void SetSignalCache(Ptr<AquaSimSignalCache> sC) = 0;
     virtual void AddModulation(Ptr<AquaSimModulation> modulation, std::string modulationName) = 0;
@@ -84,7 +84,7 @@ namespace ns3 {
     virtual void Dump() const = 0;
     virtual bool Decodable (double noise, double ps) = 0;
     virtual void SendPktUp(Ptr<Packet> p) = 0;
-    virtual bool PktTransmit(Ptr<Packet> p) = 0;
+    virtual bool PktTransmit(Ptr<Packet> p, int channelId) = 0;
     //virtual void PktTransmit(Ptr<Packet> p, Ptr<AquaSimPhy> src) = 0;
 
     virtual void UpdateIdleEnergy() = 0;
@@ -136,7 +136,7 @@ namespace ns3 {
 
     virtual void DoDispose();
 
-    Ptr<AquaSimChannel> m_channel;
+    std::vector<Ptr<AquaSimChannel> > m_channel;  //for multi-channel support
     Ptr<AquaSimNetDevice> m_device;
 
     friend class AquaSimEnergyModel;

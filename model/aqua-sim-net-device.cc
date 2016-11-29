@@ -88,10 +88,10 @@ AquaSimNetDevice::GetTypeId ()
       PointerValue (),
       MakePointerAccessor (&AquaSimNetDevice::m_routing),
       MakePointerChecker<AquaSimRouting>())
-    .AddAttribute ("Channel", "The Channel layer attached to this device.",
+    /*.AddAttribute ("Channel", "The Channel layer attached to this device.",
       PointerValue (),
-      MakePointerAccessor (&AquaSimNetDevice::m_channel),
-      MakePointerChecker<AquaSimChannel>())
+      MakePointerAccessor (&AquaSimNetDevice::DoGetChannel, &AquaSimNetDevice::SetChannel),
+      MakePointerChecker<AquaSimChannel>())*/
   //.AddAttribute ("App", "The App layer attached to this device.",
     //PointerValue (&AquaSimNetDevie::m_app),
     //MakePointerAccessor (&AquaSimNetDevice::GetApp, &AquaSimNetDevice::SetApp),
@@ -249,23 +249,40 @@ AquaSimNetDevice::SetRouting(Ptr<AquaSimRouting> routing)
 void
 AquaSimNetDevice::SetChannel (Ptr<AquaSimChannel> channel)
 {
-  //currently only supporting single channel per net device
-  if (m_channel == 0)
-    {
-      NS_LOG_FUNCTION(this);
-      m_channel = channel;
-      m_channel->AddDevice(Ptr<AquaSimNetDevice> (this));
+  NS_LOG_FUNCTION(this << channel);
+  NS_ASSERT_MSG(channel, "provided channel pointer is null");
+  channel->AddDevice(Ptr<AquaSimNetDevice> (this));
+  m_channel.push_back(channel);
 
-      if (m_phy != 0)
-	{
-	  m_phy->SetChannel(m_channel);
-	  m_phy->GetSignalCache()->SetNoiseGen(m_channel->GetNoiseGen());
-	}
-      CompleteConfig ();
-    }
-  else
-    NS_LOG_DEBUG("NetDevice could not set channel (" << m_channel << ")");
+  if (m_phy != 0)
+  	{
+  	  m_phy->SetChannel(m_channel);
+  	  m_phy->GetSignalCache()->SetNoiseGen(channel->GetNoiseGen());
+  	}
+  CompleteConfig ();
 }
+
+void
+AquaSimNetDevice::SetChannel (std::vector<Ptr<AquaSimChannel> > channel)
+{
+  NS_LOG_FUNCTION(this);
+  NS_ASSERT_MSG(!channel.empty(), "provided channel vector is empty");
+
+  for (unsigned i=0; i<channel.size(); i++)
+    {
+      channel.at(i)->AddDevice(Ptr<AquaSimNetDevice> (this));
+    }
+  m_channel = channel;
+
+  if (m_phy != 0)
+  	{
+  	  m_phy->SetChannel(m_channel);
+  	  m_phy->GetSignalCache()->SetNoiseGen(channel.at(0)->GetNoiseGen());
+      //NOTE this should probably be updated.
+    }
+  CompleteConfig ();
+}
+
 /*
 void
 AquaSimNetDevice::SetApp (Ptr<AquaSimApp> app)
@@ -335,15 +352,27 @@ AquaSimNetDevice::GetRouting (void)
 }
 
 Ptr<AquaSimChannel>
-AquaSimNetDevice::DoGetChannel (void) const
+AquaSimNetDevice::DoGetChannel (int channelId) const
 {
-  return m_channel;
+  return m_channel.at(channelId);
 }
 
+/*
+ *  NOTE: DoGetChannel will return default channel.
+ */
+Ptr<AquaSimChannel>
+AquaSimNetDevice::DoGetChannel (void) const
+{
+  return m_channel.at(0);
+}
+
+/*
+ *  NOTE: GetChannel will return default channel.
+ */
 Ptr<Channel>
 AquaSimNetDevice::GetChannel (void) const
 {
-  return m_channel;
+  return m_channel.at(0);
 }
 
 Ptr<Node>
