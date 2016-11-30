@@ -37,11 +37,11 @@ Further documentation and installation steps can be found under [Aqua-Sim NG Doc
 
 3. Real-World Features
   * ~~_Synchronization support_~~
+  * ~~_Localization support_~~
   * ~~_Busy terminal model_~~
   * ~~_Fluctuating SNR_~~
   * ~~_Enhanced channel model support_~~
   * **Trace driven support**
-  * **Localization support**
   * **Transmission range uncertainty module**
   * **Security features**
 

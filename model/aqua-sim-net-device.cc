@@ -219,7 +219,7 @@ AquaSimNetDevice::SetMac (Ptr<AquaSimMac> mac, Ptr<AquaSimSync> sync, Ptr<AquaSi
 
       if (loc != NULL)
       {
-        loc = Create<AquaSimLocalization>();
+        loc = Create<AquaSimRBLocalization>();
         m_macLoc = loc;
         loc->SetDevice(Ptr<AquaSimNetDevice>(this));
       }

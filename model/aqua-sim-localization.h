@@ -35,6 +35,8 @@ struct LocalizationStructure{
   Time m_TDoA;    //Time Difference of Arrival
   Time m_ToA;     //Time of Arrival
   Vector m_knownLocation;   //last known location of node
+  //Vector m_nodeSpeed;     //estimated speed vector of node
+  double m_nodeConfidence;  //location confidence of node
   int m_nodeID;
 };
 
@@ -51,14 +53,17 @@ public:
   void SetPosition(Vector nodePosition);
   void SetPr(double pr);
 
-  virtual void Recv(Ptr<Packet> p);
-  virtual void SendLoc();
+  virtual void Recv(Ptr<Packet> p) = 0;
+  virtual void SendLoc() = 0;
 
 protected:
   std::list<LocalizationStructure> GetLocalizationList();
   void ClearLocalizationList();
-  virtual void Lateration();
-  virtual Vector GetAngleOfArrival(Ptr<Packet> p);  //should be overloaded
+  virtual void Lateration() = 0;
+  virtual Vector GetAngleOfArrival(Ptr<Packet> p) = 0;
+  double EuclideanDistance2D(Vector2D s, Vector2D r);
+  double EuclideanDistance3D(Vector s, Vector r);
+  double LocationError(Vector s, Vector r, double estRange);
 
   Time m_localizationRefreshRate;
   Vector m_nodePosition;  //last known position, may vary due to mobility
@@ -67,6 +72,36 @@ protected:
   Ptr<AquaSimNetDevice> m_device;
 
 }; // class AquaSimLocalization
+
+/**
+ * \brief Range-based underwater localization
+ *
+ * Z. Zhou, Z. Peng, J. H. Cui, Z. Shi and A. Bagtzoglou, "Scalable Localization with
+ *  Mobility Prediction for Underwater Sensor Networks," in IEEE Transactions on
+ *  Mobile Computing, vol. 10, no. 3, pp. 335-348, March 2011.
+ */
+class AquaSimRBLocalization : public AquaSimLocalization {
+public:
+  AquaSimRBLocalization();
+  static TypeId GetTypeId(void);
+
+  void Recv(Ptr<Packet> p);
+  void SendLoc();
+
+  void SetReferenceNode(bool ref);
+  void SetConfidenceThreshold(double confidence);
+  void SetLocalizationThreshold(double locThreshold);
+
+protected:
+  void Lateration();
+  Vector GetAngleOfArrival(Ptr<Packet> p);
+
+private:
+  bool m_referenceNode;
+  double m_confidence;  //estimated location confidence
+  double m_confidenceThreshold;
+  int m_localizationThreshold;
+}; // class AquaSimRBLocalization
 
 } // namespace ns3
 

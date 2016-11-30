@@ -565,7 +565,7 @@ AquaSimPhyCmn::SendPktUp(Ptr<Packet> p)
       NS_LOG_DEBUG(this << "Mac Recv error");
     break;
   case MacHeader::UWPTYPE_LOC:
-    NS_LOG_DEBUG("SendPktUp: LOC not implemented yet.");
+    GetNetDevice()->GetMacLoc()->Recv(p);
     break;
   case MacHeader::UWPTYPE_SYNC:
     GetNetDevice()->GetMacSync()->RecvSync(p);

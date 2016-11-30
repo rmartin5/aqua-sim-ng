@@ -158,7 +158,7 @@ AquaSimHelper::AquaSimHelper()
   m_routing.SetTypeId("ns3::AquaSimStaticRouting");
   m_energyM.SetTypeId("ns3::AquaSimEnergyModel");
   m_sync.SetTypeId("ns3::AquaSimSync");
-  m_localization.SetTypeId("ns3::AquaSimLocalization");
+  m_localization.SetTypeId("ns3::AquaSimRBLocalization");
 }
 
 AquaSimHelper

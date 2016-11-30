@@ -820,16 +820,25 @@ LocalizationHeader::SetNodePosition(Vector nodePosition)
 {
   m_nodePosition = nodePosition;
 }
+void LocalizationHeader::SetConfidence(double confidence)
+{
+  m_confidence = confidence;
+}
 Vector
 LocalizationHeader::GetNodePosition()
 {
   return m_nodePosition;
 }
+double
+LocalizationHeader::GetConfidence()
+{
+  return m_confidence;
+}
 
 uint32_t
 LocalizationHeader::GetSerializedSize(void) const
 {
-  return 12;
+  return 16;
 }
 void
 LocalizationHeader::Serialize (Buffer::Iterator start) const
@@ -838,6 +847,7 @@ LocalizationHeader::Serialize (Buffer::Iterator start) const
   i.WriteU32 ((uint32_t)(m_nodePosition.x*1000.0));
   i.WriteU32 ((uint32_t)(m_nodePosition.y*1000.0));
   i.WriteU32 ((uint32_t)(m_nodePosition.z*1000.0));
+  i.WriteU32 ((uint32_t)(m_confidence*1000.0));
 }
 uint32_t
 LocalizationHeader::Deserialize (Buffer::Iterator start)
@@ -846,6 +856,7 @@ LocalizationHeader::Deserialize (Buffer::Iterator start)
   m_nodePosition.x = ( (double) i.ReadU32() ) / 1000.0;
   m_nodePosition.y = ( (double) i.ReadU32() ) / 1000.0;
   m_nodePosition.z = ( (double) i.ReadU32() ) / 1000.0;
+  m_confidence = ((double) i.ReadU32())/1000.0;
 
   return GetSerializedSize();
 }
@@ -853,7 +864,8 @@ void
 LocalizationHeader::Print (std::ostream &os) const
 {
   os << "Localization Header: nodePosition(" << m_nodePosition.x <<
-      "," << m_nodePosition.y << "," << m_nodePosition.z << ")\n";
+      "," << m_nodePosition.y << "," << m_nodePosition.z << "), confidence=" <<
+      m_confidence << "\n";
 }
 TypeId
 LocalizationHeader::GetInstanceTypeId(void) const

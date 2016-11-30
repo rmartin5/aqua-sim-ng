@@ -320,7 +320,9 @@ public:
   static TypeId GetTypeId(void);
 
   Vector GetNodePosition();
+  double GetConfidence();
   void SetNodePosition(Vector nodePosition);
+  void SetConfidence(double confidence);
   //components for AoA???
 
   //inherited methods
@@ -332,6 +334,7 @@ public:
 
 private:
   Vector m_nodePosition;
+  double m_confidence;
 };  // class LocalizationHeader
 
 } // namespace ns3
