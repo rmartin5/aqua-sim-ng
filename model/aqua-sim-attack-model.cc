@@ -35,8 +35,8 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("AquaSimAttackModel");
 NS_OBJECT_ENSURE_REGISTERED (AquaSimAttackModel);
 NS_OBJECT_ENSURE_REGISTERED (AquaSimAttackDos);
-//NS_OBJECT_ENSURE_REGISTERED (AquaSimAttackSinkhole);
-//NS_OBJECT_ENSURE_REGISTERED (AquaSimAttackSelective);
+NS_OBJECT_ENSURE_REGISTERED (AquaSimAttackSinkhole);
+NS_OBJECT_ENSURE_REGISTERED (AquaSimAttackSelective);
 //NS_OBJECT_ENSURE_REGISTERED (AquaSimAttacSybil);
 
 TypeId
@@ -70,6 +70,8 @@ AquaSimAttackDos::AquaSimAttackDos() :
   m_sendFreq(10), m_packetSize(40),
   m_dest(AquaSimAddress::GetBroadcast())
 {
+  NS_LOG_FUNCTION(this);
+  Simulator::Schedule(Seconds(m_sendFreq), &AquaSimAttackDos::SendPacket, this);
 }
 
 TypeId
@@ -85,7 +87,7 @@ AquaSimAttackDos::GetTypeId (void)
     .AddAttribute ("PacketSize", "Size of created packet's payload",
       IntegerValue(40),
       MakeIntegerAccessor (&AquaSimAttackDos::m_packetSize),
-      MakeDoubleChecker<int> ())
+      MakeIntegerChecker<int> ())
     ;
   return tid;
 }
@@ -123,19 +125,199 @@ AquaSimAttackDos::CreatePkt()
 }
 
 void
-AquaSimAttackDos::SetSendFrequency(double sendFreq)
-{
-  m_sendFreq = sendFreq;
-}
-
-void
 AquaSimAttackDos::SetPacketSize(int packetSize)
 {
   m_packetSize = packetSize;
 }
 
 void
+AquaSimAttackDos::SetSendFrequency(double sendFreq)
+{
+  m_sendFreq = sendFreq;
+}
+
+void
 AquaSimAttackDos::SetDestAddress(AquaSimAddress dest)
 {
   m_dest = dest;
+}
+
+void
+AquaSimAttackDos::SendPacket()
+{
+  SendDown(CreatePkt());
+  Simulator::Schedule(Seconds(m_sendFreq), &AquaSimAttackDos::SendPacket, this);
+}
+
+
+/*
+ *  Aqua Sim Attack Sinkhole
+ */
+AquaSimAttackSinkhole::AquaSimAttackSinkhole() :
+  m_dataRate(135), m_energy(50),
+  m_depth(0), m_dropFrequency(1.0),
+  m_pktDropped(0), m_totalPktRecv(0)
+{
+  NS_LOG_FUNCTION(this);
+}
+
+TypeId
+AquaSimAttackSinkhole::GetTypeId (void)
+{
+  static TypeId tid = TypeId ("ns3::AquaSimAttackSinkhole")
+    .SetParent<AquaSimAttackModel> ()
+    .AddConstructor<AquaSimAttackSinkhole> ()
+    .AddAttribute ("DataRate", "False data rate advertised by attacker",
+      DoubleValue(50),
+      MakeDoubleAccessor (&AquaSimAttackSinkhole::m_dataRate),
+      MakeDoubleChecker<double> ())
+    .AddAttribute ("Energy", "False energy advertised by attacker",
+      DoubleValue(50),
+      MakeDoubleAccessor (&AquaSimAttackSinkhole::m_energy),
+      MakeDoubleChecker<double> ())
+    .AddAttribute ("Depth", "False depth advertised by attacker",
+      DoubleValue(0),
+      MakeDoubleAccessor (&AquaSimAttackSinkhole::m_depth),
+      MakeDoubleChecker<double> ())
+    .AddAttribute ("DropFreq", "Drop frequency of received packets (between 0 and 1)",
+      DoubleValue(1.0),
+      MakeDoubleAccessor (&AquaSimAttackSinkhole::m_pktDropped),
+      MakeDoubleChecker<double> ())
+    ;
+  return tid;
+}
+
+void
+AquaSimAttackSinkhole::Recv(Ptr<Packet> p)
+{
+  if ((m_pktDropped/++m_totalPktRecv) <= m_dropFrequency)
+  {
+    m_pktDropped++;
+    return; //drop packet
+  }
+  else
+  {
+    m_device->GetMac()->RecvProcess(p);
+  }
+}
+
+/*
+ *  NOTE: This should be edited to match expected packet types
+ */
+Ptr<Packet>
+AquaSimAttackSinkhole::CreatePkt()
+{
+  Ptr<Packet> pkt = Create<Packet>();
+  MacHeader mach;
+  AquaSimHeader ash;
+
+  mach.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
+  mach.SetDA(AquaSimAddress::GetBroadcast());
+
+  ash.SetTxTime(m_device->GetMac()->GetTxTime(ash.GetSize()) );
+  ash.SetDirection(AquaSimHeader::DOWN);
+  ash.SetNextHop(AquaSimAddress::GetBroadcast());
+  ash.SetSAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
+  ash.SetDAddr(AquaSimAddress::GetBroadcast());
+
+  //Should include advertised rates: i.e. data rate / energy / depth
+
+  pkt->AddHeader(mach);
+  pkt->AddHeader(ash);
+
+  return pkt;
+}
+
+void
+AquaSimAttackSinkhole::SendAdvertisePacket()
+{
+  SendDown(CreatePkt());
+}
+
+void
+AquaSimAttackSinkhole::SetDataRate(double rate)
+{
+  m_dataRate = rate;
+}
+
+void
+AquaSimAttackSinkhole::SetEnergy(double energy)
+{
+  m_energy = energy;
+}
+
+void
+AquaSimAttackSinkhole::SetDepth(double depth)
+{
+  m_depth = depth;
+}
+
+void
+AquaSimAttackSinkhole::SetDropFrequency(double drop)
+{
+  m_dropFrequency = drop;
+}
+
+
+/*
+ *  Aqua Sim Attack Selective Forward
+ */
+AquaSimAttackSelective::AquaSimAttackSelective() :
+  m_blockSender(-1), m_dropFrequency(0.0),
+  m_pktDropped(0), m_totalPktRecv(0)
+{
+  NS_LOG_FUNCTION(this);
+}
+
+TypeId
+AquaSimAttackSelective::GetTypeId (void)
+{
+  static TypeId tid = TypeId ("ns3::AquaSimAttackSelective")
+    .SetParent<AquaSimAttackModel> ()
+    .AddConstructor<AquaSimAttackSelective> ()
+    .AddAttribute ("BlockSender", "Block a specific sender. Will ignore all packets from given node",
+      IntegerValue(-1),
+      MakeIntegerAccessor (&AquaSimAttackSelective::m_blockSender),
+      MakeIntegerChecker<int> ())
+    .AddAttribute ("DropFreq", "Drop frequency of received packets (between 0 and 1)",
+      DoubleValue(0.0),
+      MakeDoubleAccessor (&AquaSimAttackSelective::m_pktDropped),
+      MakeDoubleChecker<double> ())
+    ;
+  return tid;
+}
+
+void
+AquaSimAttackSelective::Recv(Ptr<Packet> p)
+{
+  AquaSimHeader ash;
+  p->PeekHeader(ash);
+  if (m_blockSender == ash.GetSAddr().GetAsInt() ||
+      (m_pktDropped/++m_totalPktRecv) <= m_dropFrequency)
+  {
+    m_pktDropped++;
+    return; //drop packet
+  }
+  else
+  {
+    m_device->GetMac()->RecvProcess(p);
+  }
+}
+
+void
+AquaSimAttackSelective::SetDropFrequency(double drop)
+{
+  m_dropFrequency = drop;
+}
+
+void
+AquaSimAttackSelective::BlockNode(int sender)
+{
+  m_blockSender = sender;
+}
+
+void
+AquaSimAttackSelective::BlockNode(AquaSimAddress sender)
+{
+  m_blockSender = sender.GetAsInt();
 }

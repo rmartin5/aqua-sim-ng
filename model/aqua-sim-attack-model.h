@@ -48,6 +48,8 @@ protected:
 
 /**
  * \brief Attack Model for Denial of Service or packet flooding
+ *
+ *    Flooding network with malicious packets
  */
 class AquaSimAttackDos : public AquaSimAttackModel {
 public:
@@ -55,16 +57,71 @@ public:
   AquaSimAttackDos();
 
   virtual void Recv(Ptr<Packet> p);
-  Ptr<Packet> CreatePkt();
   void SetSendFrequency(double sendFreq);
-  void SetPacketSize(int packetSize);
   void SetDestAddress(AquaSimAddress dest);
+  void SetPacketSize(int packetSize);
+  Ptr<Packet> CreatePkt();
 
 private:
+  void SendPacket();
+
   double m_sendFreq; //in seconds
   int m_packetSize;
   AquaSimAddress m_dest;
 };  //class AquaSimAttackDos
+
+/**
+ * \brief Attack Model for Sinkholes
+ *
+ *  Attract traffic through attractive characteristics (high-quality route / capabilities)
+ *    and drop all packets or selective forward packets
+ */
+class AquaSimAttackSinkhole : public AquaSimAttackModel {
+public:
+  static TypeId GetTypeId (void);
+  AquaSimAttackSinkhole();
+
+  virtual void Recv(Ptr<Packet> p);
+  Ptr<Packet> CreatePkt();
+  void SendAdvertisePacket();
+
+  void SetDataRate(double rate);
+  void SetEnergy(double energy);
+  void SetDepth(double depth);
+  void SetDropFrequency(double drop);
+
+private:
+  //fake characteristics advertising
+  double m_dataRate;  //Bytes per sec.
+  double m_energy;    //J
+  double m_depth;     //meters
+  double m_dropFrequency;   // should be percentage (between 0 and 1)
+
+  int m_pktDropped;
+  int m_totalPktRecv;
+};  //class AquaSimAttackSinkhole
+
+/**
+ * \brief Attack Model for Selective Forward
+ *
+ *  Selectively drop or forward packets
+ */
+class AquaSimAttackSelective : public AquaSimAttackModel {
+public:
+  static TypeId GetTypeId (void);
+  AquaSimAttackSelective();
+
+  virtual void Recv(Ptr<Packet> p);
+  void SetDropFrequency(double drop);
+  void BlockNode(int sender);
+  void BlockNode(AquaSimAddress sender);
+
+private:
+  int m_blockSender;
+  double m_dropFrequency;   // should be percentage (between 0 and 1)
+  int m_pktDropped;
+  int m_totalPktRecv;
+};  //class AquaSimAttackSelective
 
 
 //XXX add all models here...
