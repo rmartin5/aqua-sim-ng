@@ -559,6 +559,12 @@ AquaSimPhyCmn::SendPktUp(Ptr<Packet> p)
   p->PeekHeader(mach);
   p->AddHeader(ash);
 
+  //This can be shifted to within the switch to target specific packet types.
+  if (GetNetDevice()->IsAttacker()){
+    GetNetDevice()->GetAttackModel()->Recv(p);
+    return;
+  }
+
   switch (mach.GetDemuxPType()){
   case MacHeader::UWPTYPE_OTHER:
     if (!GetMac()->RecvProcess(p))

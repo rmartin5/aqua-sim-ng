@@ -56,6 +56,7 @@ def build(bld):
         'model/aqua-sim-synchronization.cc',
         'model/aqua-sim-localization.cc',
         'model/aqua-sim-routing-ddos.cc',
+        'model/aqua-sim-attack-model.cc',
         ]
 
     module_test = bld.create_ns3_module_test_library('aqua-sim-ng')
@@ -114,6 +115,7 @@ def build(bld):
         'model/aqua-sim-synchronization.h',
         'model/aqua-sim-localization.h',
         'model/aqua-sim-routing-ddos.h',
+        'model/aqua-sim-attack-model.h',
         ]
 
     if bld.env.ENABLE_EXAMPLES:

@@ -63,6 +63,7 @@ AquaSimNetDevice::AquaSimNetDevice ()
 {
   m_transStatus = NIDLE;
   m_configComplete = false;
+  m_attacker = false;
   NS_LOG_FUNCTION(this);
 }
 
@@ -129,6 +130,10 @@ AquaSimNetDevice::GetTypeId ()
      IntegerValue(0),
      MakeIntegerAccessor(&AquaSimNetDevice::m_sinkStatus),
      MakeIntegerChecker<int> ())
+   .AddAttribute("SetAttacker", "Set node to be an attacker. Default false.",
+     BooleanValue(0),
+     MakeBooleanAccessor(&AquaSimNetDevice::m_attacker),
+     MakeBooleanChecker())
   ;
   return tid;
 }
@@ -321,6 +326,15 @@ AquaSimNetDevice::SetNode (Ptr<Node> node)
   m_node = node;
 }
 
+void
+AquaSimNetDevice::SetAttackModel(Ptr<AquaSimAttackModel> attackModel)
+{
+  NS_LOG_FUNCTION(this);
+  m_attackModel = attackModel;
+  m_attacker = true;
+  m_attackModel->SetDevice(Ptr<AquaSimNetDevice>(this));
+}
+
 Ptr<AquaSimPhy>
 AquaSimNetDevice::GetPhy (void)
 {
@@ -343,6 +357,12 @@ Ptr<AquaSimLocalization>
 AquaSimNetDevice::GetMacLoc(void)
 {
   return m_macLoc;
+}
+
+Ptr<AquaSimAttackModel>
+AquaSimNetDevice::GetAttackModel(void)
+{
+  return m_attackModel;
 }
 
 Ptr<AquaSimRouting>
@@ -406,6 +426,14 @@ AquaSimNetDevice::IsMoving(void)
   }
 
   return true;
+}
+
+bool
+AquaSimNetDevice::IsAttacker(void)
+{
+  if(m_attacker) return true;
+
+  return false;
 }
 
 int

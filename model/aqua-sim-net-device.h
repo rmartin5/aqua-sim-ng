@@ -42,6 +42,7 @@ namespace ns3 {
 #include "aqua-sim-mac.h"
 #include "aqua-sim-synchronization.h"
 #include "aqua-sim-localization.h"
+#include "aqua-sim-attack-model.h"
 
 
 namespace ns3 {
@@ -56,6 +57,7 @@ class AquaSimRouting;
 class AquaSimChannel;
 class AquaSimSync;
 class AquaSimLocalization;
+class AquaSimAttackModel;
 
 /**
  * \ingroup aqua-sim-ng
@@ -80,6 +82,7 @@ public:
   void SetEnergyModel (Ptr<AquaSimEnergyModel> energyModel);
   double TransmitDistance();  //should be static
   void SetTransmitDistance(double range);
+  void SetAttackModel(Ptr<AquaSimAttackModel> attackModel);
 
   Ptr<AquaSimPhy> GetPhy (void);
   Ptr<AquaSimMac> GetMac (void);
@@ -90,6 +93,7 @@ public:
   Ptr<AquaSimChannel> DoGetChannel(void) const;
   Ptr<AquaSimSync> GetMacSync(void);
   Ptr<AquaSimLocalization> GetMacLoc(void);
+  Ptr<AquaSimAttackModel> GetAttackModel(void);
 
   virtual void DoDispose (void);
   virtual void DoInitialize (void);
@@ -168,6 +172,7 @@ public:
   //void UpdatePosition(void);  // UpdatePosition() out of date... should be using ns3's mobility module
   bool IsMoving(void);
   Ptr<AquaSimEnergyModel> EnergyModel(void) {return m_energyModel; }
+  bool IsAttacker(void);
 
   int TotalSentPkts() {return m_totalSentPkts;}
 protected:
@@ -188,9 +193,12 @@ private:
   Ptr<AquaSimEnergyModel> m_energyModel;
   Ptr<AquaSimSync> m_macSync;
   Ptr<AquaSimLocalization> m_macLoc;
+  Ptr<AquaSimAttackModel> m_attackModel;
 
   NetDevice::ReceiveCallback m_forwardUp;
   bool m_configComplete;
+
+  bool m_attacker;
 
   //m_clear for dispose?? to clear all layers from net-device side.
 

@@ -84,6 +84,7 @@ public:
 
   void SetChannel(Ptr<AquaSimChannel> channel);
   Ptr<AquaSimChannel> GetChannel(int channelId = 0);
+  void SetAttacker(bool attacker);
   void SetPhy (std::string name,
 			     std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue (),
 			     std::string n1 = "", const AttributeValue &v1 = EmptyAttributeValue (),
@@ -138,7 +139,15 @@ public:
  			     std::string n5 = "", const AttributeValue &v5 = EmptyAttributeValue (),
  			     std::string n6 = "", const AttributeValue &v6 = EmptyAttributeValue (),
  			     std::string n7 = "", const AttributeValue &v7 = EmptyAttributeValue ());
-
+   void SetAttackModel (std::string name,
+ 			     std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue (),
+ 			     std::string n1 = "", const AttributeValue &v1 = EmptyAttributeValue (),
+ 			     std::string n2 = "", const AttributeValue &v2 = EmptyAttributeValue (),
+ 			     std::string n3 = "", const AttributeValue &v3 = EmptyAttributeValue (),
+ 			     std::string n4 = "", const AttributeValue &v4 = EmptyAttributeValue (),
+ 			     std::string n5 = "", const AttributeValue &v5 = EmptyAttributeValue (),
+ 			     std::string n6 = "", const AttributeValue &v6 = EmptyAttributeValue (),
+ 			     std::string n7 = "", const AttributeValue &v7 = EmptyAttributeValue ());
     Ptr<AquaSimNetDevice> Create (Ptr<Node> node, Ptr<AquaSimNetDevice> device);
 private:
   std::vector<Ptr<AquaSimChannel> > m_channel;
@@ -148,11 +157,9 @@ private:
   ObjectFactory m_energyM;
   ObjectFactory m_sync;
   ObjectFactory m_localization;
+  ObjectFactory m_attackM;
+  bool m_attacker;  //default is false
 };  //class AquaSimHelper
-
-/*
- * Reference uan-mac and uan-helper.cc for examples of aggregation system (query interface design pattern)
- */
 
 }
 
