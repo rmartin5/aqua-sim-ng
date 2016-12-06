@@ -37,7 +37,7 @@ NS_OBJECT_ENSURE_REGISTERED (AquaSimAttackModel);
 NS_OBJECT_ENSURE_REGISTERED (AquaSimAttackDos);
 NS_OBJECT_ENSURE_REGISTERED (AquaSimAttackSinkhole);
 NS_OBJECT_ENSURE_REGISTERED (AquaSimAttackSelective);
-//NS_OBJECT_ENSURE_REGISTERED (AquaSimAttacSybil);
+NS_OBJECT_ENSURE_REGISTERED (AquaSimAttackSybil);
 
 TypeId
 AquaSimAttackModel::GetTypeId (void)
@@ -320,4 +320,52 @@ void
 AquaSimAttackSelective::BlockNode(AquaSimAddress sender)
 {
   m_blockSender = sender.GetAsInt();
+}
+
+
+/*
+ *  Aqua Sim Attack Sybil
+ */
+AquaSimAttackSybil::AquaSimAttackSybil()
+{
+  NS_LOG_FUNCTION(this);
+  m_locations.clear();
+}
+
+TypeId
+AquaSimAttackSybil::GetTypeId (void)
+{
+  static TypeId tid = TypeId ("ns3::AquaSimAttackSybil")
+    .SetParent<AquaSimAttackModel> ()
+    .AddConstructor<AquaSimAttackSybil> ()
+    ;
+  return tid;
+}
+
+void
+AquaSimAttackSybil::Recv(Ptr<Packet> p)
+{
+  NS_LOG_INFO("AttackSybil: Dummy recv");
+}
+
+void
+AquaSimAttackSybil::AddFakeNode(int id, Vector location)
+{
+  m_locations.insert (std::pair<int, Vector>(id,location));
+}
+
+void
+AquaSimAttackSybil::RemoveFakeNode(int id)
+{
+  m_locations.erase(id);
+}
+
+Vector
+AquaSimAttackSybil::GetLocation(int id)
+{
+  std::map<int, Vector>::iterator it;
+  it = m_locations.find(id);
+  if (it == m_locations.end()) return Vector(0,0,0);
+
+  return it->second;
 }
