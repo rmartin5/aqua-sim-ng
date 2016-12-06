@@ -24,6 +24,7 @@
 #include "ns3/nstime.h"
 #include "ns3/vector.h"
 #include "ns3/random-variable-stream.h"
+#include "ns3/simulator.h"
 
 
 namespace ns3 {
@@ -157,6 +158,68 @@ void
 AquaSimRandNoiseGen::SetBounds(double min, double max) {
   m_min = min;
   m_max = max;
+}
+
+
+/*AquaSimPeriodicNoiseGen */
+AquaSimPeriodicNoiseGen::AquaSimPeriodicNoiseGen() :
+    m_noise(0), m_period(0), m_length(0)
+{
+  Simulator::Schedule(Seconds(m_period), &AquaSimPeriodicNoiseGen::SetNoise, this, m_noiseAmount);
+}
+
+AquaSimPeriodicNoiseGen::~AquaSimPeriodicNoiseGen()
+{
+}
+
+TypeId
+AquaSimPeriodicNoiseGen::GetTypeId (void)
+{
+  static TypeId tid = TypeId ("ns3::AquaSimPeriodicNoiseGen")
+    .SetParent<AquaSimNoiseGen> ()
+    .AddConstructor<AquaSimPeriodicNoiseGen> ()
+    .AddAttribute ("Noise", "The noise on the channel.",
+       DoubleValue (0),
+       MakeDoubleAccessor (&AquaSimPeriodicNoiseGen::m_noise),
+       MakeDoubleChecker<double> ())
+   .AddAttribute ("NoiseAmount", "The total noise produced on the channel.",
+      DoubleValue (60),
+      MakeDoubleAccessor (&AquaSimPeriodicNoiseGen::m_noiseAmount),
+      MakeDoubleChecker<double> ())
+    .AddAttribute ("Period", "How often the periodic noise will occur. In seconds.",
+       DoubleValue (30.0),
+       MakeDoubleAccessor (&AquaSimPeriodicNoiseGen::m_period),
+       MakeDoubleChecker<double> ())
+   .AddAttribute ("Length", "How long the periodic noise will last. In seconds.",
+      DoubleValue (10.0),
+      MakeDoubleAccessor (&AquaSimPeriodicNoiseGen::m_length),
+      MakeDoubleChecker<double> ())
+  ;
+  return tid;
+}
+
+double
+AquaSimPeriodicNoiseGen::Noise(Time t, Vector vector) {
+  //TODO update this in future work
+  return m_noise;
+}
+
+double
+AquaSimPeriodicNoiseGen::Noise() {
+  return m_noise;
+}
+
+void
+AquaSimPeriodicNoiseGen::SetNoise(double noise) {
+  m_noise = noise;
+
+  Simulator::Schedule(Seconds(m_length), &AquaSimPeriodicNoiseGen::ResetNoise, this);
+  Simulator::Schedule(Seconds(m_period), &AquaSimPeriodicNoiseGen::SetNoise, this, m_noiseAmount);
+}
+
+void
+AquaSimPeriodicNoiseGen::ResetNoise() {
+  m_noise = 0;
 }
 
 }  // namespace ns3
