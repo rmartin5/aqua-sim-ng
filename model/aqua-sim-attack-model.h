@@ -24,7 +24,7 @@
 
 #include "ns3/object.h"
 #include "aqua-sim-net-device.h"
-
+#include <map>
 
 namespace ns3 {
 
@@ -123,9 +123,25 @@ private:
   int m_totalPktRecv;
 };  //class AquaSimAttackSelective
 
+/**
+ * \brief Attack Model for Sybil
+ *
+ *  Pretend to be in a different location or multiple locations
+ *    or have multiple identities (i.e. behave as base station)
+ */
+class AquaSimAttackSybil : public AquaSimAttackModel {
+public:
+  static TypeId GetTypeId (void);
+  AquaSimAttackSybil();
 
-//XXX add all models here...
+  virtual void Recv(Ptr<Packet> p);
+  void AddFakeNode(int id, Vector location);
+  void RemoveFakeNode(int id);
+  Vector GetLocation(int id);
 
+private:
+  std::map<int,Vector> m_locations;
+};  //class AquaSimAttackSybil
 
 } // namespace ns3
 
