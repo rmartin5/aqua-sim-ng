@@ -84,6 +84,30 @@ private:
   double m_max;
 };	// class AquaSimRandNoiseGen
 
+/**
+ * \brief Periodic noise generator
+ *    Periodically generate noise
+ */
+class AquaSimPeriodicNoiseGen : public AquaSimNoiseGen {
+public:
+  AquaSimPeriodicNoiseGen ();
+  ~AquaSimPeriodicNoiseGen ();
+  static TypeId GetTypeId (void);
+
+  virtual double Noise (Time t, Vector vector);
+  virtual double Noise (void);
+  void SetPeriod(double period);
+  void SetLength(double length);
+
+private:
+  void SetNoise(double noise);
+  void ResetNoise();
+  double m_noise;
+  double m_noiseAmount;
+  double m_period;  //frequency of noise in seconds.
+  double m_length;  //how long will noise occur in seconds
+};	// class AquaSimPeriodicNoiseGen
+
 }  //namespace ns3
 
 #endif /* AQUA_SIM_NOISE_GENERATOR_H */
