@@ -46,6 +46,7 @@ class AquaSimPropagation;
 class AquaSimChannel : public Channel
 {
 	//friend class Topography;
+  friend class AquaSimTraceReader;
 public:
   AquaSimChannel (void);
   ~AquaSimChannel (void);
@@ -75,7 +76,7 @@ public:
 private:
   /// Outgoing packet to speicified phy layer (device)
   bool SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp);
-  
+
   Time GetPropDelay (Ptr<AquaSimNetDevice> tdevice, Ptr<AquaSimNetDevice> rdevice);
   Ptr<MobilityModel> GetMobilityModel(Ptr<AquaSimNetDevice> device);
   double Distance(Ptr<AquaSimNetDevice> tdevice, Ptr<AquaSimNetDevice> rdevice);

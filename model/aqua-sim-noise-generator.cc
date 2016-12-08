@@ -113,6 +113,18 @@ AquaSimConstNoiseGen::Noise() {
   return m_noise;
 }
 
+void
+AquaSimConstNoiseGen::SetNoise(double noise)
+{
+  m_noise = noise;
+}
+
+void
+AquaSimConstNoiseGen::Initialize()
+{
+  m_noise = 0;
+}
+
 /*AquaSimRandNoiseGen */
 AquaSimRandNoiseGen::AquaSimRandNoiseGen() :
     m_noise(0)
@@ -158,6 +170,12 @@ void
 AquaSimRandNoiseGen::SetBounds(double min, double max) {
   m_min = min;
   m_max = max;
+}
+
+void
+AquaSimRandNoiseGen::SetNoise(double noise)
+{
+  m_noise = noise;
 }
 
 

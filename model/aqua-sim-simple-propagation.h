@@ -45,6 +45,7 @@ public:
 						     Ptr<Packet> p,
 						     std::vector<Ptr<AquaSimNetDevice> > dList);
 
+  virtual void SetTraceValues(double t, double s, double n);
 protected:
   double RayleighAtt (double dist, double freq, double pT);
   //2.0 version below:

@@ -162,6 +162,16 @@ main (int argc, char *argv[])
   sinkSocket->Bind (socket);
 
 /*
+ *  For channel trace driven simulation
+ */
+/*
+  AquaSimTraceReader tReader;
+  tReader.SetChannel(asHelper.GetChannel());
+  if (tReader.ReadFile("channelTrace.txt")) NS_LOG_DEBUG("Trace Reader Success");
+  else NS_LOG_DEBUG("Trace Reader Failure");
+*/
+
+/*
   ApplicationContainer serverApp;
   UdpServerHelper myServer (250);
   serverApp = myServer.Install (nodesCon.Get (0));

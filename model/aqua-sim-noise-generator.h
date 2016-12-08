@@ -41,6 +41,7 @@ public:
   virtual double Noise (Time t, Vector vector) = 0;
   virtual double Noise (void) = 0;
   double Noise(double frequency);
+  virtual void SetNoise(double noise)=0;
 
 private:
   double m_windNoise;
@@ -58,7 +59,8 @@ public:
 
   virtual double Noise (Time t, Vector vector);
   virtual double Noise (void);
-
+  virtual void SetNoise(double noise);
+  void Initialize();
 private:
   double m_noise;
 };	// class AquaSimConstNoiseGen
@@ -77,6 +79,7 @@ public:
   virtual double Noise (Time t, Vector vector);
   virtual double Noise (void);
   void SetBounds(double min, double max);
+  virtual void SetNoise(double noise);
 
 private:
   double m_noise;
@@ -100,7 +103,7 @@ public:
   void SetLength(double length);
 
 private:
-  void SetNoise(double noise);
+  virtual void SetNoise(double noise);
   void ResetNoise();
   double m_noise;
   double m_noiseAmount;

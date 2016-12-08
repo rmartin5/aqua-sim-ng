@@ -23,6 +23,7 @@
 #include "ns3/log.h"
 #include "ns3/mobility-model.h"
 #include "ns3/double.h"
+#include "ns3/simulator.h"
 
 using namespace ns3;
 
@@ -53,11 +54,20 @@ AquaSimRangePropagation::GetTypeId()
       MakeDoubleAccessor(&AquaSimRangePropagation::m_salinity),
       MakeDoubleChecker<double>())
     .AddAttribute("NoiseLvl", "Noise level in dB.",
-      DoubleValue(60),
+      DoubleValue(0),
       MakeDoubleAccessor(&AquaSimRangePropagation::m_noiseLvl),
       MakeDoubleChecker<double>())
   ;
   return tid;
+}
+
+void
+AquaSimRangePropagation::Initialize()
+{
+  m_bandwidth = 4096;
+  m_temp = 25;
+  m_salinity = 35;
+  m_noiseLvl = 0;
 }
 
 /**
@@ -179,4 +189,13 @@ void
 AquaSimRangePropagation::SetNoiseLvl(double noiseLvl)
 {
   m_noiseLvl = noiseLvl;
+}
+
+void
+AquaSimRangePropagation::SetTraceValues(double temp, double salinity, double noiseLvl)
+{
+  m_temp = temp;
+  m_salinity = salinity;
+  m_noiseLvl = noiseLvl;
+  NS_LOG_DEBUG("TraceValues(" << Simulator::Now().GetSeconds() << "):" << m_temp << "," << m_salinity << "," << m_noiseLvl);
 }

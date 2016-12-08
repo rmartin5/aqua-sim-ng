@@ -122,4 +122,10 @@ AquaSimSimplePropagation::RayleighAtt2(double dist, double freq, double Pt)
 	return Rayleigh2(SL);
 }
 
+void
+AquaSimSimplePropagation::SetTraceValues(double t, double s, double n)
+{
+  //dummy implementation. Trace driven should only occur in a varying model like AquaSimRangePropagation.
+}
+
 }  // namespace ns3

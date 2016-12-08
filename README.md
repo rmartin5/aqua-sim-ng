@@ -42,8 +42,8 @@ Further documentation and installation steps can be found under [Aqua-Sim NG Doc
   * ~~_Fluctuating SNR_~~
   * ~~_Enhanced channel model support_~~
   * ~~_Transmission range uncertainty module_~~
-  * **Trace driven support**
-  * **Security features**
+  * ~~_Security features_~~
+  * ~~_Trace driven support_~~
 
 4. Information-Centric Integration
   * **Adapted Named Data Network components**

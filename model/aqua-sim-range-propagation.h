@@ -55,6 +55,9 @@ public:
   void SetSalinity(double salinity);
   void SetNoiseLvl(double noiseLvl);
 
+  void Initialize();
+  virtual void SetTraceValues(double temp, double salinity, double noiseLvl);
+
 private:
   double m_bandwidth;
   double m_temp;
