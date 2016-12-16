@@ -43,7 +43,7 @@ namespace ns3 {
 #include "aqua-sim-synchronization.h"
 #include "aqua-sim-localization.h"
 #include "aqua-sim-attack-model.h"
-
+#include "ns3/named-data.h"
 
 namespace ns3 {
 
@@ -58,6 +58,7 @@ class AquaSimChannel;
 class AquaSimSync;
 class AquaSimLocalization;
 class AquaSimAttackModel;
+class NamedData;
 
 /**
  * \ingroup aqua-sim-ng
@@ -83,6 +84,7 @@ public:
   double TransmitDistance();  //should be static
   void SetTransmitDistance(double range);
   void SetAttackModel(Ptr<AquaSimAttackModel> attackModel);
+  void SetNamedData(Ptr<NamedData> ndn);
 
   Ptr<AquaSimPhy> GetPhy (void);
   Ptr<AquaSimMac> GetMac (void);
@@ -94,6 +96,7 @@ public:
   Ptr<AquaSimSync> GetMacSync(void);
   Ptr<AquaSimLocalization> GetMacLoc(void);
   Ptr<AquaSimAttackModel> GetAttackModel(void);
+  Ptr<NamedData> GetNamedData(void);
 
   virtual void DoDispose (void);
   virtual void DoInitialize (void);
@@ -194,6 +197,7 @@ private:
   Ptr<AquaSimSync> m_macSync;
   Ptr<AquaSimLocalization> m_macLoc;
   Ptr<AquaSimAttackModel> m_attackModel;
+  Ptr<NamedData> m_ndn;
 
   NetDevice::ReceiveCallback m_forwardUp;
   bool m_configComplete;

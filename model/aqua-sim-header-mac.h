@@ -46,7 +46,8 @@ public:
     UWPTYPE_OTHER,
     UWPTYPE_LOC,
     UWPTYPE_SYNC,
-    UWPTYPE_SYNC_BEACON };
+    UWPTYPE_SYNC_BEACON,
+    UWPTYPE_NDN };
 
   MacHeader();
   static TypeId GetTypeId(void);

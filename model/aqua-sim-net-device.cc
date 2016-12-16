@@ -365,6 +365,12 @@ AquaSimNetDevice::GetAttackModel(void)
   return m_attackModel;
 }
 
+Ptr<NamedData>
+AquaSimNetDevice::GetNamedData(void)
+{
+  return m_ndn;
+}
+
 Ptr<AquaSimRouting>
 AquaSimNetDevice::GetRouting (void)
 {

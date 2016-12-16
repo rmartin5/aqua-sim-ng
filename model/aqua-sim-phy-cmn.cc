@@ -579,6 +579,9 @@ AquaSimPhyCmn::SendPktUp(Ptr<Packet> p)
   case MacHeader::UWPTYPE_SYNC_BEACON:
     GetNetDevice()->GetMacSync()->RecvSyncBeacon(p);
     break;
+  case MacHeader::UWPTYPE_NDN:
+    GetNetDevice()->GetNamedData()->Recv(p);
+    break;
   default:
     NS_LOG_DEBUG("SendPKtUp: Something went wrong.");
   }

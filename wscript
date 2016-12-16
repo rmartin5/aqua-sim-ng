@@ -58,6 +58,15 @@ def build(bld):
         'model/aqua-sim-routing-ddos.cc',
         'model/aqua-sim-attack-model.cc',
         'model/aqua-sim-trace-reader.cc',
+        'model/ndn/named-data.cc',
+        'model/ndn/named-data-header.cc',
+        'model/ndn/name-discovery.cc',
+        'model/ndn/pit.cc',
+        'model/ndn/fib.cc',
+        'model/ndn/content-storage.cc',
+        'model/ndn/cs-fifo.cc',
+        'model/ndn/cs-lru.cc',
+        'model/ndn/cs-random.cc',
         ]
 
     module_test = bld.create_ns3_module_test_library('aqua-sim-ng')
@@ -118,6 +127,15 @@ def build(bld):
         'model/aqua-sim-routing-ddos.h',
         'model/aqua-sim-attack-model.h',
         'model/aqua-sim-trace-reader.h',
+        'model/ndn/named-data.h',
+        'model/ndn/named-data-header.h',
+        'model/ndn/name-discovery.h',
+        'model/ndn/pit.h',
+        'model/ndn/fib.h',
+        'model/ndn/content-storage.h',
+        'model/ndn/cs-fifo.h',
+        'model/ndn/cs-lru.h',
+        'model/ndn/cs-random.h',
         ]
 
     if bld.env.ENABLE_EXAMPLES:
