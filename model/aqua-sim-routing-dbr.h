@@ -83,14 +83,14 @@ private:
   AquaSimDBR *m_a;
 };  // class DBR_SendingTimer
 
-class QueueItem : public Object {
+class QueueItemDbr : public Object {
 public:
-	QueueItem() : /*m_p(0),*/ m_sendTime(0) {}
-	QueueItem(Ptr<Packet> p, double t) : m_p(p), m_sendTime(t) {}
+	QueueItemDbr() : /*m_p(0),*/ m_sendTime(0) {}
+	QueueItemDbr(Ptr<Packet> p, double t) : m_p(p), m_sendTime(t) {}
 
 	Ptr<Packet> m_p;		// pointer to the packet
 	double m_sendTime;	// time to send the packet
-};  // class QueueItem
+};  // class QueueItemDbr
 
 class MyPacketQueue : public Object {
 public:
@@ -102,13 +102,13 @@ public:
 	void dump();
 
 	void pop() { m_dq.pop_front(); };
-	QueueItem* front() { return m_dq.front(); };
-	void insert(QueueItem* q);
+	QueueItemDbr* front() { return m_dq.front(); };
+	void insert(QueueItemDbr* q);
 	bool update(Ptr<Packet> p, double t);
 	bool purge(Ptr<Packet> p);
 
 private:
-	std::deque<QueueItem*> m_dq;
+	std::deque<QueueItemDbr*> m_dq;
 };  // class MyPacketQueue
 
 class NeighbEnt{
