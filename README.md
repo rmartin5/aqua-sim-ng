@@ -46,7 +46,7 @@ Further documentation and installation steps can be found under [Aqua-Sim NG Doc
   * ~~_Trace driven support_~~
 
 4. Information-Centric Integration
-  * **Adapted Named Data Network components**
+  * ~~_Adapted Named Data Network components_~~
   * **Protocol integration**
   * **Helper/test scripts**
 

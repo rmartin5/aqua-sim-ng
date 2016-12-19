@@ -25,6 +25,8 @@
 #include "ns3/aqua-sim-header.h"
 #include "ns3/aqua-sim-header-mac.h"
 #include "named-data-header.h"
+#include "name-discovery.h"
+#include <string.h>
 
 using namespace ns3;
 
@@ -85,14 +87,77 @@ NamedData::SetNetDevice(Ptr<AquaSimNetDevice> device)
 void
 NamedData::Recv(Ptr<Packet> packet)
 {
-  //TODO XXX
-  /*
-    Should also separate payload from packet and handle as a string or two strings if data packet.
-    Distinush between expected packet types (interest, data, discovery)
-    call functions accordingly
-    if (hasCache) then try finding interest within cache, and handle from there.
-    etc...
-  */
+  NS_LOG_FUNCTION(this);
+
+  AquaSimHeader ash;
+  MacHeader mach;
+  NamedDataHeader ndh;
+  packet->RemoveHeader(ash);
+  packet->RemoveHeader(mach);
+  packet->PeekHeader(ndh);
+  packet->AddHeader(mach);
+  packet->AddHeader(ash);
+
+  if (ash.GetSAddr()==AquaSimAddress::ConvertFrom(m_device->GetAddress())) {
+    NS_LOG_DEBUG(this << "Loop detected, dropping packet.");
+    return;
+  }
+
+  switch (ndh.GetPType()) {
+    case (NamedDataHeader::NDN_INTEREST):
+    {
+      NS_LOG_INFO("Interest Packet Recv");
+      uint8_t* interest = GetInterestPktStr(packet);
+      if (m_hasCache) {
+        uint8_t* potentialData = m_cs->GetEntry(interest);
+        if (potentialData != NULL) {
+          NS_LOG_INFO(this << "Found corresponding data to satisfy interest.");
+          SendPkt(CreateData(interest,potentialData,strlen((char*)interest),strlen((char*)potentialData)));
+          return;
+        }
+      }
+      std::list<AquaSimAddress> addressList = m_fib->InterestRecv(interest);
+      if (!addressList.empty()) {
+        if (m_pit->AddEntry(interest, ash.GetSAddr())) {
+          SendMultiplePackets(packet, addressList);
+        }
+      }
+      else {
+        NS_LOG_INFO(this << "No known FIB paths for " << interest);
+        return;
+      }
+    }
+    break;
+    case (NamedDataHeader::NDN_DATA):
+    {
+      NS_LOG_INFO("Data Packet Recv");
+      std::pair<uint8_t*,uint8_t*> payload = GetInterestAndDataStr(packet);
+          //payload.first == interest, payload.second == data
+      std::list<AquaSimAddress> addressList = m_pit->GetEntry(payload.first);
+      if (!addressList.empty()) {
+        if (m_hasCache) m_cs->AddEntry(payload.first, payload.second);
+        SendMultiplePackets(packet, addressList);
+        m_pit->RemoveEntry(payload.first);
+      }
+      else {
+        NS_LOG_INFO(this << "No corresponding PIT entries for given data pkt.");
+        return;
+      }
+    }
+    break;
+    case (NamedDataHeader::NDN_DISCOVERY):
+    {
+      NS_LOG_INFO("Discovery Packet Recv");
+      NameDiscovery nameDiscovery;
+      std::pair<uint8_t*,AquaSimAddress> discovery = nameDiscovery.ProcessNameDiscovery(packet);
+      nameDiscovery.ShortenNamePrefix(discovery.first, '/');
+      m_fib->AddEntry(discovery.first, discovery.second);
+    }
+    break;
+    default:
+      NS_LOG_DEBUG(this << "Incompatible ND header packet type. Dropping packet.");
+      return;
+  }
 }
 
 Ptr<Packet>
@@ -167,9 +232,10 @@ NamedData::CreateNameDiscovery(uint8_t* name, uint32_t nameSize)
 void
 NamedData::SendPkt(Ptr<Packet> packet)
 {
-  //TODO XXX
-  //NOTE: check for busy terminal problem.
-  //may need a transission notice like in AquaSimMac.
+  //Using MAC layer for busy terminal problem solution
+  if (!m_device->GetMac()->SendDown(packet)){
+    NS_LOG_DEBUG(this << "Something went wrong when sending packet. Is device sleeping?");
+  }
 }
 
 uint8_t*
@@ -192,14 +258,49 @@ NamedData::GetDataStr(Ptr<Packet> dataPkt)
   return (uint8_t*)token;
 }
 
-uint8_t*
-NamedData::GetInterestStr(Ptr<Packet> dataPkt)
+std::pair<uint8_t*,uint8_t*>
+NamedData::GetInterestAndDataStr(Ptr<Packet> dataPkt)
 {
   uint32_t size = dataPkt->GetSize ();
   uint8_t *data = new uint8_t[size];
-  if (dataPkt->CopyData (data, size) == 0)
+  dataPkt->CopyData (data, size);
+
+  /*
+   *  NOTE: If more than one DELIMITER is within packet buffer, then unpredicted results may occur.
+   */
+  char *token = strtok(reinterpret_cast<char*>(data),DELIMITER);
+  char* interest = token;
+  token = strtok(NULL,DELIMITER); //Ignore interest
+  if (token == NULL)
+  {
+    NS_LOG_WARN(this << "Cannot split payload:" << data << " with delimiter:" << DELIMITER << ". Returning NULL");
+    return std::make_pair((uint8_t*)NULL,(uint8_t*)NULL);
+  }
+  return std::make_pair((uint8_t*)interest,(uint8_t*)token);
+}
+
+uint8_t*
+NamedData::GetInterestPktStr(Ptr<Packet> intPkt)
+{
+  uint32_t size = intPkt->GetSize ();
+  uint8_t *data = new uint8_t[size];
+  if (intPkt->CopyData (data, size) == 0)
   {
     NS_LOG_WARN(this << "Packet buffer is empty.");
   }
   return data;
+}
+
+void
+NamedData::SendMultiplePackets(Ptr<Packet> packet, std::list<AquaSimAddress> addresses)
+{
+  AquaSimHeader ash;
+
+  while (!addresses.empty()) {
+      packet->RemoveHeader(ash);
+      ash.SetDAddr(addresses.front());
+      packet->AddHeader(ash);
+      SendPkt(packet);
+      addresses.pop_front();
+  }
 }

@@ -91,7 +91,15 @@ Pit::RemoveEntryByI(PitI entry)
   return true;
 }
 
-void
+/*
+ * Add entry to PIT, and check if already exists within table.
+ *
+ * @param name      interest name
+ * @param address   sender address
+ *
+ * @return		      true if entry does not exist, false if entry already in PIT
+ */
+bool
 Pit::AddEntry(uint8_t* name, AquaSimAddress address)
 {
   NS_LOG_DEBUG(this << name << address);
@@ -107,11 +115,16 @@ Pit::AddEntry(uint8_t* name, AquaSimAddress address)
     newEntry.timeout.SetFunction(&Pit::RemoveEntry, this);
     newEntry.timeout.Schedule(m_timeout);
     PitTable.insert(std::make_pair(name,newEntry));
+    return true;
   }
   else
   {
     //add new address to PitEntry
     entry->second.address.push_back(address);
+    //assuming small address lists (so this shouldn't be too painful)
+    entry->second.address.sort(); //O(NlogN)
+    entry->second.address.unique(); //O(N)
+    return false;
   }
 }
 
@@ -125,4 +138,15 @@ void
 Pit::ClearTable()
 {
   PitTable.clear();
+}
+
+std::list<AquaSimAddress>
+Pit::GetEntry(uint8_t* name)
+{
+  NS_LOG_DEBUG(this << name);
+
+  PitI entry;
+  entry = PitTable.find(name);
+  if (entry == PitTable.end()) return std::list<AquaSimAddress>();
+  return entry->second.address;
 }

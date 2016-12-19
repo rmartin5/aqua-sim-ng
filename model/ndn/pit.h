@@ -45,8 +45,9 @@ public:
   size_t GetPitSize();
   bool RemoveEntry(uint8_t* name);
   bool RemoveEntryByI(PitI);
-  void AddEntry(uint8_t* name, AquaSimAddress address);
+  bool AddEntry(uint8_t* name, AquaSimAddress address);
   void SetTimeout(Time timeout);
+  std::list<AquaSimAddress> GetEntry(uint8_t* name);
 
 private:
   void ClearTable();

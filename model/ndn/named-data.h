@@ -49,11 +49,12 @@ public:
   Ptr<Packet> CreateData(uint8_t* name, uint8_t* data, uint32_t nameSize, uint32_t dataSize);
   Ptr<Packet> CreateNameDiscovery(uint8_t* name, uint32_t nameSize);
   void SendPkt(Ptr<Packet> packet);
-    //NOTE: check for busy terminal problem.
 
 private:
   uint8_t* GetDataStr(Ptr<Packet> dataPkt);
-  uint8_t* GetInterestStr(Ptr<Packet> dataPkt);
+  uint8_t* GetInterestPktStr(Ptr<Packet> intPkt);
+  std::pair<uint8_t*,uint8_t*> GetInterestAndDataStr(Ptr<Packet> dataPkt);
+  void SendMultiplePackets(Ptr<Packet> packet, std::list<AquaSimAddress> addresses);
 
   Ptr<Fib> m_fib;
   Ptr<Pit> m_pit;
