@@ -84,7 +84,7 @@ NamedData::SetNetDevice(Ptr<AquaSimNetDevice> device)
   m_device = device;
 }
 
-void
+bool
 NamedData::Recv(Ptr<Packet> packet)
 {
   NS_LOG_FUNCTION(this);
@@ -95,12 +95,18 @@ NamedData::Recv(Ptr<Packet> packet)
   packet->RemoveHeader(ash);
   packet->RemoveHeader(mach);
   packet->PeekHeader(ndh);
+  ash.SetNumForwards(ash.GetNumForwards()+1);
   packet->AddHeader(mach);
   packet->AddHeader(ash);
 
-  if (ash.GetSAddr()==AquaSimAddress::ConvertFrom(m_device->GetAddress())) {
+  if (ash.GetSAddr()==AquaSimAddress::ConvertFrom(m_device->GetAddress()) &&
+        ash.GetNumForwards() > 1) {
     NS_LOG_DEBUG(this << "Loop detected, dropping packet.");
-    return;
+    return false;
+  }
+
+  if (!RecvCheck(packet,ndh.GetPType())) {
+    return false;
   }
 
   switch (ndh.GetPType()) {
@@ -113,7 +119,7 @@ NamedData::Recv(Ptr<Packet> packet)
         if (potentialData != NULL) {
           NS_LOG_INFO(this << "Found corresponding data to satisfy interest.");
           SendPkt(CreateData(interest,potentialData,strlen((char*)interest),strlen((char*)potentialData)));
-          return;
+          return true;
         }
       }
       std::list<AquaSimAddress> addressList = m_fib->InterestRecv(interest);
@@ -123,8 +129,8 @@ NamedData::Recv(Ptr<Packet> packet)
         }
       }
       else {
-        NS_LOG_INFO(this << "No known FIB paths for " << interest);
-        return;
+        NS_LOG_INFO(this << " No known FIB paths for " << interest);
+        return false;
       }
     }
     break;
@@ -141,7 +147,7 @@ NamedData::Recv(Ptr<Packet> packet)
       }
       else {
         NS_LOG_INFO(this << "No corresponding PIT entries for given data pkt.");
-        return;
+        return false;
       }
     }
     break;
@@ -156,8 +162,10 @@ NamedData::Recv(Ptr<Packet> packet)
     break;
     default:
       NS_LOG_DEBUG(this << "Incompatible ND header packet type. Dropping packet.");
-      return;
+      return false;
   }
+
+  return true;
 }
 
 Ptr<Packet>
@@ -303,4 +311,19 @@ NamedData::SendMultiplePackets(Ptr<Packet> packet, std::list<AquaSimAddress> add
       SendPkt(packet);
       addresses.pop_front();
   }
+}
+
+/*
+ *  Assist in Pit/Fib targeted packet sending and multicasting. Ensure only targeted nodes recv packet.
+ *
+ *  Return true if should recv packet, false otherwise.
+ */
+bool
+NamedData::RecvCheck(Ptr<Packet> packet, uint8_t ptype)
+{
+  AquaSimHeader ash;
+  packet->PeekHeader(ash);
+  return (ash.GetDAddr()==AquaSimAddress::ConvertFrom(m_device->GetAddress()) ||
+            ash.GetDAddr()==AquaSimAddress::GetBroadcast() ||
+            ptype==NamedDataHeader::NDN_DISCOVERY );
 }

@@ -31,6 +31,7 @@ CSFifo::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::CSFifo")
     .SetParent<ContentStorage> ()
+    .AddConstructor<CSFifo>()
     ;
   return tid;
 }
@@ -72,7 +73,7 @@ CSFifo::RemoveEntry()
 bool
 CSFifo::CacheFull()
 {
-  return (m_cache.size() >= m_cacheSize);
+  return ((m_cacheSize==0) ? false : (m_cache.size() >= m_cacheSize) );
 }
 
 uint8_t*

@@ -31,6 +31,7 @@ CSLru::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::CSLru")
     .SetParent<ContentStorage> ()
+    .AddConstructor<CSLru>()
     ;
   return tid;
 }
@@ -64,7 +65,7 @@ CSLru::RemoveEntry()
 bool
 CSLru::CacheFull()
 {
-  return (item_map.size() > m_cacheSize);
+  return ((m_cacheSize==0) ? false : (item_map.size() > m_cacheSize) );
 }
 
 uint8_t*

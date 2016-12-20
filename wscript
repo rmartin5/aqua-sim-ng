@@ -67,6 +67,9 @@ def build(bld):
         'model/ndn/cs-fifo.cc',
         'model/ndn/cs-lru.cc',
         'model/ndn/cs-random.cc',
+        'model/ndn/onoff-nd-application.cc',
+        'helper/named-data-helper.cc',
+        'helper/on-off-nd-helper.cc',
         ]
 
     module_test = bld.create_ns3_module_test_library('aqua-sim-ng')
@@ -136,6 +139,9 @@ def build(bld):
         'model/ndn/cs-fifo.h',
         'model/ndn/cs-lru.h',
         'model/ndn/cs-random.h',
+        'model/ndn/onoff-nd-application.h',
+        'helper/named-data-helper.h',
+        'helper/on-off-nd-helper.h',
         ]
 
     if bld.env.ENABLE_EXAMPLES:

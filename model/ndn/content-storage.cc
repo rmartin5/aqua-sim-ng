@@ -30,13 +30,12 @@ TypeId
 ContentStorage::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::ContentStorage")
-    .SetParent<Object> ()
-    ;
+    .SetParent<Object> ();
   return tid;
 }
 
 ContentStorage::ContentStorage() :
-  m_cacheType(NO_CACHE)
+  m_cacheType(NO_CACHE), m_cacheSize(0)
 {
   NS_LOG_FUNCTION(this);
 }

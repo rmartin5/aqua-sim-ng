@@ -153,6 +153,7 @@ AquaSimMac::SendDown(Ptr<Packet> p, TransStatus afterTrans)
       m_device->SetTransmissionStatus(SEND);
       AquaSimHeader ash;
       p->PeekHeader(ash);
+      if (ash.GetTxTime().IsNegative()) ash.SetTxTime(GetTxTime(p));
       Simulator::Schedule(ash.GetTxTime(), &AquaSimNetDevice::SetTransmissionStatus,m_device,afterTrans);
 
       //slightly awkard but for phy header Buffer

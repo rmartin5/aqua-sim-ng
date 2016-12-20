@@ -44,7 +44,7 @@ public:
   void SetContentStorage(Ptr<ContentStorage> cs);
   void SetNetDevice(Ptr<AquaSimNetDevice> device);
 
-  void Recv(Ptr<Packet> packet);
+  bool Recv(Ptr<Packet> packet);
   Ptr<Packet> CreateInterest(uint8_t* name, uint32_t nameSize);
   Ptr<Packet> CreateData(uint8_t* name, uint8_t* data, uint32_t nameSize, uint32_t dataSize);
   Ptr<Packet> CreateNameDiscovery(uint8_t* name, uint32_t nameSize);
@@ -55,6 +55,7 @@ private:
   uint8_t* GetInterestPktStr(Ptr<Packet> intPkt);
   std::pair<uint8_t*,uint8_t*> GetInterestAndDataStr(Ptr<Packet> dataPkt);
   void SendMultiplePackets(Ptr<Packet> packet, std::list<AquaSimAddress> addresses);
+  bool RecvCheck(Ptr<Packet> packet, uint8_t ptype);
 
   Ptr<Fib> m_fib;
   Ptr<Pit> m_pit;

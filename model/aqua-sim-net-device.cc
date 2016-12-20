@@ -335,6 +335,14 @@ AquaSimNetDevice::SetAttackModel(Ptr<AquaSimAttackModel> attackModel)
   m_attackModel->SetDevice(Ptr<AquaSimNetDevice>(this));
 }
 
+void
+AquaSimNetDevice::SetNamedData(Ptr<NamedData> ndn)
+{
+  NS_LOG_FUNCTION(this);
+  m_ndn = ndn;
+}
+
+
 Ptr<AquaSimPhy>
 AquaSimNetDevice::GetPhy (void)
 {
@@ -553,6 +561,12 @@ AquaSimNetDevice::Send (Ptr< Packet > packet, const Address &dest, uint16_t prot
   NS_LOG_FUNCTION(this << packet << dest << protocolNumber);
 
   m_totalSentPkts++;  //debugging
+
+  //Quick hack. Named Data should be NULL pointer if unused/unset.
+  if (m_ndn)
+  {
+    return m_ndn->Recv(packet);
+  }
 
   if(m_routing)
     {//Note : https://www.nsnam.org/docs/release/3.24/doxygen/uan-mac-cw_8cc_source.html#l00123

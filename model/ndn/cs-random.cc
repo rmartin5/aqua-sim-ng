@@ -33,6 +33,7 @@ CSRandom::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::CSRandom")
     .SetParent<ContentStorage> ()
+    .AddConstructor<CSRandom>()
     ;
   return tid;
 }
@@ -85,7 +86,7 @@ CSRandom::RemoveEntry()
 bool
 CSRandom::CacheFull()
 {
-  return (m_cache.size() >= m_cacheSize);
+  return ((m_cacheSize==0) ? false : (m_cache.size() >= m_cacheSize) );
 }
 
 uint8_t*
