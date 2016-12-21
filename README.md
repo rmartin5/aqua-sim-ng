@@ -47,8 +47,8 @@ Further documentation and installation steps can be found under [Aqua-Sim NG Doc
 
 4. Information-Centric Integration
   * ~~_Adapted Named Data Network components_~~
+  * ~~_Helper/test scripts_~~
   * **Protocol integration**
-  * **Helper/test scripts**
 
 
 
