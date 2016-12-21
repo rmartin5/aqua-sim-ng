@@ -22,6 +22,8 @@
 #include "ns3/packet.h"
 #include "name-discovery.h"
 #include "ns3/aqua-sim-header.h"
+#include "ns3/aqua-sim-header-mac.h"
+#include "named-data-header.h"
 
 using namespace ns3;
 
@@ -43,12 +45,12 @@ NameDiscovery::NameDiscovery()
 std::pair<uint8_t*,AquaSimAddress>
 NameDiscovery::ProcessNameDiscovery(Ptr<Packet> packet)
 {
-  AquaSimHeader ash;
-  packet->PeekHeader(ash);
-
+  AquaSimHeader ash; MacHeader mach; NamedDataHeader ndh;
+  packet->RemoveAtStart(ndh.GetSerializedSize() + mach.GetSerializedSize() + ash.GetSerializedSize());
   uint32_t size = packet->GetSize ();
   uint8_t *data = new uint8_t[size];
   packet->CopyData (data, size);
+  packet->AddHeader(ndh); packet->AddHeader(mach); packet->AddHeader(ash);
 
   return std::make_pair(data, ash.GetSAddr());
 }

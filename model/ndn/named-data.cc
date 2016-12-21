@@ -249,9 +249,12 @@ NamedData::SendPkt(Ptr<Packet> packet)
 uint8_t*
 NamedData::GetDataStr(Ptr<Packet> dataPkt)
 {
+  AquaSimHeader ash; MacHeader mach; NamedDataHeader ndh;
+  dataPkt->RemoveAtStart(ndh.GetSerializedSize() + mach.GetSerializedSize() + ash.GetSerializedSize());
   uint32_t size = dataPkt->GetSize ();
   uint8_t *data = new uint8_t[size];
   dataPkt->CopyData (data, size);
+  dataPkt->AddHeader(ndh); dataPkt->AddHeader(mach); dataPkt->AddHeader(ash);
 
   /*
    *  NOTE: If more than one DELIMITER is within packet buffer, then unpredicted results may occur.
@@ -269,9 +272,12 @@ NamedData::GetDataStr(Ptr<Packet> dataPkt)
 std::pair<uint8_t*,uint8_t*>
 NamedData::GetInterestAndDataStr(Ptr<Packet> dataPkt)
 {
+  AquaSimHeader ash; MacHeader mach; NamedDataHeader ndh;
+  dataPkt->RemoveAtStart(ndh.GetSerializedSize() + mach.GetSerializedSize() + ash.GetSerializedSize());
   uint32_t size = dataPkt->GetSize ();
   uint8_t *data = new uint8_t[size];
   dataPkt->CopyData (data, size);
+  dataPkt->AddHeader(ndh); dataPkt->AddHeader(mach); dataPkt->AddHeader(ash);
 
   /*
    *  NOTE: If more than one DELIMITER is within packet buffer, then unpredicted results may occur.
@@ -290,12 +296,15 @@ NamedData::GetInterestAndDataStr(Ptr<Packet> dataPkt)
 uint8_t*
 NamedData::GetInterestPktStr(Ptr<Packet> intPkt)
 {
+  AquaSimHeader ash; MacHeader mach; NamedDataHeader ndh;
+  intPkt->RemoveAtStart(ndh.GetSerializedSize() + mach.GetSerializedSize() + ash.GetSerializedSize());
   uint32_t size = intPkt->GetSize ();
   uint8_t *data = new uint8_t[size];
   if (intPkt->CopyData (data, size) == 0)
   {
     NS_LOG_WARN(this << "Packet buffer is empty.");
   }
+  intPkt->AddHeader(ndh); intPkt->AddHeader(mach); intPkt->AddHeader(ash);
   return data;
 }
 
