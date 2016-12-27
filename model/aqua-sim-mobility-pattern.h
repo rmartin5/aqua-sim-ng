@@ -55,6 +55,8 @@ public:
   AquaSimPosUpdateHelper(AquaSimMobilityPattern *mP) : Timer() {
     m_mP = mP;
   }
+  AquaSimPosUpdateHelper();
+  ~AquaSimPosUpdateHelper();
   void Expire(void);
 private:
   AquaSimMobilityPattern * m_mP;
@@ -183,6 +185,8 @@ private:
   virtual Vector DoGetVelocity (void) const;
 
 protected:
+  virtual void DoDispose();
+
   LocationCache *m_lc;
   double m_updateInterval;
   AquaSimPosUpdateHelper m_posUpdateHelper;

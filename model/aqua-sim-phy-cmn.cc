@@ -73,9 +73,9 @@ AquaSimPhyCmn::AquaSimPhyCmn(void) :
   m_freq = 25;
 
   m_modulationName = "default";
-  Ptr<AquaSimModulation> mod = CreateObject<AquaSimModulation>();
-  AddModulation(mod, "default");
-  m_sC = CreateObject<AquaSimSignalCache>();
+  AddModulation(CreateObject<AquaSimModulation>(), "default");
+  if (!m_sC)
+    m_sC = CreateObject<AquaSimSignalCache>();
   AttachPhyToSignalCache(m_sC, this);
 
   incPktCounter = 0;	//debugging purposes only
@@ -87,16 +87,15 @@ AquaSimPhyCmn::AquaSimPhyCmn(void) :
 
 AquaSimPhyCmn::~AquaSimPhyCmn(void)
 {
-  NS_LOG_FUNCTION(this);
-  DoDispose();
+  Dispose();
 }
 
 TypeId
 AquaSimPhyCmn::GetTypeId(void)
 {
   static TypeId tid = TypeId("ns3::AquaSimPhyCmn")
-    .SetParent<AquaSimPhy> ()
-    .AddConstructor<AquaSimPhyCmn> ()
+    .SetParent<AquaSimPhy>()
+    .AddConstructor<AquaSimPhyCmn>()
     .AddAttribute("CPThresh", "Capture Threshold (db), default is 10.0 set as 10.",
       DoubleValue (10),
       MakeDoubleAccessor(&AquaSimPhyCmn::m_CPThresh),
@@ -236,9 +235,9 @@ AquaSimPhyCmn::AddModulation(Ptr<AquaSimModulation> modulation, std::string modu
   else if (m_modulations.count(modulationName) > 0)
     NS_LOG_WARN("Duplicate modulations");
   else {
-    if (m_modulations.size() == 0)
+    if (m_modulations.size() == 0) {
       m_modulationName = modulationName;
-
+    }
     m_modulations[modulationName] = modulation;
   }
 }
@@ -740,4 +739,15 @@ int
 AquaSimPhyCmn::PktRecvCount()
 {
   return pktRecvCounter;
+}
+
+void AquaSimPhyCmn::DoDispose()
+{
+  NS_LOG_FUNCTION(this);
+  m_sC->Dispose();
+  m_sC=0;
+  m_sinrChecker=0;
+  for (std::map<const std::string, Ptr<AquaSimModulation> >::iterator it=m_modulations.begin(); it!=m_modulations.end(); ++it)
+    it->second=0;
+  AquaSimPhy::DoDispose();
 }

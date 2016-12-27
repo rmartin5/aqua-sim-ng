@@ -105,6 +105,13 @@ AquaSimLocalization::LocationError(Vector s, Vector r, double estRange)
   return std::abs (EuclideanDistance3D(s,r) - pow(estRange,2));
 }
 
+void
+AquaSimLocalization::DoDispose()
+{
+  NS_LOG_FUNCTION(this);
+  m_device=0;
+}
+
 
 /*
  *  Range-based Localization

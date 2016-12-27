@@ -361,6 +361,12 @@ Ptr<Packet> AquaSimAloha::MakeACK(AquaSimAddress Data_Sender)
   return pkt;
 }
 
+AquaSimAlohaAckRetry::~AquaSimAlohaAckRetry()
+{
+	m_mac=0;
+	m_pkt=0;
+}
+
 void AquaSimAloha::ProcessRetryTimer(AquaSimAlohaAckRetry* timer)
 {
   Ptr<Packet> pkt = timer->Pkt();
@@ -369,7 +375,7 @@ void AquaSimAloha::ProcessRetryTimer(AquaSimAlohaAckRetry* timer)
   } else {
       NS_LOG_INFO("ProcessRetryTimer: error: cannot find the ack_retry timer");
   }
-  delete timer;
+	delete timer;
   SendPkt(pkt);
 }
 
@@ -382,5 +388,20 @@ void AquaSimAloha::RetryACK(Ptr<Packet> ack)
   RetryTimerMap_[timer->Id()] = timer;
 }
 
+void AquaSimAloha::DoDispose()
+{
+	NS_LOG_FUNCTION(this);
+	while(!PktQ_.empty()) {
+		PktQ_.front()=0;
+		PktQ_.pop();
+	}
+  for (std::map<long,AquaSimAlohaAckRetry*>::iterator it=RetryTimerMap_.begin(); it!=RetryTimerMap_.end(); ++it) {
+		delete it->second;
+		it->second=0;
+	}
+	RetryTimerMap_.clear();
+	m_rand=0;
+	AquaSimMac::DoDispose();
+}
 
 } // namespace ns3

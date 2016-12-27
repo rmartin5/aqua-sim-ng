@@ -23,6 +23,23 @@
 
 using namespace ns3;
 
+AquaSimRoutingBuffer::~AquaSimRoutingBuffer()
+{
+	routing_buffer_cell* tmp;
+	while (m_head != NULL) {
+		tmp = m_head;
+		m_head = m_head->next;
+		tmp->packet=0;
+		delete tmp;
+	}
+	while (m_tail != NULL) {
+		tmp = m_tail;
+		m_tail = m_tail->next;
+		tmp->packet=0;
+		delete tmp;
+	}
+}
+
 void
 AquaSimRoutingBuffer::AddNewPacket(Ptr<Packet> p)
 {

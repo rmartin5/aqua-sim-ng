@@ -141,8 +141,22 @@ AquaSimNetDevice::GetTypeId ()
 void
 AquaSimNetDevice::DoDispose (void)
 {
-  //TODO clear all variables and link to NetDevice to do the same...
   NS_LOG_FUNCTION(this);
+  m_phy->Dispose();
+  /* Used to call phy layer Dispose() due to reference cycle restricting typical Object disposal.
+      Leading to false memory leak reports in tools such as valgrind. */
+  m_phy=0;
+  m_mac=0;
+  m_routing=0;
+  m_node=0;
+  m_uniformRand=0;
+  m_energyModel=0;
+  m_macSync=0;
+  m_macLoc=0;
+  m_attackModel=0;
+  m_ndn=0;
+  for (std::vector<Ptr<AquaSimChannel> >::iterator it = m_channel.begin(); it != m_channel.end(); ++it)
+    *it=0;
   NetDevice::DoDispose ();
 }
 
@@ -163,8 +177,6 @@ AquaSimNetDevice::CompleteConfig (void)
     {
       return;
     }
-  //exec
-  //TODO set app
   m_configComplete = true;
 }
 

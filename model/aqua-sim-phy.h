@@ -67,6 +67,7 @@ namespace ns3 {
   class AquaSimPhy : public Object
   {
   public:
+    AquaSimPhy();
     static TypeId GetTypeId();
 
     virtual void SetTxPower(double ptConsume) = 0;
@@ -140,6 +141,7 @@ namespace ns3 {
     Ptr<AquaSimNetDevice> m_device;
 
     friend class AquaSimEnergyModel;
+    friend class AquaSimNetDevice;  //slightly dangerous but currrently used to remove reference cycle on disposal.
 
     //PhyStatus m_status;	// status of modem
   }; //AquaSimPhy class

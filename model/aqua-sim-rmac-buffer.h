@@ -36,7 +36,7 @@ struct buffer_cell{
 /**
  * \ingroup aqua-sim-ng
  *
- * \brief Transmission buffer helper 
+ * \brief Transmission buffer helper
  */
 class TransmissionBuffer {
 public:
@@ -48,6 +48,7 @@ public:
 		tail_=NULL;
 		lock_p=NULL;
 			};
+  ~TransmissionBuffer();
   static TypeId GetTypeId (void);
 
   void AddNewPacket(Ptr<Packet> p);

@@ -41,6 +41,15 @@ int AquaSimGoal::m_reqPktSeq = 0;
 
 
 //---------------------------------------------------------------------
+AquaSimGoal_BackoffTimer::~AquaSimGoal_BackoffTimer()
+{
+	delete mac_;
+	delete m_SE;
+	mac_=0;
+	m_SE=0;
+	m_ReqPkt=0;
+}
+
 void AquaSimGoal_BackoffTimer::expire()
 {
 	mac_->ProcessBackoffTimeOut(this);
@@ -48,9 +57,24 @@ void AquaSimGoal_BackoffTimer::expire()
 
 
 //---------------------------------------------------------------------
+AquaSimGoal_PreSendTimer::~AquaSimGoal_PreSendTimer()
+{
+	delete mac_;
+	mac_=0;
+	m_pkt=0;
+}
+
 void AquaSimGoal_PreSendTimer::expire()
 {
 	mac_->ProcessPreSendTimeout(this);
+}
+
+AquaSimGoal_AckTimeoutTimer::~AquaSimGoal_AckTimeoutTimer()
+{
+	delete mac_;
+	mac_=0;
+  for (std::map<int, Ptr<Packet> >::iterator it=m_PktSet.begin(); it!=m_PktSet.end(); ++it)
+		it->second=0;
 }
 
 void
@@ -67,6 +91,15 @@ AquaSimGoal_AckTimeoutTimer::expire()
 
 
 //---------------------------------------------------------------------
+AquaSimGoalDataSendTimer::~AquaSimGoalDataSendTimer()
+{
+	delete mac_;
+	delete m_SE;
+	mac_=0;
+	m_SE=0;
+	m_DataPktSet.clear();
+}
+
 void AquaSimGoalDataSendTimer::expire()
 {
 	mac_->ProcessDataSendTimer(this);
@@ -74,11 +107,22 @@ void AquaSimGoalDataSendTimer::expire()
 
 
 //---------------------------------------------------------------------
+AquaSimGoal_SinkAccumAckTimer::~AquaSimGoal_SinkAccumAckTimer()
+{
+	delete mac_;
+	mac_=0;
+}
+
 void AquaSimGoal_SinkAccumAckTimer::expire()
 {
 	mac_->ProcessSinkAccumAckTimeout();
 }
 
+AquaSimGoal_NxtRoundTimer::~AquaSimGoal_NxtRoundTimer()
+{
+	delete mac_;
+	mac_=0;
+}
 
 void AquaSimGoal_NxtRoundTimer::expire()
 {
@@ -1356,6 +1400,11 @@ AquaSimGoal::JitterStartTime(Time Txtime)
 	return BeginTime;
 }
 
+void AquaSimGoal::DoDispose()
+{
+	m_rand=0;
+	AquaSimMac::DoDispose();
+}
 
 //---------------------------------------------------------------------
 ns3::SchedElem::SchedElem(Time BeginTime_, Time EndTime_, bool IsRecvSlot_)
@@ -1378,6 +1427,15 @@ ns3::TimeSchedQueue::TimeSchedQueue(Time MinInterval, Time BigIntervalLen)
 {
 	m_minInterval = MinInterval;
 	m_bigIntervalLen = BigIntervalLen;
+}
+
+ns3::TimeSchedQueue::~TimeSchedQueue()
+{
+	for (std::list<SchedElem*>::iterator it=m_SchedQ.begin(); it != m_SchedQ.end(); ++it) {
+		delete *it;
+		*it=0;
+	}
+	m_SchedQ.clear();
 }
 
 //---------------------------------------------------------------------

@@ -177,7 +177,7 @@ protected:
 
   friend class AquaSimEnergyModel;
 
-  virtual void DoDispose() {AquaSimPhy::DoDispose();}
+  virtual void DoDispose();
 
 private:
   //Ptr<AquaSimMac> m_mac;

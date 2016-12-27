@@ -63,6 +63,13 @@ AquaSimAttackModel::SendDown(Ptr<Packet> p)
     NS_LOG_DEBUG("Something went wrong when sending down to MAC");
 }
 
+void
+AquaSimAttackModel::DoDispose()
+{
+  NS_LOG_FUNCTION(this);
+  m_device=0;
+}
+
 /*
  *  Aqua Sim Attack DoS
  */

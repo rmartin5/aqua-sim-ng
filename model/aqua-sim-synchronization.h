@@ -53,6 +53,7 @@ protected:
   void SyncSend(bool isBeacon);
 
   Ptr<Packet> CreateSyncPacket(bool isBeacon);
+  void DoDispose();
 
   int m_numBeacons;
   Time m_clockSkew;  //local clock skew

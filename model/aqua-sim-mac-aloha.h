@@ -56,6 +56,8 @@ public:
       m_pkt = pkt;
       m_id = m_idGenerator++;
     }
+    AquaSimAlohaAckRetry() {}
+    ~AquaSimAlohaAckRetry();
 
   Ptr<Packet> Pkt() {
     return m_pkt;
@@ -143,6 +145,8 @@ protected:
   void	StatusProcess(bool isAck);
   //void	BackoffProcess();
   //bool	CarrierDected();
+
+  virtual void DoDispose();
 private:
   Ptr<UniformRandomVariable> m_rand;
 

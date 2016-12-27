@@ -69,6 +69,7 @@ class DBR_BeaconTimer : public Timer {
 public:
 	DBR_BeaconTimer(AquaSimDBR *a) :
     Timer(Timer::CANCEL_ON_DESTROY), m_a(a) {}
+	~DBR_BeaconTimer();
   void Expire();
 private:
   AquaSimDBR *m_a;
@@ -78,6 +79,7 @@ class DBR_SendingTimer : public Timer {
 public:
 	DBR_SendingTimer(AquaSimDBR *a) :
     Timer(Timer::CANCEL_ON_DESTROY), m_a(a) {}
+	~DBR_SendingTimer();
 	void Expire();
 private:
   AquaSimDBR *m_a;
@@ -87,6 +89,7 @@ class QueueItemDbr : public Object {
 public:
 	QueueItemDbr() : /*m_p(0),*/ m_sendTime(0) {}
 	QueueItemDbr(Ptr<Packet> p, double t) : m_p(p), m_sendTime(t) {}
+	~QueueItemDbr();
 
 	Ptr<Packet> m_p;		// pointer to the packet
 	double m_sendTime;	// time to send the packet
@@ -95,7 +98,15 @@ public:
 class MyPacketQueue : public Object {
 public:
 	MyPacketQueue() : m_dq() {}
-	~MyPacketQueue() { m_dq.clear(); }
+	~MyPacketQueue() {
+		QueueItemDbr* tmp;
+		while(!m_dq.empty()) {
+			tmp = m_dq.back();
+			m_dq.pop_back();
+			delete tmp;
+		}
+		m_dq.clear();
+	}
 
 	bool empty() { return m_dq.empty(); }
 	int size() { return m_dq.size(); }
@@ -215,7 +226,7 @@ protected:
 	void BeaconIn(Ptr<Packet>);
 
 	void HandlePktForward(Ptr<Packet> p);
-
+	virtual void DoDispose();
 };
 
 }  // namespace ns3

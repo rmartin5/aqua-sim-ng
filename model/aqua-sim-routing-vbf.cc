@@ -35,6 +35,12 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("AquaSimVBF");
 //NS_OBJECT_ENSURE_REGISTERED(AquaSimPktHashTable);
 
+AquaSimPktHashTable::~AquaSimPktHashTable()
+{
+  for (std::map<hash_entry,vbf_neighborhood*>::iterator it=m_htable.begin(); it!=m_htable.end(); ++it)
+    delete it->second;
+  m_htable.clear();
+}
 
 void
 AquaSimPktHashTable::Reset()
@@ -194,6 +200,15 @@ AquaSimPktHashTable::PutInHash(VBHeader * vbh, Vector* p)
 	hashPtr[0].neighbor[0].z=p->z;
   m_htable.insert(std::pair<hash_entry,vbf_neighborhood*>(entry,hashPtr));
 	//Tcl_SetHashValue(entryPtr, hashPtr);
+}
+
+AquaSimDataHashTable::~AquaSimDataHashTable()
+{
+  for (std::map<int*,int*>::iterator it=m_htable.begin(); it!=m_htable.end(); ++it) {
+    delete it->first;
+    delete it->second;
+  }
+  m_htable.clear();
 }
 
 void
@@ -1073,6 +1088,12 @@ AquaSimVBF::IsCloseEnough(Ptr<Packet> pkt)
 	if ((Projection(pkt)<=(c*m_width)))  return true;
 	return false;
 
+}
+
+void AquaSimVBF::DoDispose()
+{
+  m_rand=0;
+  AquaSimRouting::DoDispose();
 }
 
 // Some methods for Flooding Entry

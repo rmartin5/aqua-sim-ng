@@ -97,6 +97,8 @@ public:
   void RecvNAck(Ptr<Packet> p);
 
   void SetThresholds(double timeout, double max);
+protected:
+  virtual void DoDispose();
 
 private:
   void SendNAck(Ptr<Packet> p);

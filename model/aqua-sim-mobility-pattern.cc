@@ -26,6 +26,12 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("AquaSimMobilityPattern");
 
+AquaSimPosUpdateHelper::~AquaSimPosUpdateHelper()
+{
+  delete m_mP;
+  m_mP=0;
+}
+
 void
 AquaSimPosUpdateHelper::Expire()
 {
@@ -354,4 +360,10 @@ Vector
 AquaSimMobilityPattern::DoGetVelocity (void) const
 {
   return m_lc->GetLastLoc().m_sp.GetSpeedVect();
+}
+
+void AquaSimMobilityPattern::DoDispose()
+{
+  delete m_lc;
+  m_lc=0;
 }

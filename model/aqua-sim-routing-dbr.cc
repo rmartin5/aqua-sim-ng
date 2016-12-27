@@ -47,10 +47,19 @@ NS_LOG_COMPONENT_DEFINE("AquaSimDBR");
 #define DBR_DEPTH_THRESHOLD 0.0
 #define DBR_SCALE	1.0
 
+DBR_BeaconTimer::~DBR_BeaconTimer()
+{
+	delete m_a;
+}
 
 void DBR_BeaconTimer::Expire()
 {
 	m_a->Beacon_Callback();
+}
+
+DBR_SendingTimer::~DBR_SendingTimer()
+{
+	delete m_a;
 }
 
 void DBR_SendingTimer::Expire()
@@ -64,6 +73,11 @@ void DBR_DeadNeighbTimer::expire(Event *e)
 	a->deadneighb_callback(ne);
 }
 */
+
+QueueItemDbr::~QueueItemDbr()
+{
+	m_p=0;
+}
 
 // Insert the item into queue.
 // The queue is sorted by the expected sending time
@@ -1554,6 +1568,15 @@ AquaSimDBR::Recv2(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
   p->AddHeader(ash);
 	ForwardPacket(p);
   return true;
+}
+
+void AquaSimDBR::DoDispose()
+{
+	m_rand=0;
+	delete m_sendTimer;
+	delete m_beaconTimer;
+
+	AquaSimRouting::DoDispose();
 }
 
 /*

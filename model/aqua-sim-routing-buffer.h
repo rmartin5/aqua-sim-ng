@@ -47,6 +47,7 @@ public:
     m_maximumSize=size;
     m_usr=myuser;
   };
+  ~AquaSimRoutingBuffer();
 
 
   void AddNewPacket(Ptr<Packet>);

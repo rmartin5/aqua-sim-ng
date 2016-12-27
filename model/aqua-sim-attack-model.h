@@ -43,6 +43,8 @@ public:
   virtual void SendDown(Ptr<Packet> p);
 
 protected:
+  void DoDispose();
+
   Ptr<AquaSimNetDevice> m_device;
 };	//class AquaSimAttackModel
 

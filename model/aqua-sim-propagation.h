@@ -41,6 +41,7 @@ struct PktRecvUnit {
   Time pDelay;
   Ptr<AquaSimNetDevice> recver;
   PktRecvUnit () : pR(-1), pDelay(-1), recver(NULL) {}
+  ~PktRecvUnit () {recver=0;}
 };
 
 /**

@@ -157,3 +157,9 @@ AquaSimSync::CreateSyncPacket(bool isBeacon)
   p->AddHeader(ash);
   return p;
 }
+
+void AquaSimSync::DoDispose()
+{
+  NS_LOG_FUNCTION(this);
+  m_device=0;
+}

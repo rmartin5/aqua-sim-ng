@@ -50,6 +50,7 @@ class AquaSimTraceReader
 {
 public:
   AquaSimTraceReader();
+  ~AquaSimTraceReader();
   static TypeId GetTypeId (void);
   bool ReadFile (const std::string& fileName);
   void SetChannel(Ptr<AquaSimChannel> channel);

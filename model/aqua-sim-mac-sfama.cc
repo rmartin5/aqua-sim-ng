@@ -904,6 +904,24 @@ AquaSimSFama::SlotInitHandler()
   StatusProcess(m_slotNumHandler);
 }
 
+void AquaSimSFama::DoDispose()
+{
+	while (!m_sendingPktQ.empty()) {
+		m_sendingPktQ.front()=0;
+		m_sendingPktQ.pop();
+	}
+	while (!m_CachedPktQ.empty()) {
+		m_CachedPktQ.front()=0;
+		m_CachedPktQ.pop();
+	}
+	while (!m_BackupSendingPktQ.empty()) {
+		m_BackupSendingPktQ.front()=0;
+		m_BackupSendingPktQ.pop();
+	}
+	m_rand=0;
+	AquaSimMac::DoDispose();
+}
+
 #ifdef AquaSimSFama_DEBUG
 void
 AquaSimSFama::PrintAllQ()

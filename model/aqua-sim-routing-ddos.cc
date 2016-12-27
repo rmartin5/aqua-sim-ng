@@ -710,6 +710,12 @@ AquaSimDDOS::UpdateInterest()
   m_interestMsg << m_baseInterest << m_interestVersionNum << '\0';
 }
 
+void AquaSimDDOS::DoDispose()
+{
+  m_rand=0;
+  AquaSimRouting::DoDispose();
+}
+
 /*
 void
 AquaSimDDOS::FilePrintout(bool pushback, int nodeID, int attackerID)

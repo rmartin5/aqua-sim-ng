@@ -97,6 +97,8 @@ private:
   int allRecvPktCounter;
 
 protected:
+  void DoDispose();
+
         //void EstTransLocation(MobileNode* sender, MobileNode* recver); // to be added by Robert to estimate receiving position
   Ptr<AquaSimPropagation> m_prop;
   Ptr<AquaSimNoiseGen> m_noiseGen;

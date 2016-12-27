@@ -29,6 +29,21 @@ namespace ns3 {
 NS_LOG_COMPONENT_DEFINE("TransmissionBuffer");
 NS_OBJECT_ENSURE_REGISTERED(TransmissionBuffer);
 
+TransmissionBuffer::~TransmissionBuffer()
+{
+  head_->packet=0;
+  current_p->packet=0;
+  lock_p->packet=0;
+  tail_->packet=0;
+  delete head_;
+  delete current_p;
+  delete lock_p;
+  delete tail_;
+  head_=0;
+  current_p=0;
+  lock_p=0;
+  tail_=0;
+}
 
 TypeId
 TransmissionBuffer::GetTypeId()

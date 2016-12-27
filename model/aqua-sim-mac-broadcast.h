@@ -52,6 +52,7 @@ public:
   virtual bool TxProcess (Ptr<Packet>);
 protected:
   void BackoffHandler(Ptr<Packet>);
+  virtual void DoDispose();
 private:
   int m_backoffCounter;
 };  // class AquaSimBroadcastMac

@@ -34,6 +34,12 @@ namespace ns3 {
 NS_LOG_COMPONENT_DEFINE("AquaSimUwan");
 NS_OBJECT_ENSURE_REGISTERED(AquaSimUwan);
 
+AquaSimUwan_WakeTimer::~AquaSimUwan_WakeTimer()
+{
+  m_mac=0;
+  delete m_ScheT;
+  m_ScheT=0;
+}
 
 void
 AquaSimUwan_WakeTimer::expire()
@@ -596,6 +602,20 @@ AquaSimUwan::ProcessMissingList(uint8_t *data, AquaSimAddress src)
 		data += sizeof(AquaSimAddress);
 	}
 
+}
+
+void AquaSimUwan::DoDispose()
+{
+  while(!m_packetQueue.empty()) {
+    m_packetQueue.front()=0;
+    m_packetQueue.pop();
+  }
+  for (std::set<AquaSimUwan_PktSendTimer *>::iterator it=m_pktSendTimerSet.begin(); it!=m_pktSendTimerSet.end(); ++it) {
+    delete (*it);
+  }
+  m_pktSendTimerSet.clear();
+  m_rand=0;
+  AquaSimMac::DoDispose();
 }
 
 NS_OBJECT_ENSURE_REGISTERED(ScheduleQueue);

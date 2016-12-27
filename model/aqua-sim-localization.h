@@ -64,6 +64,7 @@ protected:
   double EuclideanDistance2D(Vector2D s, Vector2D r);
   double EuclideanDistance3D(Vector s, Vector r);
   double LocationError(Vector s, Vector r, double estRange);
+  void DoDispose();
 
   Time m_localizationRefreshRate;
   Vector m_nodePosition;  //last known position, may vary due to mobility

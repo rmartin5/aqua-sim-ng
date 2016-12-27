@@ -280,6 +280,9 @@ private:
   int m_tBackoffCounter;
   TransStatus m_localStatus;
 
+protected:
+  virtual void DoDispose();
+
 };    // class AquaSimTMac
 } // namespace ns3
 

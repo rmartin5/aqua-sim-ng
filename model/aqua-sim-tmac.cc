@@ -2245,4 +2245,10 @@ AquaSimTMac::StatusProcess(TransStatus state)
 	return;
 }
 
+void AquaSimTMac::DoDispose()
+{
+  m_rand=0;
+  AquaSimMac::DoDispose();
+}
+
 }  //namespace ns3

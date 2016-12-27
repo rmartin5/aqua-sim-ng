@@ -101,6 +101,7 @@ public:
 
 protected:
   virtual void UpdatePacketStatus(void);
+  void DoDispose();
 
 public:
   int m_pktNum;	// number of active incoming packets

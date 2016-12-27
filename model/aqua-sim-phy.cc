@@ -40,6 +40,10 @@ AquaSimPhy::GetTypeId ()
   return tid;
 }
 
+AquaSimPhy::AquaSimPhy()
+{
+}
+
 void
 AquaSimPhy::AttachPhyToSignalCache(Ptr<AquaSimSignalCache> sC, Ptr<AquaSimPhy> phy)
 {
@@ -50,7 +54,9 @@ void
 AquaSimPhy::DoDispose()
 {
   NS_LOG_FUNCTION(this);
-  Object::Dispose();
+  m_device=0;
+  for (std::vector<Ptr<AquaSimChannel> >::iterator it = m_channel.begin(); it != m_channel.end(); ++it)
+    *it=0;
 }
 
 Ptr<AquaSimNetDevice>

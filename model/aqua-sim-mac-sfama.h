@@ -49,6 +49,11 @@ public:
 	AquaSimSFama_Wait_Send_Timer(Ptr<AquaSimSFama> mac): Timer(Timer::CANCEL_ON_DESTROY) {
 		m_mac = mac;
 	}
+  ~AquaSimSFama_Wait_Send_Timer()
+  {
+    m_mac=0;
+    m_pkt=0;
+  }
 
 
   /* Not necessary:
@@ -83,6 +88,10 @@ public:
 	AquaSimSFama_Wait_Reply_Timer(Ptr<AquaSimSFama> mac): Timer(Timer::CANCEL_ON_DESTROY) {
 		m_mac = mac;
 	}
+  ~AquaSimSFama_Wait_Reply_Timer()
+  {
+    m_mac=0;
+  }
 
 /*
 	void Stop() {
@@ -105,6 +114,10 @@ public:
 	AquaSimSFama_Backoff_Timer(Ptr<AquaSimSFama> mac): Timer(Timer::CANCEL_ON_DESTROY) {
 		m_mac = mac;
 	}
+  ~AquaSimSFama_Backoff_Timer()
+  {
+    m_mac=0;
+  }
 
 	/*void stop() {
 		if( this->status() == TIMER_PENDING ) {
@@ -126,6 +139,10 @@ public:
 	AquaSimSFama_DataSend_Timer(Ptr<AquaSimSFama> mac): Timer(Timer::CANCEL_ON_DESTROY) {
 		m_mac = mac;
 	}
+  ~AquaSimSFama_DataSend_Timer()
+  {
+    m_mac=0;
+  }
 protected:
 	Ptr<AquaSimSFama> m_mac;
 	void expire();
@@ -245,6 +262,7 @@ protected:
 	friend class AquaSimSFama_Wait_Reply_Timer;
 	friend class AquaSimSFama_DataSend_Timer;
 
+  virtual void DoDispose();
 };  // class AquaSimSFama
 
 } // namespace ns3

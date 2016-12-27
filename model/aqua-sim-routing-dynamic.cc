@@ -140,6 +140,11 @@ AquaSimDynamicRoutingTable::Update(t_table* newrt, AquaSimAddress Source_N) //ad
 
 /**** AquaSimDynamicRouting_PktTimer ****/
 
+AquaSimDynamicRouting_PktTimer::~AquaSimDynamicRouting_PktTimer()
+{
+  delete m_routing;
+}
+
 void
 AquaSimDynamicRouting_PktTimer::Expire()
 {
@@ -478,4 +483,10 @@ AquaSimDynamicRouting::ForwardData(Ptr<Packet> p)
 		}
     Simulator::Schedule(Seconds(0.0),&AquaSimRouting::SendDown,this,p,ash.GetNextHop(),Seconds(0));
 	}
+}
+
+void AquaSimDynamicRouting::DoDispose()
+{
+  m_rand=0;
+  AquaSimRouting::DoDispose();
 }

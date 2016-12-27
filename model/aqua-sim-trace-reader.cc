@@ -32,6 +32,12 @@ AquaSimTraceReader::AquaSimTraceReader()
 {
 }
 
+AquaSimTraceReader::~AquaSimTraceReader()
+{
+  m_channel=0;
+}
+
+
 TypeId
 AquaSimTraceReader::GetTypeId ()
 {

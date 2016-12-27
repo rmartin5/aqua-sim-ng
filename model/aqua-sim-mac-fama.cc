@@ -514,4 +514,14 @@ AquaSimFama::BackoffTimerExpire()
   SendRTS(2*m_maxPropDelay + m_RTSTxTime + m_CTSTxTime +m_estimateError);
 }
 
+void AquaSimFama::DoDispose()
+{
+	m_rand=0;
+	while(!PktQ.empty()) {
+		PktQ.front()=0;
+		PktQ.pop();
+	}
+	AquaSimMac::DoDispose();
+}
+
 } // namespace ns3

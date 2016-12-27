@@ -264,6 +264,14 @@ AquaSimRouting::NotifyTx (std::string path, Ptr<Packet> p, AquaSimAddress nextHo
   NS_LOG_UNCOND(path << " TX " << p->ToString());
 }
 
+void AquaSimRouting::DoDispose()
+{
+  NS_LOG_FUNCTION(this);
+  m_device=0;
+  m_mac=0;
+  Object::DoDispose();
+}
+
 
 void
 AquaSimRouting::AssignInternalData(std::vector<std::string> collection)

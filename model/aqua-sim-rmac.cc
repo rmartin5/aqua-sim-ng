@@ -2904,4 +2904,12 @@ AquaSimRMac::TxProcess(Ptr<Packet> pkt)
   return true;
 }
 
+void AquaSimRMac::DoDispose()
+{
+  ack_rev_pt->packet=0;
+  delete ack_rev_pt;
+  ack_rev_pt=0;
+  AquaSimMac::DoDispose();
+}
+
 } // namespace ns3

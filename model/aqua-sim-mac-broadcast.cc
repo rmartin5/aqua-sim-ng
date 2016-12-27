@@ -187,3 +187,9 @@ AquaSimBroadcastMac::BackoffHandler(Ptr<Packet> pkt)
       DropPacket(pkt);
     }
 }
+
+void AquaSimBroadcastMac::DoDispose()
+{
+  NS_LOG_FUNCTION(this);
+  AquaSimMac::DoDispose();
+}

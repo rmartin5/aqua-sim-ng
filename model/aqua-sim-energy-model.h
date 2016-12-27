@@ -84,6 +84,9 @@ public:
 
   /* TODO : Future work needs to incorporate total times in each state */
 
+protected:
+  void DoDispose();
+
 private:
   double m_energy;
   double m_initialEnergy;

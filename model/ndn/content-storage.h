@@ -41,8 +41,8 @@ public:
   virtual bool CacheFull()=0;
   virtual uint8_t* GetEntry(uint8_t* key)=0;
 protected:
-  size_t m_cacheSize; //default(0) is unlimited
   CacheType m_cacheType;
+  size_t m_cacheSize; //default(0) is unlimited
 
 }; // class ContentStorage
 

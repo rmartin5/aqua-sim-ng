@@ -58,6 +58,7 @@ public:
     // 50 items in the hash table, however, because it begins by 0, so, minus 1
     //Tcl_InitHashTable(&m_htable, 3);
   }
+  ~AquaSimPktHashTable();
 
   int  m_windowSize;
   void Reset();
@@ -79,6 +80,7 @@ public:
   AquaSimDataHashTable() {
     //Tcl_InitHashTable(&htable, MAX_ATTRIBUTE);
   }
+  ~AquaSimDataHashTable();
 
   void Reset();
   void PutInHash(int *attr);
@@ -140,6 +142,8 @@ protected:
   void StopSource();
   void MACprepare(Ptr<Packet> pkt);
   void MACsend(Ptr<Packet> pkt, double delay=0);
+
+  virtual void DoDispose();
 private:
   double transmitDistance;
 };  // class AquaSimVBF

@@ -283,6 +283,8 @@ void BackoffHandler(Ptr<Packet> pkt);
   Timer DataAckAccumTimer;
   //Timer CtrlPktTimer;
 
+  virtual void DoDispose();
+
 private:
   /*Time PktInterval_;*/	//the interval between sending two packet
   Time	m_NDInterval;	//the interval between two successive ND process

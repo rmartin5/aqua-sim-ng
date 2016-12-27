@@ -302,6 +302,7 @@ std::pair<Ptr<Packet>,TransStatus>
 AquaSimMac::SendQueuePop()
 {
   std::pair<Ptr<Packet>,TransStatus> element = m_sendQueue.front();
+  m_sendQueue.front().first=0;
   m_sendQueue.pop();
   return element;
 }
@@ -345,6 +346,17 @@ void
 AquaSimMac::SetEncodingEff(double encodingEff)
 {
   m_encodingEfficiency = encodingEff;
+}
+
+void AquaSimMac::DoDispose()
+{
+  NS_LOG_FUNCTION(this);
+  m_device=0;
+  while(!m_sendQueue.empty()) {
+    m_sendQueue.front().first=0;
+    m_sendQueue.pop();
+  }
+  Object::DoDispose();
 }
 
 } // namespace ns3

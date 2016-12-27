@@ -86,7 +86,7 @@ main (int argc, char *argv[])
   //AquaSimEnergyHelper energy;	//******this could instead be handled by node helper. ****/
   asHelper.SetChannel(channel.Create());
   asHelper.SetMac("ns3::AquaSimBroadcastMac");
-  asHelper.SetRouting("ns3::AquaSimDBR"); //XXX
+  //asHelper.SetRouting("ns3::AquaSimDBR"); //XXX
 
   /*
    * Preset up mobility model for nodes and sinks here
@@ -173,9 +173,9 @@ main (int argc, char *argv[])
 
   Packet::EnablePrinting ();  //for debugging purposes
   std::cout << "-----------Running Simulation-----------\n";
-  Simulator::Stop(Seconds(simStop + 1));
+  Simulator::Stop(Seconds(simStop));
   Simulator::Run();
-  Simulator::Destroy(); //null all nodes too??
+  Simulator::Destroy();
 
   std::cout << "fin.\n";
   return 0;

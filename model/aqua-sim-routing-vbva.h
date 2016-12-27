@@ -65,6 +65,7 @@ public:
     m_windowSize=WINDOW_SIZE;
     //Tcl_InitHashTable(&htable, 3);
   }
+  ~AquaSimVBVAPktHashTable();
 
   int  m_windowSize;
   void Reset();
@@ -89,6 +90,7 @@ public:
   AquaSimVBVADataHashTable() {
     //Tcl_InitHashTable(&htable, MAX_ATTRIBUTE);
   }
+  ~AquaSimVBVADataHashTable();
 
   void Reset();
   void DeleteHash(AquaSimAddress, unsigned int);
@@ -218,6 +220,7 @@ protected:
   void MACprepare(Ptr<Packet> pkt);
   void MACsend(Ptr<Packet> pkt, double delay=0);
 
+  virtual void DoDispose();
   //void trace(char *fmt,...);
 };  // class AquaSimVBVA
 

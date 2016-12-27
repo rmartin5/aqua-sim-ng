@@ -50,7 +50,6 @@ AquaSimChannel::AquaSimChannel ()// : Channel()
 AquaSimChannel::~AquaSimChannel ()
 {
   //clear all lists
-  Channel::DoDispose ();
 }
 
 TypeId
@@ -319,6 +318,19 @@ Ptr<AquaSimNoiseGen>
 AquaSimChannel::GetNoiseGen()
 {
   return m_noiseGen;
+}
+
+void
+AquaSimChannel::DoDispose()
+{
+  NS_LOG_FUNCTION (this);
+  for (std::vector<Ptr<AquaSimNetDevice> >::iterator iter = m_deviceList.begin (); iter != m_deviceList.end (); iter++)
+    {
+      *iter = 0;
+    }
+  m_deviceList.clear();
+  m_noiseGen=0;
+  m_prop=0;
 }
 
 

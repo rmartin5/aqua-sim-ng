@@ -260,3 +260,11 @@ AquaSimEnergyModel::DecrEnergy(double t, double decrEnergy)
 
   m_totalEnergyConsumption += dEng;
 }
+
+void
+AquaSimEnergyModel::DoDispose()
+{
+  NS_LOG_FUNCTION(this);
+  m_device=0;
+  m_source=0;
+}

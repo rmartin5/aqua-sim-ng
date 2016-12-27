@@ -45,6 +45,7 @@ PktSubmissionTimer::PktSubmissionTimer(Ptr<AquaSimSignalCache> sC)
 PktSubmissionTimer::~PktSubmissionTimer()
 {
   NS_LOG_FUNCTION(this);
+  m_sC=0;
 }
 
 TypeId
@@ -104,6 +105,8 @@ NS_OBJECT_ENSURE_REGISTERED(AquaSimSignalCache);
 AquaSimSignalCache::AquaSimSignalCache() :
 m_pktNum(0), m_totalPS(0.0), m_pktSubTimer(NULL)
 {
+  NS_LOG_FUNCTION(this);
+
   m_head = new IncomingPacket(NULL, AquaSimPacketStamp::INVALID);
   m_pktSubTimer = new PktSubmissionTimer(this);
   status = AquaSimPacketStamp::INVALID;
@@ -111,21 +114,8 @@ m_pktNum(0), m_totalPS(0.0), m_pktSubTimer(NULL)
   m_em = CreateObject<AquaSimEnergyModel>();	//Should be updated in the future.
 }
 
-AquaSimSignalCache::~AquaSimSignalCache() {
-  IncomingPacket* pos = m_head;
-  while (m_head != NULL) {
-    m_head = m_head->next;
-    pos->packet = 0;
-    pos = 0;
-    pos = m_head;
-  }
-
-  m_pktSubTimer = 0;
-  delete m_pktSubTimer;
-  m_head = 0;
-  pos = 0;
-  delete m_head;
-  delete pos;
+AquaSimSignalCache::~AquaSimSignalCache()
+{
 }
 
 TypeId
@@ -165,6 +155,7 @@ AquaSimSignalCache::AddNewPacket(Ptr<Packet> p){
 
 bool
 AquaSimSignalCache::DeleteIncomingPacket(Ptr<Packet> p){
+  NS_LOG_FUNCTION(this);
   IncomingPacket* pre = m_head;
   IncomingPacket* ptr = m_head->next;
 
@@ -208,6 +199,7 @@ AquaSimSignalCache::SubmitPkt(IncomingPacket* inPkt) {
 
 IncomingPacket*
 AquaSimSignalCache::Lookup(Ptr<Packet> p){
+  NS_LOG_FUNCTION(this);
   IncomingPacket* ptr = m_head->next;
 
   while (ptr != NULL && ptr->packet != PeekPointer(p)) {
@@ -219,6 +211,7 @@ AquaSimSignalCache::Lookup(Ptr<Packet> p){
 
 void
 AquaSimSignalCache::InvalidateIncomingPacket(){
+  NS_LOG_FUNCTION(this);
   IncomingPacket* ptr = m_head->next;
 
   while (ptr != NULL) {
@@ -230,6 +223,7 @@ AquaSimSignalCache::InvalidateIncomingPacket(){
 
 AquaSimPacketStamp::PacketStatus
 AquaSimSignalCache::Status(Ptr<Packet> p){
+  NS_LOG_FUNCTION(this);
   IncomingPacket* ptr = Lookup(p);
 
   return ptr == NULL ? AquaSimPacketStamp::INVALID : ptr->status;
@@ -258,7 +252,31 @@ AquaSimSignalCache::UpdatePacketStatus(){
 void
 AquaSimSignalCache::SetNoiseGen(Ptr<AquaSimNoiseGen> noise)
 {
+  NS_LOG_FUNCTION(this);
   m_noise = noise;
+}
+
+void AquaSimSignalCache::DoDispose()
+{
+  NS_LOG_FUNCTION(this);
+//  IncomingPacket* m_head;
+//  PktSubmissionTimer* m_pktSubTimer;
+
+  IncomingPacket* pos = m_head;
+  while (m_head != NULL) {
+    m_head = m_head->next;
+    pos->packet = 0;
+    delete pos;
+    pos = 0;
+    pos = m_head;
+  }
+
+  delete m_pktSubTimer;
+  m_pktSubTimer = 0;
+  m_phy=0;
+  m_em=0;
+  m_noise=0;
+  Object::DoDispose();
 }
 
 };  // namespace ns3

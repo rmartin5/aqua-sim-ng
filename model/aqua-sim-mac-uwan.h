@@ -49,12 +49,14 @@ class AquaSimUwan_WakeTimer: public Timer {
 friend class AquaSimUwan;
 friend class ScheduleQueue;
 public:
-AquaSimUwan_WakeTimer(Ptr<AquaSimUwan> mac, ScheduleTime* ScheT)
-  : Timer(Timer::CANCEL_ON_DESTROY)
-{
-  m_mac = mac;
-  m_ScheT = ScheT;
-}
+  AquaSimUwan_WakeTimer() {}
+  ~AquaSimUwan_WakeTimer();
+  AquaSimUwan_WakeTimer(Ptr<AquaSimUwan> mac, ScheduleTime* ScheT)
+    : Timer(Timer::CANCEL_ON_DESTROY)
+  {
+    m_mac = mac;
+    m_ScheT = ScheT;
+  }
 
 protected:
 	Ptr<AquaSimUwan> m_mac;
@@ -77,7 +79,10 @@ struct ScheduleTime {
 			next_(NULL), SendTime_(SendTime), nodeId_(node_id), timer_(mac, this) {
 	}
 
-	~ScheduleTime() {}
+	~ScheduleTime() {
+    delete next_;
+    next_=0;
+  }
 
 	void Start(Time Delay) {
 		if( Delay.IsPositive() || Delay.IsZero() )
@@ -107,6 +112,7 @@ public:
 			m_head = m_head->next_;
 			delete tmp;
 		}
+    m_mac=0;
 	}
 
 	static TypeId GetTypeId(void);
@@ -131,6 +137,9 @@ public:
 	AquaSimUwan_SleepTimer(Ptr<AquaSimUwan> mac): Timer(Timer::CANCEL_ON_DESTROY) {
 		m_mac = mac;
 	}
+  ~AquaSimUwan_SleepTimer() {
+    m_mac=0;
+  }
 protected:
 	Ptr<AquaSimUwan> m_mac;
 	void expire();
@@ -145,6 +154,10 @@ public:
 	AquaSimUwan_PktSendTimer(Ptr<AquaSimUwan> mac): Timer(Timer::CANCEL_ON_DESTROY) {
 		m_mac = mac;
 	}
+  ~AquaSimUwan_PktSendTimer() {
+    m_p=0;
+    m_mac=0;
+  }
 
   void SetTxTime(Time txTime) {
     m_txTime = txTime;
@@ -173,6 +186,9 @@ public:
 	AquaSimUwan_StartTimer(Ptr<AquaSimUwan> mac): Timer(Timer::CANCEL_ON_DESTROY) {
 		m_mac = mac;
 	}
+  ~AquaSimUwan_StartTimer() {
+    m_mac=0;
+  }
 
 protected:
 	Ptr<AquaSimUwan> m_mac;
@@ -232,6 +248,7 @@ protected:
 
 	void	SendInfo();
 
+  virtual void DoDispose();
 
 private:
 	std::set<AquaSimAddress> m_CL;				//contact list

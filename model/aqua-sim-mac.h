@@ -137,6 +137,7 @@ protected:
   std::queue<std::pair<Ptr<Packet>,TransStatus> > m_sendQueue;
 
   Callback<void,const AquaSimAddress&> m_callback;  // for the upper layer protocol
+  virtual void DoDispose();
 };  //class AquaSimMac
 
 }  // namespace ns3

@@ -94,6 +94,8 @@ struct SchedElem{
  */
 class AquaSimGoal_PreSendTimer: public Timer{
 public:
+	AquaSimGoal_PreSendTimer() {}
+	~AquaSimGoal_PreSendTimer();
 	AquaSimGoal_PreSendTimer(AquaSimGoal* mac): Timer(), mac_(mac) {
 	}
 
@@ -114,6 +116,8 @@ protected:
 */
 class AquaSimGoal_BackoffTimer: public Timer{
 public:
+	AquaSimGoal_BackoffTimer() {}
+	~AquaSimGoal_BackoffTimer();
 	AquaSimGoal_BackoffTimer(AquaSimGoal* mac): Timer(), mac_(mac) {
 	}
 
@@ -147,6 +151,8 @@ protected:
 */
 class AquaSimGoal_AckTimeoutTimer: public Timer{
 public:
+	AquaSimGoal_AckTimeoutTimer() {}
+	~AquaSimGoal_AckTimeoutTimer();
 	AquaSimGoal_AckTimeoutTimer(AquaSimGoal* mac): Timer(), mac_(mac) {
 	}
 
@@ -175,6 +181,8 @@ protected:
 */
 class AquaSimGoal_NxtRoundTimer: public Timer{
 public:
+	AquaSimGoal_NxtRoundTimer() {}
+	~AquaSimGoal_NxtRoundTimer();
 	AquaSimGoal_NxtRoundTimer(AquaSimGoal* mac): Timer(), mac_(mac) {
 	}
 
@@ -190,6 +198,8 @@ protected:
 */
 class AquaSimGoalDataSendTimer: public Timer{
 public:
+	AquaSimGoalDataSendTimer() {}
+	~AquaSimGoalDataSendTimer();
 	AquaSimGoalDataSendTimer(AquaSimGoal* mac): Timer(), mac_(mac) {
 		m_MinBackoffTime = Seconds(100000000);
 		m_NxtHop = AquaSimAddress();
@@ -258,9 +268,9 @@ protected:
 */
 class AquaSimGoal_SinkAccumAckTimer: public Timer{
 public:
-	AquaSimGoal_SinkAccumAckTimer(AquaSimGoal* mac): Timer(), mac_(mac) {
-
-	}
+	AquaSimGoal_SinkAccumAckTimer() {}
+	~AquaSimGoal_SinkAccumAckTimer();
+	AquaSimGoal_SinkAccumAckTimer(AquaSimGoal* mac): Timer(), mac_(mac) {}
 
 	std::set<int> AckSet() {
 		return m_AckSet;
@@ -292,6 +302,7 @@ private:
 
 public:
 	TimeSchedQueue(Time MinInterval, Time BigIntervalLen);
+	~TimeSchedQueue();
 	SchedElem* Insert(Time BeginTime, Time EndTime, bool IsRecvSlot=false);
 	SchedElem* Insert(SchedElem* e);
 	void Remove(SchedElem* e);
@@ -428,6 +439,8 @@ protected:
 	friend class AquaSimGoalDataSendTimer;
 	friend class AquaSimGoal_SinkAccumAckTimer;
 	friend class AquaSimGoal_NxtRoundTimer;
+
+	virtual void DoDispose();
 };  // class AquaSimGoal
 
 } // namespace ns3

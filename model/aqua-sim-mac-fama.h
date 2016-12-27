@@ -39,7 +39,7 @@ class AquaSimAddress;
 /**
  * \ingroup aqua-sim-ng
  *
- * \brief FAMA implementation 
+ * \brief FAMA implementation
  */
 class AquaSimFama: public AquaSimMac {
 public:
@@ -111,6 +111,8 @@ protected:
   bool CarrierDected();
   void DoBackoff();
   void DoRemote(Time DeltaTime);
+
+  virtual void DoDispose();
 
 private:
   int m_famaNDCounter;

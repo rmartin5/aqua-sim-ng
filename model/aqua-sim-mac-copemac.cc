@@ -1449,5 +1449,24 @@ AquaSimCopeMac::DataAckAccumTimerExpire()
   m_pendingDataAcks.clear();
 }
 
+void AquaSimCopeMac::DoDispose()
+{
+  m_backoffPkt=0;
+  m_rand=0;
+  for (std::map<int,AckWaitTimer>::iterator iter = m_AckWaitingList.begin(); iter != m_AckWaitingList.end(); ++iter) {
+    (iter->second).m_pkt=0;
+    (iter->second).m_mac=0;
+  }
+  m_AckWaitingList.clear();
+  for (std::vector<RevReq*>::iterator itRev = m_pendingRevs.begin() ; itRev != m_pendingRevs.end(); ++itRev) {
+    delete *itRev;
+    *itRev=0;
+  }
+  for (std::vector<DataAck*>::iterator itData = m_pendingDataAcks.begin() ; itData != m_pendingDataAcks.end(); ++itData) {
+    delete *itData;
+    *itData=0;
+  }
+  AquaSimMac::DoDispose();
+}
 
 } // namespace ns3

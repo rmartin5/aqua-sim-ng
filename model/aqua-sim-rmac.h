@@ -397,6 +397,9 @@ public:
     // to process the outgoing packet
   virtual bool TxProcess(Ptr<Packet> p);
 
+protected:
+  virtual void DoDispose();
+
 }; // class AquaSimRMac
 
 } // namespace ns3

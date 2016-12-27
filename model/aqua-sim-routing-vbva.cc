@@ -34,6 +34,13 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("AquaSimVBVA");
 
+AquaSimVBVAPktHashTable::~AquaSimVBVAPktHashTable()
+{
+  for (std::map<hash_entry,neighborhood*>::iterator it=m_htable.begin(); it!=m_htable.end(); ++it)
+    delete it->second;
+  m_htable.clear();
+}
+
 void AquaSimVBVAPktHashTable::Reset()
 {
   m_htable.clear();
@@ -367,6 +374,12 @@ void AquaSimVBVAPktHashTable::PutInHash(VBHeader * vbh, Vector3D* sp, Vector3D* 
 	return;
 }
 
+AquaSimVBVADataHashTable::~AquaSimVBVADataHashTable()
+{
+  for (std::map<hash_entry,unsigned int*>::iterator it=m_htable.begin(); it!=m_htable.end(); ++it)
+    delete it->second;
+  m_htable.clear();
+}
 
 void AquaSimVBVADataHashTable::Reset()
 {
@@ -2420,4 +2433,10 @@ bool AquaSimVBVA::IsCloseEnough(Ptr<Packet> pkt)
     " The projection is " << Projection(&sp,&tp,&p));
  if ((Projection(&sp,&tp,&p)<=m_width))  return true;
  return false;
+}
+
+void AquaSimVBVA::DoDispose()
+{
+  m_rand=0;
+  AquaSimRouting::DoDispose();
 }

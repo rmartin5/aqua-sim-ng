@@ -93,6 +93,7 @@ public:
     m_routing = routing;
     m_updateInterval = updateInterval;
   }
+  ~AquaSimDynamicRouting_PktTimer();
 
   double GetUpdateInterval()
   {
@@ -111,7 +112,7 @@ protected:
 };
 
 /**
- * \brief Dynamic routing protocol 
+ * \brief Dynamic routing protocol
  */
 class AquaSimDynamicRouting : public AquaSimRouting {
 
@@ -139,6 +140,7 @@ protected:
   void ResetDRoutingPktTimer();
   double BroadcastJitter(double range);
 
+  virtual void DoDispose();
 private:
   AquaSimAddress m_raAddr;
   // uw_drouting_state state_;//?????????define state
