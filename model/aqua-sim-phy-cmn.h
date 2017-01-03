@@ -114,6 +114,12 @@ public:
   virtual Ptr<AquaSimSignalCache> GetSignalCache();
   virtual int PktRecvCount();
 
+  /*
+  * Used for some mac/routing protocols and for restricting packet range within range-propagation for channel module.
+  */
+  virtual void SetTransRange(double range);
+  virtual double GetTransRange();
+
 protected:
   virtual Ptr<Packet> PrevalidateIncomingPkt(Ptr<Packet> p);
   virtual void UpdateTxEnergy(Time txTime, double pT, double pIdle);
@@ -172,7 +178,7 @@ protected:
   * but n_ is of type UnderwaterSensorNode * instead of MobileNode *
   */
 
-
+  double m_transRange;  //max tramission range for modem. **NOTE: Only functional with range-propagation model**.
   bool m_PoweredOn;  //true: power on false:power off
 
   friend class AquaSimEnergyModel;

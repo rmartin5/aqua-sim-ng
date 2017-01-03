@@ -58,7 +58,6 @@ AquaSimNetDevice::AquaSimNetDevice ()
     m_carrierId(false),
     m_ifIndex(0),
     m_mtu(64000),
-    m_distCST(3000),
     m_totalSentPkts(0)
 {
   m_transStatus = NIDLE;
@@ -194,8 +193,6 @@ AquaSimNetDevice::ConnectLayers()
     {
       //m_mac->SetRouting(m_routing);
       m_routing->SetMac(m_mac);
-      m_mac->SetTransDistance(m_distCST);
-      m_routing->SetTransDistance(m_distCST);
       NS_LOG_DEBUG("Routing/Mac layers set");
     }
 }
@@ -320,17 +317,6 @@ AquaSimNetDevice::SetEnergyModel (Ptr<AquaSimEnergyModel> energyModel)
   }
 }
 
-double
-AquaSimNetDevice::TransmitDistance()
-{
-  return m_distCST;
-}
-
-void
-AquaSimNetDevice::SetTransmitDistance(double range)
-{
-  m_distCST = range;
-}
 void
 AquaSimNetDevice::SetNode (Ptr<Node> node)
 {

@@ -42,8 +42,8 @@ NS_LOG_COMPONENT_DEFINE("BMac");
 int
 main (int argc, char *argv[])
 {
-  double simStop = 60; //seconds
-  int nodes = 1;
+  double simStop = 600; //seconds
+  int nodes = 20;
   int sinks = 1;
   uint32_t m_dataRate = 180;
   uint32_t m_packetSize = 32;
@@ -163,13 +163,6 @@ main (int argc, char *argv[])
   Ptr<Socket> sinkSocket = Socket::CreateSocket (sinkNode, psfid);
   sinkSocket->Bind (socket);
 
-/*
-  ApplicationContainer serverApp;
-  UdpServerHelper myServer (250);
-  serverApp = myServer.Install (nodesCon.Get (0));
-  serverApp.Start (Seconds (0.0));
-  serverApp.Stop (Seconds (simStop + 1));
-*/ //TODO implement application within this example...
 
   Packet::EnablePrinting ();  //for debugging purposes
   std::cout << "-----------Running Simulation-----------\n";

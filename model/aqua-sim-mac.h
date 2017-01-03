@@ -100,8 +100,6 @@ public:
 
   double GetPreamble(void);
 
-  virtual void SetTransDistance(double range); //to be overloaded for certain cases.
-
   typedef void (* RxCallback)(std::string path, Ptr<Packet> p);
   typedef void (* TxCallback)(std::string path, Ptr<Packet> p);
   void NotifyRx(std::string context, Ptr<Packet> p);

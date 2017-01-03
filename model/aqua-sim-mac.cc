@@ -272,11 +272,6 @@ void AquaSimMac::InterruptRecv(double txTime){
 }
 
 void
-AquaSimMac::SetTransDistance(double range)
-{
-}
-
-void
 AquaSimMac::NotifyRx (std::string context, Ptr<Packet> p)
 {
   SendUp(p);

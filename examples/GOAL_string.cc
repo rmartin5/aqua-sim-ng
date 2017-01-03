@@ -126,7 +126,7 @@ main (int argc, char *argv[])
   for (NodeContainer::Iterator i = nodesCon.Begin(); i != nodesCon.End(); i++)
     {
       Ptr<AquaSimNetDevice> newDevice = CreateObject<AquaSimNetDevice>();
-      newDevice->SetTransmitDistance(m_range);
+      newDevice->GetPhy()->SetTransRange(m_range);
       position->Add(boundry);
       devices.Add(asHelper.Create(*i, newDevice));
 

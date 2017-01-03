@@ -81,8 +81,6 @@ public:
   void SetChannel (std::vector<Ptr<AquaSimChannel> > channel); //for multi-channel support
   //void SetApp (Ptr<AquaSimApp> app);
   void SetEnergyModel (Ptr<AquaSimEnergyModel> energyModel);
-  double TransmitDistance();  //should be static
-  void SetTransmitDistance(double range);
   void SetAttackModel(Ptr<AquaSimAttackModel> attackModel);
   void SetNamedData(Ptr<NamedData> ndn);
 
@@ -204,8 +202,6 @@ private:
 
   bool m_attacker;
 
-  //m_clear for dispose?? to clear all layers from net-device side.
-
   /*
    * From AquaSimNode
    */
@@ -228,8 +224,6 @@ private:
 
   uint32_t m_ifIndex;
   uint16_t m_mtu;
-
-  double m_distCST;
 
   int m_totalSentPkts;
   //XXX remove counters

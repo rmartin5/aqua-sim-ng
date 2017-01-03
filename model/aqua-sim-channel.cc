@@ -38,7 +38,7 @@ namespace ns3 {
 NS_LOG_COMPONENT_DEFINE("AquaSimChannel");
 NS_OBJECT_ENSURE_REGISTERED (AquaSimChannel);
 
-AquaSimChannel::AquaSimChannel ()// : Channel()
+AquaSimChannel::AquaSimChannel ()
 {
   NS_LOG_FUNCTION(this);
   m_deviceList.clear();
@@ -49,7 +49,6 @@ AquaSimChannel::AquaSimChannel ()// : Channel()
 
 AquaSimChannel::~AquaSimChannel ()
 {
-  //clear all lists
 }
 
 TypeId

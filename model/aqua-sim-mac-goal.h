@@ -428,7 +428,7 @@ private:
 	double  DistToLine(Vector LinePoint1, Vector LinePoint2);
 	Time	JitterStartTime(Time Txtime); //Jitter the start time to avoid collision
 
-	virtual void SetTransDistance(double range); //overloaded for certain cases.
+	void SetupTransDistance(double range);
 protected:
 
 	friend class AquaSimGoal_CallbackHandler;

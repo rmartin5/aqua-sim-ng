@@ -147,6 +147,7 @@ AquaSimGoal::AquaSimGoal(): m_maxBurst(1), m_dataPktInterval(0.0001), m_guardTim
 	m_backoffType = VBF;
 
 	m_maxBackoffTime = 4*m_maxDelay+m_VBF_MaxDelay*1.5+Seconds(2);
+	SetupTransDistance(m_device->GetPhy()->GetTransRange());
 }
 
 AquaSimGoal::~AquaSimGoal()
@@ -176,7 +177,7 @@ AquaSimGoal::GetTypeId(void)
 }
 
 void
-AquaSimGoal::SetTransDistance(double range)
+AquaSimGoal::SetupTransDistance(double range)
 {
 	m_txRadius = range;
 	m_maxDelay = Seconds(m_txRadius/m_propSpeed);

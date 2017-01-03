@@ -71,6 +71,7 @@ AquaSimPhyCmn::AquaSimPhyCmn(void) :
   m_L = 0;
   m_K = 2.0;
   m_freq = 25;
+  m_transRange=-1;
 
   m_modulationName = "default";
   AddModulation(CreateObject<AquaSimModulation>(), "default");
@@ -352,6 +353,7 @@ AquaSimPhyCmn::StampTxInfo(Ptr<Packet> p)
   pstamp.SetPr(m_lambda);
   pstamp.SetFreq(m_freq);
   pstamp.SetPt(m_powerLevels[m_ptLevel]);
+  pstamp.SetTxRange(m_transRange);
   //pstamp.SetModName(m_modulationName);
   p->AddHeader(pstamp);
   return p;
@@ -750,4 +752,15 @@ void AquaSimPhyCmn::DoDispose()
   for (std::map<const std::string, Ptr<AquaSimModulation> >::iterator it=m_modulations.begin(); it!=m_modulations.end(); ++it)
     it->second=0;
   AquaSimPhy::DoDispose();
+}
+
+void AquaSimPhyCmn::SetTransRange(double range)
+{
+  NS_LOG_FUNCTION(this);
+  m_transRange = range;
+}
+
+double AquaSimPhyCmn::GetTransRange()
+{
+  return m_transRange;
 }

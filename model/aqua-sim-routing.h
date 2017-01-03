@@ -61,8 +61,6 @@ public:
   /*send packet p to next_hop after delay*/
   virtual bool SendDown(Ptr<Packet> p, AquaSimAddress nextHop, Time delay);
 
-  virtual void SetTransDistance(double range); //does nothing. overload for certain cases
-
   int SendUpPktCount() {return m_sendUpPktCount;}
   int TrafficInPkts() {return trafficPktsTrace;}
   int TrafficInBytes(bool trafficBytesTrace);

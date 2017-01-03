@@ -99,7 +99,6 @@ public:
 
   // AquaSimVBF_Entry routing_table[MAX_DATA_TYPE];
 
-  virtual void SetTransDistance(double range);
 protected:
   int m_pkCount;
   int m_counter;
@@ -144,8 +143,6 @@ protected:
   void MACsend(Ptr<Packet> pkt, double delay=0);
 
   virtual void DoDispose();
-private:
-  double transmitDistance;
 };  // class AquaSimVBF
 
 }  // namespace ns3

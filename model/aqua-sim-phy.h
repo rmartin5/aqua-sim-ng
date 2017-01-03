@@ -126,6 +126,12 @@ namespace ns3 {
 
     virtual int PktRecvCount() = 0; //debugging
 
+    /*
+    * Used for some mac/routing protocols and for restricting packet range within range-propagation for channel module.
+    */
+    virtual void SetTransRange(double range)=0;
+    virtual double GetTransRange()=0;
+
   protected:
     virtual Ptr<Packet> PrevalidateIncomingPkt(Ptr<Packet> p) = 0;
     virtual void UpdateTxEnergy(Time txTime, double pT, double pIdle) = 0;

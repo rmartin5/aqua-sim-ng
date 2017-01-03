@@ -244,11 +244,6 @@ AquaSimRouting::AmINextHop(const Ptr<Packet> p)
 }
 
 void
-AquaSimRouting::SetTransDistance(double range)
-{
-}
-
-void
 AquaSimRouting::NotifyRx (std::string path, Ptr<Packet> p)
 {
   m_routingRxTrace = p;

@@ -98,13 +98,15 @@ AquaSimRangePropagation::ReceivedCopies (Ptr<AquaSimNetDevice> s,
   {
     Ptr<Object> rObject = dList[i]->GetNode();
     Ptr<MobilityModel> recvModel = rObject->GetObject<MobilityModel> ();
+    /*
     if (std::fabs(recvModel->GetPosition().x - senderModel->GetPosition().x) > pstamp.GetTxRange())
       break;
-    if ( (dist = senderModel->GetDistanceFrom(recvModel)) > pstamp.GetTxRange() )
+    */
+    if ( (dist = senderModel->GetDistanceFrom(recvModel)) > pstamp.GetTxRange() && pstamp.GetTxRange() != -1)
       continue;
 
 		pru.recver = dList[i];
-		pru.pDelay = Time::FromDouble(dist / ns3::SOUND_SPEED_IN_WATER,Time::S);
+		pru.pDelay = Time::FromDouble(dist / AcousticSpeed(std::fabs(recvModel->GetPosition().z - senderModel->GetPosition().z)),Time::S);
 		pru.pR = RayleighAtt(dist, pstamp.GetFreq(), pstamp.GetPt());
 		res->push_back(pru);
 

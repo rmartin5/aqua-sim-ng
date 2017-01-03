@@ -266,7 +266,6 @@ AquaSimVBF::AquaSimVBF()
 	//m_useOverhear = 0;
 	m_enableRouting = 1;
   Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
-  transmitDistance = 1000; //arbitrary value
 }
 
 TypeId
@@ -381,12 +380,6 @@ AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumbe
 
 	delete p1;
   return true;
-}
-
-void
-AquaSimVBF::SetTransDistance(double range)
-{
-  transmitDistance = range;
 }
 
 void
@@ -576,7 +569,7 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 			//  printf("Vectorbasedforward: %d is the not  target\n", here_.addr_);
 			if (IsCloseEnough(pkt)) {
 				double delay=CalculateDelay(pkt,p1);
-				double d2=(transmitDistance-Distance(pkt))/ns3::SOUND_SPEED_IN_WATER;
+				double d2=(m_device->GetPhy()->GetTransRange()-Distance(pkt))/ns3::SOUND_SPEED_IN_WATER;
 				//printf("Vectorbasedforward: I am  not  target delay is %f d2=%f distance=%f\n",(sqrt(delay)*DELAY+d2*2),d2,Distance(pkt));
 				SetDelayTimer(pkt,(sqrt(delay)*DELAY+d2*2));
 
@@ -930,7 +923,7 @@ AquaSimVBF::CalculateDelay(Ptr<Packet> pkt,Vector* p1)
 	double l=sqrt((dtx*dtx)+(dty*dty)+ (dtz*dtz));
 	double cos_theta=dp/(d*l);
 	// double delay=(TRANSMISSION_DISTANCE-d*cos_theta)/TRANSMISSION_DISTANCE;
-	double delay=(p/m_width) +((transmitDistance-d*cos_theta)/transmitDistance);
+	double delay=(p/m_width) +((m_device->GetPhy()->GetTransRange()-d*cos_theta)/m_device->GetPhy()->GetTransRange());
 	// double delay=(p/m_width) +((TRANSMISSION_DISTANCE-d)/TRANSMISSION_DISTANCE)+(1-cos_theta);
 	//printf("vectorbased: node(%d) projection is %f, and cos is %f, and d is %f)\n",here_.addr_,p, cos_theta, d);
 	return delay;
