@@ -52,12 +52,7 @@ public:
   std::map<hash_entry,vbf_neighborhood*> m_htable;
   //std::map<hash_t, hash_entry> m_htable;
 
-  AquaSimPktHashTable() {
-    m_windowSize=WINDOW_SIZE;
-    //  lower_counter=0;
-    // 50 items in the hash table, however, because it begins by 0, so, minus 1
-    //Tcl_InitHashTable(&m_htable, 3);
-  }
+  AquaSimPktHashTable();
   ~AquaSimPktHashTable();
 
   int  m_windowSize;
@@ -77,9 +72,7 @@ public:
   std::map<int*,int*> m_htable;
   //Tcl_HashTable htable;
 
-  AquaSimDataHashTable() {
-    //Tcl_InitHashTable(&htable, MAX_ATTRIBUTE);
-  }
+  AquaSimDataHashTable();
   ~AquaSimDataHashTable();
 
   void Reset();

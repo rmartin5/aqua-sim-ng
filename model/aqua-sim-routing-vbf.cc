@@ -35,8 +35,17 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("AquaSimVBF");
 //NS_OBJECT_ENSURE_REGISTERED(AquaSimPktHashTable);
 
+AquaSimPktHashTable::AquaSimPktHashTable() {
+  NS_LOG_FUNCTION(this);
+  m_windowSize=WINDOW_SIZE;
+  //  lower_counter=0;
+  // 50 items in the hash table, however, because it begins by 0, so, minus 1
+  //Tcl_InitHashTable(&m_htable, 3);
+}
+
 AquaSimPktHashTable::~AquaSimPktHashTable()
 {
+  NS_LOG_FUNCTION(this);
   for (std::map<hash_entry,vbf_neighborhood*>::iterator it=m_htable.begin(); it!=m_htable.end(); ++it)
     delete it->second;
   m_htable.clear();
@@ -202,18 +211,25 @@ AquaSimPktHashTable::PutInHash(VBHeader * vbh, Vector* p)
 	//Tcl_SetHashValue(entryPtr, hashPtr);
 }
 
+AquaSimDataHashTable::AquaSimDataHashTable() {
+  NS_LOG_FUNCTION(this);
+  Reset();
+  //Tcl_InitHashTable(&htable, MAX_ATTRIBUTE);
+}
+
 AquaSimDataHashTable::~AquaSimDataHashTable()
 {
-  for (std::map<int*,int*>::iterator it=m_htable.begin(); it!=m_htable.end(); ++it) {
-    delete it->first;
-    delete it->second;
-  }
-  m_htable.clear();
+  NS_LOG_FUNCTION(this);
+  Reset();
 }
 
 void
 AquaSimDataHashTable::Reset()
 {
+  for (std::map<int*,int*>::iterator it=m_htable.begin(); it!=m_htable.end(); ++it) {
+    delete it->first;
+    delete it->second;
+  }
   m_htable.clear();
   /*
 	Tcl_HashEntry *entryPtr;
@@ -295,10 +311,10 @@ AquaSimVBF::GetTypeId(void)
 bool
 AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber)
 {
-  std::cout << "size:" << packet->GetSize() << "\n";
+  NS_LOG_FUNCTION(this);
   AquaSimHeader ash;
   VBHeader vbh;
-  if (packet->GetSize() <= 50)
+  if (packet->GetSize() <= 50)  //TODO create specalized Application instead of using this hack.
   {
     packet->AddHeader(vbh);
     packet->AddHeader(ash);
@@ -308,12 +324,7 @@ AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumbe
 	//unsigned char msg_type =vbh.GetMessType();  //unused
 	//unsigned int dtype = vbh.GetDataType();  //unused
 	//double t1=vbh.GetTs();  //unused
-	Vector * p1;
 
-	p1=new Vector[1];
-	p1[0].x=vbh.GetExtraInfo().f.x;
-	p1[0].y=vbh.GetExtraInfo().f.y;
-	p1[0].z=vbh.GetExtraInfo().f.z;
 
   if (!vbh.GetMessType())
   {
@@ -343,6 +354,11 @@ AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumbe
 		}
 		return true;
 	}
+
+  Vector * p1=new Vector[1];
+	p1[0].x=vbh.GetExtraInfo().f.x;
+	p1[0].y=vbh.GetExtraInfo().f.y;
+	p1[0].z=vbh.GetExtraInfo().f.z;
 
 	vbf_neighborhood *hashPtr= PktTable.GetHash(vbh.GetSenderAddr(), vbh.GetPkNum());
 
@@ -378,6 +394,7 @@ AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumbe
 		ConsiderNew(packet);
 	}
 
+  p1=0;
 	delete p1;
   return true;
 }
