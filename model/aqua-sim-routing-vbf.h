@@ -57,8 +57,8 @@ public:
 
   int  m_windowSize;
   void Reset();
-  void PutInHash(VBHeader * vbh);
-  void PutInHash(VBHeader *, Vector *);
+  void PutInHash(AquaSimAddress sAddr, unsigned int pkNum);
+  void PutInHash(AquaSimAddress sAddr, unsigned int pkNum, Vector p);
   vbf_neighborhood* GetHash(AquaSimAddress senderAddr, unsigned int pkt_num);
 //private:
 //int lower_counter;

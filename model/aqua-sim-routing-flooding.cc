@@ -106,7 +106,7 @@ AquaSimFloodingRouting::Recv(Ptr<Packet> packet, const Address &dest, uint16_t p
     return false;
   }
 	else {
-		PktTable.PutInHash(&vbh);
+		PktTable.PutInHash(vbh.GetSenderAddr(), packet->GetUid());
 		// Take action for a new pkt.
 		ConsiderNew(packet);
     return true;

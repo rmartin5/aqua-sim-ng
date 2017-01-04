@@ -22,5 +22,5 @@ def build(bld):
     obj = bld.create_ns3_program('ND_example', ['network', 'mobility', 'energy', 'applications', 'aqua-sim-ng'])
     obj.source = 'named_data_example.cc'
 
-#    obj = bld.create_ns3_program('VBF', ['network', 'mobility', 'energy', 'applications', 'aqua-sim-ng'])
-#    obj.source = 'VBF.cc'
+    obj = bld.create_ns3_program('VBF', ['network', 'mobility', 'energy', 'applications', 'aqua-sim-ng'])
+    obj.source = 'VBF.cc'

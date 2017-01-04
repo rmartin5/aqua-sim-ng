@@ -46,8 +46,10 @@ AquaSimPktHashTable::AquaSimPktHashTable() {
 AquaSimPktHashTable::~AquaSimPktHashTable()
 {
   NS_LOG_FUNCTION(this);
-  for (std::map<hash_entry,vbf_neighborhood*>::iterator it=m_htable.begin(); it!=m_htable.end(); ++it)
+  for (std::map<hash_entry,vbf_neighborhood*>::iterator it=m_htable.begin(); it!=m_htable.end(); ++it) {
+
     delete it->second;
+  }
   m_htable.clear();
 }
 
@@ -99,20 +101,16 @@ AquaSimPktHashTable::GetHash(AquaSimAddress senderAddr, unsigned int pk_num)
 }
 
 void
-AquaSimPktHashTable::PutInHash(VBHeader * vbh)
+AquaSimPktHashTable::PutInHash(AquaSimAddress sAddr, unsigned int pkNum)
 {
 	//Tcl_HashEntry *entryPtr;
 	// Pkt_Hash_Entry    *hashPtr;
 	vbf_neighborhood* hashPtr;
-  AquaSimAddress addr;
-  unsigned int pkNum;
   //unsigned int key[3];
 	bool newPtr = true;
 
-	addr=vbh->GetSenderAddr();
 	//key[1]=0; //(vbh->sender_id).port_;
-	pkNum=vbh->GetPkNum();
-  hash_entry entry = std::make_pair (addr,pkNum);
+  hash_entry entry = std::make_pair (sAddr,pkNum);
   std::map<hash_entry,vbf_neighborhood*>::iterator it;
 
 	int k=pkNum-m_windowSize;
@@ -120,7 +118,7 @@ AquaSimPktHashTable::PutInHash(VBHeader * vbh)
 	{
 		for (int i=0; i<k; i++)
 		{
-      entry = std::make_pair(addr,i);
+      entry = std::make_pair(sAddr,i);
       if(m_htable.count(entry)>0)
       {
         it = m_htable.find(entry);
@@ -132,10 +130,9 @@ AquaSimPktHashTable::PutInHash(VBHeader * vbh)
 		}
 	}
 
-	pkNum=vbh->GetPkNum();
   //entryPtr = Tcl_CreateHashEntry(&m_htable, (char *)key, &newPtr);
 	if (!newPtr) {
-		//hashPtr=GetHash(vbh->GetSenderAddr(),vbh->GetPkNum());
+		hashPtr=GetHash(sAddr,pkNum);
 		int m=hashPtr->number;
 		if (m<MAX_NEIGHBOR) {
 			hashPtr->number++;
@@ -155,20 +152,17 @@ AquaSimPktHashTable::PutInHash(VBHeader * vbh)
 }
 
 void
-AquaSimPktHashTable::PutInHash(VBHeader * vbh, Vector* p)
+AquaSimPktHashTable::PutInHash(AquaSimAddress sAddr, unsigned int pkNum, Vector p)
 {
 	//Tcl_HashEntry *entryPtr;
 	// Pkt_Hash_Entry    *hashPtr;
 	vbf_neighborhood* hashPtr;
   AquaSimAddress addr;
-  unsigned int pkNum;
 	//unsigned int key[3];
 	bool newPtr = true;
 
-	addr=vbh->GetSenderAddr();
 	//key[1]=0; //(vbh->sender_id).port_;
-	pkNum=vbh->GetPkNum();
-  hash_entry entry = std::make_pair (addr,pkNum);
+  hash_entry entry = std::make_pair (sAddr,pkNum);
   std::map<hash_entry,vbf_neighborhood*>::iterator it;
 
 	int k=pkNum-m_windowSize;
@@ -176,38 +170,45 @@ AquaSimPktHashTable::PutInHash(VBHeader * vbh, Vector* p)
 	{
 		for (int i=0; i<k; i++)
 		{
-			pkNum=i;
+      entry.second = i;
       if(m_htable.count(entry)>0)
       {
         it = m_htable.find(entry);
         hashPtr = it->second;
+        delete hashPtr;
         newPtr = false;
         m_htable.erase(it);
       }
 		}
 	}
 
-  pkNum=vbh->GetPkNum();
 	//entryPtr = Tcl_CreateHashEntry(&m_htable, (char *)key, &newPtr);
 	if (!newPtr)
 	{
-		//hashPtr=GetHash(vbh->GetSenderAddr(),vbh->GetPkNum());
+		hashPtr=GetHash(sAddr,pkNum);
 		int m=hashPtr->number;
 		// printf("hash_table: this is not old item, there are %d item inside\n",m);
 		if (m<MAX_NEIGHBOR) {
 			hashPtr->number++;
-			hashPtr->neighbor[m].x=p->x;
-			hashPtr->neighbor[m].y=p->y;
-			hashPtr->neighbor[m].z=p->z;
+			hashPtr->neighbor[m].x=p.x;
+			hashPtr->neighbor[m].y=p.y;
+			hashPtr->neighbor[m].z=p.z;
 		}
 		return;
 	}
 	hashPtr=new vbf_neighborhood[1];
 	hashPtr[0].number=1;
-	hashPtr[0].neighbor[0].x=p->x;
-	hashPtr[0].neighbor[0].y=p->y;
-	hashPtr[0].neighbor[0].z=p->z;
-  m_htable.insert(std::pair<hash_entry,vbf_neighborhood*>(entry,hashPtr));
+	hashPtr[0].neighbor[0].x=p.x;
+	hashPtr[0].neighbor[0].y=p.y;
+	hashPtr[0].neighbor[0].z=p.z;
+
+  std::pair<hash_entry,vbf_neighborhood*> newPair;
+  newPair.first=entry; newPair.second=hashPtr;
+  if (m_htable.insert(newPair).second == false)
+  {
+    delete newPair.second;
+  }
+
 	//Tcl_SetHashValue(entryPtr, hashPtr);
 }
 
@@ -294,8 +295,8 @@ AquaSimVBF::GetTypeId(void)
       IntegerValue(0),
       MakeIntegerAccessor(&AquaSimVBF::m_hopByHop),
       MakeIntegerChecker<int>())
-    .AddAttribute ("EnableRouting", "Enable routing VBF setting. Default 0 is false.",
-      IntegerValue(0),
+    .AddAttribute ("EnableRouting", "Enable routing VBF setting. Default 1 is true.",
+      IntegerValue(1),
       MakeIntegerAccessor(&AquaSimVBF::m_enableRouting),
       MakeIntegerChecker<int>())
     .AddAttribute ("Width", "Width of VBF. Default is 100.",
@@ -324,7 +325,6 @@ AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumbe
 	//unsigned char msg_type =vbh.GetMessType();  //unused
 	//unsigned int dtype = vbh.GetDataType();  //unused
 	//double t1=vbh.GetTs();  //unused
-
 
   if (!vbh.GetMessType())
   {
@@ -355,17 +355,12 @@ AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumbe
 		return true;
 	}
 
-  Vector * p1=new Vector[1];
-	p1[0].x=vbh.GetExtraInfo().f.x;
-	p1[0].y=vbh.GetExtraInfo().f.y;
-	p1[0].z=vbh.GetExtraInfo().f.z;
-
 	vbf_neighborhood *hashPtr= PktTable.GetHash(vbh.GetSenderAddr(), vbh.GetPkNum());
 
 	// Received this packet before ?
 
 	if (hashPtr != NULL) {
-		PktTable.PutInHash(&vbh,p1);
+		PktTable.PutInHash(vbh.GetSenderAddr(), vbh.GetPkNum(),vbh.GetExtraInfo().f);
 		packet=0;
     return false;
 		// printf("vectrobasedforward: this is duplicate packet\n");
@@ -373,35 +368,30 @@ AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumbe
 	else {
 		// Never receive it before ? Put in hash table.
 		//printf("vectrobasedforward: this is new packet\n");
-		PktTable.PutInHash(&vbh,p1);
-		//move this piece of code from underwaterchannel back
-		//to vbf
-    Ptr<Node> node = GetNetDevice()->GetNode();
-    int localAddr = AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()).GetAsInt();
-    Ptr<NetDevice> fNode =  node->GetDevice(vbh.GetForwardAddr().GetAsInt());
-    Ptr<NetDevice> thisNode = GetNetDevice()->GetNode()->GetDevice(localAddr);
-    Ptr<MobilityModel> fModel = fNode->GetNode()->GetObject<MobilityModel>();
-    Ptr<MobilityModel> thisModel = thisNode->GetNode()->GetObject<MobilityModel>();
+		PktTable.PutInHash(vbh.GetSenderAddr(), vbh.GetPkNum(),vbh.GetExtraInfo().f);
+
+    Ptr<Object> sObject = GetNetDevice()->GetNode();
+    Ptr<MobilityModel> sModel = sObject->GetObject<MobilityModel> ();
+    Vector forwarder = vbh.GetExtraInfo().f;
 
     packet->RemoveHeader(ash);
     packet->RemoveHeader(vbh);
-    Vector d = Vector(thisModel->GetPosition().x - fModel->GetPosition().x,
-                          thisModel->GetPosition().y - fModel->GetPosition().y,
-                          thisModel->GetPosition().z - fModel->GetPosition().z);
+    Vector d = Vector(sModel->GetPosition().x - forwarder.x,
+                      sModel->GetPosition().y - forwarder.y,
+                      sModel->GetPosition().z - forwarder.z);
     vbh.SetExtraInfo_d(d);
     packet->AddHeader(vbh);
     packet->AddHeader(ash);
 		ConsiderNew(packet);
 	}
 
-  p1=0;
-	delete p1;
   return true;
 }
 
 void
 AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 {
+  NS_LOG_FUNCTION(this);
   AquaSimHeader ash;
   VBHeader vbh;
   pkt->RemoveHeader(ash);
@@ -419,12 +409,6 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 
 	Ptr<Packet> gen_pkt;
 	VBHeader gen_vbh;
-	Vector * p1;
-	p1=new Vector[1];
-	p1[0].x=vbh.GetExtraInfo().f.x;
-	p1[0].y=vbh.GetExtraInfo().f.y;
-	p1[0].z=vbh.GetExtraInfo().f.z;
-
 
 	//  printf("Vectorbasedforward:oops!\n");
 	switch (msg_type) {
@@ -585,7 +569,13 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 		else{
 			//  printf("Vectorbasedforward: %d is the not  target\n", here_.addr_);
 			if (IsCloseEnough(pkt)) {
-				double delay=CalculateDelay(pkt,p1);
+        Vector * p1;
+        p1=new Vector[1];
+        p1[0].x=vbh.GetExtraInfo().f.x;
+        p1[0].y=vbh.GetExtraInfo().f.y;
+        p1[0].z=vbh.GetExtraInfo().f.z;
+				double delay=CalculateDelay(pkt,p1);  //TODO should just pass the Vector for easier memory management here.
+        delete p1;
 				double d2=(m_device->GetPhy()->GetTransRange()-Distance(pkt))/ns3::SOUND_SPEED_IN_WATER;
 				//printf("Vectorbasedforward: I am  not  target delay is %f d2=%f distance=%f\n",(sqrt(delay)*DELAY+d2*2),d2,Distance(pkt));
 				SetDelayTimer(pkt,(sqrt(delay)*DELAY+d2*2));
@@ -600,7 +590,6 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 		pkt=0;
 		break;
 	}
-	delete p1;
 }
 
 
