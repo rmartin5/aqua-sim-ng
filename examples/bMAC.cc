@@ -42,11 +42,12 @@ NS_LOG_COMPONENT_DEFINE("BMac");
 int
 main (int argc, char *argv[])
 {
-  double simStop = 600; //seconds
-  int nodes = 20;
+  double simStop = 5000; //seconds
+  int nodes = 199;
   int sinks = 1;
-  uint32_t m_dataRate = 180;
-  uint32_t m_packetSize = 32;
+  uint32_t m_dataRate = 180;//120;
+  uint32_t m_packetSize = 320;//32;
+  double range = 20;
 
   /*
    * **********
@@ -82,11 +83,12 @@ main (int argc, char *argv[])
 
   //establish layers using helper's pre-build settings
   AquaSimChannelHelper channel = AquaSimChannelHelper::Default();
+  channel.SetPropagation("ns3::AquaSimRangePropagation");
   AquaSimHelper asHelper = AquaSimHelper::Default();
   //AquaSimEnergyHelper energy;	//******this could instead be handled by node helper. ****/
   asHelper.SetChannel(channel.Create());
   asHelper.SetMac("ns3::AquaSimBroadcastMac");
-  //asHelper.SetRouting("ns3::AquaSimDBR"); //XXX
+  asHelper.SetRouting("ns3::AquaSimRoutingDummy"); //XXX
 
   /*
    * Preset up mobility model for nodes and sinks here
@@ -107,15 +109,16 @@ main (int argc, char *argv[])
 
       devices.Add(asHelper.Create(*i, newDevice));
 
-      NS_LOG_DEBUG("Node: " << *i << " newDevice: " << newDevice << " Position: " <<
+    /*  NS_LOG_DEBUG("Node: " << *i << " newDevice: " << newDevice << " Position: " <<
 		     boundry.x << "," << boundry.y << "," << boundry.z <<
 		     " freq:" << newDevice->GetPhy()->GetFrequency() << " addr:" <<
          AquaSimAddress::ConvertFrom(newDevice->GetAddress()).GetAsInt() );
-		     //<<
+		  */   //<<
 		     //" NDtypeid:" << newDevice->GetTypeId() <<
 		     //" Ptypeid:" << newDevice->GetPhy()->GetTypeId());
 
-      boundry.x += 2000;
+      boundry.x += 20;
+      newDevice->GetPhy()->SetTransRange(range);
     }
 
   for (NodeContainer::Iterator i = sinksCon.Begin(); i != sinksCon.End(); i++)
@@ -125,10 +128,12 @@ main (int argc, char *argv[])
 
       devices.Add(asHelper.Create(*i, newDevice));
 
-      NS_LOG_DEBUG("Sink: " << *i << " newDevice: " << newDevice << " Position: " <<
-		     boundry.x << "," << boundry.y << "," << boundry.z);
-
-      boundry.x += 2000;
+    /*  NS_LOG_DEBUG("Sink: " << *i << " newDevice: " << newDevice << " Position: " <<
+		     boundry.x << "," << boundry.y << "," << boundry.z<< " addr:" <<
+         AquaSimAddress::ConvertFrom(newDevice->GetAddress()).GetAsInt() );
+         */
+      boundry.x += 20;
+      newDevice->GetPhy()->SetTransRange(range);
     }
 
 
@@ -140,7 +145,7 @@ main (int argc, char *argv[])
   PacketSocketAddress socket;
   socket.SetAllDevices();
   // socket.SetSingleDevice (devices.Get(0)->GetIfIndex());
-  socket.SetPhysicalAddress (devices.Get(0)->GetAddress());
+  socket.SetPhysicalAddress (devices.Get(nodes)->GetAddress()); //for &dest on Recv()
   socket.SetProtocol (0);
 
   std::cout << devices.Get(0)->GetAddress() << " &&& " << devices.Get(0)->GetIfIndex() << "\n";
@@ -152,10 +157,12 @@ main (int argc, char *argv[])
   app.SetAttribute ("DataRate", DataRateValue (m_dataRate));
   app.SetAttribute ("PacketSize", UintegerValue (m_packetSize));
 
-  ApplicationContainer apps = app.Install (nodesCon);
+  ApplicationContainer apps = app.Install (nodesCon.Get(0));
   apps.Start (Seconds (0.5));
   apps.Stop (Seconds (simStop + 1));
-
+  ApplicationContainer apps2 = app.Install (nodesCon.Get(1));
+  apps2.Start (Seconds (0.6));
+  apps2.Stop (Seconds (simStop + 1.1));
 
   Ptr<Node> sinkNode = sinksCon.Get(0);
   TypeId psfid = TypeId::LookupByName ("ns3::PacketSocketFactory");

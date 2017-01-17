@@ -61,7 +61,7 @@ AquaSimFloodingRouting::Recv(Ptr<Packet> packet, const Address &dest, uint16_t p
 
   VBHeader vbh;
   AquaSimHeader ash;
-  if (packet->GetSize() <= 32)  //no headers
+  if (!vbh.GetMessType())  //no headers
   {
     vbh.SetSenderAddr(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()));
     vbh.SetPkNum(packet->GetUid());
@@ -251,6 +251,7 @@ AquaSimFloodingRouting::PrepareMessage(unsigned int dtype, AquaSimAddress addr, 
 void
 AquaSimFloodingRouting::MACprepare(Ptr<Packet> pkt)
 {
+  NS_LOG_FUNCTION(this);
   VBHeader vbh;
   AquaSimHeader ash;
   pkt->RemoveHeader(ash);
@@ -273,6 +274,8 @@ AquaSimFloodingRouting::MACprepare(Ptr<Packet> pkt)
 void
 AquaSimFloodingRouting::MACsend(Ptr<Packet> pkt, Time delay)
 {
+  NS_LOG_FUNCTION(this);
+
   VBHeader vbh;
   AquaSimHeader ash;
   pkt->RemoveHeader(ash);

@@ -90,6 +90,7 @@ public:
   static TypeId GetTypeId(void);
   virtual bool Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber);
 
+  void SetTargetPos(Vector pos);
   // AquaSimVBF_Entry routing_table[MAX_DATA_TYPE];
 
 protected:
@@ -109,6 +110,7 @@ protected:
   double m_width;
   // the width is used to test if the node is close enough to the path specified by the packet
   Ptr<UniformRandomVariable> m_rand;
+  Vector m_targetPos;
 
   void Terminate();
   void Reset();

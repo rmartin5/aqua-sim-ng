@@ -146,12 +146,12 @@ AquaSimNetDevice::DoDispose (void)
       Leading to false memory leak reports in tools such as valgrind. */
   m_phy=0;
   m_mac=0;
-  m_routing=0;
+  m_macSync=0;
+  m_macLoc=0;
+  m_routing=0;  //FIXME in some cases this will lead to seg fault bug (smart pointer is deleted somewhere else leading to a unref issue)
   m_node=0;
   m_uniformRand=0;
   m_energyModel=0;
-  m_macSync=0;
-  m_macLoc=0;
   m_attackModel=0;
   m_ndn=0;
   for (std::vector<Ptr<AquaSimChannel> >::iterator it = m_channel.begin(); it != m_channel.end(); ++it)

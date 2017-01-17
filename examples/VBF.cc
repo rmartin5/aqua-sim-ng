@@ -39,12 +39,13 @@ NS_LOG_COMPONENT_DEFINE("VBF");
 int
 main (int argc, char *argv[])
 {
-  double simStop = 600; //seconds
-  int nodes = 40;
+  double simStop = 1000; //seconds
+  int nodes = 10;
   int sinks = 1;
   uint32_t m_dataRate = 180;
-  uint32_t m_packetSize = 32;
-  double range = 120;
+  uint32_t m_packetSize = 320;
+  double range = 20;
+  int m_maxBurst =10;
 
   LogComponentEnable ("VBF", LOG_LEVEL_INFO);
 
@@ -73,6 +74,7 @@ main (int argc, char *argv[])
   //AquaSimEnergyHelper energy;	//******this could instead be handled by node helper. ****/
   asHelper.SetChannel(channel.Create());
   asHelper.SetMac("ns3::AquaSimBroadcastMac");
+      //asHelper.SetMac("ns3::AquaSimUwan");
   asHelper.SetRouting("ns3::AquaSimVBF");
 
   /*
@@ -92,8 +94,8 @@ main (int argc, char *argv[])
       Ptr<AquaSimNetDevice> newDevice = CreateObject<AquaSimNetDevice>();
       position->Add(boundry);
       devices.Add(asHelper.Create(*i, newDevice));
-      boundry.x += 80;
-      boundry.y +=10;
+      boundry.x += 20;
+      boundry.y +=0;
       newDevice->GetPhy()->SetTransRange(range);
     }
 
@@ -102,7 +104,7 @@ main (int argc, char *argv[])
       Ptr<AquaSimNetDevice> newDevice = CreateObject<AquaSimNetDevice>();
       position->Add(boundry);
       devices.Add(asHelper.Create(*i, newDevice));
-      boundry.x += 80;
+      boundry.x += 20;
       newDevice->GetPhy()->SetTransRange(range);
     }
 

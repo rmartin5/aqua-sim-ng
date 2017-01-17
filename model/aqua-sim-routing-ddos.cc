@@ -700,6 +700,7 @@ AquaSimDDOS::UpdateInterest()
 
         //NOTE for spread attack.
     m_baseInterest = m_possibleBaseInt[randVar->GetInteger(0,2)];
+    randVar=0;
   }
   else
   {

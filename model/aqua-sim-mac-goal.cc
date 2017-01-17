@@ -140,14 +140,14 @@ AquaSimGoal::AquaSimGoal(): m_maxBurst(1), m_dataPktInterval(0.0001), m_guardTim
 	m_nxtRoundMaxWaitTime = Seconds(1.0);
 	m_propSpeed = 1500.0;
 	m_isForwarding = false;
-	m_txRadius = 1000;	//arbitrary value here...
+	m_txRadius = 100;	//should be dependent on phy layer GetTransRange().
 	m_maxDelay = Seconds(m_txRadius/m_propSpeed);
 	m_pipeWidth = 100.0;
 	//m_dataPktSize = 300;   //Byte
 	m_backoffType = VBF;
 
 	m_maxBackoffTime = 4*m_maxDelay+m_VBF_MaxDelay*1.5+Seconds(2);
-	SetupTransDistance(m_device->GetPhy()->GetTransRange());
+	//SetupTransDistance(m_device->GetPhy()->GetTransRange());
 }
 
 AquaSimGoal::~AquaSimGoal()
@@ -275,12 +275,13 @@ bool AquaSimGoal::TxProcess(Ptr<Packet> pkt)
 	//suppose Sink has broadcast its position before. To simplify the simulation, we
 	//directly get the position of the target node (Sink)
 
-
+	/* should already be set by VBF
 	Ptr<NetDevice> tn =  m_device->GetNode()->GetDevice(vbh.GetTargetAddr().GetAsInt());
   Ptr<MobilityModel> tModel = tn->GetNode()->GetObject<MobilityModel>();
 	//UnderwaterSensorNode* tn = (UnderwaterSensorNode*)(Node::get_node_by_address(vbh->target_id.addr_));
 	//tn->UpdatePosition();
 	vbh.SetExtraInfo_t(tModel->GetPosition());
+	*/
 
 	m_originPktSet[ash.GetUId()] = Simulator::Now();
 	pkt->AddHeader(vbh);
@@ -308,10 +309,10 @@ AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Ti
 	AquaSimPtTag ptag;
 	VBHeader vbh;
 	Ptr<Packet> DataPkt = *(DataPktSet.begin());
+	if (DataPkt==NULL) NS_LOG_DEBUG("HUHH?");
 	DataPkt->RemoveHeader(ash);	//test to ensure this isn't a null header buffer at this point
 	DataPkt->PeekHeader(vbh);
 	Ptr<MobilityModel> model = m_device->GetNode()->GetObject<MobilityModel>();
-
 	goalReqh.SetRA(AquaSimAddress::GetBroadcast());
   goalReqh.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 	goalReqh.SetDA(vbh.GetTargetAddr());  //sink address
@@ -685,7 +686,6 @@ AquaSimGoal::PrepareDataPkts()
 	//erase empty entry
 	if( m_PktQs[pos->first].Q_.empty() )
 		m_PktQs.erase(pos->first);
-
 
 
 	ReqPkt = MakeReqPkt(DataSendTimer->DataPktSet(), DataSendTime, DataTxTime);

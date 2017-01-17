@@ -37,8 +37,7 @@ NS_OBJECT_ENSURE_REGISTERED(AquaSimUwan);
 AquaSimUwan_WakeTimer::~AquaSimUwan_WakeTimer()
 {
   m_mac=0;
-  delete m_ScheT;
-  m_ScheT=0;
+  //most likely memory leak
 }
 
 void
@@ -413,7 +412,7 @@ AquaSimUwan::RecvProcess(Ptr<Packet> p)
                             Seconds(SYNC_h.GetCyclePeriod()) );
 			//m_wakeSchQueue.Print(2*m_maxPropTime, m_maxTxTime, false, index_);
 
-      uint8_t *data = NULL;
+      uint8_t *data;
       p->CopyData(data,p->GetSize());
 
 			//extract Missing list

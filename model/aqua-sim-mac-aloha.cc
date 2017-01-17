@@ -47,7 +47,6 @@ AquaSimAloha::AquaSimAloha() :
 	m_AckOn(1), m_minBackoff(0.0), m_maxBackoff(1.5), m_maxACKRetryInterval(0.05),
 	m_blocked(false)
 {
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 }
 
 AquaSimAloha::~AquaSimAloha()
@@ -88,6 +87,7 @@ AquaSimAloha::GetTypeId(void)
 void AquaSimAloha::DoBackoff()
 {
   NS_LOG_FUNCTION(this);
+	Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   Time BackoffTime=Seconds(m_rand->GetValue(m_minBackoff,m_maxBackoff));
   m_boCounter++;
   if (m_boCounter < MAXIMUMCOUNTER)
@@ -140,7 +140,7 @@ bool AquaSimAloha::TxProcess(Ptr<Packet> pkt)
 {
   //callback to higher level, should be implemented differently
   //Scheduler::instance().schedule(&CallBack_handler, &m_callbackEvent, CALLBACK_DELAY);
-  NS_LOG_FUNCTION(this << pkt);
+  NS_LOG_FUNCTION(this << pkt << Simulator::Now().GetSeconds());
   AquaSimHeader asHeader;
   AlohaHeader alohaH;
   pkt->RemoveHeader(asHeader);
@@ -181,6 +181,8 @@ bool AquaSimAloha::TxProcess(Ptr<Packet> pkt)
 
 void AquaSimAloha::SendDataPkt()
 {
+	NS_LOG_FUNCTION(this);
+	Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   double P = m_rand->GetValue(0,1);
   Ptr<Packet> tmp = PktQ_.front();
   AquaSimHeader asHeader;
@@ -205,6 +207,7 @@ void AquaSimAloha::SendDataPkt()
 
 void AquaSimAloha::SendPkt(Ptr<Packet> pkt)
 {
+	NS_LOG_FUNCTION(this);
   AquaSimHeader asHeader;
   AlohaHeader alohaH;
   pkt->RemoveHeader(asHeader);
@@ -274,6 +277,7 @@ void AquaSimAloha::SendPkt(Ptr<Packet> pkt)
 
 bool AquaSimAloha::RecvProcess(Ptr<Packet> pkt)
 {
+	NS_LOG_FUNCTION(this);
   AquaSimHeader asHeader;
   AlohaHeader alohaH;
   pkt->RemoveHeader(asHeader);
@@ -322,8 +326,9 @@ bool AquaSimAloha::RecvProcess(Ptr<Packet> pkt)
   return true;
 }
 
-void AquaSimAloha::ReplyACK(Ptr<Packet> pkt)//sendACK
+void AquaSimAloha::ReplyACK(Ptr<Packet> pkt) //sendACK
 {
+	NS_LOG_FUNCTION(this);
 	//wouldn't it make more sense to just include aloha header SA instead of pkt for parameters?
   AlohaHeader alohaH;
 	AquaSimHeader asHeader;
@@ -339,6 +344,7 @@ void AquaSimAloha::ReplyACK(Ptr<Packet> pkt)//sendACK
 
 Ptr<Packet> AquaSimAloha::MakeACK(AquaSimAddress Data_Sender)
 {
+	NS_LOG_FUNCTION(this);
   Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
   AlohaHeader alohaH;
@@ -384,6 +390,7 @@ void AquaSimAloha::RetryACK(Ptr<Packet> ack)
   NS_LOG_FUNCTION(this);
 
   AquaSimAlohaAckRetry* timer = new AquaSimAlohaAckRetry(this, ack);
+	Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   Simulator::Schedule(Seconds(m_maxACKRetryInterval*m_rand->GetValue()), &AquaSimAloha::ProcessRetryTimer, this, timer);
   RetryTimerMap_[timer->Id()] = timer;
 }

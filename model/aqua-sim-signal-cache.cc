@@ -58,9 +58,9 @@ PktSubmissionTimer::GetTypeId (void)
 }
 
 void
-PktSubmissionTimer::Expire(IncomingPacket* inPkt)
+PktSubmissionTimer::Expire(Ptr<IncomingPacket> inPkt)
 {
-  /*IncomingPacket* inPkt = m_waitingList.top().inPkt;
+  /*Ptr<IncomingPacket> inPkt = m_waitingList.top().inPkt;
   m_waitingList.pop();
   if(!m_waitingList.empty())
   {
@@ -73,7 +73,7 @@ PktSubmissionTimer::Expire(IncomingPacket* inPkt)
 }
 
 void
-PktSubmissionTimer::AddNewSubmission(IncomingPacket* inPkt) {
+PktSubmissionTimer::AddNewSubmission(Ptr<IncomingPacket> inPkt) {
   AquaSimHeader asHeader;
   (inPkt->packet)->PeekHeader(asHeader);
   Time transmissionDelay = Seconds(inPkt->packet->GetSize() * 8 *      /*Byte conversion*/
@@ -95,7 +95,7 @@ PktSubmissionTimer::AddNewSubmission(IncomingPacket* inPkt) {
 }
 
 
-PktSubmissionUnit::PktSubmissionUnit(IncomingPacket* inPkt_, Time endT_)
+PktSubmissionUnit::PktSubmissionUnit(Ptr<IncomingPacket> inPkt_, Time endT_)
 	: inPkt(inPkt_), endT(endT_)
 {
 }
@@ -107,7 +107,7 @@ m_pktNum(0), m_totalPS(0.0), m_pktSubTimer(NULL)
 {
   NS_LOG_FUNCTION(this);
 
-  m_head = new IncomingPacket(NULL, AquaSimPacketStamp::INVALID);
+  m_head = CreateObject<IncomingPacket>(AquaSimPacketStamp::INVALID);
   m_pktSubTimer = new PktSubmissionTimer(this);
   status = AquaSimPacketStamp::INVALID;
 
@@ -139,7 +139,7 @@ AquaSimSignalCache::AddNewPacket(Ptr<Packet> p){
   p->PeekHeader(asHeader);
   NS_LOG_FUNCTION(this << "Packet:" << p << "Error flag:" << asHeader.GetErrorFlag());
 
-  IncomingPacket* inPkt = new IncomingPacket(p,
+  Ptr<IncomingPacket> inPkt = CreateObject<IncomingPacket>(p,
 		  asHeader.GetErrorFlag() ? AquaSimPacketStamp::INVALID : AquaSimPacketStamp::RECEPTION);
 
   m_pktSubTimer->AddNewSubmission(inPkt);
@@ -156,8 +156,8 @@ AquaSimSignalCache::AddNewPacket(Ptr<Packet> p){
 bool
 AquaSimSignalCache::DeleteIncomingPacket(Ptr<Packet> p){
   NS_LOG_FUNCTION(this);
-  IncomingPacket* pre = m_head;
-  IncomingPacket* ptr = m_head->next;
+  Ptr<IncomingPacket> pre = m_head;
+  Ptr<IncomingPacket> ptr = m_head->next;
 
   while (ptr != NULL && ptr->packet != p) {
     ptr = ptr->next;
@@ -177,7 +177,7 @@ AquaSimSignalCache::DeleteIncomingPacket(Ptr<Packet> p){
 
 
 void
-AquaSimSignalCache::SubmitPkt(IncomingPacket* inPkt) {
+AquaSimSignalCache::SubmitPkt(Ptr<IncomingPacket> inPkt) {
   NS_LOG_FUNCTION(this << inPkt << inPkt->status);
 
   status = inPkt->status;
@@ -197,10 +197,10 @@ AquaSimSignalCache::SubmitPkt(IncomingPacket* inPkt) {
 }
 
 
-IncomingPacket*
+Ptr<IncomingPacket>
 AquaSimSignalCache::Lookup(Ptr<Packet> p){
   NS_LOG_FUNCTION(this);
-  IncomingPacket* ptr = m_head->next;
+  Ptr<IncomingPacket> ptr = m_head->next;
 
   while (ptr != NULL && ptr->packet != PeekPointer(p)) {
     ptr = ptr->next;
@@ -212,7 +212,7 @@ AquaSimSignalCache::Lookup(Ptr<Packet> p){
 void
 AquaSimSignalCache::InvalidateIncomingPacket(){
   NS_LOG_FUNCTION(this);
-  IncomingPacket* ptr = m_head->next;
+  Ptr<IncomingPacket> ptr = m_head->next;
 
   while (ptr != NULL) {
     ptr->status = AquaSimPacketStamp::INVALID;
@@ -224,7 +224,7 @@ AquaSimSignalCache::InvalidateIncomingPacket(){
 AquaSimPacketStamp::PacketStatus
 AquaSimSignalCache::Status(Ptr<Packet> p){
   NS_LOG_FUNCTION(this);
-  IncomingPacket* ptr = Lookup(p);
+  Ptr<IncomingPacket> ptr = Lookup(p);
 
   return ptr == NULL ? AquaSimPacketStamp::INVALID : ptr->status;
 }
@@ -238,7 +238,7 @@ AquaSimSignalCache::UpdatePacketStatus(){
 	 ps = 0;		//power strength
 	//,SINR = 0; 		//currently not used
 
-  for (IncomingPacket* ptr = m_head->next; ptr != NULL; ptr = ptr->next) {
+  for (Ptr<IncomingPacket> ptr = m_head->next; ptr != NULL; ptr = ptr->next) {
     ps = m_em->GetRxPower();
     noise = m_totalPS - ps;
 
@@ -259,14 +259,13 @@ AquaSimSignalCache::SetNoiseGen(Ptr<AquaSimNoiseGen> noise)
 void AquaSimSignalCache::DoDispose()
 {
   NS_LOG_FUNCTION(this);
-//  IncomingPacket* m_head;
+//  Ptr<IncomingPacket> m_head;
 //  PktSubmissionTimer* m_pktSubTimer;
 
-  IncomingPacket* pos = m_head;
+  Ptr<IncomingPacket> pos = m_head;
   while (m_head != NULL) {
     m_head = m_head->next;
     pos->packet = 0;
-    delete pos;
     pos = 0;
     pos = m_head;
   }

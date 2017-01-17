@@ -70,6 +70,7 @@ def build(bld):
         'model/ndn/onoff-nd-application.cc',
         'helper/named-data-helper.cc',
         'helper/on-off-nd-helper.cc',
+        'model/aqua-sim-routing-dummy.cc',
         ]
 
     module_test = bld.create_ns3_module_test_library('aqua-sim-ng')
@@ -142,6 +143,7 @@ def build(bld):
         'model/ndn/onoff-nd-application.h',
         'helper/named-data-helper.h',
         'helper/on-off-nd-helper.h',
+        'model/aqua-sim-routing-dummy.h',
         ]
 
     if bld.env.ENABLE_EXAMPLES:

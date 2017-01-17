@@ -92,6 +92,7 @@ class Address;
 class AquaSimDDOS : public AquaSimRouting {
 public:
   AquaSimDDOS();
+  ~AquaSimDDOS() {};
   static TypeId GetTypeId(void);
   virtual bool Recv(Ptr< Packet > packet, const Address &dest, uint16_t protocolNumber);
   void RecvNAck(Ptr<Packet> p);

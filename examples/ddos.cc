@@ -71,8 +71,8 @@ main (int argc, char *argv[])
 {
   std::cout << "-----------Initializing simulation-----------\n";
 
-  double simStop=7200; //seconds
-  double preStop=60; //seconds
+  double simStop=1000; //seconds
+  double preStop=20; //seconds
   int nodes=15;
   int attackers=3;
   //int sinks;

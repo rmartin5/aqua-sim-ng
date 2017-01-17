@@ -39,10 +39,12 @@
 
 namespace ns3 {
 
-struct IncomingPacket{
+struct IncomingPacket : Object {
   Ptr<Packet> packet;
   AquaSimPacketStamp::PacketStatus status;
-  IncomingPacket* next;
+  Ptr<IncomingPacket> next;
+  IncomingPacket(AquaSimPacketStamp::PacketStatus s = AquaSimPacketStamp::INVALID) :
+    packet(NULL), status(s), next(NULL) {}
   IncomingPacket(Ptr<Packet> p, AquaSimPacketStamp::PacketStatus s = AquaSimPacketStamp::INVALID) :
 	  packet(p), status(s), next(NULL) {}
 };
@@ -50,14 +52,14 @@ struct IncomingPacket{
 class AquaSimSignalCache;
 
 struct PktSubmissionUnit{
-  IncomingPacket* inPkt;
+  Ptr<IncomingPacket> inPkt;
   Time endT;	//ending time of reception
   friend bool operator < (const PktSubmissionUnit &l, const PktSubmissionUnit &r) {
     //pkt with earlier ending time appears at the front
     return l.endT >= r.endT;
   }
 
-  PktSubmissionUnit(IncomingPacket* inPkt_, Time endT_);
+  PktSubmissionUnit(Ptr<IncomingPacket> inPkt_, Time endT_);
 };
 
 /**
@@ -74,8 +76,8 @@ public:
   virtual ~PktSubmissionTimer(void);
   static TypeId GetTypeId(void);
 
-  virtual void Expire(IncomingPacket* inPkt);
-  void AddNewSubmission(IncomingPacket* inPkt);
+  virtual void Expire(Ptr<IncomingPacket> inPkt);
+  void AddNewSubmission(Ptr<IncomingPacket> inPkt);
 };  // class PktSubmissionTimer
 
 /**
@@ -90,10 +92,10 @@ public:
   virtual void AddNewPacket(Ptr<Packet>);
   virtual bool DeleteIncomingPacket(Ptr<Packet>);
   void InvalidateIncomingPacket(void);
-  IncomingPacket* Lookup(Ptr<Packet>);
+  Ptr<IncomingPacket> Lookup(Ptr<Packet>);
   AquaSimPacketStamp::PacketStatus status;
   AquaSimPacketStamp::PacketStatus Status(Ptr<Packet> p);
-  void SubmitPkt(IncomingPacket* inPkt);
+  void SubmitPkt(Ptr<IncomingPacket> inPkt);
 
   void SetNoiseGen(Ptr<AquaSimNoiseGen> noise);
 
@@ -108,7 +110,7 @@ public:
   double m_totalPS; // total power strength of active incoming packets
 
 protected:
-  IncomingPacket* m_head;
+  Ptr<IncomingPacket> m_head;
   Ptr<AquaSimPhy> m_phy;
   PktSubmissionTimer* m_pktSubTimer;
   Ptr<AquaSimEnergyModel> m_em;

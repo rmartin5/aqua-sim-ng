@@ -154,38 +154,37 @@ AquaSimPktHashTable::PutInHash(AquaSimAddress sAddr, unsigned int pkNum)
 void
 AquaSimPktHashTable::PutInHash(AquaSimAddress sAddr, unsigned int pkNum, Vector p)
 {
+  NS_LOG_DEBUG("PutinHash begin:" << sAddr << "," << pkNum << ",(" << p.x << "," << p.y << "," << p.z << ")");
 	//Tcl_HashEntry *entryPtr;
 	// Pkt_Hash_Entry    *hashPtr;
 	vbf_neighborhood* hashPtr;
-  AquaSimAddress addr;
 	//unsigned int key[3];
 	bool newPtr = true;
 
 	//key[1]=0; //(vbh->sender_id).port_;
   hash_entry entry = std::make_pair (sAddr,pkNum);
   std::map<hash_entry,vbf_neighborhood*>::iterator it;
-
 	int k=pkNum-m_windowSize;
 	if(k>0)
 	{
 		for (int i=0; i<k; i++)
 		{
       entry.second = i;
-      if(m_htable.count(entry)>0)
+      it = m_htable.find(entry);
+      if(it != m_htable.end())
       {
-        it = m_htable.find(entry);
         hashPtr = it->second;
         delete hashPtr;
-        newPtr = false;
         m_htable.erase(it);
       }
 		}
 	}
 
-	//entryPtr = Tcl_CreateHashEntry(&m_htable, (char *)key, &newPtr);
-	if (!newPtr)
+  entry.second = pkNum;
+  hashPtr = GetHash(sAddr,pkNum);
+  //entryPtr = Tcl_CreateHashEntry(&m_htable, (char *)key, &newPtr);
+	if (hashPtr != NULL)
 	{
-		hashPtr=GetHash(sAddr,pkNum);
 		int m=hashPtr->number;
 		// printf("hash_table: this is not old item, there are %d item inside\n",m);
 		if (m<MAX_NEIGHBOR) {
@@ -208,7 +207,6 @@ AquaSimPktHashTable::PutInHash(AquaSimAddress sAddr, unsigned int pkNum, Vector 
   {
     delete newPair.second;
   }
-
 	//Tcl_SetHashValue(entryPtr, hashPtr);
 }
 
@@ -283,6 +281,7 @@ AquaSimVBF::AquaSimVBF()
 	//m_useOverhear = 0;
 	m_enableRouting = 1;
   Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
+  m_targetPos = Vector();
 }
 
 TypeId
@@ -303,6 +302,10 @@ AquaSimVBF::GetTypeId(void)
       DoubleValue(100),
       MakeDoubleAccessor(&AquaSimVBF::m_width),
       MakeDoubleChecker<double>())
+    .AddAttribute ("TargetPos", "Position of target sink (x,y,z).",
+      Vector3DValue(),
+      MakeVector3DAccessor(&AquaSimVBF::m_targetPos),
+      MakeVector3DChecker())
   ;
   return tid;
   //bind("m_useOverhear_", &m_useOverhear);
@@ -315,25 +318,31 @@ AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumbe
   NS_LOG_FUNCTION(this);
   AquaSimHeader ash;
   VBHeader vbh;
-  if (packet->GetSize() <= 50)  //TODO create specalized Application instead of using this hack.
-  {
-    packet->AddHeader(vbh);
-    packet->AddHeader(ash);
-  }
   AquaSimPtTag ptag;
+
+  packet->RemoveHeader(ash);
+  packet->PeekHeader(vbh);
+  if (!vbh.GetMessType()) { //TODO create specalized Application instead of using this hack.
+    packet->RemoveHeader(vbh);
+    vbh.SetMessType(AS_DATA);
+    vbh.SetSenderAddr(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()));
+    vbh.SetForwardAddr(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()));
+    vbh.SetTargetAddr(AquaSimAddress::ConvertFrom(dest));
+    vbh.SetMessType(AS_DATA);
+    vbh.SetPkNum(packet->GetUid());
+
+    Ptr<Object> sObject = GetNetDevice()->GetNode();
+    Ptr<MobilityModel> sModel = sObject->GetObject<MobilityModel> ();
+    vbh.SetOriginalSource(sModel->GetPosition());
+    vbh.SetExtraInfo_f(sModel->GetPosition());
+    vbh.SetExtraInfo_t(m_targetPos);
+    packet->AddHeader(vbh);
+  }
+  packet->AddHeader(ash);
 
 	//unsigned char msg_type =vbh.GetMessType();  //unused
 	//unsigned int dtype = vbh.GetDataType();  //unused
 	//double t1=vbh.GetTs();  //unused
-
-  if (!vbh.GetMessType())
-  {
-    packet->RemoveHeader(ash);
-    packet->RemoveHeader(vbh);
-    vbh.SetMessType(AS_DATA);
-    packet->AddHeader(vbh);
-    packet->AddHeader(ash);
-  }
 
 	if( !m_enableRouting ) {
 		if( vbh.GetMessType() != AS_DATA ) {
@@ -356,7 +365,6 @@ AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumbe
 	}
 
 	vbf_neighborhood *hashPtr= PktTable.GetHash(vbh.GetSenderAddr(), vbh.GetPkNum());
-
 	// Received this packet before ?
 
 	if (hashPtr != NULL) {
@@ -726,7 +734,7 @@ AquaSimVBF::MACprepare(Ptr<Packet> pkt)
 void
 AquaSimVBF::MACsend(Ptr<Packet> pkt, double delay)
 {
-  std::cout << "macsend d" << delay << " now " << Simulator::Now().GetSeconds() << "\n";
+  NS_LOG_INFO("MACsend: delay " << delay << " at time " << Simulator::Now().GetSeconds());
   AquaSimHeader ash;
   VBHeader vbh;
   //AquaSimPtTag ptag;
@@ -1094,6 +1102,12 @@ void AquaSimVBF::DoDispose()
   m_rand=0;
   AquaSimRouting::DoDispose();
 }
+
+void AquaSimVBF::SetTargetPos(Vector pos)
+{
+  m_targetPos = pos;
+}
+
 
 // Some methods for Flooding Entry
 

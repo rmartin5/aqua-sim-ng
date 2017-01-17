@@ -136,7 +136,7 @@ DRoutingHeader::SetEntryNum(uint32_t entryNum)
 NS_OBJECT_ENSURE_REGISTERED(VBHeader);
 
 VBHeader::VBHeader() :
-m_messType(AS_DATA)
+m_messType(0)
 {
 }
 
@@ -286,7 +286,6 @@ VBHeader::SetPkNum(uint32_t pkNum)
 void
 VBHeader::SetTargetAddr(AquaSimAddress targetAddr)
 {
-  std::cout << "set target: new:" << targetAddr << ",old:" << m_targetAddr << "\n";
   m_targetAddr = targetAddr;
 }
 void

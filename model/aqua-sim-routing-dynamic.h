@@ -29,7 +29,7 @@
 
 #include <map>
 
-#define IP_HDR_LEN      20
+#define IP_HDR_LEN 20
 
 namespace ns3 {
 
@@ -58,13 +58,8 @@ public:
  AquaSimDynamicRoutingTable();
  static TypeId GetTypeId(void);
 
- AquaSimAddress NodeId() {
-   return m_nodeId;
-  }
- void SetNodeId(AquaSimAddress nodeId)
- {
-   m_nodeId = nodeId;
- }
+ AquaSimAddress NodeId();
+ void SetRouting(Ptr<AquaSimDynamicRouting> dynamic);
  void Print(AquaSimAddress id);
  void Clear();
  void RemoveEntry(AquaSimAddress);
@@ -75,6 +70,9 @@ public:
 
  uint32_t Size();
  int IfChg ();
+
+private:
+  Ptr<AquaSimDynamicRouting> m_dr;
 };  // class AquaSimDynamicRoutingTable
 
 
@@ -87,12 +85,7 @@ public:
  */
 class AquaSimDynamicRouting_PktTimer : public Timer {
 public:
-  AquaSimDynamicRouting_PktTimer(AquaSimDynamicRouting* routing, double updateInterval)
-   : Timer()
-  {
-    m_routing = routing;
-    m_updateInterval = updateInterval;
-  }
+  AquaSimDynamicRouting_PktTimer(AquaSimDynamicRouting* routing, double updateInterval);
   ~AquaSimDynamicRouting_PktTimer();
 
   double GetUpdateInterval()
@@ -120,17 +113,16 @@ friend class AquaSimDynamicRouting_PktTimer;
 
 public:
   AquaSimDynamicRouting();
-  AquaSimDynamicRouting(AquaSimAddress);
   static TypeId GetTypeId(void);
   virtual bool Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber);
   int m_coun;
 
+  inline AquaSimAddress RaAddr() { return AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()); }
 protected:
   //PortClassifier* dmux_; // For passing packets up to agents.
   //Trace* logtarget_; // For logging.
   AquaSimDynamicRouting_PktTimer m_pktTimer; // Timer for sending packets.
 
-  inline AquaSimAddress RaAddr() { return m_raAddr; }
   // inline uw_drouting_state& state() { return state_; }
   inline int AccessibleVar() { return m_accessibleVar; };
 
@@ -142,7 +134,6 @@ protected:
 
   virtual void DoDispose();
 private:
-  AquaSimAddress m_raAddr;
   // uw_drouting_state state_;//?????????define state
   //AquaSimDynamicRoutingTable rtable_;//????????define table
   AquaSimDynamicRoutingTable m_rTable;//add by jun

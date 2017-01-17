@@ -34,6 +34,7 @@ NS_OBJECT_ENSURE_REGISTERED(AquaSimDynamicRoutingTable);
 
 AquaSimDynamicRoutingTable::AquaSimDynamicRoutingTable()
 {
+  NS_LOG_FUNCTION(this);
 }
 
 TypeId
@@ -42,6 +43,20 @@ AquaSimDynamicRoutingTable::GetTypeId()
   static TypeId tid = TypeId("ns3::AquaSimDynamicRoutingTable")
     ;
   return tid;
+}
+
+AquaSimAddress
+AquaSimDynamicRoutingTable::NodeId()
+{
+  return m_dr->RaAddr();
+}
+
+void
+AquaSimDynamicRoutingTable::SetRouting(Ptr<AquaSimDynamicRouting> dynamic)
+{
+  NS_LOG_FUNCTION(this);
+
+  m_dr = dynamic;
 }
 
 void
@@ -139,6 +154,14 @@ AquaSimDynamicRoutingTable::Update(t_table* newrt, AquaSimAddress Source_N) //ad
 }
 
 /**** AquaSimDynamicRouting_PktTimer ****/
+AquaSimDynamicRouting_PktTimer::AquaSimDynamicRouting_PktTimer(AquaSimDynamicRouting* routing, double updateInterval)
+ : Timer()
+{
+  NS_LOG_FUNCTION(this);
+
+  m_routing = routing;
+  m_updateInterval = updateInterval;
+}
 
 AquaSimDynamicRouting_PktTimer::~AquaSimDynamicRouting_PktTimer()
 {
@@ -161,20 +184,14 @@ NS_OBJECT_ENSURE_REGISTERED(AquaSimDynamicRouting);
 
 AquaSimDynamicRouting::AquaSimDynamicRouting() : m_pktTimer(this, 50)
 {
-  //should be implemented from helper/example script during node creation.
-  AquaSimDynamicRouting(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()));
-}
-
-AquaSimDynamicRouting::AquaSimDynamicRouting(AquaSimAddress id) : m_pktTimer(this, 50)
-{
-  m_raAddr = id;
-  m_rTable.SetNodeId(id);
+  NS_LOG_FUNCTION(this);
   m_coun=0;
-
   Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 
+  m_rTable.SetRouting(this);
+
   m_pktTimer.SetFunction(&AquaSimDynamicRouting_PktTimer::Expire,&m_pktTimer);
-  m_pktTimer.Schedule(Seconds(0.0000001+BroadcastJitter(10)));
+  m_pktTimer.Schedule(Seconds(0.0000001+10*m_rand->GetValue()));
 }
 
 TypeId
@@ -378,6 +395,7 @@ AquaSimDynamicRouting::BroadcastJitter(double range)
 void
 AquaSimDynamicRouting::SendDRoutingPkt()
 {
+  NS_LOG_FUNCTION(this);
 	Ptr<Packet> p = Create<Packet>();
   AquaSimHeader ash;
   DRoutingHeader drh;
@@ -391,24 +409,22 @@ AquaSimDynamicRouting::SendDRoutingPkt()
 	drh.SetPktLen(7);
 	drh.SetPktSeqNum(m_seqNum++);
 	drh.SetEntryNum(m_rTable.Size());
-
 	drh.SetPktLen(sizeof(drh.GetPktLen())+sizeof(drh.GetPktSrc()) +
                   sizeof(drh.GetPktSeqNum())+sizeof(drh.GetEntryNum()) );
 
   uint32_t size = (m_rTable.Size())*(3*sizeof(AquaSimAddress));
-  uint8_t *data = new uint8_t[size];
+  uint8_t* payload = new uint8_t[size];
+  int iter=0;
 
-	for(t_table::iterator it=m_rTable.m_rt.begin(); it!=m_rTable.m_rt.end(); it++)
+  for(t_table::iterator it=m_rTable.m_rt.begin(); it!=m_rTable.m_rt.end(); it++)
   {
-		*(AquaSimAddress*)data = it->first;
-		data += sizeof(it->first);
-		*(AquaSimAddress*)data = it->second.first;
-		data += sizeof(it->second.first);
-		*(AquaSimAddress*)data = it->second.second;
-		data += sizeof(it->second.second);
+    payload[iter]=it->first.GetAsInt();
+    payload[iter+1]=it->second.first.GetAsInt();
+    payload[iter+2]=it->second.second.GetAsInt();
+    iter+=3;
 	}
 
-  Ptr<Packet> tempPacket = Create<Packet>(data,size);
+  Ptr<Packet> tempPacket = Create<Packet>(payload,size);
   p->AddAtEnd(tempPacket);
 
   ptag.SetPacketType(AquaSimPtTag::PT_UW_DROUTING);

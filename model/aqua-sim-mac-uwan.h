@@ -80,8 +80,8 @@ struct ScheduleTime {
 	}
 
 	~ScheduleTime() {
-    delete next_;
-    next_=0;
+    if (timer_.IsRunning()) timer_.Remove();
+    //memory leak most likely
   }
 
 	void Start(Time Delay) {
