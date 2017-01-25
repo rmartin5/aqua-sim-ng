@@ -107,7 +107,7 @@ AquaSimPktHashTable::PutInHash(AquaSimAddress sAddr, unsigned int pkNum)
 	// Pkt_Hash_Entry    *hashPtr;
 	vbf_neighborhood* hashPtr;
   //unsigned int key[3];
-	bool newPtr = true;
+	//bool newPtr = true;
 
 	//key[1]=0; //(vbh->sender_id).port_;
   hash_entry entry = std::make_pair (sAddr,pkNum);
@@ -118,21 +118,21 @@ AquaSimPktHashTable::PutInHash(AquaSimAddress sAddr, unsigned int pkNum)
 	{
 		for (int i=0; i<k; i++)
 		{
-      entry = std::make_pair(sAddr,i);
-      if(m_htable.count(entry)>0)
+      entry.second = i;
+      it = m_htable.find(entry);
+      if(it != m_htable.end())
       {
-        it = m_htable.find(entry);
         hashPtr = it->second;
         delete hashPtr;
-        newPtr = false;
         m_htable.erase(it);
       }
 		}
 	}
 
+  entry.second = pkNum;
+  hashPtr = GetHash(sAddr,pkNum);
   //entryPtr = Tcl_CreateHashEntry(&m_htable, (char *)key, &newPtr);
-	if (!newPtr) {
-		hashPtr=GetHash(sAddr,pkNum);
+	if (hashPtr != NULL) {
 		int m=hashPtr->number;
 		if (m<MAX_NEIGHBOR) {
 			hashPtr->number++;
@@ -147,7 +147,12 @@ AquaSimPktHashTable::PutInHash(AquaSimAddress sAddr, unsigned int pkNum)
 	hashPtr[0].neighbor[0].x=0;
 	hashPtr[0].neighbor[0].y=0;
 	hashPtr[0].neighbor[0].z=0;
-  m_htable.insert(std::pair<hash_entry,vbf_neighborhood*>(entry,hashPtr));
+  std::pair<hash_entry,vbf_neighborhood*> newPair;
+  newPair.first=entry; newPair.second=hashPtr;
+  if (m_htable.insert(newPair).second == false)
+  {
+    delete newPair.second;
+  }
 	//Tcl_SetHashValue(entryPtr, hashPtr);
 }
 
