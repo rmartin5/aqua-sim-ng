@@ -566,6 +566,7 @@ AquaSimCopeMac::SendPkt(Ptr<Packet> pkt)
   AquaSimHeader ash;
   CopeHeader ch;
   pkt->RemoveHeader(ash);
+  pkt->PeekHeader(ch);
 
   ash.SetTxTime(GetTxTime(ash.GetSerializedSize()+ch.GetSerializedSize()));
 

@@ -69,8 +69,6 @@ AquaSimSFama::AquaSimSFama():m_status(IDLE_WAIT), m_guardTime(0.00001),
 
   m_slotNumHandler = 0;
 
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
-
   Simulator::Schedule(Seconds(0.05) /*callback delay*/, &AquaSimSFama::InitSlotLen, this);
 }
 
@@ -104,11 +102,14 @@ AquaSimSFama::GetTypeId(void)
 bool
 AquaSimSFama::RecvProcess(Ptr<Packet> p)
 {
+	AquaSimHeader ash;
   SFamaHeader SFAMAh;
   MacHeader mach;
+	p->RemoveHeader(ash);
   p->RemoveHeader(SFAMAh);
   p->PeekHeader(mach);
 	p->AddHeader(SFAMAh);
+	p->AddHeader(ash);
 
   NS_LOG_DEBUG("Time:" << Simulator::Now().GetSeconds() << ",node:" << m_device->GetNode() <<
                 ",node " << mach.GetDA() << " recv from node " << mach.GetSA());
@@ -262,7 +263,9 @@ Ptr<Packet>
 AquaSimSFama::FillDATA(Ptr<Packet> data_pkt)
 {
 	NS_LOG_FUNCTION(this);
-	data_pkt->Print(std::cout);
+	if(AquaSimSFAMA_DEBUG) {
+		data_pkt->Print(std::cout);
+	}
 
   AquaSimHeader ash;
   SFamaHeader SFAMAh;
@@ -328,13 +331,18 @@ void
 AquaSimSFama::ProcessRTS(Ptr<Packet> rts_pkt)
 {
 	NS_LOG_FUNCTION(this);
-	rts_pkt->Print(std::cout);
+	if(AquaSimSFAMA_DEBUG){
+		rts_pkt->Print(std::cout);
+	}
 
+	AquaSimHeader ash;
   SFamaHeader SFAMAh;
   MacHeader mach;
+	rts_pkt->RemoveHeader(ash);
   rts_pkt->RemoveHeader(SFAMAh);
   rts_pkt->PeekHeader(mach);
 	rts_pkt->AddHeader(SFAMAh);
+	rts_pkt->AddHeader(ash);
 
 	double time2comingslot = GetTime2ComingSlot(Simulator::Now().ToDouble(Time::S));
 
@@ -368,13 +376,18 @@ void
 AquaSimSFama::ProcessCTS(Ptr<Packet> cts_pkt)
 {
 	NS_LOG_FUNCTION(this);
-	cts_pkt->Print(std::cout);
+	if(AquaSimSFAMA_DEBUG){
+		cts_pkt->Print(std::cout);
+	}
 
+	AquaSimHeader ash;
   SFamaHeader SFAMAh;
   MacHeader mach;
+	cts_pkt->RemoveHeader(ash);
   cts_pkt->RemoveHeader(SFAMAh);
   cts_pkt->PeekHeader(mach);
 	cts_pkt->AddHeader(SFAMAh);
+	cts_pkt->AddHeader(ash);
 
 	double time2comingslot = GetTime2ComingSlot(Simulator::Now().ToDouble(Time::S));
 
@@ -415,8 +428,14 @@ AquaSimSFama::ProcessDATA(Ptr<Packet> data_pkt)
 {
 	NS_LOG_FUNCTION(this);
 
+	AquaSimHeader ash;
+  SFamaHeader SFAMAh;
   MacHeader mach;
+	data_pkt->RemoveHeader(ash);
+	data_pkt->RemoveHeader(SFAMAh);
   data_pkt->PeekHeader(mach);
+	data_pkt->AddHeader(SFAMAh);
+	data_pkt->AddHeader(ash);
 
 	if( mach.GetDA() == AquaSimAddress::ConvertFrom(m_device->GetAddress()) && GetStatus() == WAIT_RECV_DATA ) {
 		//send ACK
@@ -428,13 +447,11 @@ AquaSimSFama::ProcessDATA(Ptr<Packet> data_pkt)
     m_waitSendTimer.Schedule(Seconds(GetTime2ComingSlot(Simulator::Now().ToDouble(Time::S))));
 
 		/*send packet to upper layer*/
-    SFamaHeader SFAMAh;
-    AquaSimHeader ash;
+		data_pkt->RemoveHeader(ash);
 		data_pkt->RemoveHeader(SFAMAh);
-    data_pkt->RemoveHeader(ash);
 		ash.SetSize(SFAMAh.GetSize(SFamaHeader::SFAMA_DATA));
-    data_pkt->AddHeader(ash);
 		data_pkt->AddHeader(SFAMAh);
+		data_pkt->AddHeader(ash);
 
 		SendUp(data_pkt->Copy()); /*the original one will be released*/
 	}
@@ -454,8 +471,14 @@ AquaSimSFama::ProcessDATA(Ptr<Packet> data_pkt)
 void
 AquaSimSFama::ProcessACK(Ptr<Packet> ack_pkt)
 {
-  MacHeader mach;
-  ack_pkt->PeekHeader(mach);
+	AquaSimHeader ash;
+	SFamaHeader SFAMAh;
+	MacHeader mach;
+	ack_pkt->RemoveHeader(ash);
+	ack_pkt->RemoveHeader(SFAMAh);
+	ack_pkt->PeekHeader(mach);
+	ack_pkt->AddHeader(SFAMAh);
+	ack_pkt->AddHeader(ash);
 
   NS_LOG_DEBUG("ProcessACK(before)");
 #ifdef AquaSimSFama_DEBUG
@@ -524,20 +547,31 @@ AquaSimSFama::PrepareSendingDATA()
 	}
 
 	if( !m_sendingPktQ.empty() && GetStatus() == IDLE_WAIT  ) {
-      MacHeader mach;
-      m_sendingPktQ.front()->PeekHeader(mach);
+			AquaSimHeader ash;
+			SFamaHeader SFAMAh;
+			MacHeader mach;
+			m_sendingPktQ.front()->RemoveHeader(ash);
+			m_sendingPktQ.front()->RemoveHeader(SFAMAh);
+			m_sendingPktQ.front()->PeekHeader(mach);
+			m_sendingPktQ.front()->AddHeader(SFAMAh);
+			m_sendingPktQ.front()->AddHeader(ash);
       recver_addr = mach.GetDA();
-
 	} else if( !m_CachedPktQ.empty() && GetStatus() == IDLE_WAIT ) {
     NS_LOG_DEBUG("PrepareSendingDATA(before)");
 #ifdef AquaSimSFama_DEBUG
     NS_LOG_DEBUG(PrintAllQ());
 #endif
-    MacHeader mach;
+		AquaSimHeader ash_tmp;
+		SFamaHeader SFAMAh_tmp;
+		MacHeader mach_tmp;
 
 		tmp_pkt = m_CachedPktQ.front();
-    tmp_pkt->PeekHeader(mach);
-    recver_addr = mach.GetDA();
+		tmp_pkt->RemoveHeader(ash_tmp);
+		tmp_pkt->RemoveHeader(SFAMAh_tmp);
+		tmp_pkt->PeekHeader(mach_tmp);
+		tmp_pkt->AddHeader(SFAMAh_tmp);
+		tmp_pkt->AddHeader(ash_tmp);
+    recver_addr = mach_tmp.GetDA();
 		m_CachedPktQ.pop();
 		m_sendingPktQ.push(tmp_pkt);
 		pkt_num = 1;
@@ -547,7 +581,7 @@ AquaSimSFama::PrepareSendingDATA()
 			tmp_pkt = m_CachedPktQ.front();
 			m_CachedPktQ.pop();
 
-			if( recver_addr == mach.GetDA() ) {
+			if( recver_addr == mach_tmp.GetDA() ) {
 				m_sendingPktQ.push(tmp_pkt);
 				pkt_num ++;
 			}
@@ -625,6 +659,7 @@ AquaSimSFama::ScheduleRTS(AquaSimAddress recver, int slot_num)
 int
 AquaSimSFama::RandBackoffSlots()
 {
+	Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 	return (int)m_rand->GetValue(0.0,(double)m_maxBackoffSlots);
 }
 
@@ -633,9 +668,11 @@ void
 AquaSimSFama::SendPkt(Ptr<Packet> pkt)
 {
 	NS_LOG_FUNCTION(this);
-	pkt->Print(std::cout);
+	if(AquaSimSFAMA_DEBUG){
+		pkt->Print(std::cout);
+	}
 
-  AquaSimHeader ash;
+	AquaSimHeader ash;
   SFamaHeader SFAMAh;
   MacHeader mach;
   pkt->RemoveHeader(ash);
@@ -667,6 +704,7 @@ AquaSimSFama::SendPkt(Ptr<Packet> pkt)
 			pkt->RemoveHeader(SFAMAh);
 			pkt->PeekHeader(mach);
 			pkt->AddHeader(SFAMAh);
+			pkt->AddHeader(ash);
 			NS_LOG_DEBUG(Simulator::Now().GetSeconds() << ": node " << mach.GetSA() <<
 					       " send to node " << mach.GetDA() );
 			SendDown(pkt);
@@ -845,7 +883,9 @@ void
 AquaSimSFama::SendDataPkt(Ptr<Packet> pkt)
 {
 	NS_LOG_FUNCTION(this);
-	pkt->Print(std::cout);
+	if (AquaSimSFAMA_DEBUG) {
+		pkt->Print(std::cout);
+	}
 
   AquaSimHeader ash;
 	SFamaHeader SFAMAh;

@@ -31,7 +31,7 @@
 
 #include <queue>
 
-//#define AquaSimSFAMA_DEBUG
+#define AquaSimSFAMA_DEBUG 0
 
 namespace ns3 {
 

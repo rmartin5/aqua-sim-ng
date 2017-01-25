@@ -42,8 +42,8 @@ NS_LOG_COMPONENT_DEFINE("BMac");
 int
 main (int argc, char *argv[])
 {
-  double simStop = 5000; //seconds
-  int nodes = 199;
+  double simStop = 100; //seconds
+  int nodes = 4;
   int sinks = 1;
   uint32_t m_dataRate = 180;//120;
   uint32_t m_packetSize = 320;//32;
@@ -87,7 +87,7 @@ main (int argc, char *argv[])
   AquaSimHelper asHelper = AquaSimHelper::Default();
   //AquaSimEnergyHelper energy;	//******this could instead be handled by node helper. ****/
   asHelper.SetChannel(channel.Create());
-  asHelper.SetMac("ns3::AquaSimBroadcastMac");
+  asHelper.SetMac("ns3::AquaSimSFama");
   asHelper.SetRouting("ns3::AquaSimRoutingDummy"); //XXX
 
   /*
