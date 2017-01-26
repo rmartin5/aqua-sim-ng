@@ -99,7 +99,7 @@ public:
 	AquaSimGoal_PreSendTimer(AquaSimGoal* mac): Timer(), mac_(mac) {
 	}
 
-	Ptr<Packet>	Pkt() {
+	Ptr<Packet>&	Pkt() {
 		return m_pkt;
 	}
 
@@ -162,7 +162,7 @@ public:
 	/*Time& SendTime() {
 		return SendTime_;
 	}*/
-	std::map<int, Ptr<Packet> > PktSet() {
+	std::map<int, Ptr<Packet> >& PktSet() {
 		return m_PktSet;
 	}
 
@@ -206,33 +206,33 @@ public:
 		m_GotRep = false;
 	}
 
-	std::set<Ptr<Packet> > DataPktSet() {
+	std::set<Ptr<Packet> >& DataPktSet() {
 		return m_DataPktSet;
 	}
 
-	AquaSimAddress NxtHop() {
+	AquaSimAddress& NxtHop() {
 		return m_NxtHop;
 	}
 
-	Time MinBackoffTime() {
+	Time& MinBackoffTime() {
 		return m_MinBackoffTime;
 	}
 
-	Time TxTime() {
+	Time& TxTime() {
 		return m_TxTime;
 	}
 
-	int ReqID() {
+	int& ReqID() {
 		return m_ReqID;
 	}
-	void SetReqID(int reqID) {
+	void SetReqID(int reqID) { //redundant
 	  m_ReqID = reqID;
 	}
 
-	bool GotRep() {
+	bool& GotRep() {
 		return m_GotRep;
 	}
-	void SetRep( bool gotRep) {
+	void SetRep( bool gotRep) { //redundant
 	  m_GotRep = gotRep;
 	}
 
@@ -272,7 +272,7 @@ public:
 	~AquaSimGoal_SinkAccumAckTimer();
 	AquaSimGoal_SinkAccumAckTimer(AquaSimGoal* mac): Timer(), mac_(mac) {}
 
-	std::set<int> AckSet() {
+	std::set<int>& AckSet() {
 		return m_AckSet;
 	}
 
