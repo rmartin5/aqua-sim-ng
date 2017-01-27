@@ -132,7 +132,6 @@ AquaSimTMac::AquaSimTMac()
   m_tBackoffCounter=0;
   m_localStatus = SLEEP;
   m_ctsNum=0;
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 
   m_periodTableIndex=0;
 
@@ -313,11 +312,13 @@ AquaSimTMac::InitPhaseTwo()
 void
 AquaSimTMac::StartPhaseTwo()
 {
-  NS_LOG_INFO("StartPhaseTwo:" << m_device->GetAddress() << " phasetwoCycle: " << m_phaseTwoCycle);
+  NS_LOG_FUNCTION(this);
+  //NS_LOG_DEBUG("StartPhaseTwo:" << m_device->GetAddress() << " phasetwoCycle: " << m_phaseTwoCycle);
   if(m_phaseTwoCycle)
   {
     m_phaseStatus=PHASETWO;
     m_cycleStartTime=Simulator::Now().ToDouble(Time::S);
+    Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
     double  delay=m_rand->GetValue()*m_phaseTwoWindow;
     Ptr<Packet> pkt=GenerateSYN();
     Simulator::Schedule(Seconds(delay),&AquaSimTMac::TxND,this,pkt,m_phaseTwoWindow);
@@ -392,6 +393,7 @@ AquaSimTMac::SendSYN()
 void
 AquaSimTMac::InitND(double t1,double t2, double t3)
 {
+  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   double delay=m_rand->GetValue()*t1;
   double itval=(t3-t2-t1)/2.0;
   double delay3=t1+itval;
@@ -489,6 +491,7 @@ AquaSimTMac::SendShortAckND()
       pkt->AddHeader(ackndh);
       pkt->AddHeader(ash);
       pkt->AddPacketTag(ptag);
+      Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
       double delay=m_rand->GetValue()*m_ackNdWindow;
       Simulator::Schedule(Seconds(delay),&AquaSimTMac::TxND,this,pkt,m_ackNdWindow);
     	m_arrivalTableIndex--;
@@ -893,6 +896,7 @@ AquaSimTMac::TxND(Ptr<Packet> pkt, double window)
 		double d1=window-(Simulator::Now().ToDouble(Time::S)-m_cycleStartTime);
 
 		if(d1>0) {
+      Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 			double backoff=m_rand->GetValue()*d1;
 			m_tBackoffWindow=window;
       pkt->AddHeader(synh);
@@ -1231,7 +1235,7 @@ AquaSimTMac::SendRTS()
 	m_macStatus=TMAC_RTS;
 
 	m_poweroffEvent.Cancel();
-
+  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 	double t2=m_rand->GetValue()*m_contentionWindow;
 
   pkt->AddHeader(rtsh);
@@ -1301,6 +1305,7 @@ AquaSimTMac::TxRTS(Ptr<Packet> pkt,AquaSimAddress receiver_addr)
     NS_LOG_INFO("TxRTS, node " << m_device->GetAddress() <<
 		    " is in RECV state, backoff...");
 
+    Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 		double t2=m_minBackoffWindow+m_rand->GetValue()*m_minBackoffWindow;
 		m_rtsRecvAddr=receiver_addr;
     pkt->AddHeader(ash);
@@ -1766,6 +1771,7 @@ AquaSimTMac::TxCTS(Ptr<Packet> p)
 	if(RECV==status)
 	{
     NS_LOG_INFO("TxCTS: node " << m_device->GetNode() << " has to back off");
+    Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 		double t2=m_minBackoffWindow*(1+m_rand->GetValue());
     p->AddHeader(ash);
 		Simulator::Schedule(Seconds(t2),&AquaSimTMac::CTSHandler,this,p);
