@@ -20,33 +20,24 @@
 
 #include "aqua-sim-routing-buffer.h"
 #include "aqua-sim-header-routing.h"
+#include "aqua-sim-header.h"
 
 using namespace ns3;
 
 AquaSimRoutingBuffer::~AquaSimRoutingBuffer()
 {
-	routing_buffer_cell* tmp;
-	while (m_head != NULL) {
-		tmp = m_head;
-		m_head = m_head->next;
-		tmp->packet=0;
-		delete tmp;
-	}
-	while (m_tail != NULL) {
-		tmp = m_tail;
-		m_tail = m_tail->next;
-		tmp->packet=0;
-		delete tmp;
-	}
 }
 
 void
 AquaSimRoutingBuffer::AddNewPacket(Ptr<Packet> p)
 {
-	routing_buffer_cell* t1=new routing_buffer_cell;
+	Ptr<routing_buffer_cell> t1=Create<routing_buffer_cell>();
 
+	AquaSimHeader ash;
   VBHeader vbh;
+  p->RemoveHeader(ash);
   p->PeekHeader(vbh);
+	p->AddHeader(ash);
 
 	AquaSimAddress source;
   /*if (m_usr) source=vbh->sender_id;
@@ -92,11 +83,14 @@ AquaSimRoutingBuffer::AddNewPacket(Ptr<Packet> p)
 
 void
 AquaSimRoutingBuffer::CopyNewPacket(Ptr<Packet> pkt){
-	routing_buffer_cell* t1=new routing_buffer_cell;
+	Ptr<routing_buffer_cell> t1=Create<routing_buffer_cell>();
 	Ptr<Packet> p=pkt->Copy();
 
+	AquaSimHeader ash;
   VBHeader vbh;
+	p->RemoveHeader(ash);
   p->PeekHeader(vbh);
+	p->AddHeader(ash);
 
 	AquaSimAddress source;
 	/*if (m_usr) source=vbh->sender_id;
@@ -156,7 +150,7 @@ Ptr<Packet>
 AquaSimRoutingBuffer::Dehead()
 {
 	//routing_buffer_cell* t1;
-	routing_buffer_cell* t2;
+	Ptr<routing_buffer_cell> t2;
 	Ptr<Packet> p;
 
 	if(!m_head) return NULL;
@@ -166,7 +160,7 @@ AquaSimRoutingBuffer::Dehead()
 	m_numOfPacket--;
 
 	if(!m_head) m_tail=NULL;
-	delete t2;
+	t2=0;//delete t2;
 	return p;
 }
 
@@ -187,14 +181,17 @@ AquaSimRoutingBuffer::IsFull()
 Ptr<Packet>
 AquaSimRoutingBuffer::DeQueue( AquaSimAddress sender,unsigned int num)
 {
-	routing_buffer_cell * current_p=m_head;
-	routing_buffer_cell * previous_p=m_head;
+	Ptr<routing_buffer_cell> current_p=m_head;
+	Ptr<routing_buffer_cell> previous_p=m_head;
 	Ptr<Packet> p;
 	if(IsEmpty()) return NULL;
 	while (current_p)
 	{
+		AquaSimHeader ash;
     VBHeader vbh;
+		(current_p->packet)->RemoveHeader(ash);
     (current_p->packet)->PeekHeader(vbh);
+		(current_p->packet)->AddHeader(ash);
 
 		AquaSimAddress source;
 		/*if (m_usr) source=vbh->sender_id;
@@ -228,7 +225,7 @@ AquaSimRoutingBuffer::DeQueue( AquaSimAddress sender,unsigned int num)
 				//    delete current_p;
 			}
 
-			delete current_p;
+			current_p=0;//delete current_p;
 			m_numOfPacket--;
 			return p;
 		}
@@ -243,7 +240,7 @@ AquaSimRoutingBuffer::DeQueue( AquaSimAddress sender,unsigned int num)
 Ptr<Packet>
 AquaSimRoutingBuffer::LookupCopy( AquaSimAddress sender,unsigned int num)
 {
-	routing_buffer_cell * current_p=m_head;
+	Ptr<routing_buffer_cell> current_p=m_head;
 	Ptr<Packet> p;
 	if(IsEmpty())
   {
@@ -252,8 +249,11 @@ AquaSimRoutingBuffer::LookupCopy( AquaSimAddress sender,unsigned int num)
 	}
 	while (current_p)
 	{
+		AquaSimHeader ash;
     VBHeader vbh;
+		(current_p->packet)->RemoveHeader(ash);
     (current_p->packet)->PeekHeader(vbh);
+		(current_p->packet)->AddHeader(ash);
 
 		AquaSimAddress source;
 		/*if (m_usr) source=vbh->sender_id;
@@ -278,4 +278,23 @@ AquaSimRoutingBuffer::LookupCopy( AquaSimAddress sender,unsigned int num)
 		current_p=current_p->next;
 	}
 	return p;
+}
+
+void
+AquaSimRoutingBuffer::DoDispose()
+{
+	Ptr<routing_buffer_cell> tmp;
+	while (m_head != NULL) {
+		m_head = m_head->next;
+		tmp->packet=0;
+		tmp=0;//delete tmp;
+		tmp = m_head;
+	}
+	while (m_tail != NULL) {
+		m_tail = m_tail->next;
+		tmp->packet=0;
+		tmp=0;//delete tmp;
+		tmp = m_tail;
+	}
+	Object::DoDispose();
 }

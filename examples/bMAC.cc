@@ -87,8 +87,8 @@ main (int argc, char *argv[])
   AquaSimHelper asHelper = AquaSimHelper::Default();
   //AquaSimEnergyHelper energy;	//******this could instead be handled by node helper. ****/
   asHelper.SetChannel(channel.Create());
-  asHelper.SetMac("ns3::AquaSimRMac");
-  asHelper.SetRouting("ns3::AquaSimRoutingDummy"); //XXX
+  asHelper.SetMac("ns3::AquaSimBroadcastMac");
+  asHelper.SetRouting("ns3::AquaSimVBVA"); //XXX
 
   /*
    * Preset up mobility model for nodes and sinks here

@@ -36,7 +36,7 @@ class Time;
 /**
  * \ingroup aqua-sim-ng
  *
- * \brief Flooding routing approach. 
+ * \brief Flooding routing approach.
  */
 class AquaSimFloodingRouting : public AquaSimRouting {
  public:
@@ -65,6 +65,7 @@ class AquaSimFloodingRouting : public AquaSimRouting {
   void StopSource();
   void MACprepare(Ptr<Packet> pkt);
   void MACsend(Ptr<Packet> pkt, Time delay=Seconds(0));
+  virtual void DoDispose();
 };
 
 } // namespace ns3

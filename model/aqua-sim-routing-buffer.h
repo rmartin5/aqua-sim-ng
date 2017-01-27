@@ -23,12 +23,13 @@
 
 #include "aqua-sim-address.h"
 #include "ns3/packet.h"
+#include "ns3/object.h"
 
 namespace ns3 {
 
-typedef struct AquaSimRoutingBufferCell {
+typedef struct AquaSimRoutingBufferCell : Object {
   Ptr<Packet> packet;
-  AquaSimRoutingBufferCell* next;
+  Ptr<AquaSimRoutingBufferCell> next;
   double arrival_time;
 } routing_buffer_cell;
 
@@ -37,18 +38,15 @@ typedef struct AquaSimRoutingBufferCell {
  *
  * \brief Buffer helper class for underwater routing
  */
-class AquaSimRoutingBuffer {
+class AquaSimRoutingBuffer : public Object{
 public:
   AquaSimRoutingBuffer(int size=10, int myuser=1)
   {
-    m_head=NULL;
-    m_tail=NULL;
     m_numOfPacket=0;
     m_maximumSize=size;
     m_usr=myuser;
   };
   ~AquaSimRoutingBuffer();
-
 
   void AddNewPacket(Ptr<Packet>);
   void CopyNewPacket(Ptr<Packet>);// copy the packet and put into queue
@@ -61,11 +59,13 @@ public:
   bool IsEmpty();
   bool IsFull();
   int m_usr; // this added later distinguish VBVA and VBF 1 is used for vbf 0 is used for vbva
+protected:
+  void DoDispose();
 private:
   int m_numOfPacket;
   int m_maximumSize;
-  routing_buffer_cell* m_head;
-  routing_buffer_cell* m_tail;
+  Ptr<routing_buffer_cell> m_head;
+  Ptr<routing_buffer_cell> m_tail;
 };  // class AquaSimRoutingBuffer
 
 }  // namespace ns3

@@ -24,8 +24,6 @@
 #include "aqua-sim-header.h"
 #include "ns3/log.h"
 
-#include "aqua-sim-header-mac.h"
-
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("AquaSimRoutingDummy");

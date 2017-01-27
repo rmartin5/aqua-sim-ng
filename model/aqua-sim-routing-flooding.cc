@@ -300,4 +300,11 @@ AquaSimFloodingRouting::DataForSink(Ptr<Packet> pkt)
 		NS_LOG_WARN("DataForSink: Something went wrong when passing packet up to dmux.");
 }
 
+void
+AquaSimFloodingRouting::DoDispose()
+{
+  NS_LOG_FUNCTION(this);
+  AquaSimRouting::DoDispose();
+}
+
 // Some methods for Flooding Entry
