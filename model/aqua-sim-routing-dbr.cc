@@ -41,7 +41,7 @@ NS_LOG_COMPONENT_DEFINE("AquaSimDBR");
 #define DBR_MAX_RANGE	100	// maximal transmmition range
 #define DBR_MIN_BACKOFF	0.0	// minimal backoff time for the packet
 
-//#define USE_FLOODING_ALG	// test for pure flooding protocol
+#define USE_FLOODING_ALG 0	// test for pure flooding protocol
 #define DBR_USE_ROUTEFLAG
 #define DBR_MAX_HOPS	3
 #define DBR_DEPTH_THRESHOLD 0.0
@@ -49,6 +49,7 @@ NS_LOG_COMPONENT_DEFINE("AquaSimDBR");
 
 DBR_BeaconTimer::~DBR_BeaconTimer()
 {
+	m_a=0;
 	delete m_a;
 }
 
@@ -59,6 +60,7 @@ void DBR_BeaconTimer::Expire()
 
 DBR_SendingTimer::~DBR_SendingTimer()
 {
+	m_a=0;
 	delete m_a;
 }
 
@@ -798,6 +800,7 @@ AquaSimDBR::Beacon_Callback(void)
 		//		mn_->address(), iph->saddr(), iph->daddr());
 
     p->AddHeader(ash);
+		Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
     Simulator::Schedule(Seconds(m_rand->GetValue()*DBR_JITTER),&AquaSimRouting::SendDown,this,
                           p,AquaSimAddress::GetBroadcast(),Seconds(0));
 	}
@@ -818,6 +821,8 @@ AquaSimDBR::DeadNeighb_Callback(NeighbEnt *ne)
 void
 AquaSimDBR::ForwardPacket(Ptr<Packet> p, int flag)
 {
+	NS_LOG_FUNCTION(this);
+
   AquaSimHeader ash;
   DBRHeader dbrh;
   AquaSimPtTag ptag;
@@ -906,6 +911,7 @@ AquaSimDBR::ForwardPacket(Ptr<Packet> p, int flag)
 				dbrh.SetNHops((dbrh.GetNHops()-1));
 
 				// set broadcasting delay
+				Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 				delay = m_rand->GetValue() * DBR_JITTER;
 			}
 		}
@@ -944,6 +950,7 @@ AquaSimDBR::ForwardPacket(Ptr<Packet> p, int flag)
         dbrh.SetNHops((dbrh.GetNHops()-1));
 
 				// set broadcasting delay
+				Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 				delay = m_rand->GetValue() * DBR_JITTER;
 			}
 		}
@@ -1000,14 +1007,16 @@ AquaSimDBR::BeaconIn(Ptr<Packet> p)
 bool
 AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
 {
+	NS_LOG_FUNCTION(this);
+
   AquaSimHeader ash;
   DBRHeader dbrh;
-  Ipv4Header iph;
+  //Ipv4Header iph;
   AquaSimPtTag ptag;
 
 	if (p->GetSize() <= 32)
 	{
-		p->AddHeader(iph);
+	//	p->AddHeader(iph);
 		p->AddHeader(dbrh);
 		p->AddHeader(ash);
 	}
@@ -1052,7 +1061,7 @@ AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
 
   p->RemoveHeader(ash);
   p->RemoveHeader(dbrh);
-  p->RemoveHeader(iph);
+//  p->RemoveHeader(iph);
   p->RemovePacketTag(ptag);
 
 	ash.SetDirection(AquaSimHeader::DOWN);
@@ -1060,7 +1069,7 @@ AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
   ptag.SetPacketType(AquaSimPtTag::PT_DBR);
 	ash.SetSize(dbrh.Size() + IP_HDR_LEN);
 	ash.SetNextHop(AquaSimAddress::GetBroadcast());
-	iph.SetTtl(128);
+	//iph.SetTtl(128);
 
 	// setup DBR header
 	dbrh.SetMode(DBRH_DATA_GREEDY);
@@ -1070,7 +1079,7 @@ AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
 
 	// broadcasting the pkt
 	NS_ASSERT(!ash.GetErrorFlag());
-	p->AddHeader(iph);
+	//p->AddHeader(iph);
 	p->AddHeader(dbrh);
   p->AddHeader(ash);
   p->AddPacketTag(ptag);
@@ -1114,16 +1123,23 @@ AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
 void
 AquaSimDBR::HandlePktForward(Ptr<Packet> p)
 {
+	AquaSimHeader ash;
+	DBRHeader dbrh;
+	AquaSimPtTag ptag;
+	//Ipv4Header iph;
   p->RemoveHeader(ash);
-  p->PeekHeader(dbrh);
+	p->PeekHeader(dbrh);
+  //p->PeekHeader(iph);
   p->RemovePacketTag(ptag);
 
-	if (--(iph.GetTtl()) == 0)
+	/*int ttl_ = iph.GetTtl()-1;
+	iph.SetTtl(ttl_);
+	if (ttl_ == 0)
 	{
     p=0;
 		//drop(p, DROP_RTR_TTL);
 		return;
-	}
+	}*/
 
 	// Is this pkt recieved before?
 	// each node only broadcasts same pkt once
@@ -1137,17 +1153,19 @@ AquaSimDBR::HandlePktForward(Ptr<Packet> p)
 		m_pc->AddPacket(dbrh.GetPacketID());
 
 	// common settings for forwarding
-	ash.SetNumForwards((ash.GetNumForwards()++));
+	ash.SetNumForwards((ash.GetNumForwards()+1));
 	ash.SetDirection(AquaSimHeader::DOWN);
 	//ash->addr_type_ = AF_INET;
 	ptag.SetPacketType(AquaSimPtTag::PT_DBR);
 	ash.SetSize(dbrh.Size() + IP_HDR_LEN);
-	ash.SetNextHop(AquaSimAddress:GetBroadcast());
+	ash.SetNextHop(AquaSimAddress::GetBroadcast());
 
 	// finally broadcasting it!
 	NS_ASSERT(!ash.GetErrorFlag());
+//	p->AddHeader(dbrh);
   p->AddHeader(ash);
   p->AddPacketTag(ptag);
+	Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   Simulator::Schedule(Seconds(m_rand->GetValue()*DBR_JITTER),
                         &AquaSimRouting::SendDown,this,
                         p,AquaSimAddress::GetBroadcast(),Seconds(0));
@@ -1162,11 +1180,11 @@ AquaSimDBR::HandlePktForward(Ptr<Packet> p)
 {
   AquaSimHeader ash;
   DBRHeader dbrh;
-  Ipv4Header iph;
+//  Ipv4Header iph;
   AquaSimPtTag ptag;
   p->RemoveHeader(ash);
   p->RemoveHeader(dbrh);
-  p->PeekHeader(iph);
+  //p->PeekHeader(iph);
   p->RemovePacketTag(ptag);
 
 	double delta;
@@ -1179,12 +1197,12 @@ AquaSimDBR::HandlePktForward(Ptr<Packet> p)
       NS_LOG_DEBUG("MobilityModel does not exist for device " << GetNetDevice());
     }
 
-	if ((iph.GetTtl()-1) == 0)
+	/*if ((iph.GetTtl()-1) == 0)
 	{
     p=0;
 		//drop(p, DROP_RTR_TTL);
 		return;
-	}
+	}*/
 
 	/*
 	// dump the queue
@@ -1221,7 +1239,7 @@ AquaSimDBR::HandlePktForward(Ptr<Packet> p)
 		// only forward the packet from lower level
 		if (delta < DBR_DEPTH_THRESHOLD)
 		{
-			p->AddHeader(dbrh);
+			//p->AddHeader(dbrh);
       p->AddHeader(ash);
       p->AddPacketTag(ptag);
 			m_pq.purge(p);
@@ -1326,12 +1344,14 @@ AquaSimDBR::HandlePktForward(Ptr<Packet> p)
 bool
 AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
 {
+	NS_LOG_FUNCTION(this);
+
   AquaSimHeader ash;
   DBRHeader dbrh;
-  Ipv4Header iph;
+  //Ipv4Header iph;
 	if (p->GetSize() <= 32)
 	{
-		p->AddHeader(iph);
+		//p->AddHeader(iph);
 		p->AddHeader(dbrh);
 		p->AddHeader(ash);
 	}
@@ -1369,11 +1389,11 @@ AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
     //edit headers
     p->RemoveHeader(ash);
     p->RemoveHeader(dbrh);
-    p->RemoveHeader(iph);
+    //p->RemoveHeader(iph);
 
     ash.SetDirection(AquaSimHeader::DOWN);
     ash.SetSize(ash.GetSize() + IP_HDR_LEN + 8);
-    iph.SetTtl(128);
+    //iph.SetTtl(128);
 		dbrh.SetMode(DBRH_DATA_GREEDY);
 		dbrh.SetPacketID(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()).GetAsInt());
 	}
@@ -1391,7 +1411,7 @@ AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
 	{// packet is for me
 
     NS_LOG_DEBUG("Packet is delivered!");
-		p->AddHeader(iph);
+		//p->AddHeader(iph);
 		p->AddHeader(dbrh);
     p->AddHeader(ash);
 		// we may need to send it to upper layer agent
@@ -1414,13 +1434,14 @@ AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
 ------------------------------------------------*/
 	else
 	{// packet I'm forwarding
-
-		if (--(iph.GetTtl()) == 0)
+		/*int ttl_ = iph.GetTtl()-1;
+		iph.SetTtl(ttl_);
+		if (ttl_ == 0)
 		{
       p=0;
 			//drop(p, DROP_RTR_TTL);
 			return false;
-		}
+		}*/
 
 		if((dbrh.GetMode() == DBRH_DATA_RECOVER) &&
 			(dbrh.GetOwner() == GetNetDevice()->GetAddress()))
@@ -1438,7 +1459,7 @@ AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
     << dbrh.GetPrevHop() << ", cur:" << GetNetDevice()->GetAddress());
 
 	// it's time to forward the pkt now
-	p->AddHeader(iph);
+	//p->AddHeader(iph);
 	p->AddHeader(dbrh);
   p->AddHeader(ash);
 	ForwardPacket(p);
@@ -1451,10 +1472,10 @@ AquaSimDBR::Recv2(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
 {
   AquaSimHeader ash;
   DBRHeader dbrh;
-  Ipv4Header iph;
+  //Ipv4Header iph;
 	if (p->GetSize() <= 32)
 	{
-		p->AddHeader(iph);
+		//p->AddHeader(iph);
 		p->AddHeader(dbrh);
 		p->AddHeader(ash);
 	}
@@ -1494,11 +1515,11 @@ AquaSimDBR::Recv2(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
     //edit headers
     p->RemoveHeader(ash);
     p->RemoveHeader(dbrh);
-    p->RemoveHeader(iph);
+    //p->RemoveHeader(iph);
 
 		ash.SetSize(ash.GetSize() + IP_HDR_LEN + 8);
     ash.SetDirection(AquaSimHeader::DOWN);
-    iph.SetTtl(128);
+    //iph.SetTtl(128);
     dbrh.SetMode(DBRH_DATA_GREEDY);
     dbrh.SetPacketID(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()).GetAsInt());
 	}
@@ -1516,7 +1537,7 @@ AquaSimDBR::Recv2(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
 	{// packet is for me
 
     NS_LOG_DEBUG("Packet is delivered!");
-		p->AddHeader(iph);
+		//p->AddHeader(iph);
 		p->AddHeader(dbrh);
     p->AddHeader(ash);
 		// we may need to send it to upper layer agent
@@ -1540,12 +1561,12 @@ AquaSimDBR::Recv2(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
 	else
 	{// packet I'm forwarding
 
-		if ((iph.GetTtl()-1) == 0)
+		/*if ((iph.GetTtl()-1) == 0)
 		{
       p=0;
 			//drop(p, DROP_RTR_TTL);
 			return false;
-		}
+		}*/
 
 		if((dbrh.GetMode() == DBRH_DATA_RECOVER) &&
 			(dbrh.GetOwner() == GetNetDevice()->GetAddress()))
@@ -1563,7 +1584,7 @@ AquaSimDBR::Recv2(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
     << dbrh.GetPrevHop() << ", cur:" << GetNetDevice()->GetAddress());
 
 	// it's time to forward the pkt now
-	p->AddHeader(iph);
+	//p->AddHeader(iph);
 	p->AddHeader(dbrh);
   p->AddHeader(ash);
 	ForwardPacket(p);
@@ -1572,6 +1593,7 @@ AquaSimDBR::Recv2(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
 
 void AquaSimDBR::DoDispose()
 {
+	NS_LOG_FUNCTION(this);
 	m_rand=0;
 	delete m_sendTimer;
 	delete m_beaconTimer;

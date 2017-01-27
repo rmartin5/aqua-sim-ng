@@ -388,6 +388,7 @@ AquaSimDynamicRouting::RecvDRoutingPkt(Ptr<Packet> p)
 double
 AquaSimDynamicRouting::BroadcastJitter(double range)
 {
+  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 	return range*m_rand->GetValue();
 }
 
@@ -446,6 +447,7 @@ AquaSimDynamicRouting::SendDRoutingPkt()
   p->AddHeader(drh);
   p->AddHeader(ash);
   p->AddPacketTag(ptag);
+  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   Time jitter = Seconds(m_rand->GetValue()*0.5);
   Simulator::Schedule(jitter,&AquaSimRouting::SendDown,this,p,ash.GetNextHop(),jitter);
 }
