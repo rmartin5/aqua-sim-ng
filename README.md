@@ -48,7 +48,7 @@ Further documentation and installation steps can be found under [Aqua-Sim NG Doc
 4. Information-Centric Integration
   * ~~_Adapted Named Data Network components_~~
   * ~~_Helper/test scripts_~~
-  * **Protocol integration**
+  * ~~_Protocol integration_~~
 
 
 
@@ -75,7 +75,7 @@ We plan on implementing adapted Named Data Networking (NDN) techniques alongside
 --------------------------------------
 #### License
 
-Copyright (c) 2016 UWSN Lab at the University of Connecticut.
+Copyright (c) 2017 UWSN Lab at the University of Connecticut.
 All rights reserved.
 
 Robert Martin : <robert.martin@uconn.edu>
