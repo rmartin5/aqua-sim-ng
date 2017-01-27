@@ -54,6 +54,7 @@ AquaSimTMac::TBackoffHandler(Ptr<Packet> pkt)
 void
 AquaSimTMac::TStatusHandler()
 {
+  NS_LOG_FUNCTION(this);
   if(m_localStatus == SLEEP)
     PowerOff();
 }
@@ -312,7 +313,7 @@ AquaSimTMac::InitPhaseTwo()
 void
 AquaSimTMac::StartPhaseTwo()
 {
-  NS_LOG_FUNCTION(this << m_device->GetNode() << m_phaseTwoCycle);
+  NS_LOG_INFO("StartPhaseTwo:" << m_device->GetAddress() << " phasetwoCycle: " << m_phaseTwoCycle);
   if(m_phaseTwoCycle)
   {
     m_phaseStatus=PHASETWO;
@@ -1176,7 +1177,8 @@ AquaSimTMac::SendRTS()
   NS_LOG_FUNCTION(this << m_device->GetAddress() << Simulator::Now().GetSeconds());
 
 	m_rtsTimeoutNum=0;
-	m_rtsTimeoutEvent.Cancel();
+  if (m_rtsTimeoutEvent.IsRunning())
+    m_rtsTimeoutEvent.Cancel();
 
 	if(m_macStatus==TMAC_SILENCE)
 	{
@@ -1220,7 +1222,7 @@ AquaSimTMac::SendRTS()
   rtsh.SetRecvAddr(receiver_addr);
   m_numSend++;
 
-  ash.SetTxTime(GetTxTime(ash.GetSerializedSize() + rtsh.GetSerializedSize()));
+  ashNew.SetTxTime(GetTxTime(ash.GetSerializedSize() + rtsh.GetSerializedSize()));
 	//hdr_cmn::access(pkt)->txtime()=getTxTime(cmh->size());
 	/**m_encodingEfficiency+ m_phyOverhead)/m_bitRate;*/
 
@@ -1425,7 +1427,7 @@ AquaSimTMac::ClearTxBuffer()
   Ptr<Packet>  p1[MAXIMUM_BUFFER];
 
   //for (int i=0;i<MAXIMUM_BUFFER;i++)p1[i]=NULL;
-  buffer_cell* bp=m_txbuffer.head_;
+  Ptr<buffer_cell> bp=m_txbuffer.head_;
   int i=0;
   while(bp){
     p1[i]=bp->packet;
@@ -2175,10 +2177,17 @@ AquaSimTMac::RecvProcess(Ptr<Packet> pkt)
   AquaSimHeader ash;
   pkt->RemoveHeader(ash);
   pkt->PeekHeader(tmac);
+  if (tmac.GetPtype() == TMacHeader::PT_OTHER)
+  {
+    tmac.SetPktNum(pkt->GetUid());
+    tmac.SetPtype(TMacHeader::PT_DATA);
+    tmac.SetSenderAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
+    pkt->AddHeader(tmac);
+  }
+  AquaSimAddress receiver_addr=tmac.GetSenderAddr();
   pkt->AddHeader(ash);
-	AquaSimAddress dst=ash.GetNextHop();
-	int ptype=tmac.GetPtype();
-	AquaSimAddress receiver_addr=tmac.GetSenderAddr();
+  AquaSimAddress dst=ash.GetNextHop();
+  int ptype=tmac.GetPtype();
 
 	if(ash.GetErrorFlag())
 	{

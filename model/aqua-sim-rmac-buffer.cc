@@ -31,18 +31,6 @@ NS_OBJECT_ENSURE_REGISTERED(TransmissionBuffer);
 
 TransmissionBuffer::~TransmissionBuffer()
 {
-  head_->packet=0;
-  current_p->packet=0;
-  lock_p->packet=0;
-  tail_->packet=0;
-  delete head_;
-  delete current_p;
-  delete lock_p;
-  delete tail_;
-  head_=0;
-  current_p=0;
-  lock_p=0;
-  tail_=0;
 }
 
 TypeId
@@ -56,7 +44,7 @@ TransmissionBuffer::GetTypeId()
 void
 TransmissionBuffer::AddNewPacket(Ptr<Packet> p){
   //buffer_cell* t2;  //unused
-  buffer_cell* t1=new buffer_cell;
+  Ptr<buffer_cell> t1 = Create<buffer_cell>();
 
   t1->packet=p;
   t1->next=NULL;
@@ -87,8 +75,8 @@ TransmissionBuffer::head(){
 
 Ptr<Packet>
 TransmissionBuffer::dehead(){
-  buffer_cell* t1;
-  buffer_cell* t2;
+  Ptr<buffer_cell> t1;
+  Ptr<buffer_cell> t2;
   Ptr<Packet> p;
 
   if(!head_) return NULL;
@@ -100,7 +88,7 @@ TransmissionBuffer::dehead(){
    num_of_packet--;
 
    if(head_==NULL) tail_=NULL;
-    delete t2;
+   t2=0;
    return p;
 }
 
@@ -118,8 +106,8 @@ TransmissionBuffer::next(){
 
 int
 TransmissionBuffer::DeletePacket(Ptr<Packet> p){
-  buffer_cell* t1;
-  buffer_cell* t2;
+  Ptr<buffer_cell> t1;
+  Ptr<buffer_cell> t2;
 
   // insert this packet at the head of the link
   t2=head_;
@@ -135,7 +123,7 @@ TransmissionBuffer::DeletePacket(Ptr<Packet> p){
    if(head_==NULL) tail_=NULL;
 
     p=0;
-    delete t2;
+    t2=0;//delete t2;
 
     return 1;
   }
@@ -150,7 +138,7 @@ TransmissionBuffer::DeletePacket(Ptr<Packet> p){
 
      if(t1==tail_) tail_=t2;
      num_of_packet--;
-    delete t1;
+    t1=0;//delete t1;
     p=0;
     modified=1;
     }
@@ -160,9 +148,9 @@ TransmissionBuffer::DeletePacket(Ptr<Packet> p){
 }
 
 
-buffer_cell*
+Ptr<buffer_cell>
 TransmissionBuffer::lookup(Ptr<Packet> p){
-  buffer_cell* t2;
+  Ptr<buffer_cell> t2;
   t2=head_;
   while((t2->packet!=p)&&(!t2)) t2=t2->next;
   return t2;
@@ -208,6 +196,46 @@ TransmissionBuffer::IsEnd(){
 bool
 TransmissionBuffer::IsFull(){
   return(MAXIMUM_BUFFER==num_of_packet);
+}
+
+void
+TransmissionBuffer::DoDispose()
+{
+  NS_LOG_FUNCTION(this);
+
+  Ptr<buffer_cell> tmp = head_;
+  while(head_ != NULL) {
+    head_ = head_->next;
+    tmp->packet=0;
+    tmp=0;
+    tmp = head_;
+  }
+
+  tmp = current_p;
+  while(current_p != NULL) {
+    current_p = current_p->next;
+    tmp->packet=0;
+    tmp=0;
+    tmp = current_p;
+  }
+
+  tmp = lock_p;
+  while(lock_p != NULL) {
+    lock_p = lock_p->next;
+    tmp->packet=0;
+    tmp=0;
+    tmp = lock_p;
+  }
+
+  tmp = tail_;
+  while(tail_ != NULL) {
+    tail_ = tail_->next;
+    tmp->packet=0;
+    tmp=0;
+    tmp = tail_;
+  }
+  
+  Object::DoDispose();
 }
 
 }  // namespace ns3

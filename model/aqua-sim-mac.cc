@@ -221,6 +221,7 @@ AquaSimMac::Recv(Ptr<Packet> p) {
 void
 AquaSimMac::PowerOn()
 {
+  NS_LOG_FUNCTION(this);
   Phy()->PowerOn();
 }
 
@@ -233,6 +234,7 @@ AquaSimMac::GetPreamble()
 void
 AquaSimMac::PowerOff()
 {
+  NS_LOG_FUNCTION(this);
   Phy()->PowerOff();
 }
 

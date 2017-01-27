@@ -204,8 +204,8 @@ AquaSimUwan::MakeSYNCPkt(Time CyclePeriod, AquaSimAddress Recver)
 	mach.SetDA(Recver);
 	mach.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 
-  p->AddHeader(mach);
   p->AddHeader(hdr_s);
+  p->AddHeader(mach);
   p->AddHeader(ash);
   p->AddPacketTag(ptag);
 
@@ -216,6 +216,8 @@ AquaSimUwan::MakeSYNCPkt(Time CyclePeriod, AquaSimAddress Recver)
 Ptr<Packet>
 AquaSimUwan::FillMissingList(Ptr<Packet> p)
 {
+  NS_LOG_FUNCTION(this);
+
   AquaSimHeader ash;
   p->RemoveHeader(ash);
 	std::set<AquaSimAddress> ML_;
@@ -223,7 +225,23 @@ AquaSimUwan::FillMissingList(Ptr<Packet> p)
 		m_CL.begin(), m_CL.end(),
 		std::insert_iterator<std::set<AquaSimAddress> >(ML_, ML_.begin()));
 
-  uint32_t size = sizeof(uint) + ML_.size()*sizeof(AquaSimAddress);
+  Buffer buff;
+  Buffer::Iterator i = buff.Begin();
+  buff.AddAtEnd(sizeof(size_t));
+  buff.AddAtEnd(sizeof(uint16_t)*ML_.size());
+
+  i = buff.Begin();
+  i.WriteU8(ML_.size());
+
+  for( std::set<AquaSimAddress>::iterator pos=ML_.begin();
+       pos != ML_.end(); pos++)
+  {
+    i.WriteU16((*pos).GetAsInt());
+    //p->AddAtEnd(Create<Packet>((uint8_t*)(*pos).GetAsInt(),sizeof(AquaSimAddress)));
+  }
+  p->AddAtEnd(Create<Packet>(buff.PeekData(),buff.GetSize()));
+  p->AddHeader(ash);
+  /*uint32_t size = sizeof(uint) + ML_.size()*sizeof(AquaSimAddress);
   uint8_t *data = new uint8_t[size];
   ash.SetSize(ash.GetSize() + 8*size );
 
@@ -238,7 +256,7 @@ AquaSimUwan::FillMissingList(Ptr<Packet> p)
   }
   Ptr<Packet> tempPacket = Create<Packet>(data,size);
   p->AddAtEnd(tempPacket);
-  p->AddHeader(ash);
+  */
 
   return p;
 }
@@ -248,13 +266,16 @@ AquaSimUwan::FillSYNCHdr(Ptr<Packet> p, Time CyclePeriod)
 {
   UwanSyncHeader hdr_s;
   AquaSimHeader ash;
-  p->RemoveHeader(hdr_s);
+  MacHeader mach;
   p->RemoveHeader(ash);
+  p->RemoveHeader(mach);
+  p->RemoveHeader(hdr_s);
 
   hdr_s.SetCyclePeriod(CyclePeriod.ToDouble(Time::S));
 
   ash.SetSize(ash.GetSize() + hdr_s.GetSize());
   p->AddHeader(hdr_s);
+  p->AddHeader(mach);
   p->AddHeader(ash);
 
   return p;
@@ -359,14 +380,15 @@ AquaSimUwan::GenNxCyclePeriod()
 bool
 AquaSimUwan::RecvProcess(Ptr<Packet> p)
 {
+  NS_LOG_FUNCTION(this);
   UwanSyncHeader SYNC_h;
   AquaSimHeader ash;
   MacHeader mach;
   AquaSimPtTag ptag;
   p->PeekPacketTag(ptag);
   p->RemoveHeader(ash);
+  p->RemoveHeader(mach);
   p->RemoveHeader(SYNC_h);
-  p->PeekHeader(mach);
 
 	AquaSimAddress dst = mach.GetDA();
 	AquaSimAddress src = mach.GetSA();
@@ -387,6 +409,7 @@ AquaSimUwan::RecvProcess(Ptr<Packet> p)
 
 	SYNC_h.SetCyclePeriod(SYNC_h.GetCyclePeriod() - PRE_WAKE_TIME);
   p->AddHeader(SYNC_h);
+  p->AddHeader(mach);
   p->AddHeader(ash);
 
 	if( (ptag.GetPacketType() == AquaSimPtTag::PT_UWAN_HELLO) ||
@@ -411,12 +434,10 @@ AquaSimUwan::RecvProcess(Ptr<Packet> p)
 			m_wakeSchQueue.Push(Seconds(SYNC_h.GetCyclePeriod())+Simulator::Now(), src,
                             Seconds(SYNC_h.GetCyclePeriod()) );
 			//m_wakeSchQueue.Print(2*m_maxPropTime, m_maxTxTime, false, index_);
-
-      uint8_t *data;
-      p->CopyData(data,p->GetSize());
+      p->Print(std::cout);
 
 			//extract Missing list
-			ProcessMissingList(data, src);  //hello is sent to src in this function
+			ProcessMissingList(p, src);  //hello is sent to src in this function
 
 			if( dst == m_device->GetAddress() || dst == AquaSimAddress::GetBroadcast() ) {
 				SendUp(p);
@@ -435,6 +456,8 @@ AquaSimUwan::RecvProcess(Ptr<Packet> p)
 bool
 AquaSimUwan::TxProcess(Ptr<Packet> p)
 {
+  NS_LOG_FUNCTION(this);
+
 	/* because any packet which has nothing to do with this node is filtered by
 	 * RecvProcess(), p must be qualified packet.
 	 * Simply cache the packet to simulate the pre-knowledge of next transmission time
@@ -455,6 +478,8 @@ AquaSimUwan::TxProcess(Ptr<Packet> p)
 void
 AquaSimUwan::SYNCSchedule(bool initial)
 {
+  NS_LOG_FUNCTION(this);
+
 	//time is not well scheduled!!!!!
 	Time now = Simulator::Now();
 	m_nextCyclePeriod = m_initialCyclePeriod + now;
@@ -505,6 +530,8 @@ AquaSimUwan::Start()
 void
 AquaSimUwan::SendoutPkt(Time NextCyclePeriod)
 {
+  NS_LOG_FUNCTION(this);
+
 	if( m_packetQueue.empty() ) {
 			return; /*because there is no packet, this node cannot sendout packet.
 					 * This is due to the stupid idea proposed by the authors of this protocol.
@@ -520,8 +547,10 @@ AquaSimUwan::SendoutPkt(Time NextCyclePeriod)
 	//SendInfo();
 
   AquaSimHeader ash;
-  pkt->RemoveHeader(ash);
   UwanSyncHeader hdr_s;
+  MacHeader mach;
+  pkt->RemoveHeader(ash);
+  pkt->RemoveHeader(mach);
   pkt->RemoveHeader(hdr_s);
 	//hdr_uwvb* vbh = hdr_uwvb::access(pkt);
 	/*next_hop() is set in IP layerequal to the */
@@ -544,13 +573,11 @@ AquaSimUwan::SendoutPkt(Time NextCyclePeriod)
 		//vbh->target_id.addr_ = ash.GetNextHop();
 	}
 
-  MacHeader mach;
-  pkt->RemoveHeader(mach);
 	mach.SetDA(ash.GetNextHop());
 	mach.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 
-  pkt->AddHeader(mach);
   pkt->AddHeader(hdr_s);
+  pkt->AddHeader(mach);
   pkt->AddHeader(ash);
 
 	SendFrame(pkt, false);
@@ -559,14 +586,20 @@ AquaSimUwan::SendoutPkt(Time NextCyclePeriod)
 
 
 void
-AquaSimUwan::ProcessMissingList(uint8_t *data, AquaSimAddress src)
+AquaSimUwan::ProcessMissingList(Ptr<Packet> pkt, AquaSimAddress src)
 {
-	uint node_num_ = *((uint*)data);
-	data += sizeof(uint);
-	AquaSimAddress tmp_addr;
+  NS_LOG_FUNCTION(this);
 
-	for(uint i=0; i<node_num_; i++ ) {
-		tmp_addr = *((AquaSimAddress*)data);
+  uint8_t *data;
+  pkt->CopyData(data,pkt->GetSize());
+  /*
+	uint node_num_ = *((uint*)data);
+	data += sizeof(uint);*/
+  int nodeNum = data[0];
+  AquaSimAddress tmp_addr;
+
+	for(int i=1; i<nodeNum; i++ ) {
+		tmp_addr = data[i];//*((AquaSimAddress*)data);
 		if( m_device->GetAddress() == tmp_addr ) {
 			//make and send out the hello packet
 			Ptr<Packet> p = Create<Packet>();
@@ -598,7 +631,7 @@ AquaSimUwan::ProcessMissingList(uint8_t *data, AquaSimAddress src)
 			SendFrame(p, true, Seconds(randHelloDelay));   //hello should be delayed!!!!!!
 			return;
 		}
-		data += sizeof(AquaSimAddress);
+		//data += sizeof(AquaSimAddress);
 	}
 
 }

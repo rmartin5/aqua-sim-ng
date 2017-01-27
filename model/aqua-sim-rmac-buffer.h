@@ -22,14 +22,15 @@
 #define AQUA_SIM_RMAC_BUFFER_H_
 
 #include "ns3/packet.h"
+#include "ns3/object.h"
 
 #define MAXIMUM_BUFFER 1
 
 namespace ns3{
 
-struct buffer_cell{
+struct buffer_cell : Object{
   Ptr<Packet> packet;
-  buffer_cell * next;
+  Ptr<buffer_cell> next;
   double delay;
 };
 
@@ -38,16 +39,13 @@ struct buffer_cell{
  *
  * \brief Transmission buffer helper
  */
-class TransmissionBuffer {
+
+class TransmissionBuffer : public Object {
 public:
   TransmissionBuffer(){
-		head_=NULL;
-		current_p=NULL;
 		num_of_packet=0;
 		lock=false;
-		tail_=NULL;
-		lock_p=NULL;
-			};
+		};
   ~TransmissionBuffer();
   static TypeId GetTypeId (void);
 
@@ -63,17 +61,17 @@ public:
   bool IsFull();
   bool ToBeFull();
   bool IsLocked(){return lock;};
-  buffer_cell * lookup(Ptr<Packet> p);
+  Ptr<buffer_cell> lookup(Ptr<Packet> p);
   int num_of_packet;// number of sending packets
-  buffer_cell* head_;
+  Ptr<buffer_cell> head_;
   bool lock;
+protected:
+  void DoDispose();
 private:
-     buffer_cell* current_p;
-     buffer_cell* lock_p;
-     buffer_cell* tail_;
+  Ptr<buffer_cell> current_p;
+  Ptr<buffer_cell> lock_p;
+  Ptr<buffer_cell> tail_;
 };  // class TransmissionBuffer
-
-
 
 }  // namespace ns3
 

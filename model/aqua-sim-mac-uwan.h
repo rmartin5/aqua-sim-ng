@@ -243,7 +243,7 @@ protected:
 	void	SetSleepTimer(Time Interval);     //keep awake for To, and then fall sleep
 	void	Start();	//initilize NexCyclePeriod_ and the sleep timer, sendout first SYNC pkt
 	Time	GenNxCyclePeriod();   //I want to use normal distribution
-	void	ProcessMissingList(uint8_t *data, AquaSimAddress src);
+	void	ProcessMissingList(Ptr<Packet> pkt, AquaSimAddress src);
 	void	SYNCSchedule(bool initial = false);
 
 	void	SendInfo();

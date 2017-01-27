@@ -76,6 +76,7 @@ public:
   virtual void PowerOn();
   virtual void PowerOff();
   virtual void StatusShift(double);
+  virtual bool IsPoweredOn();
 
   inline Time CalcTxTime(uint32_t pktsize, std::string * modName = NULL);
   inline double CalcPktSize(double txtime, std::string * modName = NULL);

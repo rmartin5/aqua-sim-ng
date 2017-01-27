@@ -24,6 +24,8 @@
 #include "aqua-sim-header.h"
 #include "ns3/log.h"
 
+#include "aqua-sim-header-mac.h"
+
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("AquaSimRoutingDummy");
@@ -112,4 +114,9 @@ AquaSimRoutingDummy::DataForSink(Ptr<Packet> pkt)
 		NS_LOG_WARN("DataForSink: Something went wrong when passing packet up to dmux.");
 }
 
-// Some methods for Flooding Entry
+void
+AquaSimRoutingDummy::DoDispose()
+{
+  NS_LOG_FUNCTION(this);
+  AquaSimRouting::DoDispose();
+}

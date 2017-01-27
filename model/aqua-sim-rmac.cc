@@ -194,6 +194,18 @@ AquaSimRMac::GetTypeId()
       DoubleValue(0.0001),
       MakeDoubleAccessor(&AquaSimRMac::m_transmissionTimeError),
       MakeDoubleChecker<double>())
+    .AddAttribute ("SIF", "Interval between two successive data packets.",
+      DoubleValue(0.001),
+      MakeDoubleAccessor(&AquaSimRMac::m_SIF),
+      MakeDoubleChecker<double>())
+    .AddAttribute ("AckRevInterval", "ACK rev interval.",
+      DoubleValue(0.001),
+      MakeDoubleAccessor(&AquaSimRMac::m_ackRevInterval),
+      MakeDoubleChecker<double>())
+    .AddAttribute ("PeriodInterval", "Interval period. Default is 1.",
+      DoubleValue(1),
+      MakeDoubleAccessor(&AquaSimRMac::m_periodInterval),
+      MakeDoubleChecker<double>())
   ;
   return tid;
 }
@@ -351,8 +363,8 @@ void
 AquaSimRMac::DeleteBufferCell(Ptr<Packet> p)
 {
   NS_LOG_FUNCTION(this);
-  buffer_cell* t1;
-  buffer_cell* t2;
+  Ptr<buffer_cell> t1;
+  Ptr<buffer_cell> t2;
   t1=ack_rev_pt;
 
   if(!t1)
@@ -367,7 +379,7 @@ AquaSimRMac::DeleteBufferCell(Ptr<Packet> p)
   if(t1->packet==p)
     {
       ack_rev_pt=ack_rev_pt->next;
-      delete t1;
+      t1=0;//delete t1;
       return;
     }
 
@@ -385,7 +397,7 @@ AquaSimRMac::DeleteBufferCell(Ptr<Packet> p)
       if(p==t2->packet)
 	{
 	  t1->next=t2->next;
-	  delete t2;
+	  t2=0;//delete t2;
 	  return;
 	}
       t1=t2;
@@ -863,14 +875,16 @@ AquaSimRMac::GenerateACKRev(AquaSimAddress receiver, AquaSimAddress intended_rec
 // however, in new version of this program, the silence duration is also changed
 
 void
-AquaSimRMac::SetStartTime(buffer_cell* ack_rev_pt, double st, double next_period)
+AquaSimRMac::SetStartTime(Ptr<buffer_cell> ack_rev_pt, double st, double next_period)
 {
   NS_LOG_FUNCTION(this << m_device->GetAddress());
-  buffer_cell* t1;
+  Ptr<buffer_cell> t1;
   t1=ack_rev_pt;
   while(t1)
     {
+      AquaSimHeader ash;
       TMacHeader tHeader;
+      (t1->packet)->RemoveHeader(ash);
       (t1->packet)->RemoveHeader(tHeader);
       double d=t1->delay;
       tHeader.SetST(st-d);
@@ -879,6 +893,8 @@ AquaSimRMac::SetStartTime(buffer_cell* ack_rev_pt, double st, double next_period
       NS_LOG_INFO("AquaSimRMac SetStartTime: Node:" << m_device->GetAddress() <<
 		  " offset time is:" << tHeader.GetST() << " and next period is:" <<
 		  tHeader.GetInterval());
+      (t1->packet)->AddHeader(tHeader);
+      (t1->packet)->AddHeader(ash);
       t1=t1->next;
     }
 }
@@ -905,7 +921,7 @@ void
 AquaSimRMac::InsertACKRevLink(Ptr<Packet> p, double d)
 {
   NS_LOG_FUNCTION(this << m_device->GetAddress());
-  buffer_cell* t1=new buffer_cell;
+  Ptr<buffer_cell> t1=Create<buffer_cell>();
   t1->packet=p;
   t1->delay=d;
   t1->next=NULL;
@@ -918,7 +934,7 @@ AquaSimRMac::InsertACKRevLink(Ptr<Packet> p, double d)
     }
   else
     {
-      buffer_cell* t2=ack_rev_pt;
+      Ptr<buffer_cell> t2=ack_rev_pt;
       ack_rev_pt=t1;
       t1->next=t2;
       NS_LOG_INFO("Node:" << m_device->GetAddress() << " ackrev link is empty");
@@ -933,7 +949,7 @@ AquaSimRMac::InsertACKRevLink(Ptr<Packet> p, double* d)
   double win=m_maxShortPacketTransmissiontime;
 
   NS_LOG_FUNCTION(this << m_device->GetAddress());
-  buffer_cell* t1=new buffer_cell;
+  Ptr<buffer_cell> t1=Create<buffer_cell>();
   t1->packet=p;
   t1->delay=s1;
   t1->next=NULL;
@@ -946,8 +962,8 @@ AquaSimRMac::InsertACKRevLink(Ptr<Packet> p, double* d)
     }
   else
     {
-      buffer_cell* t2=ack_rev_pt;
-      buffer_cell* tmp;
+      Ptr<buffer_cell> t2=ack_rev_pt;
+      Ptr<buffer_cell> tmp;
       NS_LOG_INFO("Node:" << m_device->GetAddress() << " ackrev link is empty");
 
       while(t2)
@@ -1243,15 +1259,15 @@ AquaSimRMac::ClearACKRevLink()
 {
   NS_LOG_FUNCTION(this << m_device->GetAddress());
   if(!ack_rev_pt) return;
-  buffer_cell* t1;
-  buffer_cell* t2;
+  Ptr<buffer_cell> t1;
+  Ptr<buffer_cell> t2;
 
   // t1=ack_rev_pt->next;
   t1=ack_rev_pt;
   while (t1){
     t2=t1->next;
     t1->packet = 0;
-    delete t1;
+    t1=0;//delete t1;
     t1=t2;
     ack_rev_pt=t1;
   }
@@ -2234,7 +2250,7 @@ AquaSimRMac::ClearTxBuffer()
   Ptr<Packet> p1[MAXIMUM_BUFFER];
 
   for (int i=0;i<MAXIMUM_BUFFER;i++)p1[i]=NULL;
-  buffer_cell* bp=m_txBuffer.head_;
+  Ptr<buffer_cell> bp=m_txBuffer.head_;
   int i=0;
   while(bp)
     {
@@ -2893,6 +2909,7 @@ AquaSimRMac::TxProcess(Ptr<Packet> pkt)
       asHeader.SetNextHop(AquaSimAddress(m_device->GetNextHop()) );
       asHeader.SetErrorFlag(false); //set off the error flag
       // printf("rmac:TxProcess: node %d set next hop to %d\n",index_,cmh->next_hop());
+      pkt->AddHeader(asHeader);
     }
 
   m_txBuffer.AddNewPacket(pkt);
@@ -2906,9 +2923,9 @@ AquaSimRMac::TxProcess(Ptr<Packet> pkt)
 
 void AquaSimRMac::DoDispose()
 {
-  ack_rev_pt->packet=0;
-  delete ack_rev_pt;
-  ack_rev_pt=0;
+  //ack_rev_pt->packet=0;
+  //ack_rev_pt=0;
+  //delete ack_rev_pt;
   AquaSimMac::DoDispose();
 }
 

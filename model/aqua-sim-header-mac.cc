@@ -256,7 +256,7 @@ TMacHeader::SetArrivalTime(double arrivalTime)
 uint32_t
 TMacHeader::GetSerializedSize(void) const
 {
-  return 1+4+4+1+1+4+4+4+4+4;
+  return 1+4+4+1+1+1+4+4+4+4+4;
 }
 void
 TMacHeader::Serialize (Buffer::Iterator start) const
@@ -267,11 +267,11 @@ TMacHeader::Serialize (Buffer::Iterator start) const
   start.WriteU8 (m_blockNum);
   start.WriteU8 (m_senderAddr.GetAsInt());
   start.WriteU8 (m_recvAddr.GetAsInt());
-  start.WriteU32 ((uint32_t)m_st * 1000.0 + 0.5);
-  start.WriteU32 ((uint32_t)m_ts * 1000.0 + 0.5);
-  start.WriteU32 ((uint32_t)m_duration * 1000.0 + 0.5);
-  start.WriteU32 ((uint32_t)m_interval * 1000.0 + 0.5);
-  start.WriteU32 ((uint32_t)m_arrivalTime * 1000.0 + 0.5);
+  start.WriteU32 ((uint32_t)m_st * 1000.0);
+  start.WriteU32 ((uint32_t)m_ts * 1000.0);
+  start.WriteU32 ((uint32_t)m_duration * 1000.0);
+  start.WriteU32 ((uint32_t)m_interval * 1000.0);
+  start.WriteU32 ((uint32_t)m_arrivalTime * 1000.0);
 
 }
 uint32_t
@@ -300,13 +300,14 @@ TMacHeader::Print (std::ostream &os) const
   os << "TMac Header: ptype=";
   switch(m_ptype)
   {
-    case ns3::PT_DATA: 	os << "DATA"; break;
-    case ns3::PT_RTS: 	os << "RTS"; break;
-    case ns3::PT_CTS: 	os << "CTS"; break;
-    case ns3::PT_ND: 		os << "ND"; break;
-    case ns3::PT_SACKND: 	os << "SACKND"; break;
-    case ns3::PT_ACKDATA: 	os << "ACKDATA"; break;
-    case ns3::PT_SYN: 	os << "SYN"; break;
+    case PT_OTHER: os << "OTHER"; break;
+    case PT_DATA: 	os << "DATA"; break;
+    case PT_RTS: 	os << "RTS"; break;
+    case PT_CTS: 	os << "CTS"; break;
+    case PT_ND: 		os << "ND"; break;
+    case PT_SACKND: 	os << "SACKND"; break;
+    case PT_ACKDATA: 	os << "ACKDATA"; break;
+    case PT_SYN: 	os << "SYN"; break;
     default: break;
   }
   os << " PktNum=" << m_pktNum << " DataNum=" << m_dataNum

@@ -79,6 +79,17 @@ private:
 class TMacHeader : public Header
 {
 public:
+  enum PacketType {
+    PT_OTHER,
+    PT_DATA,
+    PT_RTS,
+    PT_CTS,
+    PT_ND,
+    PT_SACKND,
+    PT_ACKDATA,
+    PT_SYN
+  } packet_type;
+
   TMacHeader();
   virtual ~TMacHeader();
   static TypeId GetTypeId(void);

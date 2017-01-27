@@ -652,6 +652,11 @@ AquaSimPhyCmn::PowerOff() {
   }
 }
 
+bool
+AquaSimPhyCmn::IsPoweredOn() {
+  return m_PoweredOn;
+}
+
 void
 AquaSimPhyCmn::Dump(void) const
 {

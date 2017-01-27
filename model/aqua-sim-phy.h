@@ -96,6 +96,7 @@ namespace ns3 {
     virtual void PowerOn() = 0;
     virtual void PowerOff() = 0;
     virtual void StatusShift(double x) = 0; //Necessary?????
+    virtual bool IsPoweredOn()=0;
 
     virtual Time CalcTxTime(uint32_t pktsize, std::string * modName = NULL) = 0;
     virtual double CalcPktSize(double txtime, std::string * modName = NULL) = 0;

@@ -287,7 +287,7 @@ public:
   struct reservation_record reservation_table[R_TABLE_SIZE];
   struct reservation_record next_available_table[R_TABLE_SIZE];
   struct ackdata_record ackdata_table[R_TABLE_SIZE];
-  struct buffer_cell * ack_rev_pt;// pointer to the link of ack_rev
+  struct Ptr<buffer_cell> ack_rev_pt;// pointer to the link of ack_rev
 
   void InitPhaseOne(double NDwindow, double ackNDwindow, double phaseOneWindow);
 
@@ -329,7 +329,7 @@ public:
   void MakeReservation();
   void ArrangeReservation();
   void ResetReservationTable();
-  void SetStartTime(buffer_cell* ackRevPt, double st,double nextPeriod);
+  void SetStartTime(Ptr<buffer_cell> ackRevPt, double st,double nextPeriod);
   void ClearTxBuffer();
   void InsertReservedTimeTable(AquaSimAddress senderAddr,double startTime,double dt);
   void SortPeriodTable(struct period_record* table);
