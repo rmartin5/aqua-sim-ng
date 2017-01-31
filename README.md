@@ -18,12 +18,14 @@ Work supported by the UWSN Lab at University of Connecticut.
 --------------------------------------
 
 ## Requirements
-This code is meant to be an add-on to current NS3 software and therefore requires NS-3 and all pre-requirements of said software. Aqua-Sim Next Generation is a work-in-progress and therefore may be buggy.
+This code is meant to be an add-on to current NS-3 software and therefore requires NS-3 and all pre-requirements of said software.
 
 --------------------------------------
 
 ## Documentation and Installation
-Further documentation and installation steps can be found under [Aqua-Sim NG Documentation](Aqua-Sim%20NG%20Documentation.pdf).
+Further documentation, installation steps, example script walk through, and protocol creation guides can be found under [Aqua-Sim NG Documentation](documentation/).
+
+![Aqua-Sim NG Diagram](/documentation/asDiagram.png "Aqua-Sim NG Diagram")
 
 --------------------------------------
 ## Ongoing Work
