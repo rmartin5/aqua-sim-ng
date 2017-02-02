@@ -74,7 +74,7 @@ AquaSimBroadcastMac::RecvProcess (Ptr<Packet> pkt)
 
 	AquaSimHeader ash;
   MacHeader mach;
-	pkt->RemoveHeader(ash);
+  pkt->RemoveHeader(ash);
   pkt->RemoveHeader(mach);
 	AquaSimAddress dst = mach.GetDA();
 
