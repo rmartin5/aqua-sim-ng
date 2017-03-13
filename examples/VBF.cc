@@ -45,7 +45,7 @@ main (int argc, char *argv[])
   uint32_t m_dataRate = 180;
   uint32_t m_packetSize = 320;
   double range = 20;
-  int m_maxBurst =10;
+  //int m_maxBurst =10;
 
   LogComponentEnable ("VBF", LOG_LEVEL_INFO);
 

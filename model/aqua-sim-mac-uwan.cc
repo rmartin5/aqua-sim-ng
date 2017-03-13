@@ -590,7 +590,7 @@ AquaSimUwan::ProcessMissingList(Ptr<Packet> pkt, AquaSimAddress src)
 {
   NS_LOG_FUNCTION(this);
 
-  uint8_t *data;
+  uint8_t data[pkt->GetSize()];
   pkt->CopyData(data,pkt->GetSize());
   /*
 	uint node_num_ = *((uint*)data);

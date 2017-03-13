@@ -164,7 +164,7 @@ AquaSimPktHashTable::PutInHash(AquaSimAddress sAddr, unsigned int pkNum, Vector 
 	// Pkt_Hash_Entry    *hashPtr;
 	vbf_neighborhood* hashPtr;
 	//unsigned int key[3];
-	bool newPtr = true;
+	//bool newPtr = true;
 
 	//key[1]=0; //(vbh->sender_id).port_;
   hash_entry entry = std::make_pair (sAddr,pkNum);
