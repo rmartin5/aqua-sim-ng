@@ -275,7 +275,6 @@ bool AquaSimGoal::TxProcess(Ptr<Packet> pkt)
 	}
 	pkt->RemoveHeader(vbh);
 
-
 	//hdr_ip* iph = hdr_ip::access(pkt);
 	//schedule immediately after receiving. Or cache first then schedule periodically
 

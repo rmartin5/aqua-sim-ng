@@ -126,9 +126,10 @@ main (int argc, char *argv[])
   for (NodeContainer::Iterator i = nodesCon.Begin(); i != nodesCon.End(); i++)
     {
       Ptr<AquaSimNetDevice> newDevice = CreateObject<AquaSimNetDevice>();
-      newDevice->GetPhy()->SetTransRange(m_range);
       position->Add(boundry);
-      devices.Add(asHelper.Create(*i, newDevice));
+      newDevice = asHelper.Create(*i, newDevice);
+      newDevice->GetPhy()->SetTransRange(m_range);
+      devices.Add(newDevice);
 
       NS_LOG_DEBUG("Node: " << *i << " newDevice: " << newDevice << " Position: " <<
 		     boundry.x << "," << boundry.y << "," << boundry.z);

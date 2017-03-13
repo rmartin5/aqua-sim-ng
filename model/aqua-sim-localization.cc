@@ -41,6 +41,7 @@ NS_OBJECT_ENSURE_REGISTERED(AquaSimLocalization);
 
 AquaSimLocalization::AquaSimLocalization()
 {
+  NS_LOG_FUNCTION(this);
 }
 
 TypeId

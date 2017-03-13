@@ -324,16 +324,17 @@ AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumbe
   AquaSimHeader ash;
   VBHeader vbh;
   AquaSimPtTag ptag;
-
   packet->RemoveHeader(ash);
-  packet->PeekHeader(vbh);
-  if (!vbh.GetMessType()) { //TODO create specalized Application instead of using this hack.
-    packet->RemoveHeader(vbh);
+  if (ash.GetNumForwards() <= 0) {  //no headers //TODO create specalized Application instead of using this hack.
+    ash.SetDirection(AquaSimHeader::DOWN);
+    ash.SetNumForwards(1);
+    ash.SetSAddr(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()));
+    ash.SetDAddr(AquaSimAddress::ConvertFrom(dest));
+
     vbh.SetMessType(AS_DATA);
     vbh.SetSenderAddr(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()));
     vbh.SetForwardAddr(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()));
     vbh.SetTargetAddr(AquaSimAddress::ConvertFrom(dest));
-    vbh.SetMessType(AS_DATA);
     vbh.SetPkNum(packet->GetUid());
 
     Ptr<Object> sObject = GetNetDevice()->GetNode();
@@ -342,6 +343,9 @@ AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumbe
     vbh.SetExtraInfo_f(sModel->GetPosition());
     vbh.SetExtraInfo_t(m_targetPos);
     packet->AddHeader(vbh);
+  } else {
+    packet->PeekHeader(vbh);
+    //ignoring forward iterator, but this can be simply changed if necessary
   }
   packet->AddHeader(ash);
 
