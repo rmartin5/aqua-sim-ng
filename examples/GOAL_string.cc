@@ -63,7 +63,7 @@ main (int argc, char *argv[])
   //int m_routingControlPacketSize = 20; //bytes
         //unused variables
   Time m_positionUpdateInterval = Seconds(0.3); // the length of period to update node's position
-  int m_packetSize = 50;  //bytes
+  int m_packetSize = 300;
 
   int m_nodes = 6;
   double x = 1000;  // topography
@@ -73,7 +73,7 @@ main (int argc, char *argv[])
   double m_preStop = 90;  //time to prepare to stop
   //trace file "GOAL.tr"; // trace file
   //ifqlen		50	;# max queue length in if
-  int m_dataInterval = 3; //10.0
+  int m_dataInterval = 100; //10.0
   double m_range = 100; //range of each node in meters
   double m_width = 100; //vbf width
   //LL set mindelay_		50us
@@ -141,32 +141,27 @@ main (int argc, char *argv[])
   mobility.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
   mobility.Install(nodesCon);
   //Set random velocities for all nodes
-  int j = 1;  //static source/sink
-  Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable> ();
-  for (NodeContainer::Iterator i = ++nodesCon.Begin(); i != --nodesCon.End(); i++)
+  for (NodeContainer::Iterator i = nodesCon.Begin(); i != nodesCon.End(); i++)
     {
-      Ptr<ConstantVelocityMobilityModel> model = nodesCon.Get(j)->GetObject<ConstantVelocityMobilityModel>();
+      Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable> ();
+      Ptr<ConstantVelocityMobilityModel> model = (*i)->GetObject<ConstantVelocityMobilityModel>();
       model->SetVelocity(Vector(rand->GetValue(m_minSpeed,m_maxSpeed),0,0));
 
-      Time update;
       ConstantVelocityHelper m_helper = ConstantVelocityHelper(model->GetPosition(), model->GetVelocity());
-      for (update = m_positionUpdateInterval; update < m_simStop-Seconds(1); update += m_positionUpdateInterval)
+      for (Time update = m_positionUpdateInterval; update < m_simStop-Seconds(1); update += m_positionUpdateInterval)
       {
         Simulator::Schedule(update, &ASGoalString::UpdatePosition, &goal, m_helper);
       }
-      j++;
     }
   PacketSocketAddress socket;
   socket.SetAllDevices();
   // socket.SetSingleDevice (devices.Get(0)->GetIfIndex());
-  socket.SetPhysicalAddress (devices.Get(0)->GetAddress());
+  socket.SetPhysicalAddress (devices.Get(m_nodes-1)->GetAddress());
   socket.SetProtocol (0);
 
   OnOffHelper app ("ns3::PacketSocketFactory", Address (socket));
   app.SetAttribute ("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
   app.SetAttribute ("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
-
-  m_dataInterval = 10;  //remove...
   app.SetAttribute ("DataRate", DataRateValue (m_dataInterval));
   app.SetAttribute ("PacketSize", UintegerValue (m_packetSize));
 
@@ -180,8 +175,9 @@ main (int argc, char *argv[])
   Ptr<Socket> sinkSocket = Socket::CreateSocket (sinkNode, psfid);
   sinkSocket->Bind (socket);
 
+  Packet::EnablePrinting ();  //for debugging purposes
   std::cout << "-----------Running Simulation-----------\n";
-  Simulator::Stop(Seconds(m_simStop + 1));
+  Simulator::Stop(Seconds(m_simStop));
   Simulator::Run();
   Simulator::Destroy();
   std::cout << "End.\n";

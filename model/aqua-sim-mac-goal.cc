@@ -197,7 +197,7 @@ bool AquaSimGoal::RecvProcess(Ptr<Packet> pkt)
 		/*if(drop_)
 			drop_->recv(pkt,"Error/Collision");
 		else*/
-      pkt=0;
+      //pkt=0;
 
 		return false;
 	}
@@ -236,7 +236,7 @@ bool AquaSimGoal::RecvProcess(Ptr<Packet> pkt)
 		   timeslot to avoid receive-receive collision*/
 		ProcessOverhearedRepPkt(pkt);
 	}
-  pkt=0;
+  //pkt=0;
 	return true;
 }
 
@@ -254,11 +254,12 @@ bool AquaSimGoal::TxProcess(Ptr<Packet> pkt)
 	AquaSimGoalReqHeader goalReqh;
 
   pkt->RemoveHeader(ash);
+	pkt->PeekPacketTag(ptag);
 
-	if (!pkt->PeekPacketTag(ptag)) {
+	if (ptag.GetPacketType() == 0) {
 		//new packet from routing layer, should have no mac layer headers yet
 		ptag.SetPacketType(AquaSimPtTag::PT_GOAL_ACK);
-		pkt->AddPacketTag(ptag);
+		pkt->ReplacePacketTag(ptag);
 	}	else {
 		pkt->RemoveHeader(mach);
 		switch(ptag.GetPacketType() ) {
@@ -488,7 +489,7 @@ AquaSimGoal::ProcessReqPkt(Ptr<Packet> ReqPkt)
 			AckTimeoutTimer = *pos;
 			if( AckTimeoutTimer->PktSet().count(PktID) != 0 ) {
 				pkt = AckTimeoutTimer->PktSet().operator[](PktID);
-				pkt=0;
+				//pkt=0;
 				AckTimeoutTimer->PktSet().erase(PktID);
 
 				IsLoop = true;
@@ -687,7 +688,7 @@ AquaSimGoal::ProcessOverhearedRepPkt(Ptr<Packet> RepPkt)
 			(*pos)->SE()->IsRecvSlot = true;
 			/*m_TSQ.remove((*pos)->SE());
 			delete (*pos)->SE();*/
-			(*pos)->ReqPkt()=0;
+			//(*pos)->ReqPkt()=0;
 		}
 		pos++;
 	}
@@ -832,7 +833,7 @@ AquaSimGoal::ProcessDataPkt(Ptr<Packet> DataPkt)
 
 	if( m_recvedList.count(ash.GetUId()) != 0 ) {
 		//duplicated packet, free it.
-		DataPkt=0;
+		//DataPkt=0;
 		return;
 	}
 
@@ -852,7 +853,7 @@ AquaSimGoal::ProcessDataPkt(Ptr<Packet> DataPkt)
 		SinkAccumAckTimer.AckSet().insert( ash.GetUId() );
 
 		if( m_sinkRecvedList.count(ash.GetUId()) != 0 )
-			DataPkt=0;
+			;//DataPkt=0;
 		else {
 			m_sinkRecvedList.insert(ash.GetUId());
 			ash.SetSize(ash.GetSize() - sizeof(AquaSimAddress)*2);
@@ -948,7 +949,7 @@ AquaSimGoal::ProcessAckPkt(Ptr<Packet> AckPkt)
 			AckTimeoutTimer = *pos;
 			if( AckTimeoutTimer->PktSet().count(PktID) != 0 ) {
 				pkt = AckTimeoutTimer->PktSet().operator[](PktID);
-				pkt=0;
+				//pkt=0;
 				AckTimeoutTimer->PktSet().erase(PktID);
 			}
 			pos++;
@@ -1069,7 +1070,7 @@ AquaSimGoal::Insert2PktQs(Ptr<Packet> DataPkt, bool FrontPush)
 	DataPkt->PeekHeader(vbh);
 
 	if( ash.GetNumForwards() > m_maxRetransTimes ) {
-		DataPkt=0;
+		//DataPkt=0;
 		return;
 	}
 	else {
@@ -1115,7 +1116,7 @@ AquaSimGoal::ProcessBackoffTimeOut(AquaSimGoal_BackoffTimer *backoff_timer)
 	 * so RepPkt is directly sent out.
 	 */
 	SendoutPkt(RepPkt);
-	backoff_timer->ReqPkt()=0;
+	//backoff_timer->ReqPkt()=0;
 	m_backoffTimerSet.erase(backoff_timer);
 	delete backoff_timer;
 }
@@ -1312,7 +1313,7 @@ AquaSimGoal::SendoutPkt(Ptr<Packet> pkt)
 		default:
 			//status is SEND
       NS_LOG_INFO("SendoutPkt:Node=" << m_device->GetNode() << " send data too fast");
-			pkt=0;
+			//pkt=0;
 	}
 
 	return;

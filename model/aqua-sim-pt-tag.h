@@ -35,8 +35,8 @@ class AquaSimPtTag : public Tag
 public:
   AquaSimPtTag();
 
-  void SetPacketType(uint8_t pt);
-  uint8_t GetPacketType() const;
+  void SetPacketType(uint16_t pt);
+  uint16_t GetPacketType() const;
 
   static TypeId GetTypeId(void);
   virtual TypeId GetInstanceTypeId (void) const;
@@ -72,7 +72,7 @@ public:
     } PacketType_tag;
 
 private:
-  uint8_t m_packetType;
+  uint16_t m_packetType;
 };  // class AquaSimPtTag
 
 }; // namespace ns3

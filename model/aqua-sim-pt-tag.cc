@@ -19,9 +19,11 @@
  */
 
 #include "aqua-sim-pt-tag.h"
+#include "ns3/log.h"
 
 namespace ns3 {
 
+NS_LOG_COMPONENT_DEFINE("AquaSimPtTag");
 NS_OBJECT_ENSURE_REGISTERED(AquaSimPtTag);
 
 AquaSimPtTag::AquaSimPtTag ()
@@ -29,13 +31,15 @@ AquaSimPtTag::AquaSimPtTag ()
 }
 
 void
-AquaSimPtTag::SetPacketType(uint8_t pt)
+AquaSimPtTag::SetPacketType(uint16_t pt)
 {
+  NS_LOG_DEBUG("PtTag:SetPacketType:" << pt);
   m_packetType = pt;
 }
-uint8_t
+uint16_t
 AquaSimPtTag::GetPacketType() const
 {
+  NS_LOG_FUNCTION(this);
   return m_packetType;
 }
 
@@ -56,22 +60,22 @@ AquaSimPtTag::GetInstanceTypeId () const
 uint32_t
 AquaSimPtTag::GetSerializedSize () const
 {
-  return 1;
+  return 2;
 }
 void
 AquaSimPtTag::Serialize (TagBuffer i) const
 {
-  i.WriteU8(m_packetType);
+  i.WriteU16(m_packetType);
 }
 void
 AquaSimPtTag::Deserialize (TagBuffer i)
 {
-  m_packetType = i.ReadU8();
+  m_packetType = i.ReadU16();
 }
 void
 AquaSimPtTag::Print (std::ostream &os) const
 {
-  os << "Aqua Sim packetType=" << (uint32_t)m_packetType;
+  os << "Aqua Sim packetType=" << (uint16_t)m_packetType;
 }
 
 } // namespace ns3
