@@ -137,10 +137,12 @@ AquaSimSignalCache::AddNewPacket(Ptr<Packet> p){
   // TODO is packet collision even really tested or dealt with in this class???
   AquaSimHeader asHeader;
   p->PeekHeader(asHeader);
-  NS_LOG_FUNCTION(this << "Packet:" << p << "Error flag:" << asHeader.GetErrorFlag());
 
   Ptr<IncomingPacket> inPkt = CreateObject<IncomingPacket>(p,
 		  asHeader.GetErrorFlag() ? AquaSimPacketStamp::INVALID : AquaSimPacketStamp::RECEPTION);
+
+  NS_LOG_DEBUG("AddNewPacket:" << p << " w/ Error flag:" << asHeader.GetErrorFlag() << " and incomingpkt:" << inPkt);
+
 
   m_pktSubTimer->AddNewSubmission(inPkt);
 
