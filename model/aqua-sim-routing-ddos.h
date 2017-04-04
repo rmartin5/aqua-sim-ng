@@ -37,6 +37,9 @@
 #include <queue>
 #include <set>
 
+#include "ns3/svm.h"
+
+#define LIBSVM 1
 
 namespace ns3 {
 
@@ -57,7 +60,7 @@ struct DdosTable{
                 interestEntries(0), entriesTimeout(0),
                 //pushback(Timer::CANCEL_ON_DESTROY),
                 //throttle(Timer::CANCEL_ON_DESTROY),
-                timeoutThreshold(0.5), maxThreshold(0.3),
+                timeoutThreshold(0.8), maxThreshold(0.3),
                 thresholdOffset(0.0) {}
 };
 
@@ -75,6 +78,19 @@ struct MachineLearningStruct{
   double pushback;  //pushback percentage to threshold
   double throttle;  //throttle percentage to threshold
   double timeout;
+};
+
+struct StatisticalTable{
+  int nodeID;
+  double score; //normalized between 0,1
+  StatisticalTable(int nodeID_, double score_) : nodeID(nodeID_), score(score_) {}
+};
+
+struct SvmInput{
+  double timeoutR;
+  double maxR;  //largest ratio of pushback and throttle
+  bool compromised;
+  SvmInput(double t_, double m_, bool c_) : timeoutR(t_), maxR(m_), compromised(c_) {}
 };
 
 class Packet;
@@ -107,7 +123,10 @@ private:
   void SendData(Ptr<Packet> p);
   void SendAlert(int attackerAddr);
   void DdosAttackCheck();
-  void MachineLearning();
+  void Analysis();
+  std::vector<StatisticalTable> Statistical();
+  void SVM();
+  std::vector<StatisticalTable> RulesMining();
   void Pushback(int nodeID);
   void Throttle(int nodeID);
   void ResetPushback(int nodeID);
@@ -147,10 +166,28 @@ private:
   //machine learning componenents
   typedef std::queue<MachineLearningStruct> ml;
   std::map<int, ml> StatLearningTable;
+  std::map<int, MachineLearningStruct> PreviousStatDistribution;
   std::map<int, ml> RuleMiningTable;
-  Time m_statisticalFreq;  //statistical distribution model frequency
+  std::vector<double> m_rules;       //rule sets for rule mining model
+  Time m_analysisFreq;  //frequency of stats and machine learning analysis
   int m_ruleMiningFreq;   //rules mining model frequency, based on statisticalFreq occurance
   int m_statisticalIteration;
+  double m_minSupport;    //minimum support
+  double m_minConfidence; //minimum confidence
+  int m_minCompTrans;   //minimum size of compromised transactions to adjust rules
+
+  //SVM components
+  std::queue<SvmInput> SvmTable;
+  Time m_svmLearningFreq;
+  bool m_modelTrained;
+  struct svm_parameter m_param;
+  struct svm_problem m_prob;
+  struct svm_model *m_model;
+  struct svm_node *m_space;
+
+  //TODO remove here, under constructor and on sink recv.
+  int sinkCounter;
+  int attackCounter;
 
 }; // class AquaSimDDOS
 
