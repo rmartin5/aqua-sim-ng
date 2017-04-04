@@ -72,6 +72,7 @@ def build(bld):
         'helper/on-off-nd-helper.cc',
         'model/aqua-sim-routing-dummy.cc',
         'model/aqua-sim-routing-ddbr.cc',
+        'model/lib/svm.cpp',
         ]
 
     module_test = bld.create_ns3_module_test_library('aqua-sim-ng')
@@ -146,6 +147,7 @@ def build(bld):
         'helper/on-off-nd-helper.h',
         'model/aqua-sim-routing-dummy.h',
         'model/aqua-sim-routing-ddbr.h',
+        'model/lib/svm.h',
         ]
 
     if bld.env.ENABLE_EXAMPLES:
