@@ -81,9 +81,9 @@ AquaSimHeader::Deserialize(Buffer::Iterator start)
   m_size = i.ReadU16();
   m_direction = i.ReadU8();
   m_numForwards = i.ReadU16();
-  m_nextHop = (AquaSimAddress) i.ReadU8();
-  m_src.addr = (AquaSimAddress) i.ReadU8();
-  m_dst.addr = (AquaSimAddress) i.ReadU8();
+  m_nextHop = (AquaSimAddress) i.ReadU16();
+  m_src.addr = (AquaSimAddress) i.ReadU16();
+  m_dst.addr = (AquaSimAddress) i.ReadU16();
   m_errorFlag = i.ReadU8();	//wasted space due to only needing 1 bit
   m_uId = i.ReadU16();
   m_timestamp = Seconds ( ( (double) i.ReadU32 ()) / 1000.0 );
@@ -100,7 +100,7 @@ AquaSimHeader::GetSerializedSize(void) const
   example can be seen @ main-packet-header.cc*/
 
   //reserved bytes for header
-  return (4+2+1+2+1+1+1+1+2+4);
+  return (4+2+1+2+1+2+2+2+2+4);
 }
 
 void
@@ -111,9 +111,9 @@ AquaSimHeader::Serialize(Buffer::Iterator start) const
   i.WriteU16(m_size);
   i.WriteU8(m_direction);
   i.WriteU16(m_numForwards);
-  i.WriteU8(m_nextHop.GetAsInt());
-  i.WriteU8(m_src.addr.GetAsInt());
-  i.WriteU8(m_dst.addr.GetAsInt());
+  i.WriteU16(m_nextHop.GetAsInt());
+  i.WriteU16(m_src.addr.GetAsInt());
+  i.WriteU16(m_dst.addr.GetAsInt());
   i.WriteU8(m_errorFlag);
   i.WriteU16(m_uId);
   //src/dst port

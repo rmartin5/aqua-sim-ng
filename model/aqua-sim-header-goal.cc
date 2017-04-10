@@ -160,15 +160,15 @@ AquaSimGoalReqHeader::GetSourcePos()
 uint32_t
 AquaSimGoalReqHeader::GetSerializedSize(void) const
 {
-  return 1+1+1+4+4+1+12+12+12;
+  return 2+2+2+4+4+1+12+12+12;
 }
 void
 AquaSimGoalReqHeader::Serialize (Buffer::Iterator start) const
 {
   Buffer::Iterator i = start;
-  i.WriteU8 (SA.GetAsInt());
-  i.WriteU8 (RA.GetAsInt());
-  i.WriteU8 (DA.GetAsInt());
+  i.WriteU16 (SA.GetAsInt());
+  i.WriteU16 (RA.GetAsInt());
+  i.WriteU16 (DA.GetAsInt());
   //i.WriteU8 (SA.GetLength());
   //i.WriteU8 (RA.GetLength());
   //i.WriteU8 (DA.GetLength());
@@ -190,9 +190,9 @@ uint32_t
 AquaSimGoalReqHeader::Deserialize (Buffer::Iterator start)
 {
   Buffer::Iterator i = start;
-  SA = (AquaSimAddress) i.ReadU8();
-  RA = (AquaSimAddress) i.ReadU8();
-  DA = (AquaSimAddress) i.ReadU8();
+  SA = (AquaSimAddress) i.ReadU16();
+  RA = (AquaSimAddress) i.ReadU16();
+  DA = (AquaSimAddress) i.ReadU16();
   //ReadFrom(i, SA, 8);	//read 8bit addr
   //ReadFrom(i, RA, 8); //read 8bit addr
   //ReadFrom(i, DA, 8);	//read 8bit addr
@@ -326,14 +326,14 @@ AquaSimGoalRepHeader::GetReplyerPos()
 uint32_t
 AquaSimGoalRepHeader::GetSerializedSize(void) const
 {
-  return 1+1+4+4+1+4+12;
+  return 2+2+4+4+1+4+12;
 }
 void
 AquaSimGoalRepHeader::Serialize (Buffer::Iterator start) const
 {
   Buffer::Iterator i = start;
-  i.WriteU8(SA.GetAsInt());
-  i.WriteU8(RA.GetAsInt());
+  i.WriteU16(SA.GetAsInt());
+  i.WriteU16(RA.GetAsInt());
   //i.WriteU8(SA.GetLength());
   //i.WriteU8(RA.GetLength());
   i.WriteU32((uint32_t)(m_SendTime.GetSeconds()*1000.0 + 0.5));
@@ -349,8 +349,8 @@ uint32_t
 AquaSimGoalRepHeader::Deserialize (Buffer::Iterator start)
 {
   Buffer::Iterator i = start;
-  SA = (AquaSimAddress) i.ReadU8();
-  RA = (AquaSimAddress) i.ReadU8();
+  SA = (AquaSimAddress) i.ReadU16();
+  RA = (AquaSimAddress) i.ReadU16();
   //ReadFrom(i, SA,8);	//read 8bit addr
   //ReadFrom(i, RA, 8);	//read 8bit addr
   m_SendTime = Seconds ( ( (double) i.ReadU32()) / 1000.0 );
@@ -447,14 +447,14 @@ AquaSimGoalAckHeader::GetReqID()
 uint32_t
 AquaSimGoalAckHeader::GetSerializedSize(void) const
 {
-  return 4;
+  return 6;
 }
 void
 AquaSimGoalAckHeader::Serialize (Buffer::Iterator start) const
 {
   Buffer::Iterator i = start;
-  i.WriteU8 (SA.GetAsInt());
-  i.WriteU8 (RA.GetAsInt());
+  i.WriteU16 (SA.GetAsInt());
+  i.WriteU16 (RA.GetAsInt());
   //i.WriteU8 (SA.GetLength());
   //i.WriteU8 (RA.GetLength());
   i.WriteU8 (m_Push);
@@ -464,8 +464,8 @@ uint32_t
 AquaSimGoalAckHeader::Deserialize (Buffer::Iterator start)
 {
   Buffer::Iterator i = start;
-  SA = (AquaSimAddress) i.ReadU8();
-  RA = (AquaSimAddress) i.ReadU8();
+  SA = (AquaSimAddress) i.ReadU16();
+  RA = (AquaSimAddress) i.ReadU16();
   //ReadFrom(i, SA,8);	//read 8bit addr
   //ReadFrom(i, RA, 8);	//read 8bit addr
   m_Push = i.ReadU8();

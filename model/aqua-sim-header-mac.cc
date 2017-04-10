@@ -49,8 +49,8 @@ uint32_t
 MacHeader::Deserialize(Buffer::Iterator start)
 {
   Buffer::Iterator i = start;
-  m_sa = (AquaSimAddress) i.ReadU8();
-  m_da = (AquaSimAddress) i.ReadU8();
+  m_sa = (AquaSimAddress) i.ReadU16();
+  m_da = (AquaSimAddress) i.ReadU16();
   m_demuxPType = i.ReadU8();
 
   return GetSerializedSize();
@@ -60,15 +60,15 @@ uint32_t
 MacHeader::GetSerializedSize(void) const
 {
   //reserved bytes for header
-  return (3);
+  return (5);
 }
 
 void
 MacHeader::Serialize(Buffer::Iterator start) const
 {
   Buffer::Iterator i = start;
-  i.WriteU8(m_sa.GetAsInt());
-  i.WriteU8(m_da.GetAsInt());
+  i.WriteU16(m_sa.GetAsInt());
+  i.WriteU16(m_da.GetAsInt());
   i.WriteU8(m_demuxPType);
 }
 
@@ -256,7 +256,7 @@ TMacHeader::SetArrivalTime(double arrivalTime)
 uint32_t
 TMacHeader::GetSerializedSize(void) const
 {
-  return 1+4+4+1+1+1+4+4+4+4+4;
+  return 1+4+4+1+2+2+4+4+4+4+4;
 }
 void
 TMacHeader::Serialize (Buffer::Iterator start) const
@@ -265,8 +265,8 @@ TMacHeader::Serialize (Buffer::Iterator start) const
   start.WriteU32 (m_pktNum);
   start.WriteU32 (m_dataNum);
   start.WriteU8 (m_blockNum);
-  start.WriteU8 (m_senderAddr.GetAsInt());
-  start.WriteU8 (m_recvAddr.GetAsInt());
+  start.WriteU16 (m_senderAddr.GetAsInt());
+  start.WriteU16 (m_recvAddr.GetAsInt());
   start.WriteU32 ((uint32_t)m_st * 1000.0);
   start.WriteU32 ((uint32_t)m_ts * 1000.0);
   start.WriteU32 ((uint32_t)m_duration * 1000.0);
@@ -282,8 +282,8 @@ TMacHeader::Deserialize (Buffer::Iterator start)
   m_pktNum = i.ReadU32();
   m_dataNum = i.ReadU32();
   m_blockNum = i.ReadU8();
-  m_senderAddr = (AquaSimAddress) i.ReadU8();
-  m_recvAddr = (AquaSimAddress) i.ReadU8();
+  m_senderAddr = (AquaSimAddress) i.ReadU16();
+  m_recvAddr = (AquaSimAddress) i.ReadU16();
   //ReadFrom(i, m_senderAddr,8);	//read 8bit addr
   //ReadFrom(i, m_recvAddr, 8);	//read 8bit addr
   m_st = ( (double) i.ReadU32 ()) / 1000.0;
@@ -486,13 +486,13 @@ FamaHeader::GetPType()
 uint32_t
 FamaHeader::GetSerializedSize(void) const
 {
-  return 1+1+1;
+  return 2+2+1;
 }
 void
 FamaHeader::Serialize (Buffer::Iterator start) const
 {
-  start.WriteU8 (SA.GetAsInt());
-  start.WriteU8 (DA.GetAsInt());
+  start.WriteU16 (SA.GetAsInt());
+  start.WriteU16 (DA.GetAsInt());
   //start.WriteU8 (SA.GetLength());
   //start.WriteU8 (DA.GetLength());
   start.WriteU8 (m_pType);
@@ -501,8 +501,8 @@ uint32_t
 FamaHeader::Deserialize (Buffer::Iterator start)
 {
   Buffer::Iterator i = start;
-  SA = (AquaSimAddress) i.ReadU8();
-  DA = (AquaSimAddress) i.ReadU8();
+  SA = (AquaSimAddress) i.ReadU16();
+  DA = (AquaSimAddress) i.ReadU16();
   //ReadFrom(i, SA,8);	//read 8bit addr
   //ReadFrom(i, DA, 8);	//read 8bit addr
   m_pType = i.ReadU8();
@@ -590,13 +590,13 @@ CopeHeader::GetPType()
 uint32_t
 CopeHeader::GetSerializedSize(void) const
 {
-  return 1+1+1;
+  return 2+2+1;
 }
 void
 CopeHeader::Serialize (Buffer::Iterator start) const
 {
-  start.WriteU8 (SA.GetAsInt());
-  start.WriteU8 (DA.GetAsInt());
+  start.WriteU16 (SA.GetAsInt());
+  start.WriteU16 (DA.GetAsInt());
   //start.WriteU8 (SA.GetLength());
   //start.WriteU8 (DA.GetLength());
   start.WriteU8 (m_pType);
@@ -605,8 +605,8 @@ uint32_t
 CopeHeader::Deserialize (Buffer::Iterator start)
 {
   Buffer::Iterator i = start;
-  SA = (AquaSimAddress) i.ReadU8();
-  DA = (AquaSimAddress) i.ReadU8();
+  SA = (AquaSimAddress) i.ReadU16();
+  DA = (AquaSimAddress) i.ReadU16();
   //ReadFrom(i, SA,8);	//read 8bit addr
   //ReadFrom(i, DA, 8);	//read 8bit addr
   m_pType = i.ReadU8();

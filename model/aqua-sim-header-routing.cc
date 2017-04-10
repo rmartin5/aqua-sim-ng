@@ -50,7 +50,7 @@ uint32_t
 DRoutingHeader::Deserialize(Buffer::Iterator start)
 {
   Buffer::Iterator i = start;
-  m_pktSrc = (AquaSimAddress) i.ReadU8();
+  m_pktSrc = (AquaSimAddress) i.ReadU16();
   m_pktLen = i.ReadU16();
   m_pktSeqNum = i.ReadU8();
   m_entryNum = i.ReadU32();
@@ -62,14 +62,14 @@ uint32_t
 DRoutingHeader::GetSerializedSize(void) const
 {
   //reserved bytes for header
-  return (1+3+1+4);
+  return (2+3+1+4);
 }
 
 void
 DRoutingHeader::Serialize(Buffer::Iterator start) const
 {
   Buffer::Iterator i = start;
-  i.WriteU8(m_pktSrc.GetAsInt());
+  i.WriteU16(m_pktSrc.GetAsInt());
   i.WriteU16(m_pktLen);
   i.WriteU8(m_pktSeqNum);
   i.WriteU32(m_entryNum);
@@ -160,9 +160,9 @@ VBHeader::Deserialize(Buffer::Iterator start)
   Buffer::Iterator i = start;
   m_messType = i.ReadU8();
   m_pkNum = i.ReadU32();
-  m_targetAddr = (AquaSimAddress) i.ReadU8();
-  m_senderAddr = (AquaSimAddress) i.ReadU8();
-  m_forwardAddr = (AquaSimAddress) i.ReadU8();
+  m_targetAddr = (AquaSimAddress) i.ReadU16();
+  m_senderAddr = (AquaSimAddress) i.ReadU16();
+  m_forwardAddr = (AquaSimAddress) i.ReadU16();
   m_dataType = i.ReadU8();
   m_originalSource.x = ( (double) i.ReadU32() ) / 1000.0;
   m_originalSource.y = ( (double) i.ReadU32() ) / 1000.0;
@@ -192,7 +192,7 @@ uint32_t
 VBHeader::GetSerializedSize(void) const
 {
   //reserved bytes for header
-  return (1+4+1+1+1+1+12+4+4+4+48);
+  return (1+4+2+2+2+1+12+4+4+4+48);
 }
 
 void
@@ -201,9 +201,9 @@ VBHeader::Serialize(Buffer::Iterator start) const
   Buffer::Iterator i = start;
   i.WriteU8(m_messType);
   i.WriteU32(m_pkNum);
-  i.WriteU8(m_targetAddr.GetAsInt());
-  i.WriteU8(m_senderAddr.GetAsInt());
-  i.WriteU8(m_forwardAddr.GetAsInt());
+  i.WriteU16(m_targetAddr.GetAsInt());
+  i.WriteU16(m_senderAddr.GetAsInt());
+  i.WriteU16(m_forwardAddr.GetAsInt());
   i.WriteU8(m_dataType);
 
   //Messy...
@@ -452,8 +452,8 @@ DBRHeader::Deserialize(Buffer::Iterator start)
   m_packetID = i.ReadU32();
   m_mode = i.ReadU8();
   m_nhops = i.ReadU16();
-  m_prevHop = (AquaSimAddress) i.ReadU8();
-  m_owner = (AquaSimAddress) i.ReadU8();
+  m_prevHop = (AquaSimAddress) i.ReadU16();
+  m_owner = (AquaSimAddress) i.ReadU16();
   m_depth = ((double) i.ReadU32()) / 1000.0;
 
   return GetSerializedSize();
@@ -463,7 +463,7 @@ uint32_t
 DBRHeader::GetSerializedSize(void) const
 {
   //reserved bytes for header
-  return (12+4+1+2+1+1+4);
+  return (12+4+1+2+2+2+4);
 }
 
 void
@@ -476,8 +476,8 @@ DBRHeader::Serialize(Buffer::Iterator start) const
   i.WriteU32(m_packetID);
   i.WriteU8(m_mode);
   i.WriteU16(m_nhops);
-  i.WriteU8(m_prevHop.GetAsInt());
-  i.WriteU8(m_owner.GetAsInt());
+  i.WriteU16(m_prevHop.GetAsInt());
+  i.WriteU16(m_owner.GetAsInt());
   i.WriteU32((uint32_t)(m_depth*1000.0 + 0.5));
 }
 
