@@ -167,17 +167,17 @@ VBHeader::Deserialize(Buffer::Iterator start)
   m_originalSource.x = ( (double) i.ReadU32() ) / 1000.0;
   m_originalSource.y = ( (double) i.ReadU32() ) / 1000.0;
   m_originalSource.z = ( (double) i.ReadU32() ) / 1000.0;
-  m_token = ((double) i.ReadU32()) / 1000.0;
-  m_ts = ((double) i.ReadU32()) / 1000.0;
-  m_range = ((double) i.ReadU32()) / 1000.0;
+  m_token = ((uint32_t) i.ReadU32()) / 1000.0;
+  m_ts = ((uint32_t) i.ReadU32()) / 1000.0;
+  m_range = ((uint32_t) i.ReadU32()) / 1000.0;
 
   //This is bloated.
-  m_info.o = Vector( (((double) i.ReadU32())/1000.0),
-                     (((double) i.ReadU32())/1000.0),
-                     (((double) i.ReadU32())/1000.0) );
-  m_info.f = Vector( ( ( (double) i.ReadU32() ) / 1000.0),
-                     ( ( (double) i.ReadU32() ) / 1000.0),
-                     ( ( (double) i.ReadU32() ) / 1000.0) );
+  m_info.o.x = ( (double) i.ReadU32() ) / 1000.0;
+  m_info.o.y = ( (double) i.ReadU32() ) / 1000.0;
+  m_info.o.z = ( (double) i.ReadU32() ) / 1000.0;
+  m_info.f.x = ( (double) i.ReadU32() ) / 1000.0;
+  m_info.f.y = ( (double) i.ReadU32() ) / 1000.0;
+  m_info.f.z = ( (double) i.ReadU32() ) / 1000.0;
   m_info.t.x = ( (double) i.ReadU32() ) / 1000.0;
   m_info.t.y = ( (double) i.ReadU32() ) / 1000.0;
   m_info.t.z = ( (double) i.ReadU32() ) / 1000.0;
@@ -207,27 +207,27 @@ VBHeader::Serialize(Buffer::Iterator start) const
   i.WriteU8(m_dataType);
 
   //Messy...
-  i.WriteU32 ((uint32_t)(m_originalSource.x*1000.0));
-  i.WriteU32 ((uint32_t)(m_originalSource.y*1000.0));
-  i.WriteU32 ((uint32_t)(m_originalSource.z*1000.0));
+  i.WriteU32 ((uint32_t)(m_originalSource.x*1000.0+0.5)); //+0.5 for uint32_t typecast
+  i.WriteU32 ((uint32_t)(m_originalSource.y*1000.0+0.5));
+  i.WriteU32 ((uint32_t)(m_originalSource.z*1000.0+0.5));
 
   i.WriteU32((uint32_t)(m_token*1000.0));
   i.WriteU32((uint32_t)(m_ts*1000.0));
   i.WriteU32((uint32_t)(m_range*1000.0));
 
   //bloated.
-  i.WriteU32 ((uint32_t)(m_info.o.x*1000.0));
-  i.WriteU32 ((uint32_t)(m_info.o.y*1000.0));
-  i.WriteU32 ((uint32_t)(m_info.o.z*1000.0));
-  i.WriteU32 ((uint32_t)(m_info.f.x*1000.0));
-  i.WriteU32 ((uint32_t)(m_info.f.y*1000.0));
-  i.WriteU32 ((uint32_t)(m_info.f.z*1000.0));
-  i.WriteU32 ((uint32_t)(m_info.t.x*1000.0));
-  i.WriteU32 ((uint32_t)(m_info.t.y*1000.0));
-  i.WriteU32 ((uint32_t)(m_info.t.z*1000.0));
-  i.WriteU32 ((uint32_t)(m_info.d.x*1000.0));
-  i.WriteU32 ((uint32_t)(m_info.d.y*1000.0));
-  i.WriteU32 ((uint32_t)(m_info.d.z*1000.0));
+  i.WriteU32 ((uint32_t)(m_info.o.x*1000.0+0.5));
+  i.WriteU32 ((uint32_t)(m_info.o.y*1000.0+0.5));
+  i.WriteU32 ((uint32_t)(m_info.o.z*1000.0+0.5));
+  i.WriteU32 ((uint32_t)(m_info.f.x*1000.0+0.5));
+  i.WriteU32 ((uint32_t)(m_info.f.y*1000.0+0.5));
+  i.WriteU32 ((uint32_t)(m_info.f.z*1000.0+0.5));
+  i.WriteU32 ((uint32_t)(m_info.t.x*1000.0+0.5));
+  i.WriteU32 ((uint32_t)(m_info.t.y*1000.0+0.5));
+  i.WriteU32 ((uint32_t)(m_info.t.z*1000.0+0.5));
+  i.WriteU32 ((uint32_t)(m_info.d.x*1000.0+0.5));
+  i.WriteU32 ((uint32_t)(m_info.d.y*1000.0+0.5));
+  i.WriteU32 ((uint32_t)(m_info.d.z*1000.0+0.5));
 }
 
 void
@@ -257,13 +257,10 @@ VBHeader::Print(std::ostream &os) const
    m_senderAddr << " forwardAddr=" << m_forwardAddr << " dataType=" <<
    m_dataType << " originalSource=" << m_originalSource.x << "," <<
    m_originalSource.y << "," << m_originalSource.z << " token=" << m_token <<
-   " ts=" << m_ts << " range=" << m_range << "\n";
+   " ts=" << m_ts << " range=" << m_range;
 
-  os << "ExtraInfo= StartPoint(" << m_info.o.x << "," << m_info.o.y << "," <<
-    m_info.o.z << ") ForwardPos(" << m_info.f.x << "," << m_info.f.y << "," <<
-    m_info.f.z << ") EndPoint(" << m_info.t.x << "," << m_info.t.y << "," <<
-    m_info.t.z << ") RecvToForwarder(" << m_info.d.x << "," << m_info.d.y << "," <<
-    m_info.d.z << ")\n";
+  os << "   ExtraInfo= StartPoint(" << m_info.o << ") ForwardPos(" << m_info.f <<
+    ") EndPoint(" << m_info.t << ") RecvToForwarder(" << m_info.d << ")\n";
 }
 
 TypeId
@@ -309,17 +306,17 @@ VBHeader::SetOriginalSource(Vector originalSource)
   m_originalSource = originalSource;
 }
 void
-VBHeader::SetToken(double token)
+VBHeader::SetToken(uint32_t token)
 {
   m_token = token;
 }
 void
-VBHeader::SetTs(double ts)
+VBHeader::SetTs(uint32_t ts)
 {
   m_ts = ts;
 }
 void
-VBHeader::SetRange(double range)
+VBHeader::SetRange(uint32_t range)
 {
   m_range = range;
 }
@@ -384,17 +381,17 @@ VBHeader::GetOriginalSource()
 {
   return m_originalSource;
 }
-double
+uint32_t
 VBHeader::GetToken()
 {
   return m_token;
 }
-double
+uint32_t
 VBHeader::GetTs()
 {
   return m_ts;
 }
-double
+uint32_t
 VBHeader::GetRange()
 {
   return m_range;

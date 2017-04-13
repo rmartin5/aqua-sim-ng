@@ -330,6 +330,7 @@ AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumbe
     ash.SetNumForwards(1);
     ash.SetSAddr(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()));
     ash.SetDAddr(AquaSimAddress::ConvertFrom(dest));
+    ash.SetTimeStamp(Simulator::Now());
 
     vbh.SetMessType(AS_DATA);
     vbh.SetSenderAddr(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()));
@@ -342,6 +343,8 @@ AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumbe
     vbh.SetOriginalSource(sModel->GetPosition());
     vbh.SetExtraInfo_f(sModel->GetPosition());
     vbh.SetExtraInfo_t(m_targetPos);
+    vbh.SetExtraInfo_o(sModel->GetPosition());
+
     packet->AddHeader(vbh);
   } else {
     packet->PeekHeader(vbh);
@@ -399,6 +402,7 @@ AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumbe
     vbh.SetExtraInfo_d(d);
     packet->AddHeader(vbh);
     packet->AddHeader(ash);
+
 		ConsiderNew(packet);
 	}
 
@@ -449,7 +453,7 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 		}
 		else
 		{
-			CalculatePosition(pkt);
+			//CalculatePosition(pkt); not necessary with mobilitymodel
 			//printf("vectorbasedforward: This packet is from different node\n");
 			if (IsTarget(pkt))
 			{
@@ -501,12 +505,12 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 			// Received this packet before ?
 			// if (hashPtr == NULL) {
 
-			CalculatePosition(pkt);
+			//CalculatePosition(pkt); not necessary with mobilitymodel
 			DataForSink(pkt);
       NS_LOG_INFO("AquaSimVBF::ConsiderNew: target is " << GetNetDevice()->GetAddress());
 			// } //New data Process this data
 			//
-		} else  {pkt=0; }
+		} else  {pkt=0;}
 		return;
 
 	case SOURCE_DISCOVERY:
@@ -526,7 +530,7 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 			MACsend(pkt,m_rand->GetValue()*JITTER);
 			return;
 		}
-		CalculatePosition(pkt);
+		//CalculatePosition(pkt); not necessary with mobilitymodel
 		if (GetNetDevice()->GetAddress()==vbh.GetTargetAddr())
 		{
 		  NS_LOG_INFO("AquaSimVBF::ConsiderNew: target is " << GetNetDevice()->GetAddress());
@@ -562,16 +566,18 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 	 */
 
 	case AS_DATA:
+    NS_LOG_INFO("AquaSimVBF::ConsiderNew: data packet");
 		// printf("Vectorbasedforward(%d,%d):it is data packet(%d)! it target id is %d  coordinate is %f,%f,%f and range is %f\n",here_.addr_,here_.port_,vbh->pk_num,vbh->target_id.addr_,vbh->info.tx, vbh->info.ty,vbh->info.tz,vbh->range);
 		//  printf("Vectorbasedforward(%d):it is data packet(%d)\n",here_.addr_,vbh->pk_num);
 		from_nodeAddr = vbh.GetSenderAddr();
+
 		if (GetNetDevice()->GetAddress() == from_nodeAddr) {
 			// come from the same node, broadcast it
 			MACprepare(pkt);
 			MACsend(pkt,0);
 			return;
 		}
-		CalculatePosition(pkt);
+		//CalculatePosition(pkt); not necessary with mobilitymodel
 		//  printf("vectorbasedforward: after MACprepare(pkt)\n");
 		l=Advance(pkt);
 		//h=Projection(pkt);  //never used...
@@ -593,12 +599,11 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
         p1[0].z=vbh.GetExtraInfo().f.z;
 				double delay=CalculateDelay(pkt,p1);  //TODO should just pass the Vector for easier memory management here.
         delete p1;
-				double d2=(m_device->GetPhy()->GetTransRange()-Distance(pkt))/ns3::SOUND_SPEED_IN_WATER;
+				double d2=(Distance(pkt)-m_device->GetPhy()->GetTransRange())/ns3::SOUND_SPEED_IN_WATER;
 				//printf("Vectorbasedforward: I am  not  target delay is %f d2=%f distance=%f\n",(sqrt(delay)*DELAY+d2*2),d2,Distance(pkt));
-				SetDelayTimer(pkt,(sqrt(delay)*DELAY+d2*2));
-
+        SetDelayTimer(pkt,(sqrt(delay)*DELAY+d2*2)/10);
 			}
-			else { pkt=0;   }
+			else { pkt=0; }
 		}
 		return;
 
@@ -647,6 +652,8 @@ AquaSimVBF::StopSource()
 Ptr<Packet>
 AquaSimVBF::CreatePacket()
 {
+  NS_LOG_FUNCTION(this);
+
 	Ptr<Packet> pkt = Create<Packet>();
 
 	if (pkt==NULL) return NULL;
@@ -658,11 +665,8 @@ AquaSimVBF::CreatePacket()
 
 	//!! I add new part
 
-  Vector curPos = Vector(GetNetDevice()->CX(),
-                              GetNetDevice()->CY(),
-                              GetNetDevice()->CZ());
-	vbh.SetExtraInfo_o(curPos);
-	vbh.SetExtraInfo_f(curPos);
+	vbh.SetExtraInfo_o(GetNetDevice()->GetPosition());
+	vbh.SetExtraInfo_f(GetNetDevice()->GetPosition());
 
   pkt->AddHeader(vbh);
   pkt->AddHeader(ash);
@@ -720,19 +724,15 @@ AquaSimVBF::MACprepare(Ptr<Packet> pkt)
 	// printf("vectorbased: the address type is :%d and suppose to be %d and  nexthop %d MAC_BROAD %d\n", ash->addr_type(),NS_AF_ILINK,ash->next_hop(),MAC_BROADCAST);
 	ash.SetDirection(AquaSimHeader::DOWN);
 
-  Vector f;
-	if(!GetNetDevice()->GetSinkStatus()) {       //!! I add new part
+	/*if(!GetNetDevice()->GetSinkStatus()) {       //!! I add new part
     f = Vector(GetNetDevice()->CX(),
                   GetNetDevice()->CY(),
                   GetNetDevice()->CZ());
 	}
-	else{
+	else{*/
     Ptr<MobilityModel> model = GetNetDevice()->GetNode()->GetObject<MobilityModel>();
-    f = Vector(model->GetPosition().x,
-                  model->GetPosition().y,
-                  model->GetPosition().z);
-	}
-  vbh.SetExtraInfo_f(f);
+	//}
+  vbh.SetExtraInfo_f(model->GetPosition());
 
   pkt->AddHeader(vbh);
   pkt->AddHeader(ash);
@@ -778,6 +778,7 @@ AquaSimVBF::MACsend(Ptr<Packet> pkt, double delay)
 	// ll->handle(pkt);
   pkt->AddHeader(vbh);
   pkt->AddHeader(ash);
+
   Simulator::Schedule(Seconds(delay),&AquaSimRouting::SendDown,this,
                         pkt,ash.GetNextHop(),Seconds(0));
 }
@@ -794,6 +795,8 @@ AquaSimVBF::DataForSink(Ptr<Packet> pkt)
 void
 AquaSimVBF::SetDelayTimer(Ptr<Packet> pkt, double c)
 {
+  NS_LOG_FUNCTION(this << c);
+  if(c<0)c=0;
   Simulator::Schedule(Seconds(c),&AquaSimVBF::Timeout,this,pkt);
 }
 
@@ -862,8 +865,9 @@ AquaSimVBF::Timeout(Ptr<Packet> pkt)
 						MACprepare(pkt);
 						MACsend(pkt,0);
 					}
-					else
+					else{
 						pkt=0; //to much overlap, don;t send
+          }
 				}// end of calculate my new delay time
 			}
 			else{// I am the only neighbor
@@ -880,7 +884,7 @@ AquaSimVBF::Timeout(Ptr<Packet> pkt)
 					MACprepare(pkt);
 					MACsend(pkt,0);
 				}
-				else  pkt=0;
+				else  {pkt=0; }
 				// printf("vectorbasedforward:  I%d am the only neighbor, I send it out at %f\n",here_.addr_,NOW);
 				return;
 			}
@@ -895,6 +899,7 @@ AquaSimVBF::Timeout(Ptr<Packet> pkt)
 void
 AquaSimVBF::CalculatePosition(Ptr<Packet> pkt)
 {
+  //not used.
   VBHeader vbh;
   AquaSimHeader ash;
   pkt->RemoveHeader(ash);
@@ -926,9 +931,10 @@ AquaSimVBF::CalculateDelay(Ptr<Packet> pkt,Vector* p1)
 	double fy=p1->y;
 	double fz=p1->z;
 
-	double dx=GetNetDevice()->CX()-fx;
-	double dy=GetNetDevice()->CY()-fy;
-	double dz=GetNetDevice()->CZ()-fz;
+  Vector pos = GetNetDevice()->GetPosition();
+	double dx=pos.x-fx;
+	double dy=pos.y-fy;
+	double dz=pos.z-fz;
 
 	double tx=vbh.GetExtraInfo().t.x;
 	double ty=vbh.GetExtraInfo().t.y;
@@ -944,12 +950,16 @@ AquaSimVBF::CalculateDelay(Ptr<Packet> pkt,Vector* p1)
 	double p=Projection(pkt);
 	double d=sqrt((dx*dx)+(dy*dy)+ (dz*dz));
 	double l=sqrt((dtx*dtx)+(dty*dty)+ (dtz*dtz));
-	double cos_theta=dp/(d*l);
+  double cos_theta;
+  if (d ==0 || l==0) cos_theta=0;
+  else cos_theta=dp/(d*l);
 	// double delay=(TRANSMISSION_DISTANCE-d*cos_theta)/TRANSMISSION_DISTANCE;
 	double delay=(p/m_width) +((m_device->GetPhy()->GetTransRange()-d*cos_theta)/m_device->GetPhy()->GetTransRange());
 	// double delay=(p/m_width) +((TRANSMISSION_DISTANCE-d)/TRANSMISSION_DISTANCE)+(1-cos_theta);
 	//printf("vectorbased: node(%d) projection is %f, and cos is %f, and d is %f)\n",here_.addr_,p, cos_theta, d);
-	return delay;
+  NS_LOG_DEBUG("CalculateDelay(" << GetNetDevice()->GetAddress() << ") projection is "
+      << p << ", cos is " << cos_theta << " and d is " << d << " and total delay is " << delay);
+  return delay;
 }
 
 double
@@ -964,11 +974,12 @@ AquaSimVBF::Distance(Ptr<Packet> pkt)
 	double ty=vbh.GetExtraInfo().f.y;
 	double tz=vbh.GetExtraInfo().f.z;
 	// printf("vectorbased: the target is %lf,%lf,%lf \n",tx,ty,tz);
-	double x=GetNetDevice()->CX(); //change later
-	double y=GetNetDevice()->CY();// printf(" Vectorbasedforward: I am in advanced\n");
-	double z=GetNetDevice()->CZ();
+  Vector pos = GetNetDevice()->GetPosition();
+	//double x=GetNetDevice()->CX(); //change later
+	//double y=GetNetDevice()->CY();// printf(" Vectorbasedforward: I am in advanced\n");
+	//double z=GetNetDevice()->CZ();
 	// printf("the target is %lf,%lf,%lf and my coordinates are %lf,%lf,%lf\n",tx,ty,tz,x,y,z);
-	return sqrt((tx-x)*(tx-x)+(ty-y)*(ty-y)+ (tz-z)*(tz-z));
+	return sqrt((tx-pos.x)*(tx-pos.x)+(ty-pos.y)*(ty-pos.y)+ (tz-pos.z)*(tz-pos.z));
 }
 
 double
@@ -983,11 +994,12 @@ AquaSimVBF::Advance(Ptr<Packet> pkt)
 	double ty=vbh.GetExtraInfo().t.y;
 	double tz=vbh.GetExtraInfo().t.z;
 	// printf("vectorbased: the target is %lf,%lf,%lf \n",tx,ty,tz);
-	double x=GetNetDevice()->CX(); //change later
-	double y=GetNetDevice()->CY();// printf(" Vectorbasedforward: I am in advanced\n");
-	double z=GetNetDevice()->CZ();
+  Vector pos = GetNetDevice()->GetPosition();
+	//double x=GetNetDevice()->CX(); //change later
+	//double y=GetNetDevice()->CY();// printf(" Vectorbasedforward: I am in advanced\n");
+	//double z=GetNetDevice()->CZ();
 	// printf("the target is %lf,%lf,%lf and my coordinates are %lf,%lf,%lf\n",tx,ty,tz,x,y,z);
-	return sqrt((tx-x)*(tx-x)+(ty-y)*(ty-y)+ (tz-z)*(tz-z));
+	return sqrt((tx-pos.x)*(tx-pos.x)+(ty-pos.y)*(ty-pos.y)+ (tz-pos.z)*(tz-pos.z));
 }
 
 double
@@ -998,6 +1010,7 @@ AquaSimVBF::Projection(Ptr<Packet> pkt)
   pkt->RemoveHeader(ash);
   pkt->PeekHeader(vbh);
   pkt->AddHeader(ash);
+
 	double tx=vbh.GetExtraInfo().t.x;
 	double ty=vbh.GetExtraInfo().t.y;
 	double tz=vbh.GetExtraInfo().t.z;
@@ -1019,17 +1032,20 @@ AquaSimVBF::Projection(Ptr<Packet> pkt)
 		o.z=vbh.GetExtraInfo().f.z;
 	}
 
-	double x=GetNetDevice()->CX();
+  //NOTE below may not work if the nodes are mobile.
+	/*double x=GetNetDevice()->CX();
 	double y=GetNetDevice()->CY();
 	double z=GetNetDevice()->CZ();
+  */
+  Vector myPos = GetNetDevice()->GetPosition();
 
 	double wx=tx-o.x;
 	double wy=ty-o.y;
 	double wz=tz-o.z;
 
-	double vx=x-o.x;
-	double vy=y-o.y;
-	double vz=z-o.z;
+	double vx=myPos.x-o.x;
+	double vy=myPos.y-o.y;
+	double vz=myPos.z-o.z;
 
 	double cross_product_x=vy*wz-vz*wy;
 	double cross_product_y=vz*wx-vx*wz;
@@ -1039,6 +1055,8 @@ AquaSimVBF::Projection(Ptr<Packet> pkt)
 	                 cross_product_y*cross_product_y+cross_product_z*cross_product_z);
 	double length=sqrt((tx-o.x)*(tx-o.x)+(ty-o.y)*(ty-o.y)+ (tz-o.z)*(tz-o.z));
 	// printf("vectorbasedforward: the area is %f and length is %f\n",area,length);
+  NS_LOG_DEBUG("Projection: area is " << area << " length is " << length);
+  if (length==0) return 0;
 	return area/length;
 }
 
@@ -1062,11 +1080,12 @@ AquaSimVBF::IsTarget(Ptr<Packet> pkt)
 bool
 AquaSimVBF::IsCloseEnough(Ptr<Packet> pkt)
 {
-  VBHeader vbh;
-  AquaSimHeader ash;
-  pkt->RemoveHeader(ash);
-  pkt->PeekHeader(vbh);
-  pkt->AddHeader(ash);
+  //VBHeader vbh;
+  //AquaSimHeader ash;
+  //pkt->RemoveHeader(ash);
+  //pkt->PeekHeader(vbh);
+  //pkt->AddHeader(ash);
+
   //double range=vbh.GetRange();  //unused
 	//double range=m_width;
 

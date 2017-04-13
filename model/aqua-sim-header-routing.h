@@ -93,9 +93,9 @@ public:
   void SetForwardAddr(AquaSimAddress forwardAddr);
   void SetDataType(uint8_t dataType);
   void SetOriginalSource(Vector originalSource);
-  void SetToken(double token);
-  void SetTs(double ts);
-  void SetRange(double range);
+  void SetToken(uint32_t token);
+  void SetTs(uint32_t ts);
+  void SetRange(uint32_t range);
   void SetExtraInfo(uw_extra_info info);
   void SetExtraInfo_o(Vector position_o);
   void SetExtraInfo_f(Vector position_f);
@@ -110,9 +110,9 @@ public:
   AquaSimAddress GetForwardAddr();
   uint8_t GetDataType();
   Vector GetOriginalSource();
-  double GetToken();
-  double GetTs();
-  double GetRange();
+  uint32_t GetToken();
+  uint32_t GetTs();
+  uint32_t GetRange();
   uw_extra_info GetExtraInfo();
 
   //inherited methods
@@ -133,11 +133,10 @@ private:
   uint8_t m_dataType; //what is this for?
 
   Vector m_originalSource;
+  uint32_t m_token;
+  uint32_t m_ts;      // Timestamp when pkt is generated.
+  uint32_t m_range;    // target range
   struct uw_extra_info m_info;
-
-  double m_token;
-  double m_ts;      // Timestamp when pkt is generated.
-  double m_range;    // target range
   //int report_rate;               // For simple diffusion only.
   //int attr[MAX_ATTRIBUTE];
 };  // class VBHeader

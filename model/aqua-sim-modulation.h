@@ -39,12 +39,12 @@ public:
   virtual ~AquaSimModulation () {}
 
   /*
-   *  Get transmission time by packet size
+   *  Get transmission time by packet size (expected in bits).
    */
   virtual double TxTime (int pktSize);
 
   /*
-   *  Get packet size by transmission time
+   *  Get packet size (in bits) by transmission time
    */
   virtual int PktSize (double txTime);
 

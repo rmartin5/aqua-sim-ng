@@ -76,6 +76,7 @@ AquaSimNetDevice::GetTypeId ()
 {
   static TypeId tid = TypeId("ns3::AquaSimNetDevice")
     .SetParent<NetDevice>()
+    .AddConstructor<AquaSimNetDevice>()
     .AddAttribute ("Phy", "The PHY layer attached to this device.",
       PointerValue (),
       MakePointerAccessor (&AquaSimNetDevice::m_phy),
@@ -148,7 +149,7 @@ AquaSimNetDevice::DoDispose (void)
   m_mac=0;
   m_macSync=0;
   m_macLoc=0;
-  m_routing=0;  //FIXME in some cases this will lead to seg fault bug (smart pointer is deleted somewhere else leading to a unref issue)
+  //m_routing=0;  //FIXME in some cases this will lead to seg fault bug (smart pointer is deleted somewhere else leading to a unref issue)
   m_node=0;
   m_uniformRand=0;
   m_energyModel=0;
@@ -440,6 +441,14 @@ AquaSimNetDevice::IsMoving(void)
   return true;
 }
 
+Vector
+AquaSimNetDevice::GetPosition(void)
+{
+  Ptr<Object> object = GetNode();
+  Ptr<MobilityModel> model = object->GetObject<MobilityModel>();
+  return model->GetPosition();
+}
+
 bool
 AquaSimNetDevice::IsAttacker(void)
 {
@@ -557,9 +566,7 @@ bool
 AquaSimNetDevice::Send (Ptr< Packet > packet, const Address &dest, uint16_t protocolNumber)
 {
   NS_LOG_FUNCTION(this << packet << dest << protocolNumber);
-
   m_totalSentPkts++;  //debugging
-
   //Quick hack. Named Data should be NULL pointer if unused/unset.
   if (m_ndn)
   {

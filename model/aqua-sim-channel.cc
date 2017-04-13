@@ -171,13 +171,12 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
     }
 
     //TODO remove ... this is a local addition for flooding_test.
-    #ifdef FLOODING_TEST
-    if (Distance(sender, (*recvUnits)[i].recver) > Distance((*recvUnits)[0].recver,(*recvUnits)[1].recver)*1.25/*arbitrary*/)
-    {
-      NS_LOG_DEBUG("Channel:SendUp: FloodTest(OutOfRange): sender(" << sender->GetAddress() << ") recver:(" <<  (*recvUnits)[i].recver->GetAddress() << ") dist(" << Distance(sender, (*recvUnits)[i].recver) << ")");
-      continue;
-    }
-    #endif
+    if (FLOODING_TEST && (Distance(sender, (*recvUnits)[i].recver) > Distance((*recvUnits)[0].recver,(*recvUnits)[1].recver)*1.25/*arbitrary*/))
+      {
+        NS_LOG_DEBUG("Channel:SendUp: FloodTest(OutOfRange): sender(" << sender->GetAddress() << ") recver:(" <<  (*recvUnits)[i].recver->GetAddress() << ") dist(" << Distance(sender, (*recvUnits)[i].recver) << ")");
+        continue;
+      }
+
     sentPktCounter++; //Debug... remove
 
     recver = (*recvUnits)[i].recver;
@@ -203,8 +202,8 @@ AquaSimChannel::SendUp (Ptr<Packet> p, Ptr<AquaSimPhy> tifp)
      * Send to each interface a copy, and we will filter the packet
      * in physical layer according to freq and modulation
      */
-    NS_LOG_DEBUG ("Channel. NodeS:" << sender->GetNode() << " NodeR:" << recver->GetNode() << " S.Phy:" << sender->GetPhy() << " R.Phy:" << recver->GetPhy() << " packet:" << p
-		  << " TxTime:" << asHeader.GetTxTime());
+    NS_LOG_DEBUG ("Channel. NodeS:" << sender->GetAddress() << " NodeR:" << recver->GetAddress() << " S.Phy:" << sender->GetPhy() << " R.Phy:" << recver->GetPhy() << " packet:" << p
+		  << " TxTime:" << asHeader.GetTxTime() << pDelay);
 
     Simulator::Schedule(pDelay, &AquaSimPhy::Recv, rifp, p->Copy());
 
@@ -236,7 +235,7 @@ AquaSimChannel::PrintCounters()
   for (std::vector<Ptr<AquaSimNetDevice> >::iterator it = m_deviceList.begin(); it != m_deviceList.end(); ++it)
   {
     totalSentPkts += (*it)->TotalSentPkts();
-    std::cout << " (" << (*it)->GetAddress() << ") " << (*it)->TotalSentPkts() << "\n";
+    //std::cout << " (" << (*it)->GetAddress() << ") " << (*it)->TotalSentPkts() << "\n";
   }
   std::cout << " (NetworkTotal) " << totalSentPkts << "\n";
 
@@ -246,7 +245,7 @@ AquaSimChannel::PrintCounters()
   for (std::vector<Ptr<AquaSimNetDevice> >::iterator it = m_deviceList.begin(); it != m_deviceList.end(); ++it)
   {
     totalSendUpPkts += (*it)->GetRouting()->SendUpPktCount();
-    std::cout << " (" << (*it)->GetAddress() << ") " << (*it)->GetRouting()->SendUpPktCount() << "\n";
+    //std::cout << " (" << (*it)->GetAddress() << ") " << (*it)->GetRouting()->SendUpPktCount() << "\n";
   }
   std::cout << " (NetworkTotal) " << totalSendUpPkts << "\n";
 
@@ -255,7 +254,7 @@ AquaSimChannel::PrintCounters()
   for (std::vector<Ptr<AquaSimNetDevice> >::iterator it = m_deviceList.begin(); it != m_deviceList.end(); ++it)
   {
     totalRecvPkts += (*it)->GetPhy()->PktRecvCount();
-    std::cout << " (" << (*it)->GetAddress() << ") " << (*it)->GetPhy()->PktRecvCount() << "\n";
+    //std::cout << " (" << (*it)->GetAddress() << ") " << (*it)->GetPhy()->PktRecvCount() << "\n";
   }
   std::cout << " (NetworkTotal) " << totalRecvPkts << "\n";
 
@@ -275,17 +274,20 @@ AquaSimChannel::FilePrintCounters(double simTime, int attSlot)
   //output layerout:
   // SimTime | N0_Pkts | N0_Bytes | N0_DiffFromLastTrace | N1_Pkts | ... | Sink_Sent | Sink_Recv | Att0_Sent
 
-  /* //out of date file creation & data collection.
+   //out of date file creation & data collection.
+   /*
   std::ofstream csvFile;
-  csvFile.open("ddos_3A_M_Spread_NoML.csv", std::ios_base::app);
+  csvFile.open("mobile_grid_1a_StatisticalL.csv", std::ios_base::app);
   csvFile << simTime;
   for (std::vector<Ptr<AquaSimNetDevice> >::iterator ite = m_deviceList.begin(); ite != m_deviceList.end(); ++ite)
   {
-    csvFile << "," << (*ite)->GetRouting()->TrafficInBytes(true);
+    csvFile << "," << (*ite)->GetRouting()->TrafficInPkts();
+    //csvFile << "," << (*ite)->GetRouting()->TrafficInBytes(); //ignoring the diff and just getting the raw bytes.
+    //csvFile << "," << (*ite)->GetRouting()->TrafficInBytes(true);
   }
   csvFile << "\n";
   csvFile.close();
-  */
+*/
 }
 
 Time

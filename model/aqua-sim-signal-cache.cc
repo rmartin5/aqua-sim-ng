@@ -84,7 +84,9 @@ PktSubmissionTimer::AddNewSubmission(Ptr<IncomingPacket> inPkt) {
                     asHeader.GetTxTime() << " transmissionDelay:" <<
                     transmissionDelay.ToDouble(Time::S));
 
-  Simulator::Schedule(transmissionDelay, &PktSubmissionTimer::Expire, this, inPkt);
+  Simulator::ScheduleNow(&PktSubmissionTimer::Expire, this, inPkt);
+  //should not double transmissionDelay here...
+  //Simulator::Schedule(transmissionDelay, &PktSubmissionTimer::Expire, this, inPkt);
 
   /*if (m_waitingList.empty() || m_waitingList.top().endT > transmissionDelay)
   {

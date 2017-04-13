@@ -30,7 +30,7 @@ namespace ns3 {
 NS_OBJECT_ENSURE_REGISTERED (AquaSimModulation);
 
 AquaSimModulation::AquaSimModulation () :
-    m_codingEff(1), m_sps(1000), m_ber(0)
+    m_codingEff(1), m_sps(10000), m_ber(0)
 {
 }
 
@@ -44,7 +44,7 @@ AquaSimModulation::GetTypeId (void)
        MakeDoubleAccessor (&AquaSimModulation::m_codingEff),
        MakeDoubleChecker<double> ())
     .AddAttribute ("SPS", "The number of symbols per second.",
-       UintegerValue (1000),
+       UintegerValue (10000),
        MakeUintegerAccessor (&AquaSimModulation::m_sps),
        MakeUintegerChecker<uint32_t> ())
     .AddAttribute ("BER", "The bit error rate.",
@@ -57,12 +57,12 @@ AquaSimModulation::GetTypeId (void)
 
 double
 AquaSimModulation::TxTime (int pktSize) {
-  return pktSize*8/Bps();
+  return pktSize/Bps();
 }
 
 int
 AquaSimModulation::PktSize (double txTime) {
-  return int(txTime*Bps()/8);
+  return int(txTime*Bps());
 }
 
 double

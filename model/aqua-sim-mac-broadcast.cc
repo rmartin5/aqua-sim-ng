@@ -68,6 +68,7 @@ different versions.
 bool
 AquaSimBroadcastMac::RecvProcess (Ptr<Packet> pkt)
 {
+  NS_LOG_FUNCTION(this);
   /*std::cout << "\nBMac @RecvProcess check:\n";
   pkt->Print(std::cout);
   std::cout << "\n";*/
@@ -162,8 +163,16 @@ AquaSimBroadcastMac::TxProcess(Ptr<Packet> pkt)
     }
       return true;
   case SEND:
-      pkt=0;
-      return false;
+    {
+      Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable> ();
+      double backoff=rand->GetValue()*BC_BACKOFF;
+      NS_LOG_DEBUG("BACKOFF time:" << backoff << " on node:" << m_device->GetAddress() << "\n");
+      //pkt->AddHeader(mach);
+      pkt->AddHeader(ash);
+      Simulator::Schedule(Seconds(backoff),&AquaSimBroadcastMac::BackoffHandler,this,pkt);
+    }
+    return true;
+      /*pkt=0;*/
   default:
       /*
       * all cases have been processed above, so simply return

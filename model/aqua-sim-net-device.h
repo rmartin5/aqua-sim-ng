@@ -172,6 +172,7 @@ public:
 
   //void UpdatePosition(void);  // UpdatePosition() out of date... should be using ns3's mobility module
   bool IsMoving(void);
+  Vector GetPosition(void);
   Ptr<AquaSimEnergyModel> EnergyModel(void) {return m_energyModel; }
   bool IsAttacker(void);
 

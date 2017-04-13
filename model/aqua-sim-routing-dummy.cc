@@ -57,7 +57,7 @@ AquaSimRoutingDummy::Recv(Ptr<Packet> packet, const Address &dest, uint16_t prot
   if (ash.GetNumForwards()==0)  //new packet
   {
     ash.SetDirection(AquaSimHeader::DOWN);
-    ash.SetNextHop(AquaSimAddress::GetBroadcast());
+    ash.SetNextHop(AquaSimAddress::GetBroadcast());  // ash.SetNextHop(AquaSimAddress(myAddr.GetAsInt()-1)); //
     ash.SetNumForwards(0);
     ash.SetSAddr(myAddr);
     ash.SetDAddr(AquaSimAddress::ConvertFrom(dest));
@@ -98,9 +98,10 @@ void
 AquaSimRoutingDummy::MACsend(Ptr<Packet> pkt, Time delay)
 {
   NS_LOG_FUNCTION(this);
-
+  AquaSimHeader ash;
+  pkt->PeekHeader(ash);
   Simulator::Schedule(delay, &AquaSimRouting::SendDown,this,
-                        pkt,AquaSimAddress::GetBroadcast(),Seconds(0));
+                        pkt,ash.GetNextHop(),Seconds(0));
 }
 
 void
