@@ -156,7 +156,6 @@ bool
 AquaSimMac::SendDown(Ptr<Packet> p, TransStatus afterTrans)
 {
   NS_ASSERT(m_device);// && m_phy && m_rout);
-  std::cout << "    SendDown: "<<m_device->GetAddress()<<" at " << Simulator::Now().ToDouble(Time::S) << " and " << p->GetUid()<<"\n";
 
   /*  For debugging:
   std::cout << "\nMac @SendDown check:\n";
