@@ -114,10 +114,14 @@ bool
 AquaSimRouting::SendUp(Ptr<Packet> p)
 {
   //port_dmux->recv(p); // (Handler*)NULL
+  AquaSimHeader ash;
+  p->PeekHeader(ash);
+  //std::cout << "\nRouting::SinkRecv:" << m_device->GetAddress() <<",pkt#" << p->GetUid() << ",ts:" << ash.GetTimeStamp().ToDouble(Time::S) << " @" << Simulator::Now().ToDouble(Time::S);
+  //std::cout << (Simulator::Now()-ash.GetTimeStamp()).ToDouble(Time::S) << "\n";
   NS_LOG_FUNCTION(this << p << " : currently a dummy sendup on nodeAddr:" <<
       AquaSimAddress::ConvertFrom(m_device->GetAddress()).GetAsInt());
   m_sendUpPktCount++;
-  NS_LOG_WARN(m_sendUpPktCount);
+  NS_LOG_INFO(m_sendUpPktCount);
   /*TODO this needs to be fully implemented with the multiplexer
 		  Or at least sent up for further processing
 		  ie. Sync, Localization, Application driven
@@ -153,9 +157,6 @@ AquaSimRouting::SendDown(Ptr<Packet> p, AquaSimAddress nextHop, Time delay)
   header.SetNextHop(nextHop);
   header.SetSAddr(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
   p->AddHeader(header);
-
-  if (AquaSimAddress::ConvertFrom(m_device->GetAddress()).GetAsInt() == 255) std::cout << "\nHUH???? on device " << m_device->GetAddress() << "\n";
-
 
   //send down after given delay
 
@@ -296,8 +297,8 @@ int AquaSimRouting::TrafficInBytes(bool diff)
     return byteDiff;
   }
   return trafficBytes;
-}*/
-
+}
+*/
 
 
 }  //namespace ns3

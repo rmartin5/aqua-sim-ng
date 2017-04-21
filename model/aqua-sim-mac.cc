@@ -124,16 +124,39 @@ AquaSimMac::SetForwardUpCallback(Callback<void, const AquaSimAddress&> upCallbac
 bool
 AquaSimMac::SendUp(Ptr<Packet> p)
 {
-  NS_ASSERT(m_device);// && m_phy && m_rout);
+  NS_ASSERT(m_device);
   AquaSimHeader ash;
   p->PeekHeader(ash);
-  return Routing()->Recv(p,ash.GetDAddr(),0);
+
+  if (Routing()) {
+    return Routing()->Recv(p,ash.GetDAddr(),0);
+  }
+
+  if (ash.GetDAddr() == AquaSimAddress::ConvertFrom(m_device->GetAddress())) {
+    //I am sink, no pass up implemented.
+    NS_LOG_INFO("Mac:SendUp : packet at destination node:" << m_device->GetAddress() <<
+      ", with end-to-end delay of " << (Simulator::Now()-ash.GetTimeStamp()).ToDouble(Time::S));
+    return true;
+  }
+
+  /* if no routing layer is currently implemented */
+
+  //Change to DOWN and send packet (mac layer wise).
+  p->RemoveHeader(ash);
+  ash.SetDirection(AquaSimHeader::DOWN);
+  p->AddHeader(ash);
+
+  if (!TxProcess(p)) {
+    NS_LOG_DEBUG(this << "Mac recv error");
+  }
+  return false;
 }
 
 bool
 AquaSimMac::SendDown(Ptr<Packet> p, TransStatus afterTrans)
 {
   NS_ASSERT(m_device);// && m_phy && m_rout);
+  std::cout << "    SendDown: "<<m_device->GetAddress()<<" at " << Simulator::Now().ToDouble(Time::S) << " and " << p->GetUid()<<"\n";
 
   /*  For debugging:
   std::cout << "\nMac @SendDown check:\n";
@@ -155,7 +178,6 @@ AquaSimMac::SendDown(Ptr<Packet> p, TransStatus afterTrans)
       p->PeekHeader(ash);
       if (ash.GetTxTime().IsNegative()) ash.SetTxTime(GetTxTime(p));
       Simulator::Schedule(ash.GetTxTime(), &AquaSimNetDevice::SetTransmissionStatus,m_device,afterTrans);
-
       //slightly awkard but for phy header Buffer
       AquaSimPacketStamp pstamp;
       p->AddHeader(pstamp);

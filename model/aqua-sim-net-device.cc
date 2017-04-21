@@ -658,7 +658,8 @@ AquaSimNetDevice::GetNextHop()
 void
 AquaSimNetDevice::SetTransmissionStatus(TransStatus status)
 {
-  if (GetTransmissionStatus() == SLEEP && m_phy->IsPoweredOn()){
+  //unless going through mac layers power on/off switch, we shoudn't wake up a sleeping device.
+  if (GetTransmissionStatus() == SLEEP && !m_phy->IsPoweredOn()){
       m_mac->PowerOff();
       return;
   }

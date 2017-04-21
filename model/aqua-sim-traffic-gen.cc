@@ -22,6 +22,7 @@
 #include "ns3/inet-socket-address.h"
 #include "ns3/simulator.h"
 #include "ns3/uinteger.h"
+#include "ns3/double.h"
 #include "ns3/udp-socket-factory.h"
 #include "ns3/packet-socket-address.h"
 #include "ns3/packet.h"
@@ -40,9 +41,9 @@ AquaSimTrafficGen::GetTypeId()
     .SetParent<Application>()
     .AddConstructor<AquaSimTrafficGen>()
     .AddAttribute ("Delay", "The delay interval between sending packets (seconds)",
-                    UintegerValue (10),
-                    MakeUintegerAccessor (&AquaSimTrafficGen::m_delayInt),
-                    MakeUintegerChecker<uint32_t>())
+                    DoubleValue (10),
+                    MakeDoubleAccessor (&AquaSimTrafficGen::m_delayInt),
+                    MakeDoubleChecker<double>())
     .AddAttribute ("PacketSize", "Size of packets sent",
                     UintegerValue (300),
                     MakeUintegerAccessor (&AquaSimTrafficGen::m_pktSize),
@@ -69,7 +70,7 @@ AquaSimTrafficGen::~AquaSimTrafficGen()
 }
 
 void
-AquaSimTrafficGen::SetDelay (uint32_t delay)
+AquaSimTrafficGen::SetDelay (double delay)
 {
   m_delayInt = delay;
 }

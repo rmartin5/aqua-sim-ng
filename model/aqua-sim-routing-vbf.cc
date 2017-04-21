@@ -601,7 +601,8 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
         delete p1;
 				double d2=(Distance(pkt)-m_device->GetPhy()->GetTransRange())/ns3::SOUND_SPEED_IN_WATER;
 				//printf("Vectorbasedforward: I am  not  target delay is %f d2=%f distance=%f\n",(sqrt(delay)*DELAY+d2*2),d2,Distance(pkt));
-        SetDelayTimer(pkt,(sqrt(delay)*DELAY+d2*2)/10);
+        //std::cout << "DElay is " << (sqrt(delay)*DELAY+d2*2) << " d2 is " << d2 << " distance is " << Distance(pkt) << "\n";
+        SetDelayTimer(pkt,(sqrt(delay)*DELAY+d2*2));
 			}
 			else { pkt=0; }
 		}

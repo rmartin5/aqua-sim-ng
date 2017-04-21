@@ -63,4 +63,11 @@ AquaSimThresholdSinrChecker::Decodable (double sinr) {
   return sinr > m_decThresh;
 }
 
+void
+AquaSimThresholdSinrChecker::SetThreshold (double threshold)
+{
+  m_decThresh = threshold;
+}
+
+
 }  // namespace ns3

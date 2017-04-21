@@ -374,7 +374,6 @@ public:
   //double CheckNextAvailableTable(int);
 
   EventId m_largeNdEvent;
-  EventId m_shortNdEvent;
   EventId m_statusEvent;
   // Event m_largeAckndEvent;
   EventId m_shortAckndEvent;
@@ -384,9 +383,8 @@ public:
   EventId m_sleepEvent;
   EventId m_wakeupEvent;
   EventId m_timeoutEvent;
-  EventId m_transmissionEvent;
+  //EventId m_transmissionEvent;
   EventId m_macRecvEvent;
-  EventId m_clearChannelEvent;
   EventId m_ackWindowEvent;
   EventId m_carrierSenseEvent;
 

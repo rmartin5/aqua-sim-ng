@@ -45,6 +45,7 @@ public:
   AquaSimThresholdSinrChecker ();
   virtual ~AquaSimThresholdSinrChecker();
   virtual bool Decodable (double sinr);
+  void SetThreshold (double threshold);
 protected:
   double m_decThresh;  //threshold of decodable packet
 };

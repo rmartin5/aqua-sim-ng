@@ -149,6 +149,9 @@ public:
  			     std::string n6 = "", const AttributeValue &v6 = EmptyAttributeValue (),
  			     std::string n7 = "", const AttributeValue &v7 = EmptyAttributeValue ());
     Ptr<AquaSimNetDevice> Create (Ptr<Node> node, Ptr<AquaSimNetDevice> device);
+    Ptr<AquaSimNetDevice> CreateWithoutRouting (Ptr<Node> node, Ptr<AquaSimNetDevice> device);
+    void SetMacAttribute (std::string name, const AttributeValue &value);
+        /* Used for large amounts of attribute settings on mac layer */
 private:
   std::vector<Ptr<AquaSimChannel> > m_channel;
   ObjectFactory m_phy;

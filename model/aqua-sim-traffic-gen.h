@@ -43,7 +43,7 @@ public:
   static TypeId GetTypeId();
   AquaSimTrafficGen ();
   ~AquaSimTrafficGen ();
-  void SetDelay (uint32_t delay);
+  void SetDelay (double delay);
   void SetSize (uint32_t size);
 protected:
   virtual void DoDipsose();
@@ -54,7 +54,7 @@ private:
   void CancelEvents();
   void SendPacket();
 
-  uint32_t m_delayInt;
+  double m_delayInt;
   uint32_t m_pktSize;
   Ptr<Socket> m_socket;
   Address m_peer;

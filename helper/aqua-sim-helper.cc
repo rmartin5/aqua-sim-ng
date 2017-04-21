@@ -359,6 +359,13 @@ AquaSimHelper::SetAttackModel (std::string type,
   m_attackM = factory;
 }
 
+void
+AquaSimHelper::SetMacAttribute (std::string name, const AttributeValue &value)
+{
+  m_mac.Set(name,value);
+}
+
+
 Ptr<AquaSimNetDevice>
 AquaSimHelper::Create(Ptr<Node> node, Ptr<AquaSimNetDevice> device)
 {
@@ -392,6 +399,37 @@ AquaSimHelper::Create(Ptr<Node> node, Ptr<AquaSimNetDevice> device)
   NS_LOG_DEBUG(this << "Create Dump. Phy:" << device->GetPhy() << " Mac:"
 	       << device->GetMac() << " Routing:" << device->GetRouting()
 	       << " Channel:" << device->GetChannel() << "\n");
+
+  return device;
+}
+
+Ptr<AquaSimNetDevice>
+AquaSimHelper::CreateWithoutRouting(Ptr<Node> node, Ptr<AquaSimNetDevice> device)
+{
+  Ptr<AquaSimPhy> phy = m_phy.Create<AquaSimPhy>();
+  Ptr<AquaSimMac> mac = m_mac.Create<AquaSimMac>();
+  Ptr<AquaSimEnergyModel> energyM = m_energyM.Create<AquaSimEnergyModel>();
+  //Ptr<AquaSimSync> sync = m_sync.Create<AquaSimSync>();
+  //Ptr<AquaSimLocalization> loc = m_localization.Create<AquaSimLocalization>();
+
+  device->SetPhy(phy);
+  device->SetMac(mac);
+  //device->SetMac(mac,sync,loc);
+  device->ConnectLayers();
+
+  NS_ASSERT(!m_channel.empty());
+  device->SetChannel(m_channel);
+
+  device->SetEnergyModel(energyM);
+  device->SetAddress(AquaSimAddress::Allocate());
+
+  if(m_attacker)
+  {
+    Ptr<AquaSimAttackModel> attackM = m_attackM.Create<AquaSimAttackModel>();
+    device->SetAttackModel(attackM);
+  }
+
+  node->AddDevice(device);
 
   return device;
 }
