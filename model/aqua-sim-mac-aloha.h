@@ -34,7 +34,7 @@
 
 
 #define CALLBACK_DELAY 0.001	//the interval between two consecutive sendings
-#define MAXIMUMCOUNTER 4
+#define MAXIMUMCOUNTER 3
 #define Broadcast -1
 
 namespace ns3 {
@@ -116,7 +116,6 @@ protected:
   double m_dataTxTime;
   double m_AckTxTime;
 
-  std::queue<Ptr<Packet> >	PktQ_;
   std::map<long, AquaSimAlohaAckRetry*> RetryTimerMap_;   //map timer id to the corresponding pointer
 
   EventId m_statusEvent;
@@ -148,6 +147,7 @@ protected:
 
   virtual void DoDispose();
 private:
+  std::queue<Ptr<Packet> >	PktQ_;
   Ptr<UniformRandomVariable> m_rand;
 
 };  // class AquaSimAloha

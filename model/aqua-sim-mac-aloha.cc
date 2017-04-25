@@ -86,31 +86,35 @@ AquaSimAloha::GetTypeId(void)
 
 void AquaSimAloha::DoBackoff()
 {
-  NS_LOG_FUNCTION(this);
+  //NS_LOG_FUNCTION(this);
 	Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   Time BackoffTime=Seconds(m_rand->GetValue(m_minBackoff,m_maxBackoff));
   m_boCounter++;
   if (m_boCounter < MAXIMUMCOUNTER)
     {
       ALOHA_Status = BACKOFF;
+			NS_LOG_INFO("DoBackoff: " << BackoffTime.ToDouble(Time::S));
       Simulator::Schedule(BackoffTime, &AquaSimAloha::SendDataPkt, this);
     }
   else
     {
       m_boCounter=0;
       NS_LOG_INFO("Backoffhandler: too many backoffs");
-      PktQ_.front()=0;
-      PktQ_.pop();
+			if (!PktQ_.empty()) {
+      	PktQ_.front()=0;
+      	PktQ_.pop();
       ProcessPassive();
+		}
   }
 }
 
 void AquaSimAloha::ProcessPassive()
 {
   if (ALOHA_Status == PASSIVE && !m_blocked) {
-    if (!PktQ_.empty() )
-	SendDataPkt();
-  }
+    if (!PktQ_.empty() ) {
+			SendDataPkt();
+		}
+	}
 }
 
 void AquaSimAloha::StatusProcess(bool isAck)
@@ -140,38 +144,35 @@ bool AquaSimAloha::TxProcess(Ptr<Packet> pkt)
 {
   //callback to higher level, should be implemented differently
   //Scheduler::instance().schedule(&CallBack_handler, &m_callbackEvent, CALLBACK_DELAY);
-  NS_LOG_FUNCTION(this << pkt << Simulator::Now().GetSeconds());
+  NS_LOG_FUNCTION(m_device->GetAddress() << pkt << Simulator::Now().GetSeconds());
   AquaSimHeader asHeader;
   AlohaHeader alohaH;
   pkt->RemoveHeader(asHeader);
-  pkt->RemoveHeader(alohaH);
+  //pkt->RemoveHeader(alohaH);	This may need to be fixed for multi hop.
 
 	asHeader.SetSize(alohaH.size()+asHeader.GetSize());
   asHeader.SetTxTime(GetTxTime(asHeader.GetSerializedSize() + alohaH.GetSerializedSize()));
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);
 
-  Time time;
-  if( Simulator::Now().GetDouble() > 500 )	//why?
-    time = Simulator::Now();
   alohaH.SetPType(AlohaHeader::DATA);
 	alohaH.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()) );
 
   if(asHeader.GetNextHop() == AquaSimAddress::GetBroadcast() )
     {
-			alohaH.SetDA(AquaSimAddress::GetBroadcast());
+			alohaH.SetDA(asHeader.GetDAddr());
     }
   else {
       alohaH.SetDA(asHeader.GetNextHop());
     }
 
 	pkt->AddHeader(alohaH);
-  pkt->AddHeader(asHeader);
+	pkt->AddHeader(asHeader);
 
   PktQ_.push(pkt);//push packet to the queue
 
   //fill the next hop when sending out the packet;
-  if(ALOHA_Status == PASSIVE && PktQ_.size() == 1 && !m_blocked )
+  if(ALOHA_Status == PASSIVE && PktQ_.size() >= 1 && !m_blocked )
   {
     SendDataPkt();
   }
@@ -186,7 +187,7 @@ void AquaSimAloha::SendDataPkt()
   double P = m_rand->GetValue(0,1);
   Ptr<Packet> tmp = PktQ_.front();
   AquaSimHeader asHeader;
-  tmp->PeekHeader(asHeader);
+	tmp->PeekHeader(asHeader);
   AquaSimAddress recver = asHeader.GetNextHop();
 
   ALOHA_Status = SEND_DATA;
@@ -221,35 +222,41 @@ void AquaSimAloha::SendPkt(Ptr<Packet> pkt)
     case SLEEP:
       PowerOn();
 
-    case NIDLE:
+    case NIDLE: {
       //m_device->SetTransmissionStatus(SEND);
       asHeader.SetTimeStamp(Simulator::Now()); //why?
       asHeader.SetDirection(AquaSimHeader::DOWN);	//already set...
 
       //ACK doesn't affect the status, only process DATA here
       if (alohaH.GetPType() == AlohaHeader::DATA) {
-	//must be a DATA packet, so setup wait ack timer
-	if ((alohaH.GetDA() != AquaSimAddress::GetBroadcast()) && m_AckOn) {
-	  ALOHA_Status = WAIT_ACK;
-	  m_waitACKTimer = Simulator::Schedule((Seconds(m_waitACKTime)+txtime),&AquaSimAloha::DoBackoff, this);
-	}
-	else {
-	  PktQ_.front()=0;
-	  PktQ_.pop();
-	  ALOHA_Status = PASSIVE;
-	}
-	m_isAck = false;
+				//must be a DATA packet, so setup wait ack timer
+				if ((alohaH.GetDA() != AquaSimAddress::GetBroadcast()) && m_AckOn) {
+				  ALOHA_Status = WAIT_ACK;
+				  m_waitACKTimer = Simulator::Schedule((Seconds(m_waitACKTime)+txtime),&AquaSimAloha::DoBackoff, this);
+				}
+				else {
+				if (!PktQ_.empty()) {
+			  	PktQ_.front()=0;
+			  	PktQ_.pop();
+				}
+			  ALOHA_Status = PASSIVE;
+			}
+			m_isAck = false;
       }
       else{
 	m_isAck = true;
       }
+			MacHeader mach;
+			mach.SetDA(AquaSimAddress::GetBroadcast());
+			mach.SetSA(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
+			pkt->AddHeader(mach);
       pkt->AddHeader(asHeader);
       SendDown(pkt);
 
       m_blocked = true;
       Simulator::Schedule((txtime + Seconds(0.01)), &AquaSimAloha::StatusProcess, this, m_isAck);
       break;
-
+		}
     case RECV:
       NS_LOG_INFO("SendPkt: RECV-SEND collision!!!");
       if( alohaH.GetPType() == AlohaHeader::ACK) {
@@ -277,14 +284,17 @@ void AquaSimAloha::SendPkt(Ptr<Packet> pkt)
 
 bool AquaSimAloha::RecvProcess(Ptr<Packet> pkt)
 {
-	NS_LOG_FUNCTION(this);
+	NS_LOG_FUNCTION(m_device->GetAddress());
   AquaSimHeader asHeader;
   AlohaHeader alohaH;
+	MacHeader mach;
   pkt->RemoveHeader(asHeader);
+	pkt->RemoveHeader(mach);	//not used, leave off.
   pkt->PeekHeader(alohaH);
 	pkt->AddHeader(asHeader);
 
   AquaSimAddress recver = alohaH.GetDA();
+	AquaSimAddress myAddr = AquaSimAddress::ConvertFrom(m_device->GetAddress());
 
   if( asHeader.GetErrorFlag() )
   {
@@ -301,26 +311,29 @@ bool AquaSimAloha::RecvProcess(Ptr<Packet> pkt)
 
   if( alohaH.GetPType() == AlohaHeader::ACK ) {
     //if get ACK after WaitACKTimer, ignore ACK
-    if( recver == m_device->GetAddress() && ALOHA_Status == WAIT_ACK) {
+    if( recver == myAddr && ALOHA_Status == WAIT_ACK) {
 	m_waitACKTimer.Cancel();
 	m_boCounter=0;
-	PktQ_.front()=0;
-	PktQ_.pop();
+	if (!PktQ_.empty()) {
+		PktQ_.front()=0;
+		PktQ_.pop();
+	}
 	ALOHA_Status=PASSIVE;
 	ProcessPassive();
     }
   }
   else if(alohaH.GetPType() == AlohaHeader::DATA) {
     //process Data packet
-    if( recver == m_device->GetAddress() || recver == AquaSimAddress::GetBroadcast() ) {
+    if( recver == myAddr || recver == AquaSimAddress::GetBroadcast() ) {
+			pkt->RemoveHeader(asHeader);
 			asHeader.SetSize(asHeader.GetSize() + alohaH.size());
-	SendUp(pkt->Copy());
-	if ( m_AckOn && (recver != AquaSimAddress::GetBroadcast()))
-	    ReplyACK(pkt->Copy());
-	else
-	    ProcessPassive();
-    }
-
+			pkt->AddHeader(asHeader);
+			SendUp(pkt->Copy());
+			if ( m_AckOn && (recver != AquaSimAddress::GetBroadcast()))
+	    	ReplyACK(pkt->Copy());
+				else
+	    	ProcessPassive();
+    	}
   }
   pkt=0;
   return true;

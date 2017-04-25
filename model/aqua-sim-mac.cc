@@ -164,10 +164,12 @@ AquaSimMac::SendDown(Ptr<Packet> p, TransStatus afterTrans)
   */
 
   if (m_device->GetTransmissionStatus() == SLEEP) {
+    NS_LOG_DEBUG("SendDown::Sleeping, drop pkt");
       return false;
    }
 
   if (m_device->GetTransmissionStatus() == RECV) {
+      NS_LOG_DEBUG("SendDown::Recv, queuing pkt");
       m_sendQueue.push(std::make_pair(p,afterTrans));
       return true;
   }

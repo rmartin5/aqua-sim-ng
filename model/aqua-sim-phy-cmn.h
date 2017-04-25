@@ -93,8 +93,6 @@ public:
 			  );
   }
   */
-  //probably belongs in base
-  inline Ptr<AquaSimEnergyModel> EM(void) {return m_device->EnergyModel(); }
 
   virtual inline double GetPt() { return m_pT; }
   virtual inline double GetRXThresh() { return m_RXThresh; }

@@ -162,6 +162,7 @@ private:
   ObjectFactory m_localization;
   ObjectFactory m_attackM;
   bool m_attacker;  //default is false
+  ObjectFactory m_sinrChecker;
 };  //class AquaSimHelper
 
 }

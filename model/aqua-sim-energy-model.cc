@@ -45,11 +45,11 @@ AquaSimEnergyModel::GetTypeId()
       MakePointerAccessor (&AquaSimEnergyModel::m_device),
       MakePointerChecker<AquaSimNetDevice>())
     .AddAttribute ("RxPower", "Rx power",
-      DoubleValue (0.0),
+      DoubleValue (0.75),
       MakeDoubleAccessor (&AquaSimEnergyModel::m_rxP),
       MakeDoubleChecker<double>())
     .AddAttribute ("TxPower", "Tx power",
-      DoubleValue (0.0),
+      DoubleValue (2.0),
       MakeDoubleAccessor (&AquaSimEnergyModel::m_txP),
       MakeDoubleChecker<double>())
     .AddAttribute ("InitialEnergy", "Starting energy",
@@ -57,7 +57,7 @@ AquaSimEnergyModel::GetTypeId()
       MakeDoubleAccessor (&AquaSimEnergyModel::m_initialEnergy),
       MakeDoubleChecker<double>())
     .AddAttribute ("IdlePower", "Idle power",
-      DoubleValue (0.0),
+      DoubleValue (0.008),
       MakeDoubleAccessor (&AquaSimEnergyModel::m_idleP),
       MakeDoubleChecker<double>())
     ;
@@ -67,9 +67,9 @@ AquaSimEnergyModel::GetTypeId()
 AquaSimEnergyModel::AquaSimEnergyModel() :
     m_energy(10000.0),
     m_initialEnergy(10000.0),
-    m_rxP(0),
-    m_txP(0),
-    m_idleP(0),
+    m_rxP(0.75),
+    m_txP(2.0),
+    m_idleP(0.008),
     m_totalEnergyConsumption(0.0)
 {
   //m_source = 0;

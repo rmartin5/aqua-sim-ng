@@ -450,6 +450,7 @@ AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p)
   */
   if ((EM() && EM()->GetEnergy() <= 0) || GetNetDevice()->GetTransmissionStatus() == SLEEP
 				      || GetNetDevice()->GetTransmissionStatus() == SEND
+              || GetNetDevice()->GetTransmissionStatus() == RECV /* possible collision */
 				      || pstamp.GetPr() < m_RXThresh)
   {
     /**
@@ -534,7 +535,6 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p, int channelId) {
   Time txSendDelay = this->CalcTxTime(p->GetSize(), &m_modulationName );
   Simulator::Schedule(txSendDelay, &AquaSimNetDevice::SetTransmissionStatus, GetNetDevice(), NIDLE);
   //Simulator::Schedule(txSendDelay, &AquaSimPhyCmn::SetPhyStatus, this, PHY_IDLE);
-
   /**
   * here we simulate multi-channel (different frequencies),
   * not multiple tranceiver, so we pass the packet to channel_ directly

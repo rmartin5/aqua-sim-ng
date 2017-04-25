@@ -28,6 +28,7 @@
 #include "ns3/aqua-sim-noise-generator.h"
 #include "ns3/aqua-sim-address.h"
 #include "ns3/application.h"
+#include "ns3/aqua-sim-sinr-checker.h"
 
 #include "aqua-sim-helper.h"
 
@@ -159,6 +160,7 @@ AquaSimHelper::AquaSimHelper()
   m_energyM.SetTypeId("ns3::AquaSimEnergyModel");
   m_sync.SetTypeId("ns3::AquaSimSync");
   m_localization.SetTypeId("ns3::AquaSimRBLocalization");
+  m_sinrChecker.SetTypeId("ns3::AquaSimThresholdSinrChecker");
   m_attacker = false;
 }
 
@@ -375,6 +377,7 @@ AquaSimHelper::Create(Ptr<Node> node, Ptr<AquaSimNetDevice> device)
   Ptr<AquaSimEnergyModel> energyM = m_energyM.Create<AquaSimEnergyModel>();
   //Ptr<AquaSimSync> sync = m_sync.Create<AquaSimSync>();
   //Ptr<AquaSimLocalization> loc = m_localization.Create<AquaSimLocalization>();
+  Ptr<AquaSimThresholdSinrChecker> sinr = m_sinrChecker.Create<AquaSimThresholdSinrChecker>();
 
   device->SetPhy(phy);
   device->SetMac(mac);
@@ -387,6 +390,7 @@ AquaSimHelper::Create(Ptr<Node> node, Ptr<AquaSimNetDevice> device)
 
   device->SetEnergyModel(energyM);
   device->SetAddress(AquaSimAddress::Allocate());
+  device->GetPhy()->SetSinrChecker(sinr);
 
   if(m_attacker)
   {
@@ -411,6 +415,7 @@ AquaSimHelper::CreateWithoutRouting(Ptr<Node> node, Ptr<AquaSimNetDevice> device
   Ptr<AquaSimEnergyModel> energyM = m_energyM.Create<AquaSimEnergyModel>();
   //Ptr<AquaSimSync> sync = m_sync.Create<AquaSimSync>();
   //Ptr<AquaSimLocalization> loc = m_localization.Create<AquaSimLocalization>();
+  Ptr<AquaSimThresholdSinrChecker> sinr = m_sinrChecker.Create<AquaSimThresholdSinrChecker>();
 
   device->SetPhy(phy);
   device->SetMac(mac);
@@ -422,6 +427,7 @@ AquaSimHelper::CreateWithoutRouting(Ptr<Node> node, Ptr<AquaSimNetDevice> device
 
   device->SetEnergyModel(energyM);
   device->SetAddress(AquaSimAddress::Allocate());
+  device->GetPhy()->SetSinrChecker(sinr);
 
   if(m_attacker)
   {

@@ -30,7 +30,6 @@
 #include "ns3/object.h"
 
 #include "aqua-sim-phy.h"
-#include "aqua-sim-energy-model.h"
 #include "aqua-sim-noise-generator.h"
 #include "aqua-sim-header.h"
 
@@ -113,7 +112,6 @@ protected:
   Ptr<IncomingPacket> m_head;
   Ptr<AquaSimPhy> m_phy;
   PktSubmissionTimer* m_pktSubTimer;
-  Ptr<AquaSimEnergyModel> m_em;
   Ptr<AquaSimNoiseGen> m_noise;
 
 private:

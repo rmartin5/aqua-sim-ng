@@ -384,13 +384,13 @@ AlohaHeader::GetPType()
 uint32_t
 AlohaHeader::GetSerializedSize(void) const
 {
-  return 1+1+1;
+  return 2+2+1;
 }
 void
 AlohaHeader::Serialize (Buffer::Iterator start) const
 {
-  start.WriteU8 (SA.GetAsInt());
-  start.WriteU8 (DA.GetAsInt());
+  start.WriteU16 (SA.GetAsInt());
+  start.WriteU16 (DA.GetAsInt());
   //start.WriteU8 (SA.GetLength());
   //start.WriteU8 (DA.GetLength());
   start.WriteU8 (m_pType);
@@ -399,8 +399,8 @@ uint32_t
 AlohaHeader::Deserialize (Buffer::Iterator start)
 {
   Buffer::Iterator i = start;
-  SA = (AquaSimAddress) i.ReadU8();
-  DA = (AquaSimAddress) i.ReadU8();
+  SA = (AquaSimAddress) i.ReadU16();
+  DA = (AquaSimAddress) i.ReadU16();
   //ReadFrom(i, SA,8);	//read 8bit addr
   //ReadFrom(i, DA, 8);	//read 8bit addr
   m_pType = i.ReadU8();

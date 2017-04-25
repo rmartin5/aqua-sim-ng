@@ -51,6 +51,7 @@ namespace ns3 {
   class AquaSimNetDevice;
   class AquaSimChannel;
   class AquaSimMac;
+  class AquaSimEnergyModel;
   class AquaSimSinrChecker;
   class AquaSimSignalCache;
   class AquaSimModulation;
@@ -81,6 +82,7 @@ namespace ns3 {
     virtual void AddModulation(Ptr<AquaSimModulation> modulation, std::string modulationName) = 0;
     Ptr<AquaSimNetDevice> GetNetDevice ();
     Ptr<AquaSimMac> GetMac();
+    Ptr<AquaSimEnergyModel> EM();
 
     virtual void Dump() const = 0;
     virtual bool Decodable (double noise, double ps) = 0;

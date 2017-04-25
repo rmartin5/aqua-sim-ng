@@ -20,9 +20,11 @@
 
 #include "aqua-sim-sinr-checker.h"
 #include "ns3/double.h"
+#include "ns3/log.h"
 
 namespace ns3 {
 
+NS_LOG_COMPONENT_DEFINE("AquaSimSinrChecker");
 NS_OBJECT_ENSURE_REGISTERED (AquaSimSinrChecker);
 NS_OBJECT_ENSURE_REGISTERED (AquaSimThresholdSinrChecker);
 
@@ -51,6 +53,7 @@ AquaSimThresholdSinrChecker::GetTypeId (void)
 
 AquaSimThresholdSinrChecker::AquaSimThresholdSinrChecker ()
 {
+  NS_LOG_FUNCTION(this);
   m_decThresh = 0;
 }
 

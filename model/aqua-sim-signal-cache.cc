@@ -76,17 +76,18 @@ void
 PktSubmissionTimer::AddNewSubmission(Ptr<IncomingPacket> inPkt) {
   AquaSimHeader asHeader;
   (inPkt->packet)->PeekHeader(asHeader);
-  Time transmissionDelay = Seconds(inPkt->packet->GetSize() * 8 *      /*Byte conversion*/
+  /*Time transmissionDelay = Seconds(inPkt->packet->GetSize() * 8 *      //Byte conversion/
                            m_sC->m_phy->GetMac()->GetEncodingEff() /
-                           m_sC->m_phy->GetMac()->GetBitRate() );
+                           m_sC->m_phy->GetMac()->GetBitRate() ); */
+
+  /* Need to calcuate modulation here, aka how long until entire packet is received */
+  Time transmissionDelay = m_sC->m_phy->CalcTxTime((inPkt->packet)->GetSize());
 
   NS_LOG_FUNCTION(this << "incomingPkt:" << inPkt << "txtime:" <<
                     asHeader.GetTxTime() << " transmissionDelay:" <<
                     transmissionDelay.ToDouble(Time::S));
 
-  Simulator::ScheduleNow(&PktSubmissionTimer::Expire, this, inPkt);
-  //should not double transmissionDelay here...
-  //Simulator::Schedule(transmissionDelay, &PktSubmissionTimer::Expire, this, inPkt);
+  Simulator::Schedule(transmissionDelay,&PktSubmissionTimer::Expire, this, inPkt);
 
   /*if (m_waitingList.empty() || m_waitingList.top().endT > transmissionDelay)
   {
@@ -112,8 +113,6 @@ m_pktNum(0), m_totalPS(0.0), m_pktSubTimer(NULL)
   m_head = CreateObject<IncomingPacket>(AquaSimPacketStamp::INVALID);
   m_pktSubTimer = new PktSubmissionTimer(this);
   status = AquaSimPacketStamp::INVALID;
-
-  m_em = CreateObject<AquaSimEnergyModel>();	//Should be updated in the future.
 }
 
 AquaSimSignalCache::~AquaSimSignalCache()
@@ -152,7 +151,7 @@ AquaSimSignalCache::AddNewPacket(Ptr<Packet> p){
   m_head->next = inPkt;
 
   m_pktNum++;
-  m_totalPS += m_em->GetRxPower();
+  m_totalPS += m_phy->EM()->GetRxPower();
   UpdatePacketStatus();
 }
 
@@ -170,7 +169,7 @@ AquaSimSignalCache::DeleteIncomingPacket(Ptr<Packet> p){
 
   if (ptr != NULL && ptr->packet == p) {
     m_pktNum--;
-    m_totalPS -= m_em->GetRxPower();
+    m_totalPS -= m_phy->EM()->GetRxPower();
     pre->next = ptr->next;
     ptr = 0;
     return true;
@@ -243,7 +242,7 @@ AquaSimSignalCache::UpdatePacketStatus(){
 	//,SINR = 0; 		//currently not used
 
   for (Ptr<IncomingPacket> ptr = m_head->next; ptr != NULL; ptr = ptr->next) {
-    ps = m_em->GetRxPower();
+    ps = m_phy->EM()->GetRxPower();
     noise = m_totalPS - ps;
 
     if (ptr->status != AquaSimPacketStamp::RECEPTION)
@@ -277,7 +276,6 @@ void AquaSimSignalCache::DoDispose()
   delete m_pktSubTimer;
   m_pktSubTimer = 0;
   m_phy=0;
-  m_em=0;
   m_noise=0;
   Object::DoDispose();
 }

@@ -59,35 +59,30 @@ AquaSimRoutingDummy::Recv(Ptr<Packet> packet, const Address &dest, uint16_t prot
     ash.SetDirection(AquaSimHeader::DOWN);
     ash.SetNextHop(AquaSimAddress::GetBroadcast());  // ash.SetNextHop(AquaSimAddress(myAddr.GetAsInt()-1)); //
     ash.SetNumForwards(0);
-    ash.SetSAddr(myAddr);
     ash.SetDAddr(AquaSimAddress::ConvertFrom(dest));
     ash.SetErrorFlag(false);
-    ash.SetNumForwards(ash.GetNumForwards() + 1);
     ash.SetUId(packet->GetUid());
-
-    packet->AddHeader(ash);
   }
   else
   {
     //packet->RemoveHeader(ash);
-    if (ash.GetSAddr().GetAsInt() > myAddr.GetAsInt()) return true; //remove backtracking of packets from traffic generator
+    //if (ash.GetSAddr().GetAsInt() > myAddr.GetAsInt()) return true; //remove backtracking of packets from traffic generator
+    if (ash.GetDAddr() == myAddr)
+    {
+      DataForSink(packet);
+      return true;
+    }
 
-    ash.SetSAddr(myAddr);
-    ash.SetNumForwards(ash.GetNumForwards() + 1);
-    packet->AddHeader(ash);
+    if (ash.GetSAddr() == myAddr)
+    {
+      NS_LOG_INFO("Duplicate recv. Dropping pkt.");
+      return true;
+    }
   }
 
-  if (ash.GetNumForwards() > 1 && ash.GetSAddr() == myAddr)
-  {
-    NS_LOG_INFO("Duplicate recv. Dropping pkt.");
-    return true;
-  }
-
-  if (ash.GetDAddr() == myAddr)
-  {
-    DataForSink(packet);
-    return true;
-  }
+  ash.SetSAddr(myAddr);
+  ash.SetNumForwards(ash.GetNumForwards() + 1);
+  packet->AddHeader(ash);
 
 
   MACsend(packet);

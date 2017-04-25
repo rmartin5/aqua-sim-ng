@@ -71,6 +71,13 @@ AquaSimPhy::GetMac()
   return m_device->GetMac();
 }
 
+Ptr<AquaSimEnergyModel>
+AquaSimPhy::EM()
+{
+  return m_device->EnergyModel();
+}
+
+
 void
 AquaSimPhy::SetNetDevice(Ptr<AquaSimNetDevice> device)
 {
