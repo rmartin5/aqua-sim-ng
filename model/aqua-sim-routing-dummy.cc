@@ -67,19 +67,21 @@ AquaSimRoutingDummy::Recv(Ptr<Packet> packet, const Address &dest, uint16_t prot
   {
     //packet->RemoveHeader(ash);
     //if (ash.GetSAddr().GetAsInt() > myAddr.GetAsInt()) return true; //remove backtracking of packets from traffic generator
+    packet->AddHeader(ash);
     if (ash.GetDAddr() == myAddr)
     {
       DataForSink(packet);
       return true;
     }
 
-    if (ash.GetSAddr() == myAddr)
+    if (IsDeadLoop(packet))
     {
-      NS_LOG_INFO("Duplicate recv. Dropping pkt.");
+      NS_LOG_INFO("Deadloop detected. Dropping pkt.");
       return true;
     }
   }
 
+  packet->AddHeader(ash);
   ash.SetSAddr(myAddr);
   ash.SetNumForwards(ash.GetNumForwards() + 1);
   packet->AddHeader(ash);
