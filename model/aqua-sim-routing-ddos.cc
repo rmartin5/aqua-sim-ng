@@ -73,23 +73,23 @@ AquaSimDDOS::AquaSimDDOS() :
       pushback & timeout
       throttle & timeout
   */
-  double rulesets[] = {0.5, 0.25, 0.5,
-                    0.5, 0.25, 0.5,
-                    0.5, 0.5,
-                    0.5, 0.5};
+  /*double rulesets[] = {0.7, 0.5, 0.8,
+                    0.7, 0.5, 0.8,
+                    0.6, 0.8,
+                    0.7, 0.8};*/
+  double rulesets[]={0.6,0.6,0.6,0.6};
   m_rules = std::vector<double>(rulesets, rulesets + sizeof(rulesets) / sizeof(double) );
 
   Time delay = (m_ddosCheckFrequency + m_ddosCheckFrequency * m_rand->GetValue()); //add a slight variation
   Simulator::Schedule(delay, &AquaSimDDOS::DdosAttackCheck, this);
 
-  //NOTE: currently disabled:
   Simulator::Schedule(m_analysisFreq,&AquaSimDDOS::Analysis,this);
   //used to activate/deactivate statistical/machine learning
 
   sinkCounter=attackCounter=0;
 
   #if LIBSVM
-  //default svm settings
+  //default svm settings3
   m_param.svm_type = C_SVC;
   m_param.kernel_type = LINEAR;
   m_param.degree = 3;	/* for poly */
@@ -181,6 +181,7 @@ AquaSimDDOS::SendInterest(Ptr<Packet> p)
   NS_LOG_FUNCTION(this << p << "@time" << Simulator::Now().ToDouble(Time::S));
 
   Ptr<Packet> pkt = p->Copy();
+
   AquaSimHeader ash;
   DDOSHeader dh;
   pkt->RemoveHeader(ash);
@@ -303,7 +304,7 @@ AquaSimDDOS::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumb
     packet->AddHeader(ash);
 
     //fill payload at end with zeros to reach expected interest packet size of 320 bits
-    packet->AddAtEnd( Create<Packet>(40-packet->GetSize()) );
+    if (packet->GetSize() < 40) packet->AddAtEnd( Create<Packet>(40-packet->GetSize()) );
   }
   else
   {
@@ -319,6 +320,7 @@ AquaSimDDOS::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumb
 
     uint8_t *payload = new uint8_t[packet->GetSize()];
     packet->CopyData (payload, packet->GetSize());
+    interest.clear();
     interest = std::string((char*)payload);
 
     packet->AddHeader(dh);
@@ -431,9 +433,14 @@ AquaSimDDOS::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumb
     //      towards the original data requestor. drop packet
   }
   else if (dh.GetPacketType() == DDOSHeader::Alert) {
-    NS_LOG_DEBUG("Alert Pkt recved on node " << GetNetDevice()->GetAddress());
-    (it->second).timeoutThreshold = std::max((it->second).timeoutThreshold-m_pushbackReduction, 0.0);
-    (it->second).maxThreshold = std::max((it->second).maxThreshold-m_throttleReduction, 0.0);
+    NS_LOG_DEBUG("Alert Pkt recved on node " << GetNetDevice()->GetAddress() << " for node " << ash.GetDAddr());
+
+    std::map<int, DdosTable>::iterator attackerIter;
+    attackerIter = DdosDetectionTable.find(ash.GetDAddr().GetAsInt());
+    if (attackerIter == DdosDetectionTable.end()) return true; //drop alert if not in range of potential attacker
+
+    (attackerIter->second).timeoutThreshold = std::max((attackerIter->second).timeoutThreshold-m_pushbackReduction, 0.0);
+    (attackerIter->second).maxThreshold = std::max((attackerIter->second).maxThreshold-m_throttleReduction, 0.0);
     return true;
   }
   else {
@@ -463,7 +470,7 @@ AquaSimDDOS::NodeContainsDataPath(std::string interest)
 {
   std::size_t pathDivider = interest.find_last_of("/");
   std::string path = interest.substr(0,pathDivider+1);
-  NS_LOG_DEBUG("DataPath for interst:" << interest << " is:" << path);
+  NS_LOG_DEBUG("DataPath for interest:" << interest << " is:" << path);
 
   for (uint i=0; i < m_knownDataPath.size(); i++)
   {
@@ -492,8 +499,6 @@ AquaSimDDOS::RemoveEntry(std::string interest, bool isTimeout)
     std::set<int>::iterator it = (it_pit->second).nodeID.begin();
     for (; it!=(it_pit->second).nodeID.end(); ++it) {
       (DdosDetectionTable.find(*it)->second).entriesTimeout++;
-      if (AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()).GetAsInt() == 2)
-        std::cout << "timeout:" << *it << " for " << interest << " @ " << Simulator::Now().ToDouble(Time::S) <<"\n";
     }
   }
 
@@ -575,7 +580,7 @@ AquaSimDDOS::DdosAttackCheck()
         Pushback(localNodeId);
         potentialAttack=true;
       }
-    if (((1+channelMeasurement)*timeoutRatio >= (localDdosTable).timeoutThreshold)  &&
+    if (!potentialAttack && ((1+channelMeasurement)*timeoutRatio >= (localDdosTable).timeoutThreshold)  &&
             (transDominance >= (localDdosTable).maxThreshold) )
       {
         Throttle(localNodeId);
@@ -596,16 +601,24 @@ AquaSimDDOS::DdosAttackCheck()
       m_space[1].value=std::max(transDominance,pitUsage);
       m_space[2].index=-1;
 
-      /*
+
       std::cout << "Predicted(" << GetNetDevice()->GetAddress() << ") @" << Simulator::Now().ToDouble(Time::S) <<
         ":" << localNodeId << "," << svm_predict(m_model,m_space) << "\n";
-      */
+
       free(m_space);
     }
 
+    // --- for mobility analysis ----
+    Ptr<Object> object = GetNetDevice()->GetChannel()->GetDevice(localNodeId-1)->GetNode();
+    Vector target = object->GetObject<MobilityModel>()->GetPosition();
+    double deltaDistance = sqrt( pow(((localDdosTable).nodeLoc.x-target.x),2) +
+                                pow(((localDdosTable).nodeLoc.y-target.y),2) +
+                                pow(((localDdosTable).nodeLoc.z-target.z),2) );
+    (it->second).nodeLoc = target;
+
     //collect data, over time, for machine learning case:
     MachineLearningStruct mlTable;
-    mlTable.mobility = 0;  //not currently used
+    mlTable.mobility = Normalize(deltaDistance, m_ddosCheckFrequency.ToDouble(Time::S) * 0.05); //increased sensitivity from 0.5 m/s to 0.05 due to very small network size
     mlTable.pushback = Normalize(pitUsage, (localDdosTable).maxThreshold);
     mlTable.throttle = Normalize(transDominance, (localDdosTable).maxThreshold);
     mlTable.timeout = Normalize(((1+channelMeasurement)*timeoutRatio), (localDdosTable).timeoutThreshold);
@@ -671,11 +684,6 @@ void AquaSimDDOS::Analysis()
   for (std::vector<StatisticalTable>::const_iterator i = statScores.begin(); i!=statScores.end(); i++)
     std::cout << (*i).nodeID << ',' << (*i).score << " | ";
   std::cout << "\n";
-
-  // TODO should verify all entries in SvmTable are accurate either here (for each analysis call) or when added to SvmTable in DdosAttackCheck().
-  // if m_svmLearningFreq, then SVM();
-  // need a classification step (for each newly gathered entry (can occur in DdosAttackCheck())) whereas need a
-  //    training step which can occur here every so often (such as occur when rules mining does or even less.)
 
   if(m_statisticalIteration >= m_ruleMiningFreq) {
     std::vector<StatisticalTable> ruleStatScores = RulesMining();
@@ -762,7 +770,8 @@ void AquaSimDDOS::SVM()
   NS_LOG_FUNCTION(this);
   //NOTE: this is for training model, classification should be separate.
   //XXX should trained data set be presistent or removed from queue?
-  if (SvmTable.size() < 20) return; //may need to change this around.
+  if (SvmTable.size() < 100) return; //may need to change this around.
+  std::cout << "SVM table size:" << SvmTable.size() << "\n";
 
   m_prob.l = SvmTable.size();
   size_t elements, j;
@@ -781,7 +790,7 @@ void AquaSimDDOS::SVM()
     m_prob.y[i] = (entry.compromised)?1:0;
 
     //boundry check.
-    NS_ASSERT(entry.timeoutR >= 0 && entry.timeoutR <= 1 || entry.maxR >= 0 && entry.maxR <= 1);
+    NS_ASSERT((entry.timeoutR >= 0 && entry.timeoutR <= 1) || (entry.maxR >= 0 && entry.maxR <= 1));
 
     m_space[j].index = 0;
     m_space[j].value = entry.timeoutR;
@@ -802,7 +811,7 @@ void AquaSimDDOS::SVM()
   }
 
   // -------------- cross validation ----------------------------
-/*
+  /*
   int k, total_correct = 0, nr_fold = 2;
   double *target = Malloc(double,m_prob.l);
 
@@ -813,7 +822,7 @@ void AquaSimDDOS::SVM()
       ++total_correct;
   printf("Cross Validation Accuracy = %g%%\n",100.0*total_correct/m_prob.l);
   free(target);
-*/
+  */
 
   // ------------- training and saving model -------------------
   m_model = svm_train(&m_prob,&m_param);
@@ -844,21 +853,28 @@ std::vector<StatisticalTable> AquaSimDDOS::RulesMining()
     for (int j=0;j<totalTransactions;j++) {
       /* (1) finding amount of compromised vs uncompromised components for each transaction */
       int compromisedRules=0;
-      int totalRules=7;
+      int totalRules=4;
       MachineLearningStruct currentTrans = (rm_it->second).front();
       /* The rule sets we are looking at */
-      std::vector<double> transaction = {currentTrans.mobility, currentTrans.pushback,currentTrans.timeout,
+      std::vector<double> transaction = {currentTrans.mobility,currentTrans.pushback,currentTrans.timeout,
                                         currentTrans.mobility,currentTrans.throttle,currentTrans.timeout,
                                         currentTrans.pushback,currentTrans.timeout,
                                         currentTrans.throttle,currentTrans.timeout};
-      std::vector<bool> binaryTransaction;
+      /*std::vector<bool> binaryTransaction;
       for(unsigned i=0; i<m_rules.size(); i++) {
         if(transaction[i]>m_rules[i]) {
           compromisedRules++;
           binaryTransaction.push_back(true);
         } else  binaryTransaction.push_back(false);
-
+      }*/
+      std::vector<bool> binaryTransaction = {(transaction[0]+transaction[1]+transaction[2])>m_rules[0]*3,
+                                             (transaction[3]+transaction[4]+transaction[5])>m_rules[1]*3,
+                                             (transaction[6]+transaction[7])>m_rules[2]*2,
+                                             (transaction[8]+transaction[9])>m_rules[3]*2};
+      for (int c=0;c<binaryTransaction.size();c++) {
+        if (binaryTransaction[c]==true) compromisedRules++;
       }
+
       /* (2) if compromised >= uncompromised rule sets then set transaction to compromised */
       if (compromisedRules>=totalRules/2) {
         compromisedTransactions++;

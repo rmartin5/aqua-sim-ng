@@ -865,8 +865,10 @@ ASSPktCache::AccessPacket(int p)
       // if the pkt is existing put it to the tail
       tmp = p;
       for (j = i; j < m_size - 1; j++)
+      {
         m_pCache[j] = m_pCache[j+1];
-        m_pCache[m_size-1] = tmp;
+      }
+      m_pCache[m_size-1] = tmp;
       return 1;
     }
   }

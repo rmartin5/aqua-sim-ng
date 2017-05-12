@@ -39,12 +39,12 @@ NS_LOG_COMPONENT_DEFINE("VBF");
 int
 main (int argc, char *argv[])
 {
-  double simStop = 1000; //seconds
-  int nodes = 10;
+  double simStop = 200; //seconds
+  int nodes = 200;
   int sinks = 1;
-  uint32_t m_dataRate = 180;
-  uint32_t m_packetSize = 320;
-  double range = 20;
+  uint32_t m_dataRate = 10000;
+  uint32_t m_packetSize = 40;
+  double range = 100;
   //int m_maxBurst =10;
 
   LogComponentEnable ("VBF", LOG_LEVEL_INFO);
@@ -60,12 +60,15 @@ main (int argc, char *argv[])
 
   NodeContainer nodesCon;
   NodeContainer sinksCon;
+  NodeContainer senderCon;
   nodesCon.Create(nodes);
   sinksCon.Create(sinks);
+  senderCon.Create(1);
 
   PacketSocketHelper socketHelper;
   socketHelper.Install(nodesCon);
   socketHelper.Install(sinksCon);
+  socketHelper.Install(senderCon);
 
   //establish layers using helper's pre-build settings
   AquaSimChannelHelper channel = AquaSimChannelHelper::Default();
@@ -74,65 +77,68 @@ main (int argc, char *argv[])
   //AquaSimEnergyHelper energy;	//******this could instead be handled by node helper. ****/
   asHelper.SetChannel(channel.Create());
   asHelper.SetMac("ns3::AquaSimBroadcastMac");
-      //asHelper.SetMac("ns3::AquaSimUwan");
-  asHelper.SetRouting("ns3::AquaSimVBF");
+  asHelper.SetRouting("ns3::AquaSimVBF", "Width", DoubleValue(100), "TargetPos", Vector3DValue(Vector(190,190,0)));
 
   /*
    * Preset up mobility model for nodes and sinks here
    */
   MobilityHelper mobility;
+  MobilityHelper nodeMobility;
   NetDeviceContainer devices;
   Ptr<ListPositionAllocator> position = CreateObject<ListPositionAllocator> ();
-
-  //Static Y and Z dimension for now
-  Vector boundry = Vector(0,0,0);
 
   std::cout << "Creating Nodes\n";
 
   for (NodeContainer::Iterator i = nodesCon.Begin(); i != nodesCon.End(); i++)
     {
       Ptr<AquaSimNetDevice> newDevice = CreateObject<AquaSimNetDevice>();
-      position->Add(boundry);
       devices.Add(asHelper.Create(*i, newDevice));
-      boundry.x += 20;
-      boundry.y +=0;
       newDevice->GetPhy()->SetTransRange(range);
     }
 
   for (NodeContainer::Iterator i = sinksCon.Begin(); i != sinksCon.End(); i++)
     {
       Ptr<AquaSimNetDevice> newDevice = CreateObject<AquaSimNetDevice>();
-      position->Add(boundry);
+      position->Add(Vector(190,190,0));
       devices.Add(asHelper.Create(*i, newDevice));
-      boundry.x += 20;
       newDevice->GetPhy()->SetTransRange(range);
     }
 
+  Ptr<AquaSimNetDevice> newDevice = CreateObject<AquaSimNetDevice>();
+  position->Add(Vector(10,10,0));
+  devices.Add(asHelper.Create(senderCon.Get(0),newDevice));
+  newDevice->GetPhy()->SetTransRange(range);
 
+  //Set sink at origin and surround with uniform distribution of regular nodes.
   mobility.SetPositionAllocator(position);
   mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-  mobility.Install(nodesCon);
+  nodeMobility.SetPositionAllocator("ns3::UniformDiscPositionAllocator", "X", DoubleValue(100.0),
+                                      "Y", DoubleValue(100.0), "rho", DoubleValue(100));
+  nodeMobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+  nodeMobility.Install(nodesCon);
   mobility.Install(sinksCon);
+  mobility.Install(senderCon);
 
   PacketSocketAddress socket;
   socket.SetAllDevices();
   // socket.SetSingleDevice (devices.Get(0)->GetIfIndex());
-  socket.SetPhysicalAddress (devices.Get(0)->GetAddress());
+  socket.SetPhysicalAddress (devices.Get(nodes)->GetAddress());
   socket.SetProtocol (0);
 
-  std::cout << devices.Get(0)->GetAddress() << " &&& " << devices.Get(0)->GetIfIndex() << "\n";
-  std::cout << devices.Get(1)->GetAddress() << " &&& " << devices.Get(1)->GetIfIndex() << "\n";
+  //std::cout << devices.Get(nodes)->GetAddress() << " &&& " << devices.Get(0)->GetIfIndex() << "\n";
+  //std::cout << devices.Get(0)->GetAddress() << " &&& " << devices.Get(1)->GetIfIndex() << "\n";
 
   OnOffHelper app ("ns3::PacketSocketFactory", Address (socket));
-  app.SetAttribute ("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
-  app.SetAttribute ("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
+  app.SetAttribute ("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=0.0066]"));
+  app.SetAttribute ("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0.9934]"));
+//  app.SetAttribute ("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=0.026]"));
+//  app.SetAttribute ("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0.974]"));
   app.SetAttribute ("DataRate", DataRateValue (m_dataRate));
   app.SetAttribute ("PacketSize", UintegerValue (m_packetSize));
 
-  ApplicationContainer apps = app.Install (nodesCon);
+  ApplicationContainer apps = app.Install (senderCon);
   apps.Start (Seconds (0.5));
-  apps.Stop (Seconds (simStop + 1));
-
+  apps.Stop (Seconds (simStop));
 
   Ptr<Node> sinkNode = sinksCon.Get(0);
   TypeId psfid = TypeId::LookupByName ("ns3::PacketSocketFactory");
@@ -145,6 +151,7 @@ main (int argc, char *argv[])
   std::cout << "-----------Running Simulation-----------\n";
   Simulator::Stop(Seconds(simStop));
   Simulator::Run();
+  asHelper.GetChannel()->PrintCounters();
   Simulator::Destroy();
 
   std::cout << "fin.\n";

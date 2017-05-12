@@ -56,6 +56,7 @@ struct DdosTable{
   double timeoutThreshold;
   double maxThreshold;
   double thresholdOffset;
+  Vector nodeLoc;
   DdosTable(int node) : nodeID(node), NAck(0), pktRecv(0),
                 interestEntries(0), entriesTimeout(0),
                 //pushback(Timer::CANCEL_ON_DESTROY),
