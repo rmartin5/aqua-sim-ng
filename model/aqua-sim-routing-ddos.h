@@ -51,6 +51,7 @@ struct DdosTable{
   int pktRecv;          //transmittion dominance
   int interestEntries;  //timeout ratio
   int entriesTimeout;   //timeout ratio
+  bool idle;            //if node is idle from last ddos table check
   EventId pushback;
   EventId throttle;
   double timeoutThreshold;
@@ -59,9 +60,10 @@ struct DdosTable{
   Vector nodeLoc;
   DdosTable(int node) : nodeID(node), NAck(0), pktRecv(0),
                 interestEntries(0), entriesTimeout(0),
+                idle(false),
                 //pushback(Timer::CANCEL_ON_DESTROY),
                 //throttle(Timer::CANCEL_ON_DESTROY),
-                timeoutThreshold(0.8), maxThreshold(0.3),
+                timeoutThreshold(0.8), maxThreshold(0.25),
                 thresholdOffset(0.0) {}
 };
 
@@ -132,6 +134,7 @@ private:
   void Throttle(int nodeID);
   void ResetPushback(int nodeID);
   void ResetThrottle(int nodeID);
+  void ResetStatDistribution(int nodeID);
   bool NodeContainsRelatedData(std::string interest);
   bool NodeContainsDataPath(std::string interest);
   void RemoveEntry(std::string interest, bool isTimeout);
@@ -152,11 +155,11 @@ private:
 
   Ptr<UniformRandomVariable> m_rand;
   //int m_dataCacheSize;
+  bool isAttacker;
 
   std::ostringstream m_interestMsg;
   std::string m_baseInterest;         //simulate base name of interest
   int m_interestVersionNum;   //simulate interest version being requested
-  bool isAttacker;
   std::vector<std::string> m_possibleBaseInt;
 
   double m_timeoutThreshold;  // for reset purposes

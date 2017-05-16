@@ -46,7 +46,7 @@ AquaSimDDOS::AquaSimDDOS() :
   isAttacker(false), m_pushbackReduction(0.01), m_throttleReduction(0.015),
   m_statisticalIteration(0)
 {
-  m_pitEntryTimeout = Seconds(120);
+  m_pitEntryTimeout = Seconds(60);
   m_ddosCheckFrequency = Minutes(2);//Minutes(10);
   m_pushbackLength = Minutes(3);//Hours(12);
   m_throttleLength = Minutes(3);//Hours(12);
@@ -89,7 +89,7 @@ AquaSimDDOS::AquaSimDDOS() :
   sinkCounter=attackCounter=0;
 
   #if LIBSVM
-  //default svm settings3
+  //default svm settings
   m_param.svm_type = C_SVC;
   m_param.kernel_type = LINEAR;
   m_param.degree = 3;	/* for poly */
@@ -334,6 +334,7 @@ AquaSimDDOS::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumb
     DdosDetectionTable.insert( std::pair<int, DdosTable>(ash.GetSAddr().GetAsInt(),
                                           DdosTable(ash.GetSAddr().GetAsInt())));
   }
+  (it->second).idle=false;
 
   if(!NodeContainsDataPath(interest) && dh.GetPacketType() != DDOSHeader::Alert)
   {
@@ -556,7 +557,11 @@ AquaSimDDOS::DdosAttackCheck()
         //don't review self
         continue;
       }
-
+    if (localDdosTable.idle)
+    {
+      continue;
+    }
+    (it->second).idle=true; //reset for next iteration
 
     double timeoutRatio = (double) (localDdosTable).entriesTimeout / (localDdosTable).interestEntries;
     double channelMeasurement = (double) (localDdosTable).NAck / m_totalPktSent;
@@ -601,10 +606,10 @@ AquaSimDDOS::DdosAttackCheck()
       m_space[1].value=std::max(transDominance,pitUsage);
       m_space[2].index=-1;
 
-
+      /*
       std::cout << "Predicted(" << GetNetDevice()->GetAddress() << ") @" << Simulator::Now().ToDouble(Time::S) <<
         ":" << localNodeId << "," << svm_predict(m_model,m_space) << "\n";
-
+      */
       free(m_space);
     }
 
@@ -768,9 +773,9 @@ std::vector<StatisticalTable> AquaSimDDOS::Statistical()
 void AquaSimDDOS::SVM()
 {
   NS_LOG_FUNCTION(this);
+
   //NOTE: this is for training model, classification should be separate.
-  //XXX should trained data set be presistent or removed from queue?
-  if (SvmTable.size() < 100) return; //may need to change this around.
+  if (SvmTable.size() < 100) return;
   std::cout << "SVM table size:" << SvmTable.size() << "\n";
 
   m_prob.l = SvmTable.size();
@@ -871,7 +876,7 @@ std::vector<StatisticalTable> AquaSimDDOS::RulesMining()
                                              (transaction[3]+transaction[4]+transaction[5])>m_rules[1]*3,
                                              (transaction[6]+transaction[7])>m_rules[2]*2,
                                              (transaction[8]+transaction[9])>m_rules[3]*2};
-      for (int c=0;c<binaryTransaction.size();c++) {
+      for (unsigned int c=0;c<binaryTransaction.size();c++) {
         if (binaryTransaction[c]==true) compromisedRules++;
       }
 
@@ -986,6 +991,8 @@ AquaSimDDOS::ResetPushback(int nodeID)
   DdosTable &ddosTable = DdosDetectionTable.find(nodeID)->second;
   ddosTable.timeoutThreshold = m_timeoutThreshold;
   ddosTable.maxThreshold = m_maxThreshold - ddosTable.thresholdOffset;
+
+  ResetStatDistribution(nodeID);
 }
 
 void
@@ -995,16 +1002,35 @@ AquaSimDDOS::ResetThrottle(int nodeID)
   DdosTable &ddosTable = DdosDetectionTable.find(nodeID)->second;
   ddosTable.timeoutThreshold = m_timeoutThreshold;
   ddosTable.maxThreshold = m_maxThreshold - ddosTable.thresholdOffset;
+
+  ResetStatDistribution(nodeID);
 }
+
+/*reset entry in statDistribution to allow for a pessimistic statistical approach.
+ * ie. If an attacker should go silent or constantly move, we will automatically assume
+ *      it is a new node for statistical analysis, and therefore assign a 1 to the given node
+ *      during the next Analysis phase (high probability to be an attacker).
+ */
+void
+AquaSimDDOS::ResetStatDistribution(int nodeID)
+{
+  std::map<int,MachineLearningStruct>::iterator it_stat;
+  it_stat = PreviousStatDistribution.find(nodeID);
+  if (it_stat == PreviousStatDistribution.end()) {
+    NS_LOG_WARN("No StatDistribution found for " << nodeID);
+    return;
+  }
+  PreviousStatDistribution.erase(it_stat);
+}
+
 
 void
 AquaSimDDOS::UpdateInterest()
 {
   Ptr<UniformRandomVariable> randVar = CreateObject<UniformRandomVariable> ();
-
   if(isAttacker)
   {
-    m_interestVersionNum = randVar->GetValue(1500,3000);
+    m_interestVersionNum = randVar->GetValue(1501,3000);
     //assuming all requests are illegitimate although random.
 
 
@@ -1025,6 +1051,8 @@ AquaSimDDOS::UpdateInterest()
   //NOTE:editing below depenent on topology type.
   m_baseInterest = m_possibleBaseInt[randVar->GetInteger(0,2)];
   randVar=0;
+  //m_baseInterest = m_possibleBaseInt[0];  //set just to crab.
+
 
   m_interestMsg.str("");
   m_interestMsg << m_baseInterest << m_interestVersionNum << '\0';
