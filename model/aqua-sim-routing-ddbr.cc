@@ -68,6 +68,8 @@ AquaSimDDBR::AquaSimDDBR()
   m_nTab = new MNeighbTable();
   m_sendTimer = new DDBR_SendingTimer(this);
   m_sendTimer->SetFunction(&DDBR_SendingTimer::Expire,m_sendTimer);
+
+  m_rand=CreateObject<UniformRandomVariable> ();
 }
 
 AquaSimDDBR::~AquaSimDDBR()
@@ -84,6 +86,14 @@ AquaSimDDBR::GetTypeId()
     .AddConstructor<AquaSimDDBR> ()
   ;
   return tid;
+}
+
+int64_t
+AquaSimDDBR::AssignStreams (int64_t stream)
+{
+  NS_LOG_FUNCTION (this << stream);
+  m_rand->SetStream(stream);
+  return 1;
 }
 
 bool

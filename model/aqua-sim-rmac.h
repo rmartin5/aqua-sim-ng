@@ -25,6 +25,7 @@
 #include "aqua-sim-rmac-buffer.h"
 #include "aqua-sim-address.h"
 #include "ns3/event-id.h"
+#include "ns3/random-variable-stream.h"
 
 
 #define R_TABLE_SIZE 20 // the size of delay table
@@ -211,7 +212,9 @@ public:
   AquaSimRMac();
   virtual ~AquaSimRMac();
   static TypeId GetTypeId (void);
+  int64_t AssignStreams (int64_t stream);
 
+  Ptr<UniformRandomVariable> m_rand;
   double m_NDwindow;// the window to send ND
   double m_ackNDwindow;// the window to send ACK_ND
   double m_phaseOneWindow; // the time for latency detection

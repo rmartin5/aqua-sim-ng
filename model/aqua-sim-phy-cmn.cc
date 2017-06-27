@@ -27,6 +27,7 @@
 #include "ns3/double.h"
 #include "ns3/uinteger.h"
 #include "ns3/pointer.h"
+#include "ns3/trace-source-accessor.h"
 
 #include "aqua-sim-header.h"
 #include "aqua-sim-header-mac.h"
@@ -161,6 +162,12 @@ AquaSimPhyCmn::GetTypeId(void)
       PointerValue(),
       MakePointerAccessor (&AquaSimPhyCmn::m_sC),
       MakePointerChecker<AquaSimSignalCache>())
+    .AddTraceSource("Rx", "A packet was receieved.",
+      MakeTraceSourceAccessor (&AquaSimPhyCmn::m_rxLogger),
+      "ns3::AquaSimPhy::TracedCallback")
+    .AddTraceSource("Tx", "A packet was transmitted.",
+      MakeTraceSourceAccessor (&AquaSimPhyCmn::m_txLogger),
+      "ns3::AquaSimPhy::TracedCallback")
     ;
   return tid;
 }
@@ -542,13 +549,14 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p, int channelId) {
   *
   * NOTE channelId must be set by upper layer and AquaSimPhyCmn::Recv() should be edited accordingly.
   */
-
+  NotifyTx(p);
+  m_txLogger(p, m_sC->GetNoise());
   return m_channel.at(channelId)->Recv(p, this);
 }
 
 /**
 * send packet to upper layer, supposed to be MAC layer,
-* but actually go to trace module first
+* but actually go to any specificed module.
 */
 void
 AquaSimPhyCmn::SendPktUp(Ptr<Packet> p)
@@ -559,6 +567,9 @@ AquaSimPhyCmn::SendPktUp(Ptr<Packet> p)
 	p->RemoveHeader(ash);
   p->PeekHeader(mach);
   p->AddHeader(ash);
+
+  NotifyRx(p);
+  m_rxLogger(p, m_sC->GetNoise());
 
   //This can be shifted to within the switch to target specific packet types.
   if (GetNetDevice()->IsAttacker()){
@@ -589,7 +600,7 @@ AquaSimPhyCmn::SendPktUp(Ptr<Packet> p)
 }
 
 /**
-* process packet when signal
+* process packet with signal cache, looking for collisions and SINR
 */
 void
 AquaSimPhyCmn::SignalCacheCallback(Ptr<Packet> p) {
@@ -768,4 +779,11 @@ void AquaSimPhyCmn::SetTransRange(double range)
 double AquaSimPhyCmn::GetTransRange()
 {
   return m_transRange;
+}
+
+int64_t
+AquaSimPhyCmn::AssignStreams (int64_t stream)
+{
+  NS_LOG_FUNCTION (this << stream);
+  return 0;
 }

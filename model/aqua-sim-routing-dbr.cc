@@ -653,8 +653,6 @@ AquaSimDBR::AquaSimDBR() :
 	// create packet cache
 	m_pc = new ASPktCache();
 
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
-
   // setup the timer
 	m_beaconTimer = new DBR_BeaconTimer(this);
   m_beaconTimer->SetFunction(&DBR_BeaconTimer::Expire,m_beaconTimer);
@@ -663,6 +661,8 @@ AquaSimDBR::AquaSimDBR() :
 	m_sendTimer = new DBR_SendingTimer(this);
   m_sendTimer->SetFunction(&DBR_SendingTimer::Expire,m_sendTimer);
 	//m_sendTimer->Schedule(Seconds(m_rand->GetValue(0.0,m_bInt)));
+
+	m_rand = CreateObject<UniformRandomVariable> ();
 }
 
 AquaSimDBR::~AquaSimDBR()
@@ -681,6 +681,14 @@ AquaSimDBR::GetTypeId()
     .AddConstructor<AquaSimDBR> ()
   ;
   return tid;
+}
+
+int64_t
+AquaSimDBR::AssignStreams (int64_t stream)
+{
+  NS_LOG_FUNCTION (this << stream);
+  m_rand->SetStream(stream);
+  return 1;
 }
 
 // construct the beacon packet
@@ -800,7 +808,6 @@ AquaSimDBR::Beacon_Callback(void)
 		//		mn_->address(), iph->saddr(), iph->daddr());
 
     p->AddHeader(ash);
-		Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
     Simulator::Schedule(Seconds(m_rand->GetValue()*DBR_JITTER),&AquaSimRouting::SendDown,this,
                           p,AquaSimAddress::GetBroadcast(),Seconds(0));
 	}
@@ -911,7 +918,6 @@ AquaSimDBR::ForwardPacket(Ptr<Packet> p, int flag)
 				dbrh.SetNHops((dbrh.GetNHops()-1));
 
 				// set broadcasting delay
-				Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 				delay = m_rand->GetValue() * DBR_JITTER;
 			}
 		}
@@ -950,7 +956,6 @@ AquaSimDBR::ForwardPacket(Ptr<Packet> p, int flag)
         dbrh.SetNHops((dbrh.GetNHops()-1));
 
 				// set broadcasting delay
-				Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 				delay = m_rand->GetValue() * DBR_JITTER;
 			}
 		}
@@ -1165,7 +1170,6 @@ AquaSimDBR::HandlePktForward(Ptr<Packet> p)
 //	p->AddHeader(dbrh);
   p->AddHeader(ash);
   p->AddPacketTag(ptag);
-	Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   Simulator::Schedule(Seconds(m_rand->GetValue()*DBR_JITTER),
                         &AquaSimRouting::SendDown,this,
                         p,AquaSimAddress::GetBroadcast(),Seconds(0));

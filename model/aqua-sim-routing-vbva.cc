@@ -456,6 +456,8 @@ AquaSimVBVA::AquaSimVBVA() :
   //tracetarget = NULL;
   m_width=0;
   m_counter=0;
+
+  m_rand = CreateObject<UniformRandomVariable> ();
 }
 
 TypeId
@@ -474,6 +476,14 @@ AquaSimVBVA::GetTypeId(void)
       MakeDoubleChecker<double>())
   ;
   return tid;
+}
+
+int64_t
+AquaSimVBVA::AssignStreams (int64_t stream)
+{
+  NS_LOG_FUNCTION (this << stream);
+  m_rand->SetStream(stream);
+  return 1;
 }
 
 bool AquaSimVBVA::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber)
@@ -860,7 +870,6 @@ void AquaSimVBVA::ProcessBackpressurePacket(Ptr<Packet> pkt)
 
           PktTable.DeleteHash(source,num);
           double d3=(GetNetDevice()->GetPhy()->GetTransRange())/ns3::SOUND_SPEED_IN_WATER;
-          Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
             double d4=m_rand->GetValue()*JITTER;
 	    //  double c=DELAY*sqrt(m_miniThreshold)+JITTER+d3*3+d4;
 	     double c=DELAY*sqrt(3.0)*4.0+JITTER+d3*3+d4;
@@ -923,7 +932,6 @@ void AquaSimVBVA::ConsiderNew(Ptr<Packet> pkt)
 
   NS_LOG_INFO("Consider New!");
 	//   printf ("vectorbasedvoidavoidance:(id :%d) forward:(%d ,%d) sender is(%d,%d,%d), my position is (%f,%f,%f) forward position is (%f,%f,%f) at time %f  \n",here_.addr_, vbh->forward_agent_id.addr_, vbh->forward_agent_id.port_,vbh->sender_id.addr_,vbh->sender_id.port_,vbh->pk_num,node->X(),node->Y(),node->Z(),vbh->info.fx,vbh->info.fy,vbh->info.fz,NOW);
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 
 	switch (msg_type) {
 	case INTEREST:
@@ -1429,7 +1437,6 @@ void AquaSimVBVA::ProcessSelfcenteredTimeout(Ptr<Packet> pkt)
 
     //        printf ("vectorbasedvoidavoidance(%d): is worth forwarding this packet\n ",here_.addr_);
           double d3=(GetNetDevice()->GetPhy()->GetTransRange())/ns3::SOUND_SPEED_IN_WATER;
-          Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
           double d4=m_rand->GetValue()*JITTER;
           SetShiftTimer(pkt,(sqrt(m_miniThreshold)*DELAY*2+d3*3+d4));
 
@@ -1548,7 +1555,6 @@ void AquaSimVBVA::ProcessForwardTimeout(Ptr<Packet>  pkt)
                if(tdelay<=m_priority) {
 		 // printf("vectorbased: node (%d) is still worth forwarding the data packet c=%d and tdelay=%f \n", here_.addr_,ncounter,tdelay);
       double d3=(GetNetDevice()->GetPhy()->GetTransRange())/ns3::SOUND_SPEED_IN_WATER;
-      Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 
             double d4=m_rand->GetValue()*JITTER;
 
@@ -1676,7 +1682,6 @@ void AquaSimVBVA::ProcessVoidAvoidanceTimeout(Ptr<Packet> pkt)
 
 	PktTable.DeleteHash(source, pkt_num);
         double d3=(GetNetDevice()->GetPhy()->GetTransRange())/ns3::SOUND_SPEED_IN_WATER;
-        Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
             double d4=m_rand->GetValue()*JITTER;
 	    //   double c=DELAY*sqrt(m_miniThreshold)+JITTER+d3*3+d4;
             double c=DELAY*sqrt(3.0)*4.0+d3*3+d4;

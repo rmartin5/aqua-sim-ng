@@ -228,6 +228,7 @@ public:
   AquaSimCopeMac();
   ~AquaSimCopeMac();
   static TypeId GetTypeId(void);
+  int64_t AssignStreams (int64_t stream);
 
   // to process the incoming packet
   virtual bool RecvProcess(Ptr<Packet> pkt);

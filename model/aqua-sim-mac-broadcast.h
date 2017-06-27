@@ -25,8 +25,8 @@
 
 namespace ns3 {
 
-#define BC_BACKOFF  0.1 //default is 0.1 the maximum time period for backoff
-#define BC_MAXIMUMCOUNTER 4 //default is 4 the maximum number of backoff
+#define BC_BACKOFF  0.1//0.5 //default is 0.1 the maximum time period for backoff
+#define BC_MAXIMUMCOUNTER 4//15 //default is 4 the maximum number of backoff
 #define BC_CALLBACK_DELAY 0.0001 // the interval between two consecutive sendings
 
 /**
@@ -38,6 +38,7 @@ class AquaSimBroadcastMac : public AquaSimMac
 {
 public:
   AquaSimBroadcastMac();
+  int64_t AssignStreams (int64_t stream);
 
   static TypeId GetTypeId(void);
   int m_packetHeaderSize; //# of bytes in the header
@@ -55,6 +56,8 @@ protected:
   virtual void DoDispose();
 private:
   int m_backoffCounter;
+  Ptr<UniformRandomVariable> m_rand;
+
 };  // class AquaSimBroadcastMac
 
 } // namespace ns3

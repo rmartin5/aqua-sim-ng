@@ -91,3 +91,15 @@ AquaSimPhy::SetChannel(std::vector<Ptr<AquaSimChannel> > channel)
   NS_LOG_FUNCTION(this);
   m_channel = channel;
 }
+
+void
+AquaSimPhy::NotifyTx(Ptr<Packet> packet)
+{
+  m_phyTxTrace(packet);
+}
+
+void
+AquaSimPhy::NotifyRx(Ptr<Packet> packet)
+{
+  m_phyRxTrace(packet);
+}

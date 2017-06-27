@@ -56,6 +56,13 @@ AquaSimStaticRouting::GetTypeId()
   return tid;
 }
 
+int64_t
+AquaSimStaticRouting::AssignStreams (int64_t stream)
+{
+  NS_LOG_FUNCTION (this << stream);
+  return 0;
+}
+
 void
 AquaSimStaticRouting::SetRouteTable(char *routeFile)
 {

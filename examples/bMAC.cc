@@ -26,7 +26,9 @@
 #include "ns3/applications-module.h"
 #include "ns3/log.h"
 #include "ns3/callback.h"
+#include "ns3/netanim-module.h"
 
+#include <fstream>
 
 /*
  * BroadCastMAC
@@ -39,15 +41,28 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("BMac");
 
-int
-main (int argc, char *argv[])
+class Test
 {
-  double simStop = 100; //seconds
+public:
+  void RunTest();
+  void ReceivedPkt(Ptr<Socket> socket);
+};
+
+void Test::ReceivedPkt(Ptr<Socket> socket)
+{
+  std::cout << "Received a packet\n";
+}
+
+void Test::RunTest()
+{
+  double simStop = 500; //seconds
   int nodes = 4;
   int sinks = 1;
   uint32_t m_dataRate = 180;//120;
   uint32_t m_packetSize = 320;//32;
-  double range = 20;
+  double range = 40;
+
+  std::string asciiTraceFile = "bMAC-trace.asc";
 
   /*
    * **********
@@ -62,13 +77,6 @@ main (int argc, char *argv[])
    */
 
   LogComponentEnable ("BMac", LOG_LEVEL_INFO);
-
-  //to change on the fly
-  CommandLine cmd;
-  cmd.AddValue ("simStop", "Length of simulation", simStop);
-  cmd.AddValue ("nodes", "Amount of regular underwater nodes", nodes);
-  cmd.AddValue ("sinks", "Amount of underwater sinks", sinks);
-  cmd.Parse(argc,argv);
 
   std::cout << "-----------Initializing simulation-----------\n";
 
@@ -87,7 +95,7 @@ main (int argc, char *argv[])
   AquaSimHelper asHelper = AquaSimHelper::Default();
   //AquaSimEnergyHelper energy;	//******this could instead be handled by node helper. ****/
   asHelper.SetChannel(channel.Create());
-  asHelper.SetMac("ns3::AquaSimTMac");
+  asHelper.SetMac("ns3::AquaSimBroadcastMac");
   asHelper.SetRouting("ns3::AquaSimRoutingDummy"); //XXX
 
   /*
@@ -148,9 +156,6 @@ main (int argc, char *argv[])
   socket.SetPhysicalAddress (devices.Get(nodes)->GetAddress()); //for &dest on Recv()
   socket.SetProtocol (0);
 
-  std::cout << devices.Get(0)->GetAddress() << " &&& " << devices.Get(0)->GetIfIndex() << "\n";
-  std::cout << devices.Get(1)->GetAddress() << " &&& " << devices.Get(1)->GetIfIndex() << "\n";
-
   OnOffHelper app ("ns3::PacketSocketFactory", Address (socket));
   app.SetAttribute ("OnTime", StringValue ("ns3::ConstantRandomVariable[Constant=1]"));
   app.SetAttribute ("OffTime", StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
@@ -169,14 +174,28 @@ main (int argc, char *argv[])
 
   Ptr<Socket> sinkSocket = Socket::CreateSocket (sinkNode, psfid);
   sinkSocket->Bind (socket);
-
+  sinkSocket->SetRecvCallback (MakeCallback (&Test::ReceivedPkt, this));
 
   Packet::EnablePrinting ();  //for debugging purposes
-  std::cout << "-----------Running Simulation-----------\n";
   Simulator::Stop(Seconds(simStop));
+  //AnimationInterface anim ("bmac-anim.xml"); /* Animiation is very buggy with Aqua-Sim NG */
+  std::ofstream ascii (asciiTraceFile.c_str());
+  if (!ascii.is_open()) {
+    NS_FATAL_ERROR("Could not open trace file.");
+  }
+  asHelper.EnableAsciiAll(ascii);
+
+  std::cout << "-----------Running Simulation-----------\n";
   Simulator::Run();
   Simulator::Destroy();
 
   std::cout << "fin.\n";
+}
+
+int
+main (int argc, char *argv[])
+{
+  Test test;
+  test.RunTest();
   return 0;
 }

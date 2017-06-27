@@ -212,6 +212,7 @@ public:
 	AquaSimUwan();
   ~AquaSimUwan();
   static TypeId GetTypeId(void);
+  int64_t AssignStreams (int64_t stream);
 
 	virtual  bool RecvProcess(Ptr<Packet>);
 	/*

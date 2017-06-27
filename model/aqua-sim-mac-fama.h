@@ -46,6 +46,7 @@ public:
   AquaSimFama();
   ~AquaSimFama();
   static TypeId GetTypeId(void);
+  int64_t AssignStreams (int64_t stream);
 
   virtual bool TxProcess(Ptr<Packet> pkt);
   virtual bool RecvProcess(Ptr<Packet> pkt);

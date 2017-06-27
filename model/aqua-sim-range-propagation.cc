@@ -78,7 +78,7 @@ AquaSimRangePropagation::ReceivedCopies (Ptr<AquaSimNetDevice> s,
                Ptr<Packet> p,
                std::vector<Ptr<AquaSimNetDevice> > dList)
 {
-  NS_LOG_FUNCTION(this);
+  NS_LOG_FUNCTION(this << dList.size());
   NS_ASSERT(dList.size());
 
 	std::vector<PktRecvUnit> * res = new std::vector<PktRecvUnit>;
@@ -113,9 +113,8 @@ AquaSimRangePropagation::ReceivedCopies (Ptr<AquaSimNetDevice> s,
     NS_LOG_DEBUG("AquaSimRangePropagation::ReceivedCopies: Sender("
     << s->GetAddress() << ") Recv(" << (pru.recver)->GetAddress()
     << ") dist(" << dist << ") pDelay(" << pru.pDelay.GetMilliSeconds()
-    << ") pR(" << pru.pR << ")" << " Pt(" << pstamp.GetPt() << ")\n");
+    << ") pR(" << pru.pR << ")" << " Pt(" << pstamp.GetPt() << ")" << senderModel->GetPosition() << " & " << recvModel->GetPosition());
 	}
-
 	return res;
 }
 

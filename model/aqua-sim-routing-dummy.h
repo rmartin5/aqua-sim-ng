@@ -36,6 +36,8 @@ class AquaSimRoutingDummy : public AquaSimRouting {
  public:
   AquaSimRoutingDummy();
   static TypeId GetTypeId(void);
+  int64_t AssignStreams (int64_t stream);
+
   virtual bool Recv(Ptr< Packet > packet, const Address &dest, uint16_t protocolNumber);
 
  protected:

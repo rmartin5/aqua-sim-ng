@@ -326,6 +326,7 @@ public:
 	AquaSimGoal();
   ~AquaSimGoal();
   static TypeId GetTypeId(void);
+	int64_t AssignStreams (int64_t stream);
 
 	// to process the incomming packet
 	virtual  bool RecvProcess(Ptr<Packet>);
@@ -349,7 +350,6 @@ private:
 	int		m_dataPktSize;	//the size of data packet, in byte
 	int		m_maxRetransTimes;
 
-  Ptr<UniformRandomVariable> m_rand;
 	/*
 	 * which kind of backoff function of existing routing protocol is used, such as HH-VBF
 	 */
@@ -429,6 +429,7 @@ private:
 	Time	JitterStartTime(Time Txtime); //Jitter the start time to avoid collision
 
 	void SetupTransDistance(double range);
+	Ptr<UniformRandomVariable> m_rand;
 protected:
 
 	friend class AquaSimGoal_CallbackHandler;

@@ -285,8 +285,8 @@ AquaSimVBF::AquaSimVBF()
 	m_priority=1.5;
 	//m_useOverhear = 0;
 	m_enableRouting = 1;
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   m_targetPos = Vector();
+  m_rand = CreateObject<UniformRandomVariable> ();
 }
 
 TypeId
@@ -316,6 +316,13 @@ AquaSimVBF::GetTypeId(void)
   //bind("m_useOverhear_", &m_useOverhear);
 }
 
+int64_t
+AquaSimVBF::AssignStreams (int64_t stream)
+{
+  NS_LOG_FUNCTION (this << stream);
+  m_rand->SetStream(stream);
+  return 1;
+}
 
 bool
 AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber)
@@ -367,7 +374,6 @@ AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumbe
       ptag.SetPacketType(AquaSimPtTag::PT_UWVB);
       packet->ReplacePacketTag(ptag);
 			MACprepare(packet);
-      Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 			MACsend(packet, (m_rand->GetValue()*JITTER));
 		}
 		else if( vbh.GetTargetAddr() == GetNetDevice()->GetAddress() )  {
@@ -447,7 +453,6 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 		if (GetNetDevice()->GetAddress() == from_nodeAddr) {
 
 			MACprepare(pkt);
-      Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 			MACsend(pkt,m_rand->GetValue()*JITTER);
 			//  printf("vectorbasedforward: after MACprepare(pkt)\n");
 		}
@@ -479,7 +484,6 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 				if (IsCloseEnough(pkt)) {
 					// printf("vectorbasedforward:%d I am close enough for the interest\n",here_.addr_);
 					MACprepare(pkt);
-          Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 					MACsend(pkt,m_rand->GetValue()*JITTER);//!!!! need to re-think
 				}
 				else {
@@ -526,7 +530,6 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 		if (GetNetDevice()->GetAddress() == from_nodeAddr) {
 			// come from the same node, broadcast it
 			MACprepare(pkt);
-      Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 			MACsend(pkt,m_rand->GetValue()*JITTER);
 			return;
 		}
@@ -539,7 +542,6 @@ AquaSimVBF::ConsiderNew(Ptr<Packet> pkt)
 		else{
 			// printf("Vectorbasedforward: %d is the not  target\n", here_.addr_);
 			MACprepare(pkt);
-      Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 			MACsend(pkt, m_rand->GetValue()*JITTER);
 		}
 		return;

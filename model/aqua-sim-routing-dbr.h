@@ -192,6 +192,7 @@ public:
 	AquaSimDBR();
 	virtual ~AquaSimDBR();
   static TypeId GetTypeId(void);
+	int64_t AssignStreams (int64_t stream);
 
 	virtual bool Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber);
 	virtual bool Recv2(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber);
@@ -218,7 +219,7 @@ protected:
 	ASPktCache *m_pc;				// packet cache for broadcasting;
 	MyPacketQueue m_pq;			// packet queue
 	int m_pktCnt;				// counter for packets have been sent
-  Ptr<UniformRandomVariable> m_rand;
+	Ptr<UniformRandomVariable> m_rand;
 
 	void ForwardPacket(Ptr<Packet>, int = 0);
 	Ptr<Packet> MakeBeacon(void);

@@ -186,12 +186,13 @@ AquaSimDynamicRouting::AquaSimDynamicRouting() : m_pktTimer(this, 50)
 {
   NS_LOG_FUNCTION(this);
   m_coun=0;
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 
   m_rTable.SetRouting(this);
 
   m_pktTimer.SetFunction(&AquaSimDynamicRouting_PktTimer::Expire,&m_pktTimer);
   m_pktTimer.Schedule(Seconds(0.0000001+10*m_rand->GetValue()));
+
+  m_rand = CreateObject<UniformRandomVariable> ();
 }
 
 TypeId
@@ -206,6 +207,14 @@ AquaSimDynamicRouting::GetTypeId(void)
         MakeIntegerChecker<int> ())
     ;
   return tid;
+}
+
+int64_t
+AquaSimDynamicRouting::AssignStreams (int64_t stream)
+{
+  NS_LOG_FUNCTION (this << stream);
+  m_rand->SetStream(stream);
+  return 1;
 }
 
 /*int AquaSimDynamicRouting::command(int argc, const char*const* argv) {
@@ -388,7 +397,6 @@ AquaSimDynamicRouting::RecvDRoutingPkt(Ptr<Packet> p)
 double
 AquaSimDynamicRouting::BroadcastJitter(double range)
 {
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 	return range*m_rand->GetValue();
 }
 
@@ -447,7 +455,6 @@ AquaSimDynamicRouting::SendDRoutingPkt()
   p->AddHeader(drh);
   p->AddHeader(ash);
   p->AddPacketTag(ptag);
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   Time jitter = Seconds(m_rand->GetValue()*0.5);
   Simulator::Schedule(jitter,&AquaSimRouting::SendDown,this,p,ash.GetNextHop(),jitter);
 }

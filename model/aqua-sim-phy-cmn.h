@@ -31,6 +31,7 @@
 //#include "ns3/event-id.h"
 //#include "ns3/packet.h"
 #include "ns3/object.h"
+#include "ns3/traced-callback.h"
 
 #include "aqua-sim-phy.h"
 #include "aqua-sim-sinr-checker.h"
@@ -112,6 +113,7 @@ public:
 
   virtual Ptr<AquaSimSignalCache> GetSignalCache();
   virtual int PktRecvCount();
+  int64_t AssignStreams (int64_t stream);
 
   /*
   * Used for some mac/routing protocols and for restricting packet range within range-propagation for channel module.
@@ -191,6 +193,9 @@ private:
   uint32_t incPktCounter;
   uint32_t outPktCounter;
   int pktRecvCounter;
+
+  ns3::TracedCallback<Ptr<Packet>, double > m_rxLogger;
+  ns3::TracedCallback<Ptr<Packet>, double > m_txLogger;
 
 }; //AquaSimPhyCmn
 

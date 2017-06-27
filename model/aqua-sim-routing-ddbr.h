@@ -193,6 +193,8 @@ class AquaSimDDBR : public AquaSimRouting {
   AquaSimDDBR();
   virtual ~AquaSimDDBR();
   static TypeId GetTypeId(void);
+  int64_t AssignStreams (int64_t stream);
+
   virtual bool Recv(Ptr< Packet > packet, const Address &dest, uint16_t protocolNumber);
 
   virtual bool Recv1(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber);

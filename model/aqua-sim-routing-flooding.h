@@ -42,6 +42,8 @@ class AquaSimFloodingRouting : public AquaSimRouting {
  public:
   AquaSimFloodingRouting();
   static TypeId GetTypeId(void);
+  int64_t AssignStreams (int64_t stream);
+
   virtual bool Recv(Ptr< Packet > packet, const Address &dest, uint16_t protocolNumber);
 
   // Vectorbasedforward_Entry routing_table[MAX_DATA_TYPE];

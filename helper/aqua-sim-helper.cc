@@ -22,6 +22,7 @@
 #include "ns3/log.h"
 #include "ns3/assert.h"
 #include "ns3/double.h"
+#include "ns3/config.h"
 
 #include "ns3/aqua-sim-net-device.h"
 #include "ns3/aqua-sim-propagation.h"
@@ -32,9 +33,23 @@
 
 #include "aqua-sim-helper.h"
 
+#include <sstream>
+#include <string>
+
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("AquaSimHelper");
+
+static void AsciiPhyRxEvent (std::ostream *os, std::string context, Ptr<Packet> pkt, double noise)
+{
+  *os << "r " << Simulator::Now().GetSeconds() << " " << context << " " << *pkt << std::endl;
+}
+
+static void AsciiPhyTxEvent (std::ostream *os, std::string context, Ptr<Packet> pkt, double noise)
+{
+  *os << "t " << Simulator::Now().GetSeconds() << " " << context << " " << *pkt << std::endl;
+}
+
 
 AquaSimChannelHelper::AquaSimChannelHelper()
 {
@@ -439,5 +454,67 @@ AquaSimHelper::CreateWithoutRouting(Ptr<Node> node, Ptr<AquaSimNetDevice> device
 
   return device;
 }
+
+
+
+void
+AquaSimHelper::EnableAscii (std::ostream &os, uint32_t nodeid, uint32_t deviceid)
+{
+  Packet::EnablePrinting();
+  std::ostringstream oss;
+
+  oss << "/NodeList/" << nodeid << "/DeviceList/" << deviceid << "/$ns3::AquaSimNetDevice/Phy/Rx";
+  Config::Connect(oss.str(), MakeBoundCallback (&AsciiPhyRxEvent, &os));
+
+  oss.str("");
+
+  oss << "/NodeList/" << nodeid << "/DeviceList/" << deviceid << "/$ns3::AquaSimNetDevice/Phy/Tx";
+  Config::Connect(oss.str(), MakeBoundCallback (&AsciiPhyTxEvent, &os));
+}
+
+void
+AquaSimHelper::EnableAscii (std::ostream &os, NetDeviceContainer c)
+{
+  for (NetDeviceContainer::Iterator i = c.Begin(); i != c.End(); ++i) {
+    EnableAscii(os, (*i)->GetNode()->GetId(), (*i)->GetIfIndex());
+  }
+}
+
+void
+AquaSimHelper::EnableAscii (std::ostream &os, NodeContainer n)
+{
+  NetDeviceContainer devs;
+  for (NodeContainer::Iterator i = n.Begin(); i != n.End(); ++i) {
+    Ptr<Node> node = *i;
+    for (uint32_t j =0; j < node->GetNDevices(); ++j) {
+      devs.Add (node->GetDevice(j));
+    }
+  }
+  EnableAscii(os,devs);
+}
+
+void
+AquaSimHelper::EnableAsciiAll (std::ostream &os)
+{
+  EnableAscii(os, NodeContainer::GetGlobal());
+}
+
+uint64_t AssignStreams (NetDeviceContainer c, int64_t stream)
+{
+  int64_t currentStream = stream;
+    Ptr<NetDevice> device;
+    for (NetDeviceContainer::Iterator i = c.Begin (); i != c.End (); ++i)
+    {
+      device = (*i);
+      Ptr<AquaSimNetDevice> asDevice = DynamicCast<AquaSimNetDevice> (device);
+      if (asDevice)
+      {
+        currentStream += asDevice->GetPhy ()->AssignStreams (currentStream);
+        currentStream += asDevice->GetMac ()->AssignStreams (currentStream);
+      }
+    }
+  return (currentStream - stream);
+}
+
 
 }  //namespace ns3

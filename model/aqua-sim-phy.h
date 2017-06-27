@@ -27,6 +27,7 @@
 
 #include "aqua-sim-net-device.h"
 #include "aqua-sim-channel.h"
+#include "ns3/traced-callback.h"
 //#include "aqua-sim-sinr-checker.h"
 //#include "aqua-sim-signal-cache.h"
 //#include "aqua-sim-modulation.h"
@@ -135,6 +136,11 @@ namespace ns3 {
     virtual void SetTransRange(double range)=0;
     virtual double GetTransRange()=0;
 
+    virtual int64_t AssignStreams (int64_t stream) = 0;
+    typedef void (* TracedCallback) (Ptr<Packet> pkt, double noise);
+    void NotifyTx(Ptr<Packet> packet);
+    void NotifyRx(Ptr<Packet> packet);
+
   protected:
     virtual Ptr<Packet> PrevalidateIncomingPkt(Ptr<Packet> p) = 0;
     virtual void UpdateTxEnergy(Time txTime, double pT, double pIdle) = 0;
@@ -153,6 +159,9 @@ namespace ns3 {
     friend class AquaSimNetDevice;  //slightly dangerous but currrently used to remove reference cycle on disposal.
 
     //PhyStatus m_status;	// status of modem
+  private:
+      ns3::TracedCallback<Ptr<Packet> > m_phyTxTrace;
+      ns3::TracedCallback<Ptr<Packet> > m_phyRxTrace;
   }; //AquaSimPhy class
 
 } //ns3 namespace

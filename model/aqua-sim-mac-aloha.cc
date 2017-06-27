@@ -47,6 +47,7 @@ AquaSimAloha::AquaSimAloha() :
 	m_AckOn(1), m_minBackoff(0.0), m_maxBackoff(1.5), m_maxACKRetryInterval(0.05),
 	m_blocked(false)
 {
+	m_rand = CreateObject<UniformRandomVariable> ();
 }
 
 AquaSimAloha::~AquaSimAloha()
@@ -83,11 +84,17 @@ AquaSimAloha::GetTypeId(void)
   return tid;
 }
 
+int64_t
+AquaSimAloha::AssignStreams (int64_t stream)
+{
+  NS_LOG_FUNCTION (this << stream);
+  m_rand->SetStream(stream);
+  return 1;
+}
 
 void AquaSimAloha::DoBackoff()
 {
   //NS_LOG_FUNCTION(this);
-	Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   Time BackoffTime=Seconds(m_rand->GetValue(m_minBackoff,m_maxBackoff));
   m_boCounter++;
   if (m_boCounter < MAXIMUMCOUNTER)
@@ -183,7 +190,6 @@ bool AquaSimAloha::TxProcess(Ptr<Packet> pkt)
 void AquaSimAloha::SendDataPkt()
 {
 	NS_LOG_FUNCTION(this);
-	Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   double P = m_rand->GetValue(0,1);
   Ptr<Packet> tmp = PktQ_.front();
   AquaSimHeader asHeader;
@@ -403,7 +409,6 @@ void AquaSimAloha::RetryACK(Ptr<Packet> ack)
   NS_LOG_FUNCTION(this);
 
   AquaSimAlohaAckRetry* timer = new AquaSimAlohaAckRetry(this, ack);
-	Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   Simulator::Schedule(Seconds(m_maxACKRetryInterval*m_rand->GetValue()), &AquaSimAloha::ProcessRetryTimer, this, timer);
   RetryTimerMap_[timer->Id()] = timer;
 }

@@ -140,6 +140,7 @@ AquaSimGoal::AquaSimGoal(): m_maxBurst(1), m_dataPktInterval(0.0001), m_guardTim
 
 	m_maxBackoffTime = 4*m_maxDelay+m_VBF_MaxDelay*1.5+Seconds(2);
 	//SetupTransDistance(m_device->GetPhy()->GetTransRange());
+	m_rand = CreateObject<UniformRandomVariable> ();
 }
 
 AquaSimGoal::~AquaSimGoal()
@@ -166,6 +167,14 @@ AquaSimGoal::GetTypeId(void)
 	MakeIntegerChecker<int>())
     ;
   return tid;
+}
+
+int64_t
+AquaSimGoal::AssignStreams (int64_t stream)
+{
+  NS_LOG_FUNCTION (this << stream);
+  m_rand->SetStream(stream);
+  return 1;
 }
 
 void
@@ -1452,7 +1461,6 @@ AquaSimGoal::GotoNxtRound()
 	m_isForwarding = true;
 
   m_nxtRoundTimer.SetFunction(&AquaSimGoal_NxtRoundTimer::expire, &m_nxtRoundTimer);
-	Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   m_nxtRoundTimer.Schedule(FemtoSeconds(m_rand->GetValue(0.0,m_nxtRoundMaxWaitTime.ToDouble(Time::S) ) ) );
 }
 
@@ -1462,7 +1470,6 @@ AquaSimGoal::GotoNxtRound()
 Time
 AquaSimGoal::JitterStartTime(Time Txtime)
 {
-	Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 	Time BeginTime = 5*Txtime*m_rand->GetValue();
 	return BeginTime;
 }
@@ -1594,8 +1601,8 @@ ns3::TimeSchedQueue::GetAvailableTime(Time EarliestTime, Time SlotLen, bool BigI
 
 	UpperBeginTime = LowerBeginTime + MinStartInterval;
 
-  Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable> ();
-  return MilliSeconds(rand->GetValue(LowerBeginTime.ToDouble(Time::MS), UpperBeginTime.ToDouble(Time::MS)));
+	Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
+  return MilliSeconds(m_rand->GetValue(LowerBeginTime.ToDouble(Time::MS), UpperBeginTime.ToDouble(Time::MS)));
 }
 
 

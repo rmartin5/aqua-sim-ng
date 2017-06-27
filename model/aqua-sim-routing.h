@@ -62,11 +62,14 @@ public:
   virtual bool SendDown(Ptr<Packet> p, AquaSimAddress nextHop, Time delay);
 
   int SendUpPktCount() {return m_sendUpPktCount;}
-  int TrafficInPkts() {return trafficPktsTrace;}
-  int TrafficInBytes(bool trafficBytesTrace);
+  int TrafficInPkts() {return trafficPktsTrace.Get();}
+  int TrafficInBytes() {return trafficBytesTrace.Get();}
+  //int TrafficInBytes(bool trafficBytesTrace);
 
   virtual void AssignInternalData(std::vector<std::string> collection);
   virtual void AssignInternalDataPath(std::vector<std::string> collection);
+
+  virtual int64_t AssignStreams (int64_t stream) = 0;
 
 protected:
   /*send packet up to port-demux*/

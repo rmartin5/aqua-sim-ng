@@ -88,6 +88,8 @@ class AquaSimVBF : public AquaSimRouting {
 public:
   AquaSimVBF();
   static TypeId GetTypeId(void);
+  int64_t AssignStreams (int64_t stream);
+
   virtual bool Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber);
 
   void SetTargetPos(Vector pos);
@@ -109,8 +111,8 @@ protected:
 
   double m_width;
   // the width is used to test if the node is close enough to the path specified by the packet
-  Ptr<UniformRandomVariable> m_rand;
   Vector m_targetPos;
+  Ptr<UniformRandomVariable> m_rand;
 
   void Terminate();
   void Reset();

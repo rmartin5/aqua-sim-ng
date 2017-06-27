@@ -32,7 +32,6 @@ in the next period interval
 #include "ns3/packet.h"
 #include "ns3/log.h"
 #include "ns3/simulator.h"
-#include "ns3/random-variable-stream.h"
 #include "ns3/double.h"
 #include "ns3/integer.h"
 
@@ -79,6 +78,7 @@ AquaSimRMac::InitPhaseThree(){
 
 AquaSimRMac::AquaSimRMac()
 {
+  m_rand = CreateObject<UniformRandomVariable> ();
   m_numSend=0;
   m_numData=0;
   m_numBlock=0;
@@ -221,6 +221,14 @@ AquaSimRMac::GetTypeId()
       MakeDoubleChecker<double>())
   ;
   return tid;
+}
+
+int64_t
+AquaSimRMac::AssignStreams (int64_t stream)
+{
+  NS_LOG_FUNCTION (this << stream);
+  m_rand->SetStream(stream);
+  return 1;
 }
 
 void
@@ -1739,8 +1747,6 @@ AquaSimRMac::TxRev(Ptr<Packet> p)
 void
 AquaSimRMac::InitPhaseTwo()
 {
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
-
   double delay=m_rand->GetValue()*m_phaseTwoWindow;
   m_nextPeriod=m_intervalPhase2Phase3+m_phaseTwoCycle*m_phaseTwoWindow+delay;
 
@@ -1758,7 +1764,6 @@ AquaSimRMac::StartPhaseTwo()
       m_phaseStatus=PHASETWO;
       m_cycleStartTime=Simulator::Now().ToDouble(Time::S);
 
-      Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
       double  delay=m_rand->GetValue()*m_phaseTwoWindow;
       Ptr<Packet> pkt=GenerateSYN();
 
@@ -1855,8 +1860,6 @@ AquaSimRMac::SendSYN()
 void
 AquaSimRMac::InitND(double t1,double t2, double t3)
 {
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
-
   double delay=m_rand->GetValue()*t1;
   double itval=(t3-t2-t1)/2.0;
   double delay3=t1+itval;
@@ -1961,7 +1964,6 @@ AquaSimRMac::SendShortAckND()
       pkt->AddHeader(asHeader);
       pkt->AddPacketTag(ptag);
 
-      Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
       double delay=m_rand->GetValue()*m_ackNDwindow;
       Simulator::Schedule(Seconds(delay), &AquaSimRMac::TxND, this, pkt, m_ackNDwindow);
 
@@ -2140,7 +2142,6 @@ AquaSimRMac::TxND(Ptr<Packet> pkt, double window)
 
       if(d1>0)
 	{
-	  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 	  double backoff=m_rand->GetValue()*d1;
 	  m_NDBackoffWindow=window;
 	  // printf("broadcast Tx set timer at %f backoff is %f\n",NOW,backoff);

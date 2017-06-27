@@ -40,6 +40,7 @@ Broadcast MAC for  underwater sensor
 AquaSimBroadcastMac::AquaSimBroadcastMac()
 {
   m_backoffCounter=0;
+  m_rand = CreateObject<UniformRandomVariable> ();
 }
 
 TypeId
@@ -59,12 +60,20 @@ AquaSimBroadcastMac::GetTypeId()
     ;
   return tid;
 }
+
+int64_t
+AquaSimBroadcastMac::AssignStreams (int64_t stream)
+{
+  NS_LOG_FUNCTION (this << stream);
+  m_rand->SetStream(stream);
+  return 1;
+}
+
 /*
 this program is used to handle the received packet,
 it should be virtual function, different class may have
 different versions.
 */
-
 bool
 AquaSimBroadcastMac::RecvProcess (Ptr<Packet> pkt)
 {
@@ -154,8 +163,7 @@ AquaSimBroadcastMac::TxProcess(Ptr<Packet> pkt)
       return true;
   case RECV:
     {
-      Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable> ();
-      double backoff=rand->GetValue()*BC_BACKOFF;
+      double backoff=m_rand->GetValue()*BC_BACKOFF;
       NS_LOG_DEBUG("BACKOFF time:" << backoff << " on node:" << m_device->GetAddress() << "\n");
       //pkt->AddHeader(mach);
       pkt->AddHeader(ash);
@@ -164,8 +172,7 @@ AquaSimBroadcastMac::TxProcess(Ptr<Packet> pkt)
       return true;
   case SEND:
     {
-      Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable> ();
-      double backoff=rand->GetValue()*BC_BACKOFF;
+      double backoff=m_rand->GetValue()*BC_BACKOFF;
       NS_LOG_DEBUG("BACKOFF time:" << backoff << " on node:" << m_device->GetAddress() << "\n");
       //pkt->AddHeader(mach);
       pkt->AddHeader(ash);

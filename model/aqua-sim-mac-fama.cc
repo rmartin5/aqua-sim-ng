@@ -52,7 +52,7 @@ AquaSimFama::AquaSimFama(): FamaStatus(PASSIVE), m_NDPeriod(4.0), m_maxBurst(1),
 
   m_maxDataTxTime = MilliSeconds(m_dataPktSize/m_bitRate);  //1600bits/10kbps
 
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
+  m_rand = CreateObject<UniformRandomVariable> ();
   Simulator::Schedule(Seconds(m_rand->GetValue(0.0,m_NDPeriod)+0.000001), &AquaSimFama::NDTimerExpire, this);
 }
 
@@ -74,6 +74,13 @@ AquaSimFama::GetTypeId(void)
   return tid;
 }
 
+int64_t
+AquaSimFama::AssignStreams (int64_t stream)
+{
+  NS_LOG_FUNCTION (this << stream);
+  m_rand->SetStream(stream);
+  return 1;
+}
 
 void
 AquaSimFama::NDTimerExpire()
@@ -83,7 +90,6 @@ AquaSimFama::NDTimerExpire()
   m_famaNDCounter--;
 
   if (m_famaNDCounter > 0) {
-		Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
     Simulator::Schedule(Seconds(m_rand->GetValue(0.0,m_NDPeriod)), &AquaSimFama::NDTimerExpire, this);
 	}
 }
@@ -468,7 +474,6 @@ AquaSimFama::CarrierDected()
 void
 AquaSimFama::DoBackoff()
 {
-	Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   Time backoffTime = MilliSeconds(m_rand->GetValue(0.0,10 * m_RTSTxTime.ToDouble(Time::MS)));
   FamaStatus = BACKOFF;
   if( m_backoffTimer.IsRunning() ) {

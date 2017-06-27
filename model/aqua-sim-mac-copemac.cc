@@ -382,6 +382,8 @@ AquaSimCopeMac::AquaSimCopeMac():
     m_pktSize(200), m_isParallel(1), m_NDProcessMaxTimes(3), m_backoffCounter(0)
 
 {
+  m_rand = CreateObject<UniformRandomVariable> ();
+
   Simulator::Schedule(Seconds(0.002), &AquaSimCopeMac::NDProcessInitor, this); // start the nd process
   Simulator::Schedule(Seconds(0.001), &AquaSimCopeMac::Start, this);
 }
@@ -390,6 +392,13 @@ AquaSimCopeMac::~AquaSimCopeMac()
 {
 }
 
+int64_t
+AquaSimCopeMac::AssignStreams (int64_t stream)
+{
+  NS_LOG_FUNCTION (this << stream);
+  m_rand->SetStream(stream);
+  return 1;
+}
 
 void
 AquaSimCopeMac::Start()
@@ -400,7 +409,6 @@ AquaSimCopeMac::Start()
   Time MaxRTT = Seconds(2*1000/1500.0);
   m_ackTimeOut = m_revAckAccumTime + m_dataAckAccumTime + 2*MaxRTT + Seconds(5); //5 is time error
 
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   Simulator::Schedule(m_dataAccuPeriod+Seconds(m_rand->GetValue()),&AquaSimCopeMac::DataSendTimerExpire,this);
   //Random::seed_heuristically();
 }
@@ -1408,7 +1416,6 @@ AquaSimCopeMac::PrintDelayTable()
 void
 AquaSimCopeMac::NDProcessInitor()
 {
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   CtrlPktInsert(MakeND(), FemtoSeconds(m_rand->GetValue(0.0,m_NDWin)));
   if( m_NDProcessMaxTimes > 0 ) {
       Simulator::Schedule(FemtoSeconds(m_NDWin+0.9), &AquaSimCopeMac::NDProcessInitor, this);
@@ -1421,7 +1428,6 @@ AquaSimCopeMac::DataSendTimerExpire()
 {
   //is below calling self?
   //resched(mac_->m_dataAccuPeriod+Random::uniform(2.0));
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   Simulator::Schedule(m_dataAccuPeriod+Seconds(m_rand->GetValue(0.0,2.0)),&AquaSimCopeMac::DataSendTimerExpire,this);
   StartHandShake();
 }

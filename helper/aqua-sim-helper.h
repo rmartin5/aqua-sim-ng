@@ -24,6 +24,8 @@
 #include "ns3/attribute.h"
 #include "ns3/object-factory.h"
 #include "ns3/aqua-sim-channel.h"
+#include "ns3/net-device-container.h"
+#include "ns3/node-container.h"
 
 namespace ns3 {
 
@@ -152,6 +154,14 @@ public:
     Ptr<AquaSimNetDevice> CreateWithoutRouting (Ptr<Node> node, Ptr<AquaSimNetDevice> device);
     void SetMacAttribute (std::string name, const AttributeValue &value);
         /* Used for large amounts of attribute settings on mac layer */
+
+    static void EnableAscii (std::ostream &os, uint32_t nodeid, uint32_t deviceid);
+    static void EnableAscii (std::ostream &os, NetDeviceContainer c);
+    static void EnableAscii (std::ostream &os, NodeContainer n);
+    static void EnableAsciiAll (std::ostream &os);
+
+    uint64_t AssignStreams (NetDeviceContainer c, int64_t stream);
+
 private:
   std::vector<Ptr<AquaSimChannel> > m_channel;
   ObjectFactory m_phy;

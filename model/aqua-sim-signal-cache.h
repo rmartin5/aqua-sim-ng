@@ -97,6 +97,7 @@ public:
   void SubmitPkt(Ptr<IncomingPacket> inPkt);
 
   void SetNoiseGen(Ptr<AquaSimNoiseGen> noise);
+  double GetNoise();
 
   friend class PktSubmissionTimer;
 

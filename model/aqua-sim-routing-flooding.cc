@@ -53,6 +53,12 @@ AquaSimFloodingRouting::GetTypeId()
   return tid;
 }
 
+int64_t
+AquaSimFloodingRouting::AssignStreams (int64_t stream)
+{
+  NS_LOG_FUNCTION (this << stream);
+  return 0;
+}
 
 bool
 AquaSimFloodingRouting::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber)

@@ -85,6 +85,8 @@ AquaSimUwan::AquaSimUwan():
   m_startTimer.SetFunction(&AquaSimUwan_StartTimer::expire,&m_startTimer);
 	m_startTimer.Schedule(Seconds(0.001));
 	m_nextHopNum = 0;
+
+  m_rand=CreateObject<UniformRandomVariable> ();
 }
 
 AquaSimUwan::~AquaSimUwan()
@@ -107,6 +109,14 @@ AquaSimUwan::GetTypeId(void)
       MakeTimeChecker ())
     ;
   return tid;
+}
+
+int64_t
+AquaSimUwan::AssignStreams (int64_t stream)
+{
+  NS_LOG_FUNCTION (this << stream);
+  m_rand->SetStream(stream);
+  return 1;
 }
 
 void
@@ -368,7 +378,6 @@ AquaSimUwan::GenNxCyclePeriod()
   double avgCyclePeriod = m_avgCyclePeriod.ToDouble(Time::S);
   double stdCyclePeriod = m_stdCyclePeriod.ToDouble(Time::S);
 
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 	return m_nextCyclePeriod + Seconds(m_rand->GetValue(avgCyclePeriod-stdCyclePeriod,
 						avgCyclePeriod+stdCyclePeriod));
 }
@@ -484,7 +493,6 @@ AquaSimUwan::SYNCSchedule(bool initial)
 	Time now = Simulator::Now();
 	m_nextCyclePeriod = m_initialCyclePeriod + now;
 	if( initial ) {
-    Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 		Time RandomDelay = Seconds(m_rand->GetValue(0.0, m_initialCyclePeriod.ToDouble(Time::S)) );
 		m_wakeSchQueue.Push(m_nextCyclePeriod+RandomDelay, AquaSimAddress::ConvertFrom(m_device->GetAddress()) , m_nextCyclePeriod+RandomDelay-now);
 		//m_wakeSchQueue.Print(2*m_maxPropTime, m_maxTxTime, true, index_);
@@ -626,7 +634,6 @@ AquaSimUwan::ProcessMissingList(Ptr<Packet> pkt, AquaSimAddress src)
 
       p->AddPacketTag(ptag);
 			//rand the sending slot and then send out
-      Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
       double randHelloDelay = m_rand->GetValue(0,10)*m_helloTxLen.ToDouble(Time::S);
 			SendFrame(p, true, Seconds(randHelloDelay));   //hello should be delayed!!!!!!
 			return;
@@ -775,13 +782,13 @@ ScheduleQueue::GetAvailableSendTime(Time StartTime,
 		DeltaTime = pos->SendTime_ - pre_pos->SendTime_ -
                         (Seconds(2*GuardTime.ToDouble(Time::S)) + MaxTxTime);
 		if( DeltaTime.IsPositive() ) {
-      Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable> ();
       double min = pre_pos->SendTime_.ToDouble(Time::S) +
                     GuardTime.ToDouble(Time::S) +
                     MaxTxTime.ToDouble(Time::S);
       double max = pre_pos->SendTime_.ToDouble(Time::S) +
                     DeltaTime.ToDouble(Time::S);
-      return Seconds(rand->GetValue(min,max));
+      Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
+      return Seconds(m_rand->GetValue(min,max));
 		}
 
 		pos = pos->next_;

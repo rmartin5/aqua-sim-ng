@@ -115,6 +115,7 @@ public:
   AquaSimTMac();
   ~AquaSimTMac();
   static TypeId GetTypeId (void);
+  int64_t AssignStreams (int64_t stream);
 
   double m_ndWindow; // the window to send ND
   double m_ackNdWindow; // the winddow to send ACK_ND

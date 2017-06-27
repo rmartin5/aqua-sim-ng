@@ -169,6 +169,8 @@ public:
 	AquaSimSFama();
   virtual ~AquaSimSFama();
   static TypeId GetTypeId(void);
+  int64_t AssignStreams (int64_t stream);
+
 	// to process the incomming packet
 	virtual  bool RecvProcess(Ptr<Packet>);
 	// to process the outgoing packet

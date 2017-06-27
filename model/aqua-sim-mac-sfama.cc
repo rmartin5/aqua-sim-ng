@@ -67,6 +67,7 @@ AquaSimSFama::AquaSimSFama():m_status(IDLE_WAIT), m_guardTime(0.00001),
 {
 	NS_LOG_FUNCTION(this);
 
+	m_rand = CreateObject<UniformRandomVariable> ();
   m_slotNumHandler = 0;
 
   Simulator::Schedule(Seconds(0.05) /*callback delay*/, &AquaSimSFama::InitSlotLen, this);
@@ -98,6 +99,13 @@ AquaSimSFama::GetTypeId(void)
   return tid;
 }
 
+int64_t
+AquaSimSFama::AssignStreams (int64_t stream)
+{
+  NS_LOG_FUNCTION (this << stream);
+  m_rand->SetStream(stream);
+  return 1;
+}
 
 bool
 AquaSimSFama::RecvProcess(Ptr<Packet> p)
@@ -659,7 +667,6 @@ AquaSimSFama::ScheduleRTS(AquaSimAddress recver, int slot_num)
 int
 AquaSimSFama::RandBackoffSlots()
 {
-	Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
 	return (int)m_rand->GetValue(0.0,(double)m_maxBackoffSlots);
 }
 

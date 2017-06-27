@@ -259,6 +259,11 @@ AquaSimSignalCache::SetNoiseGen(Ptr<AquaSimNoiseGen> noise)
   m_noise = noise;
 }
 
+double AquaSimSignalCache::GetNoise()
+{
+  return m_totalPS + m_noise->Noise();
+}
+
 void AquaSimSignalCache::DoDispose()
 {
   NS_LOG_FUNCTION(this);

@@ -275,9 +275,9 @@ AquaSimChannel::FilePrintCounters(double simTime, int attSlot)
   // SimTime | N0_Pkts | N0_Bytes | N0_DiffFromLastTrace | N1_Pkts | ... | Sink_Sent | Sink_Recv | Att0_Sent
 
    //out of date file creation & data collection.
-   /*
+  /*
   std::ofstream csvFile;
-  csvFile.open("mobile_grid_1a_StatisticalL.csv", std::ios_base::app);
+  csvFile.open("static_grid_0a.csv", std::ios_base::app);
   csvFile << simTime;
   for (std::vector<Ptr<AquaSimNetDevice> >::iterator ite = m_deviceList.begin(); ite != m_deviceList.end(); ++ite)
   {
@@ -287,7 +287,7 @@ AquaSimChannel::FilePrintCounters(double simTime, int attSlot)
   }
   csvFile << "\n";
   csvFile.close();
-*/
+  */
 }
 
 Time
