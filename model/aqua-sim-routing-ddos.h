@@ -55,7 +55,8 @@ struct DdosTable{
   EventId pushback;
   EventId throttle;
   double timeoutThreshold;
-  double maxThreshold;
+  double pbThreshold;
+  double throttleThreshold;
   double thresholdOffset;
   Vector nodeLoc;
   DdosTable(int node) : nodeID(node), NAck(0), pktRecv(0),
@@ -63,8 +64,8 @@ struct DdosTable{
                 idle(false),
                 //pushback(Timer::CANCEL_ON_DESTROY),
                 //throttle(Timer::CANCEL_ON_DESTROY),
-                timeoutThreshold(0.8), maxThreshold(0.25),
-                thresholdOffset(0.0) {}
+                timeoutThreshold(0.8), pbThreshold(0.25),
+                throttleThreshold(0.25), thresholdOffset(0.0) {}
 };
 
 struct PIT_info{
@@ -113,10 +114,12 @@ public:
   AquaSimDDOS();
   ~AquaSimDDOS() {};
   static TypeId GetTypeId(void);
+  int64_t AssignStreams (int64_t stream);
+
   virtual bool Recv(Ptr< Packet > packet, const Address &dest, uint16_t protocolNumber);
   void RecvNAck(Ptr<Packet> p);
 
-  void SetThresholds(double timeout, double max);
+  void SetThresholds(double timeout, double pb, double throttle);
 protected:
   virtual void DoDispose();
 
@@ -163,7 +166,8 @@ private:
   std::vector<std::string> m_possibleBaseInt;
 
   double m_timeoutThreshold;  // for reset purposes
-  double m_maxThreshold;  // for reset purposes
+  double m_pbThreshold;  // for reset purposes
+  double m_throttleThreshold;
   double m_pushbackReduction;
   double m_throttleReduction;
 

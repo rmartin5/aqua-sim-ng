@@ -50,12 +50,12 @@ AquaSimDDOS::AquaSimDDOS() :
   m_ddosCheckFrequency = Minutes(2);//Minutes(10);
   m_pushbackLength = Minutes(3);//Hours(12);
   m_throttleLength = Minutes(3);//Hours(12);
-  m_analysisFreq = Minutes(30);//Hours(24);
+  m_analysisFreq = Seconds(30);//Minutes(30);//Hours(24);
   //real system values may vary and be much larger (as seen in comments)
   m_ruleMiningFreq = 3;
   m_svmLearningFreq = Minutes(20); // not currently used.
 
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
+  m_rand = CreateObject<UniformRandomVariable> ();
 
   m_data.clear();
   m_knownDataPath.clear();
@@ -134,6 +134,14 @@ AquaSimDDOS::GetTypeId()
       MakeIntegerChecker<int>())
   ;
   return tid;
+}
+
+int64_t
+AquaSimDDOS::AssignStreams (int64_t stream)
+{
+  NS_LOG_FUNCTION (this << stream);
+  m_rand->SetStream(stream);
+  return 1;
 }
 
 void
@@ -349,6 +357,8 @@ AquaSimDDOS::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumb
 
   if ((it->second).pushback.IsRunning() || (it->second).throttle.IsRunning()) {
     NS_LOG_INFO("Potential attack ignored from node:" << ash.GetSAddr());
+    m_totalPktRecv++;
+    (it->second).pktRecv++;
     return false;
   }
 
@@ -441,7 +451,8 @@ AquaSimDDOS::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumb
     if (attackerIter == DdosDetectionTable.end()) return true; //drop alert if not in range of potential attacker
 
     (attackerIter->second).timeoutThreshold = std::max((attackerIter->second).timeoutThreshold-m_pushbackReduction, 0.0);
-    (attackerIter->second).maxThreshold = std::max((attackerIter->second).maxThreshold-m_throttleReduction, 0.0);
+    (attackerIter->second).pbThreshold = std::max((attackerIter->second).pbThreshold-m_throttleReduction, 0.0);
+    (attackerIter->second).throttleThreshold = std::max((attackerIter->second).throttleThreshold-m_throttleReduction, 0.0);
     return true;
   }
   else {
@@ -455,6 +466,9 @@ AquaSimDDOS::NodeContainsRelatedData(std::string interest)
 {
   std::size_t intDivider = interest.find_last_of("/");
   std::string interestStr = interest.substr(intDivider+1);
+
+  //int interestValue = atoi(interest.substr(intDivider+2).c_str());
+  //if (interestValue>1500 && AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()).GetAsInt()!=5) std::cout << Simulator::Now().ToDouble(Time::S) << " & " << AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()).GetAsInt() << "  " << interestValue <<  "\n";
 
   for (uint i=0; i < m_data.size(); i++)
   {
@@ -500,6 +514,8 @@ AquaSimDDOS::RemoveEntry(std::string interest, bool isTimeout)
     std::set<int>::iterator it = (it_pit->second).nodeID.begin();
     for (; it!=(it_pit->second).nodeID.end(); ++it) {
       (DdosDetectionTable.find(*it)->second).entriesTimeout++;
+      if ((DdosDetectionTable.find(*it)->second).nodeID == 2 &&
+          AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()).GetAsInt()!=5 ) NS_ASSERT(1);
     }
   }
 
@@ -508,16 +524,18 @@ AquaSimDDOS::RemoveEntry(std::string interest, bool isTimeout)
 }
 
 void
-AquaSimDDOS::SetThresholds(double timeout, double max)
+AquaSimDDOS::SetThresholds(double timeout, double pb, double throttle)
 {
   m_timeoutThreshold = timeout;
-  m_maxThreshold = max;
+  m_pbThreshold = pb;
+  m_throttleThreshold = throttle;
 
   //set for all DdosTables
   std::map<int,DdosTable>::iterator ddosTable=DdosDetectionTable.begin();
   for (; ddosTable!=DdosDetectionTable.end(); ddosTable++) {
     (ddosTable->second).timeoutThreshold = m_timeoutThreshold;
-    (ddosTable->second).maxThreshold = m_maxThreshold;
+    (ddosTable->second).pbThreshold = m_pbThreshold;
+    (ddosTable->second).throttleThreshold = m_throttleThreshold;
   }
 }
 
@@ -576,18 +594,21 @@ AquaSimDDOS::DdosAttackCheck()
         ") transDominance:" << transDominance << "(" << (localDdosTable).pktRecv << "/" << m_totalPktRecv <<
         ") pitUsage:" << pitUsage << "(" << pitUsageCounter.find(localNodeId)->second << "/" << totalPitUsage <<
         ") timeoutThreshold:" << (localDdosTable).timeoutThreshold <<
-        " maxThreshold:" << (localDdosTable).maxThreshold);
+        " pbThreshold:" << (localDdosTable).pbThreshold <<
+        " throttleThreshold:" << (localDdosTable).throttleThreshold);
 
     bool potentialAttack = false;
     if (((1+channelMeasurement)*timeoutRatio >= (localDdosTable).timeoutThreshold)  &&
-            (pitUsage >= (localDdosTable).maxThreshold) )
+            (pitUsage >= (localDdosTable).pbThreshold) )
       {
+        //std::cout << Simulator::Now().ToDouble(Time::S) << " Pushback(" << GetNetDevice()->GetAddress() << ") for " << localNodeId << "\n";
         Pushback(localNodeId);
         potentialAttack=true;
       }
     if (!potentialAttack && ((1+channelMeasurement)*timeoutRatio >= (localDdosTable).timeoutThreshold)  &&
-            (transDominance >= (localDdosTable).maxThreshold) )
+            (transDominance >= (localDdosTable).throttleThreshold) )
       {
+        //std::cout << Simulator::Now().ToDouble(Time::S) << " Throttle(" << GetNetDevice()->GetAddress() << ") for " << localNodeId << "\n";
         Throttle(localNodeId);
         potentialAttack=true;
         /* (idea here is if throttling isn't detected quickly it can lead to multiple
@@ -606,10 +627,10 @@ AquaSimDDOS::DdosAttackCheck()
       m_space[1].value=std::max(transDominance,pitUsage);
       m_space[2].index=-1;
 
-      /*
+
       std::cout << "Predicted(" << GetNetDevice()->GetAddress() << ") @" << Simulator::Now().ToDouble(Time::S) <<
         ":" << localNodeId << "," << svm_predict(m_model,m_space) << "\n";
-      */
+
       free(m_space);
     }
 
@@ -624,8 +645,8 @@ AquaSimDDOS::DdosAttackCheck()
     //collect data, over time, for machine learning case:
     MachineLearningStruct mlTable;
     mlTable.mobility = Normalize(deltaDistance, m_ddosCheckFrequency.ToDouble(Time::S) * 0.05); //increased sensitivity from 0.5 m/s to 0.05 due to very small network size
-    mlTable.pushback = Normalize(pitUsage, (localDdosTable).maxThreshold);
-    mlTable.throttle = Normalize(transDominance, (localDdosTable).maxThreshold);
+    mlTable.pushback = Normalize(pitUsage, (localDdosTable).pbThreshold);
+    mlTable.throttle = Normalize(transDominance, (localDdosTable).throttleThreshold);
     mlTable.timeout = Normalize(((1+channelMeasurement)*timeoutRatio), (localDdosTable).timeoutThreshold);
 
     std::map<int,ml>::iterator ml_it;
@@ -641,7 +662,6 @@ AquaSimDDOS::DdosAttackCheck()
         (ml_it->second).push(mlTable);
       }
   }
-  Ptr<UniformRandomVariable> m_rand = CreateObject<UniformRandomVariable> ();
   Time delay = m_ddosCheckFrequency + m_ddosCheckFrequency * m_rand->GetValue(); //add a slight variation
   Simulator::Schedule(delay, &AquaSimDDOS::DdosAttackCheck, this);
 }
@@ -682,6 +702,31 @@ void AquaSimDDOS::Analysis()
   if (isAttacker) return;
   NS_LOG_FUNCTION(this);
 
+  //changed minimum table sizes to 10/10/100 for statistical, rulesmining, and svm, respectively.
+
+  std::vector<StatisticalTable> statScores = Statistical();
+  /* Printout Stats values */
+  if (!statScores.empty()) {
+    std::cout << "Source(" << GetNetDevice()->GetAddress() << ") @" << Simulator::Now().ToDouble(Time::S) << ":";
+    for (std::vector<StatisticalTable>::const_iterator i = statScores.begin(); i!=statScores.end(); i++)
+      std::cout << (*i).nodeID << ',' << (*i).score << " | ";
+    std::cout << "\n";
+  }
+
+  std::vector<StatisticalTable> ruleStatScores = RulesMining();
+  /* Printout Rules Mining values */
+  if (!ruleStatScores.empty()) {
+    std::cout << " rulesMining(" << GetNetDevice()->GetAddress() << ") ";
+    for (std::vector<StatisticalTable>::const_iterator j = ruleStatScores.begin(); j!=ruleStatScores.end(); j++)
+      std::cout << (*j).nodeID << ',' << (*j).score << " | ";
+    std::cout << "\n";
+  }
+
+  #if LIBSVM
+  SVM();
+  #endif
+
+  /*
   std::vector<StatisticalTable> statScores = Statistical();
   //TODO do something w/ statScores.
   //This is used for statistical analyze printout and comparisons.
@@ -701,6 +746,7 @@ void AquaSimDDOS::Analysis()
     SVM();
     #endif
   }
+  */
 
   Simulator::Schedule(m_analysisFreq,&AquaSimDDOS::Analysis,this);
 }
@@ -714,7 +760,7 @@ std::vector<StatisticalTable> AquaSimDDOS::Statistical()
   std::map<int,ml>::iterator it=StatLearningTable.begin();
   for (; it!=StatLearningTable.end(); it++) {
     int qSize = (it->second).size();
-    if (qSize == 0) continue;
+    if (qSize < 10) continue;
     MachineLearningStruct currentDist, previousDist;
     //for longterm history:
     std::pair<std::map<int,ml>::iterator,bool> rulesLearning;
@@ -776,7 +822,7 @@ void AquaSimDDOS::SVM()
 
   //NOTE: this is for training model, classification should be separate.
   if (SvmTable.size() < 100) return;
-  std::cout << "SVM table size:" << SvmTable.size() << "\n";
+  std::cout << GetNetDevice()->GetAddress() << " SVM table size:" << SvmTable.size() << "\n";
 
   m_prob.l = SvmTable.size();
   size_t elements, j;
@@ -830,12 +876,20 @@ void AquaSimDDOS::SVM()
   */
 
   // ------------- training and saving model -------------------
-  m_model = svm_train(&m_prob,&m_param);
-  if(svm_save_model("ddos_svm.model",m_model)) {
-    NS_LOG_WARN("Not able to save SVM model to file");
-    return;
+  struct svm_model *tmp_model;
+  tmp_model = svm_train(&m_prob,&m_param);
+  if (tmp_model->nr_class==1) {
+    //only one class from training data, therefore not saving model
+    //Do nothing.
+    free(tmp_model);
+  } else {
+    m_model = tmp_model;
+    if(svm_save_model("ddos_svm.model",m_model)) {
+      NS_LOG_WARN("Not able to save SVM model to file");
+      return;
+    }
+    m_modelTrained=true;
   }
-  m_modelTrained=true;
 
   free(m_prob.y);
   free(m_prob.x);
@@ -854,6 +908,7 @@ std::vector<StatisticalTable> AquaSimDDOS::RulesMining()
   for (; rm_it!=RuleMiningTable.end(); rm_it++) {
     int compromisedTransactions=0;
     int totalTransactions= (rm_it->second).size();
+    if (totalTransactions < 10) continue;
     //review entire MachineLearningStruct queue for current nodeID
     for (int j=0;j<totalTransactions;j++) {
       /* (1) finding amount of compromised vs uncompromised components for each transaction */
@@ -961,7 +1016,7 @@ void
 AquaSimDDOS::Pushback(int nodeID)
 {
   DdosTable &ddosTable = DdosDetectionTable.find(nodeID)->second;
-  ddosTable.maxThreshold = std::max(ddosTable.maxThreshold - m_pushbackReduction, 0.0);
+  ddosTable.pbThreshold = std::max(ddosTable.pbThreshold - m_pushbackReduction, 0.0);
   ddosTable.timeoutThreshold = std::max(ddosTable.timeoutThreshold - m_pushbackReduction, 0.0);
   if(ddosTable.pushback.IsRunning())
     ddosTable.pushback.Cancel();
@@ -975,7 +1030,7 @@ void
 AquaSimDDOS::Throttle(int nodeID)
 {
   DdosTable &ddosTable = DdosDetectionTable.find(nodeID)->second;
-  ddosTable.maxThreshold = std::max(ddosTable.maxThreshold - m_throttleReduction, 0.0);
+  ddosTable.throttleThreshold = std::max(ddosTable.throttleThreshold - m_throttleReduction, 0.0);
   ddosTable.timeoutThreshold = std::max(ddosTable.timeoutThreshold - m_throttleReduction, 0.0);
   if(ddosTable.throttle.IsRunning())
     ddosTable.throttle.Cancel();
@@ -987,10 +1042,11 @@ AquaSimDDOS::Throttle(int nodeID)
 void
 AquaSimDDOS::ResetPushback(int nodeID)
 {
+  std::cout << Simulator::Now().ToDouble(Time::S) << " Pushback_Reset(" << GetNetDevice()->GetAddress() << ") for " << nodeID << "\n";
   NS_LOG_FUNCTION(this << "Pushback reset.");
   DdosTable &ddosTable = DdosDetectionTable.find(nodeID)->second;
   ddosTable.timeoutThreshold = m_timeoutThreshold;
-  ddosTable.maxThreshold = m_maxThreshold - ddosTable.thresholdOffset;
+  ddosTable.pbThreshold = m_pbThreshold - ddosTable.thresholdOffset;
 
   ResetStatDistribution(nodeID);
 }
@@ -998,10 +1054,11 @@ AquaSimDDOS::ResetPushback(int nodeID)
 void
 AquaSimDDOS::ResetThrottle(int nodeID)
 {
+  std::cout << Simulator::Now().ToDouble(Time::S) << " Throttle_Reset(" << GetNetDevice()->GetAddress() << ") for " << nodeID << "\n";
   NS_LOG_FUNCTION(this << "Throttle reset.");
   DdosTable &ddosTable = DdosDetectionTable.find(nodeID)->second;
   ddosTable.timeoutThreshold = m_timeoutThreshold;
-  ddosTable.maxThreshold = m_maxThreshold - ddosTable.thresholdOffset;
+  ddosTable.throttleThreshold = m_throttleThreshold - ddosTable.thresholdOffset;
 
   ResetStatDistribution(nodeID);
 }
@@ -1027,12 +1084,10 @@ AquaSimDDOS::ResetStatDistribution(int nodeID)
 void
 AquaSimDDOS::UpdateInterest()
 {
-  Ptr<UniformRandomVariable> randVar = CreateObject<UniformRandomVariable> ();
   if(isAttacker)
   {
-    m_interestVersionNum = randVar->GetValue(1501,3000);
+    m_interestVersionNum = m_rand->GetValue(1501,3000);
     //assuming all requests are illegitimate although random.
-
 
          //NOTE for multiple focused attacks
 
@@ -1041,18 +1096,16 @@ AquaSimDDOS::UpdateInterest()
 
 
         //NOTE for spread attack.
-    //m_baseInterest = m_possibleBaseInt[randVar->GetInteger(0,2)];
-    //randVar=0;
+    //m_baseInterest = m_possibleBaseInt[m_rand->GetInteger(0,2)];
+    //m_rand=0;
   }
   else
   {
     m_interestVersionNum++;
   }
   //NOTE:editing below depenent on topology type.
-  m_baseInterest = m_possibleBaseInt[randVar->GetInteger(0,2)];
-  randVar=0;
-  //m_baseInterest = m_possibleBaseInt[0];  //set just to crab.
-
+  //m_baseInterest = m_possibleBaseInt[m_rand->GetInteger(0,2)];
+  m_baseInterest = m_possibleBaseInt[0];  //set just to crab.
 
   m_interestMsg.str("");
   m_interestMsg << m_baseInterest << m_interestVersionNum << '\0';
