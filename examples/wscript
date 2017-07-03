@@ -27,26 +27,3 @@ def build(bld):
 
     obj = bld.create_ns3_program('FloodingMac', ['network', 'mobility', 'energy', 'applications', 'aqua-sim-ng'])
     obj.source = 'floodMac.cc'
-
-    obj = bld.create_ns3_program('ddos_test', ['network', 'mobility', 'energy', 'applications', 'aqua-sim-ng'])
-    obj.source = 'ddos_test.cc'
-
-    #don't publish ddos_test.
-
-    obj = bld.create_ns3_program('cope', ['network', 'mobility', 'energy', 'applications', 'aqua-sim-ng'])
-    obj.source = 'cope.cc'
-
-    obj = bld.create_ns3_program('VBF_hop', ['network', 'mobility', 'energy', 'applications', 'aqua-sim-ng'])
-    obj.source = 'VBF_hop.cc'
-
-    obj = bld.create_ns3_program('Rmac', ['network', 'mobility', 'energy', 'applications', 'aqua-sim-ng'])
-    obj.source = 'Rmac.cc'
-
-    obj = bld.create_ns3_program('Aloha', ['network', 'mobility', 'energy', 'applications', 'aqua-sim-ng'])
-    obj.source = 'Aloha.cc'
-
-    obj = bld.create_ns3_program('Aloha_mate', ['network', 'mobility', 'energy', 'applications', 'aqua-sim-ng'])
-    obj.source = 'Aloha_mate.cc'
-
-    obj = bld.create_ns3_program('break', ['network', 'mobility', 'energy', 'applications', 'aqua-sim-ng'])
-    obj.source = 'break.cc'
