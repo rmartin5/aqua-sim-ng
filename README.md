@@ -35,26 +35,26 @@ Full publication of Aqua-Sim NG is currenlty underway and earlier versions of th
 Aqua-Sim NG core continues to support basic underwater functions seen in Aqua-Sim 1.0, such as half-duplex, long propagation delays, and acoustic signal attenuation. Current protocol support includes: (MAC layer:) BroadcastMAC, Underwater ALOHA, CopeMAC, Underwater FAMA, Underwater Slotted FAMA, GOAL, UWAN, RMac, Tmac, (Routing Layer:) DBR, Residual-DBR, Static, Dynamic, Dummy, Flooding, DDoS-Restriction, VBF, and VBVA.
 
 1. NS3 Architecture Support
-  * Core Aqua-Sim revamp and API integration
-  * Example and helper scripts addition
+   * Core Aqua-Sim revamp and API integration
+   * Example and helper scripts addition
 
 2. Protocol Port
-  * Extensive protocol port
+   * Extensive protocol port
 
 3. Real-World Features
-  * Synchronization support
-  * Localization support
-  * Busy terminal model integration
-  * Fluctuating SNR
-  * Enhanced channel model support
-  * Transmission range uncertainty module
-  * Security features and module support
-  * Trace driven support for channel layer
+   * Synchronization support
+   * Localization support
+   * Busy terminal model integration
+   * Fluctuating SNR
+   * Enhanced channel model support
+   * Transmission range uncertainty module
+   * Security features and module support
+   * Trace driven support for channel layer
 
 4. Information-Centric Integration
-  * Adapted Named Data Network components
-  * Helper and test scripts integrated
-  * Specialized protocols addition
+   * Adapted Named Data Network components
+   * Helper and test scripts integrated
+   * Specialized protocols addition
 
 ### Enhanced Channel Models
 Expanded channel models to support multi-channel simulation, differentiated noise generator classes, and additional propagation model support. Our goal here is to depict better accuracy to real world scenarios in our simulation results.
@@ -81,4 +81,5 @@ Copyright (c) 2017 UWSN Lab at the University of Connecticut.
 All rights reserved.
 
 Robert Martin : <robert.martin@uconn.edu>
+
 Zheng Peng, Ph.D : <zheng@cs.ccny.cuny.edu>
