@@ -653,6 +653,8 @@ AquaSimDBR::AquaSimDBR() :
 	// create packet cache
 	m_pc = new ASPktCache();
 
+	m_rand = CreateObject<UniformRandomVariable> ();
+
   // setup the timer
 	m_beaconTimer = new DBR_BeaconTimer(this);
   m_beaconTimer->SetFunction(&DBR_BeaconTimer::Expire,m_beaconTimer);
@@ -661,8 +663,6 @@ AquaSimDBR::AquaSimDBR() :
 	m_sendTimer = new DBR_SendingTimer(this);
   m_sendTimer->SetFunction(&DBR_SendingTimer::Expire,m_sendTimer);
 	//m_sendTimer->Schedule(Seconds(m_rand->GetValue(0.0,m_bInt)));
-
-	m_rand = CreateObject<UniformRandomVariable> ();
 }
 
 AquaSimDBR::~AquaSimDBR()
@@ -1019,14 +1019,14 @@ AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
   //Ipv4Header iph;
   AquaSimPtTag ptag;
 
-	if (p->GetSize() <= 32)
+	packet->RemoveHeader(ash);
+  if (ash.GetNumForwards() <= 0)  //no headers //TODO create specalized Application instead of using this hack.
 	{
-	//	p->AddHeader(iph);
+		//p->AddHeader(iph);
+		//populate dbr header??
 		p->AddHeader(dbrh);
-		p->AddHeader(ash);
 	}
 
-  p->RemoveHeader(ash);
   p->PeekHeader(dbrh);
   p->AddHeader(ash);
   p->PeekPacketTag(ptag);
