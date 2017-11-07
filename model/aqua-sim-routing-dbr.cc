@@ -1019,7 +1019,7 @@ AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
   //Ipv4Header iph;
   AquaSimPtTag ptag;
 
-	packet->RemoveHeader(ash);
+	p->RemoveHeader(ash);
   if (ash.GetNumForwards() <= 0)  //no headers //TODO create specalized Application instead of using this hack.
 	{
 		//p->AddHeader(iph);
