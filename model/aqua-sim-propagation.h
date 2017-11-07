@@ -63,6 +63,7 @@ public:
   virtual Time PDelay (Ptr<MobilityModel> s, Ptr<MobilityModel> r);
 
   virtual void SetTraceValues(double,double,double)=0;
+  virtual void SetTraceValues(double,double,double,double,double)=0;
 protected:
   double Rayleigh (double SL);
   double Rayleigh (double d, double f);

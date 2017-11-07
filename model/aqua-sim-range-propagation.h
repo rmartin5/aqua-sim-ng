@@ -40,6 +40,18 @@ namespace ns3 {
   *
   * Additional acoutic models are provided.
   */
+
+/*
+ * Layer based temperature allows for more centralized channel temperature control.
+ * Current layer support only assumes x-axis control (wereas this can be expanded, if necessary)
+ */
+struct layerBasedTemp {
+  double minDepth; //upper most layer depth, ie. 0 or surface
+  double maxDepth; //lowest most layer depth, ie. 200
+  double temp;
+  layerBasedTemp(double min, double max, double t) : minDepth(min), maxDepth(max), temp(t) {}
+};
+
 class AquaSimRangePropagation : public AquaSimSimplePropagation {
 public:
   static TypeId GetTypeId (void);
@@ -48,21 +60,28 @@ public:
                  Ptr<Packet> p,
                  std::vector<Ptr<AquaSimNetDevice> > dList);
   double AcousticSpeed(double depth);
+  double AcousticSpeedVaryingTemp(double depth);
   double Urick(Ptr<AquaSimNetDevice> sender, Ptr<AquaSimNetDevice> recver);
 
   void SetBandwidth(double bandwidth);
   void SetTemp(double temp);
   void SetSalinity(double salinity);
   void SetNoiseLvl(double noiseLvl);
+  void SetLayeredTemp(layerBasedTemp temp);
 
   void Initialize();
   virtual void SetTraceValues(double temp, double salinity, double noiseLvl);
+  virtual void SetTraceValues(double minLayerDepth, double maxLayerDepth, double temp, double salinity, double noiseLvl);
+
+protected:
+  double LayerTemp(double depth);
 
 private:
   double m_bandwidth;
-  double m_temp;
+  double m_temp;  //for singular temperature use only
   double m_salinity;
   double m_noiseLvl;
+  std::list<layerBasedTemp> m_layerTemp;
 };  // class AquaSimRangePropagation
 
 }  // namespace ns3

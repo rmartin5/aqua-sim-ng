@@ -138,6 +138,22 @@ AquaSimRangePropagation::AcousticSpeed(double depth)
 }
 
 /*
+ * Identical to AcousticSpeed function but uses the current depth to figure out the channel layer's temp.
+ */
+double
+AquaSimRangePropagation::AcousticSpeedVaryingTemp(double depth)
+{
+  double s = m_salinity - 35;
+  double d = depth/2;
+  double t = LayerTemp(depth);
+
+  return ( 1448.96 + 4.591 * t - 0.05304 * pow(t,2) +
+    0.0002374 * pow(t,3) + 1.34 * s + 0.0163 * d +
+    0.0000001675 * pow(d,2) - 0.01025 * t * s -
+    0.0000000000007139 * t * pow(d,3) );
+}
+
+/*
  *  Urick Acoustic Model
  *
  *  Input: sender's NetDevice
@@ -193,6 +209,12 @@ AquaSimRangePropagation::SetNoiseLvl(double noiseLvl)
 }
 
 void
+AquaSimRangePropagation::SetLayeredTemp(layerBasedTemp temp)
+{
+  m_layerTemp.push_back(temp);
+}
+
+void
 AquaSimRangePropagation::SetTraceValues(double temp, double salinity, double noiseLvl)
 {
   m_temp = temp;
@@ -200,3 +222,30 @@ AquaSimRangePropagation::SetTraceValues(double temp, double salinity, double noi
   m_noiseLvl = noiseLvl;
   NS_LOG_DEBUG("TraceValues(" << Simulator::Now().GetSeconds() << "):" << m_temp << "," << m_salinity << "," << m_noiseLvl);
 }
+
+void
+AquaSimRangePropagation::SetTraceValues(double minLayerDepth, double maxLayerDepth, double temp, double salinity, double noiseLvl)
+{
+  m_layerTemp.push_back(layerBasedTemp(minLayerDepth,maxLayerDepth,temp));
+  m_salinity = salinity;
+  m_noiseLvl = noiseLvl;
+  NS_LOG_DEBUG("TraceValues(" << Simulator::Now().GetSeconds() << "):" << (m_layerTemp.back()).temp << "," << m_salinity << "," << m_noiseLvl);
+}
+
+double
+AquaSimRangePropagation::LayerTemp(double depth)
+{
+  if (m_layerTemp.empty())
+  {
+    NS_LOG_WARN("Temperature layer is empty, returning standard 25m.");
+    return 25;
+  }
+  for (std::list<layerBasedTemp>::iterator i = m_layerTemp.begin(); i != m_layerTemp.end(); i++)
+  {
+    if ((depth >= (*i).minDepth) && (depth < (*i).maxDepth)) return (*i).temp;
+  }
+  NS_LOG_WARN("Temperature layer not found for depth:" << depth << ", returning standard 25m.");
+  return 25;
+}
+
+//TODO create new SetTraceValues to support varying layer temp

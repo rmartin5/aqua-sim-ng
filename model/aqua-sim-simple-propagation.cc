@@ -128,4 +128,10 @@ AquaSimSimplePropagation::SetTraceValues(double t, double s, double n)
   //dummy implementation. Trace driven should only occur in a varying model like AquaSimRangePropagation.
 }
 
+void
+AquaSimSimplePropagation::SetTraceValues(double min, double max, double t, double s, double n)
+{
+  //dummy implementation. Trace driven should only occur in a varying model like AquaSimRangePropagation.
+}
+
 }  // namespace ns3
