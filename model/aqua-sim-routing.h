@@ -81,7 +81,7 @@ protected:
   /*check if this node is the destination.*/
   virtual bool AmIDst(const Ptr<Packet> p);
   /*check if this node is the source node,
-	  * i.e., whose app layer generates this packet.*/
+          * i.e., whose app layer generates this packet.*/
   virtual bool AmISrc(const Ptr<Packet> p);
   virtual void SendPacket(Ptr<Packet> p);
 
@@ -90,6 +90,11 @@ protected:
 
   typedef void (* RxCallback)(std::string path, Ptr<Packet> p);
   typedef void (* TxCallback)(std::string path, Ptr<Packet> p, AquaSimAddress nextHop, Time delay);
+
+  typedef void (* PacketReceivedCallback)(std::string path, Ptr<Packet> p);
+  typedef void (* PacketTransmittingCallback)(std::string path, Ptr<Packet> p, AquaSimAddress nextHop, AquaSimAddress dest);
+
+
   void NotifyRx(std::string path, Ptr<Packet> p);
   void NotifyTx(std::string path, Ptr<Packet> p, AquaSimAddress nextHop, Time delay);
 
@@ -112,6 +117,9 @@ private:
 
   TracedValue<Ptr<const Packet> > m_routingRxTrace;
   TracedValue<Ptr<const Packet> > m_routingTxTrace;
+
+  TracedCallback<Ptr<const Packet> > m_routingRxCbTrace;
+  TracedCallback<Ptr<const Packet>, AquaSimAddress, AquaSimAddress > m_routingTxCbTrace;
 
   int m_sendUpPktCount;
 

@@ -54,6 +54,14 @@ AquaSimRouting::GetTypeId(void)
       "Trace source indicating a packet has been received.",
       MakeTraceSourceAccessor (&AquaSimRouting::m_routingRxTrace),
       "ns3::AquaSimRouting::RxCallback")
+    .AddTraceSource ("PacketReceived",
+      "Trace source indicating a packet has started transmitting.",
+      MakeTraceSourceAccessor (&AquaSimRouting::m_routingRxCbTrace),
+      "ns3::AquaSimRouting::PacketReceivedCallback")
+    .AddTraceSource ("PacketTransmitting",
+      "Trace source indicating a packet has started transmitting.",
+      MakeTraceSourceAccessor (&AquaSimRouting::m_routingTxCbTrace),
+      "ns3::AquaSimRouting::PacketTransmittingCallback")
     .AddTraceSource ("TrafficPkts",
       "Amount of network traffic in packets.",
       MakeTraceSourceAccessor (&AquaSimRouting::trafficPktsTrace),
@@ -128,6 +136,7 @@ AquaSimRouting::SendUp(Ptr<Packet> p)
 
     NOTE: AquaSimPhyCmn::SendPktUp()
   */
+  m_routingRxCbTrace(p);
   return true;
 }
 
@@ -178,6 +187,9 @@ AquaSimRouting::SendDown(Ptr<Packet> p, AquaSimAddress nextHop, Time delay)
 void
 AquaSimRouting::SendPacket(Ptr<Packet> p)
 {
+  AquaSimHeader ash;
+  p->PeekHeader(ash);
+  m_routingTxCbTrace(p, ash.GetNextHop(), ash.GetDAddr());
   NS_LOG_FUNCTION(this << m_mac);
   if (!m_mac->TxProcess(p))
     NS_LOG_DEBUG(this << "Mac recv error");
