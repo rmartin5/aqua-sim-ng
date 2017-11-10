@@ -152,7 +152,6 @@ AquaSimRouting::SendDown(Ptr<Packet> p, AquaSimAddress nextHop, Time delay)
 {
   //cmh->uw_flag() = true;
   //cmh->addr_type() = NS_AF_INET;
-
   NS_LOG_FUNCTION(this << p << nextHop << delay);
   NS_ASSERT(p != NULL);
 
@@ -189,7 +188,7 @@ AquaSimRouting::SendPacket(Ptr<Packet> p)
 {
   AquaSimHeader ash;
   p->PeekHeader(ash);
-  m_routingTxCbTrace(p, ash.GetNextHop(), ash.GetDAddr());
+  m_routingTxCbTrace(p);
   NS_LOG_FUNCTION(this << m_mac);
   if (!m_mac->TxProcess(p))
     NS_LOG_DEBUG(this << "Mac recv error");

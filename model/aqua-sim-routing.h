@@ -92,7 +92,7 @@ protected:
   typedef void (* TxCallback)(std::string path, Ptr<Packet> p, AquaSimAddress nextHop, Time delay);
 
   typedef void (* PacketReceivedCallback)(std::string path, Ptr<Packet> p);
-  typedef void (* PacketTransmittingCallback)(std::string path, Ptr<Packet> p, AquaSimAddress nextHop, AquaSimAddress dest);
+  typedef void (* PacketTransmittingCallback)(std::string path, Ptr<Packet> p);
 
 
   void NotifyRx(std::string path, Ptr<Packet> p);
@@ -119,7 +119,7 @@ private:
   TracedValue<Ptr<const Packet> > m_routingTxTrace;
 
   TracedCallback<Ptr<const Packet> > m_routingRxCbTrace;
-  TracedCallback<Ptr<const Packet>, AquaSimAddress, AquaSimAddress > m_routingTxCbTrace;
+  TracedCallback<Ptr<const Packet> > m_routingTxCbTrace;
 
   int m_sendUpPktCount;
 
