@@ -466,6 +466,7 @@ AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p)
     */
     NS_LOG_DEBUG("PrevalidateIncomingPkt: packet error");
     asHeader.SetErrorFlag(true);
+    m_phyRxErrorTrace(p);
   }
   else {
       GetNetDevice()->SetTransmissionStatus(RECV);
@@ -743,7 +744,7 @@ Time
 AquaSimPhyCmn::CalcTxTime (uint32_t pktSize, std::string * modName)
 {
   //NS_ASSERT(modName == NULL);
-  return Time::FromDouble(m_modulations.find(m_modulationName)->second->TxTime(pktSize), Time::S)
+  return Time::FromDouble(m_modulations.find(m_modulationName)->second->TxTime(pktSize*8), Time::S)
       + Time::FromInteger(Preamble(), Time::S);
 }
 

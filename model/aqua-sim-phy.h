@@ -138,6 +138,7 @@ namespace ns3 {
 
     virtual int64_t AssignStreams (int64_t stream) = 0;
     typedef void (* TracedCallback) (Ptr<Packet> pkt, double noise);
+    typedef void (* RxErrorCallback) (std::string path, Ptr<const Packet> pkt);
     void NotifyTx(Ptr<Packet> packet);
     void NotifyRx(Ptr<Packet> packet);
 
@@ -158,10 +159,13 @@ namespace ns3 {
     friend class AquaSimEnergyModel;
     friend class AquaSimNetDevice;  //slightly dangerous but currrently used to remove reference cycle on disposal.
 
+    ns3::TracedCallback<Ptr<const Packet> > m_phyRxErrorTrace;
+
     //PhyStatus m_status;	// status of modem
   private:
       ns3::TracedCallback<Ptr<Packet> > m_phyTxTrace;
       ns3::TracedCallback<Ptr<Packet> > m_phyRxTrace;
+
   }; //AquaSimPhy class
 
 } //ns3 namespace

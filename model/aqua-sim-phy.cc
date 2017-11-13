@@ -36,6 +36,10 @@ AquaSimPhy::GetTypeId ()
 {
   static TypeId tid = TypeId("ns3::AquaSimPhy")
     .SetParent<Object>()
+    .AddTraceSource ("RxError",
+      "Trace source indicating a packet has been received with errors.",
+      MakeTraceSourceAccessor (&AquaSimPhy::m_phyRxErrorTrace),
+      "ns3::AquaSimPhy::RxErrorCallback")
   ;
   return tid;
 }
