@@ -28,6 +28,7 @@
 #include "ns3/simulator.h"
 #include "ns3/log.h"
 
+#include <complex.h>
 
 //Aqua Sim Signal Cache
 
@@ -283,6 +284,171 @@ void AquaSimSignalCache::DoDispose()
   m_phy=0;
   m_noise=0;
   Object::DoDispose();
+}
+
+/****
+ * AquaSimMultiPathSignalCache class
+ ****/
+
+AquaSimMultiPathSignalCache::AquaSimMultiPathSignalCache()
+{
+  NS_LOG_FUNCTION(this);
+}
+
+AquaSimMultiPathSignalCache::~AquaSimMultiPathSignalCache()
+{
+}
+
+TypeId
+AquaSimMultiPathSignalCache::GetTypeId()
+{
+  static TypeId tid = TypeId ("ns3::AquaSimMultiPathSignalCache")
+    .SetParent<AquaSimSignalCache> ();
+  ;
+  return tid;
+}
+
+/*
+ * Used to gather the multi paths produced between the transmitter and receiver.
+ * Multipath produced are restricted by stop_thres based on attentuation.
+ * Model was adapted from Acoustic Channel Simulator, P. Qarabaqi and M. Stojanovic, Northeastern University:
+ *  http://millitsa.coe.neu.edu/?q=projects
+ *
+ * NOTE: can assume bottom acoustic speed can range between 1200 m/s (soft sediment) and 1800 m/s (hard floor)
+ *
+ * INPUT:
+ * h: depth of water, h_t: depth of transmitter, h_r: depth of receiver
+ * dist: distance between modems, s: acoustic speed (m/s), s_bottom: acoustic speed at sea bottom (m/s)
+ * k: spreading factor, freq: frequency (kHz)
+ * stop_thres: stop once path arrival strength falls below direct arrival divided by threshold
+ *
+ * OUTPUT:
+ *  vector of various paths associated with MultiPathInfo structure.
+ */
+std::vector<MultiPathInfo>
+AquaSimMultiPathSignalCache::GetPaths(double h, double h_t, double h_r,
+                                      double dist, double s, double s_bottom,
+                                      int k, double freq, double stop_thres)
+{
+  NS_LOG_FUNCTION(this);
+  std::vector<MultiPathInfo> paths;
+
+  double a = pow(10,Absorption(freq/1000)/10);
+  a=pow(a,0.001);
+
+  int nr=0; //direct path
+  double originalG, G, A, heff;
+  MultiPathInfo path;
+  path.theta = atan((h_t-h_r)/dist);
+  path.length = sqrt(pow((h_t-h_r),2)+pow(dist,2));
+  path.del=path.length/s;
+  A=(pow(path.length,k)*pow(a,path.length));
+  originalG=G=1/sqrt(A);
+
+  paths.push_back(path);
+
+  std::vector<int> reflections;
+  reflections.push_back(0); //start with surface reflection;
+
+  while (abs(G) >= originalG/stop_thres) {
+    nr++;
+
+    MultiPathInfo p1,p2;
+    int last, first;
+    first=reflections.front();
+    last=reflections.back();
+    p1.b_ref=ReflSum(reflections);
+    p1.s_ref=nr-p1.b_ref;
+    heff=(1-first)*h_t + first*(h-h_t) + (nr-1)*h + (1-last)*h_r + last*(h-h_r);
+    p1.length=sqrt(pow(heff,2)+pow(dist,2));
+    p1.theta=atan(heff/dist);
+    if (first==1) p1.theta*=-1;
+    p1.del=p1.length/s;
+    p1.delay=p1.del-paths.front().del;
+    A=pow(p1.length,k)*pow(a,p1.length);
+    p1.gamma = pow( ReflCoeff(abs(p1.theta),s,s_bottom),p1.b_ref) * pow(-1,p1.s_ref);
+    G=std::min(p1.gamma/sqrt(A),G);
+    p1.hp=p1.gamma/sqrt( pow((p1.length / paths.front().length),k) * pow(a,(p1.length-paths.front().length)) );
+    paths.push_back(p1);
+
+    //flip reflection markers
+    for (unsigned int i=0; i<reflections.size();i++) {
+      reflections[i] = !reflections[i];
+    }
+
+    first=reflections.front();
+    last=reflections.back();
+    p2.b_ref=ReflSum(reflections);
+    p2.s_ref=nr-p2.b_ref;
+    heff=(1-first)*h_t + first*(h-h_t) + (nr-1)*h + (1-last)*h_r + last*(h-h_r);
+    p2.length=sqrt(pow(heff,2)+pow(dist,2));
+    p2.theta=atan(heff/dist);
+    if (first==1) p2.theta*=-1;
+    p2.del=p2.length/s;
+    p2.delay=p2.del-paths.front().del;
+    A=pow(p2.length,k)*pow(a,p2.length);
+    p2.gamma = pow( ReflCoeff(abs(p2.theta),s,s_bottom),p2.b_ref) * pow(-1,p2.s_ref);
+    G=std::min(p2.gamma/sqrt(A),G);
+    p2.hp=p2.gamma/sqrt( pow((p2.length / paths.front().length),k) * pow(a,(p2.length-paths.front().length)) );
+    paths.push_back(p2);
+
+    reflections.push_back(!reflections.back());
+  }
+
+  return paths;
+}
+
+int
+AquaSimMultiPathSignalCache::ReflSum(std::vector<int> reflections)
+{
+  int sum=0;
+  for(unsigned int i=0;i<reflections.size();i++) {
+    sum+=reflections[i];
+  }
+  return sum;
+}
+
+
+/*
+ *  Find the reflection coefficients using theta, acoustic speed (s), and acoustic speed
+ *    at bottom (s_bottom).
+ */
+double
+AquaSimMultiPathSignalCache::ReflCoeff(double theta, double s, double s_bottom)
+{
+  int rho1,rho2,x1,x2,thetac;
+  rho1=1000;  // in kg/m3
+  rho2=1800;  // in kg/m3
+
+  thetac=(s>s_bottom)?creal(acos(s/s_bottom)):acos(s/s_bottom);
+
+  if (theta<thetac) {
+    if (thetac==0) return -1;
+    else {
+      double pi = 4 * atan(1.0);
+      return creal(cexp(sqrt(-1) * pi * (1-theta/thetac)));
+    }
+  }
+  //theta>=thetac
+  x1=rho2/s*sin(theta);
+  x2=rho1/s_bottom*sqrt(1-pow((s_bottom/s),2)*pow(cos(theta),2));
+  return (x1-x2)/(x1+x2);
+}
+
+double
+AquaSimMultiPathSignalCache::Absorption(double f)
+{
+  //redundant alas throp equation is hidden within channel model
+  return (0.11 * pow(f,2) / (1 + pow(f,2) )
+      + 44 * pow(f,2) / (4100 + pow(f,2) )
+      + 0.000275 * pow(f,2) + 0.0003 );
+}
+
+void
+AquaSimMultiPathSignalCache::DoDispose()
+{
+  NS_LOG_FUNCTION(this);
+  AquaSimSignalCache::DoDispose();
 }
 
 };  // namespace ns3

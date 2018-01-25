@@ -23,6 +23,7 @@
 #define AQUA_SIM_SIGNAL_CACHE_H
 
 #include <queue>
+#include <vector>
 
 #include "ns3/packet.h"
 #include "ns3/nstime.h"
@@ -59,6 +60,19 @@ struct PktSubmissionUnit{
   }
 
   PktSubmissionUnit(Ptr<IncomingPacket> inPkt_, Time endT_);
+};
+
+struct MultiPathInfo{
+  double length;  //path length
+  double delay;   //path delays (tau)
+  double gamma;   //cumulative reflection coefficient
+  double theta;   //angle of arrival
+  int s_ref;      //number of surface reflections
+  int b_ref;      //number of bottom reflections
+  double hp;      //path gains
+  double del;     //delta
+  MultiPathInfo():length(0),delay(0),gamma(1),theta(0),
+                  s_ref(0),b_ref(0),hp(1),del(0) {}
 };
 
 /**
@@ -129,13 +143,24 @@ private:
 
 
 /**
- * \brief Multi-path signal cache. Planned to be implemented in future updates.
+ * \brief Multi-path signal cache. Similar to regular signal cache but allows for more
+ *    robust signal processing (e.g. setting sea bed material reflection for geo-acoustic modeling).
  */
 class AquaSimMultiPathSignalCache : public AquaSimSignalCache {
-  /**
-  * this class considers multi-path effect, what's the difference?
-  */
-  //TODO - in future work.
+public:
+  AquaSimMultiPathSignalCache(void);
+  virtual ~AquaSimMultiPathSignalCache(void);
+  static TypeId GetTypeId(void);
+
+  std::vector<MultiPathInfo> GetPaths(double h, double h_t, double h_r, double dist, double s,
+                                  double s_bottom, int k, double freq, double stop_thres);
+protected:
+  void DoDispose();
+
+private:
+  int ReflSum(std::vector<int> reflections);
+  double ReflCoeff(double theta, double s, double s_bottom);
+  double Absorption(double f);
 
 };  //class AquaSimMultiPathSignalCache
 
