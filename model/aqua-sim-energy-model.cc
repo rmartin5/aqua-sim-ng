@@ -54,7 +54,7 @@ AquaSimEnergyModel::GetTypeId()
       MakeDoubleChecker<double>())
     .AddAttribute ("InitialEnergy", "Starting energy",
       DoubleValue (10000.0),
-      MakeDoubleAccessor (&AquaSimEnergyModel::m_initialEnergy),
+      MakeDoubleAccessor (&AquaSimEnergyModel::SetInitialEnergy),
       MakeDoubleChecker<double>())
     .AddAttribute ("IdlePower", "Idle power",
       DoubleValue (0.008),
@@ -163,12 +163,15 @@ AquaSimEnergyModel::SetIdlePower(double idleP)
 void
 AquaSimEnergyModel::SetEnergy(double energy)
 {
+  NS_LOG_FUNCTION(this << energy);
+
   m_energy = energy;
 }
 void
 AquaSimEnergyModel::SetInitialEnergy(double initialEnergy)
 {
   m_initialEnergy = initialEnergy;
+  SetEnergy(m_initialEnergy);
 }
 
 double
@@ -200,7 +203,7 @@ AquaSimEnergyModel::GetInitialEnergy()
 void
 AquaSimEnergyModel::DecrIdleEnergy(double t, double idleP)
 {
-  NS_LOG_FUNCTION(this);
+  NS_LOG_FUNCTION(this << m_energy);
 
   double dEng = t * m_idleP;
   if (m_energy <= dEng) {
