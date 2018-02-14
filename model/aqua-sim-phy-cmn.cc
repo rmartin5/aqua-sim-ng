@@ -466,7 +466,6 @@ AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p)
     */
     NS_LOG_DEBUG("PrevalidateIncomingPkt: packet error");
     asHeader.SetErrorFlag(true);
-    m_phyRxErrorTrace(p);
   }
   else {
       GetNetDevice()->SetTransmissionStatus(RECV);
