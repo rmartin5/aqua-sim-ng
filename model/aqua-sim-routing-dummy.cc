@@ -73,9 +73,10 @@ AquaSimRoutingDummy::Recv(Ptr<Packet> packet, const Address &dest, uint16_t prot
   {
     //packet->RemoveHeader(ash);
     //if (ash.GetSAddr().GetAsInt() > myAddr.GetAsInt()) return true; //remove backtracking of packets from traffic generator
-    packet->AddHeader(ash);
-    if (ash.GetDAddr() == myAddr)
+    AquaSimAddress daddr = ash.GetDAddr();
+    if (daddr == myAddr)
     {
+      packet->AddHeader(ash);
       DataForSink(packet);
       return true;
     }
@@ -85,8 +86,14 @@ AquaSimRoutingDummy::Recv(Ptr<Packet> packet, const Address &dest, uint16_t prot
       NS_LOG_INFO("Deadloop detected. Dropping pkt.");
       return true;
     }
-  }
 
+    if(daddr == AquaSimAddress::GetBroadcast())
+    {
+      Ptr<Packet> cpkt = packet->Copy();
+      cpkt->AddHeader(ash);
+      DataForSink(cpkt);
+    }
+  }
   packet->AddHeader(ash);
   ash.SetSAddr(myAddr);
   ash.SetNumForwards(ash.GetNumForwards() + 1);
