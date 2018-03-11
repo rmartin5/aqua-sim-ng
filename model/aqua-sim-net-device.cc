@@ -585,7 +585,7 @@ AquaSimNetDevice::Send (Ptr< Packet > packet, const Address &dest, uint16_t prot
     }
   else if (m_mac)
     {
-      return m_mac->RecvProcess(packet);
+      return m_mac->TxProcess(packet);
     }
   /*else if (m_phy)
     {

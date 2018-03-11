@@ -129,6 +129,7 @@ AquaSimMac::SendUp(Ptr<Packet> p)
   p->PeekHeader(ash);
 
   if (Routing()) {
+    m_macRxTrace(p);
     return Routing()->Recv(p,ash.GetDAddr(),0);
   }
 
@@ -136,6 +137,7 @@ AquaSimMac::SendUp(Ptr<Packet> p)
     //I am sink, no pass up implemented.
     NS_LOG_INFO("Mac:SendUp : packet at destination node:" << m_device->GetAddress() <<
       ", with end-to-end delay of " << (Simulator::Now()-ash.GetTimeStamp()).ToDouble(Time::S));
+    m_macRxTrace(p);
     return true;
   }
 
@@ -162,7 +164,7 @@ AquaSimMac::SendDown(Ptr<Packet> p, TransStatus afterTrans)
   p->Print(std::cout);
   std::cout << "\n";
   */
-
+  m_macTxTrace(p);
   if (m_device->GetTransmissionStatus() == SLEEP) {
     NS_LOG_DEBUG("SendDown::Sleeping, drop pkt");
       return false;
