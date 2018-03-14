@@ -178,6 +178,7 @@ AquaSimMac::SendDown(Ptr<Packet> p, TransStatus afterTrans)
       AquaSimHeader ash;
       p->PeekHeader(ash);
       if (ash.GetTxTime().IsNegative()) ash.SetTxTime(GetTxTime(p));
+      NS_LOG_DEBUG("Sending packet to Phy : " << ash.GetSize() << " bytes ; " << ash.GetTxTime().GetSeconds() << " sec. ; Dest: " << ash.GetDAddr().GetAsInt() << " ; Src: " << ash.GetSAddr().GetAsInt() << " ; Next H.: " << ash.GetNextHop().GetAsInt());
       Simulator::Schedule(ash.GetTxTime(), &AquaSimNetDevice::SetTransmissionStatus,m_device,afterTrans);
       //slightly awkard but for phy header Buffer
       AquaSimPacketStamp pstamp;
