@@ -357,6 +357,24 @@ AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumbe
     packet->PeekHeader(vbh);
     //ignoring forward iterator, but this can be simply changed if necessary
   }
+  std::string msg;
+  if(ash.GetDirection () == AquaSimHeader::DOWN)
+    {
+      msg = ") transmitting packet: ";
+    }
+  else
+    {
+      msg = ") receiving packet: ";
+    }
+
+  NS_LOG_INFO("Me(" << AquaSimAddress::ConvertFrom(m_device->GetAddress()).GetAsInt() << msg
+              << ash.GetSize() << " bytes ; "
+              << ash.GetTxTime().GetSeconds() << " sec. ; Dest: "
+              << ash.GetDAddr().GetAsInt()
+              << " ; Src: " << ash.GetSAddr().GetAsInt()
+              << " ; Forwards: " << ash.GetNumForwards()
+              << " ; "
+               );
   packet->AddHeader(ash);
 
 	//unsigned char msg_type =vbh.GetMessType();  //unused

@@ -109,7 +109,8 @@ AquaSimStaticRouting::Recv (Ptr<Packet> p, const Address &dest, uint16_t protoco
   NS_LOG_FUNCTION(this << p);
   AquaSimHeader ash;
   //struct hdr_ip* ih = HDR_IP(p);
-
+  p->PeekHeader(ash);
+  NS_LOG_DEBUG("Me(" << AquaSimAddress::ConvertFrom(m_device->GetAddress()).GetAsInt() << "): Received packet from MAC : " << ash.GetSize() << " bytes ; " << ash.GetTxTime().GetSeconds() << " sec. ; Dest: " << ash.GetDAddr().GetAsInt() << " ; Src: " << ash.GetSAddr().GetAsInt() << " ; Next H.: " << ash.GetNextHop().GetAsInt());
   if (IsDeadLoop (p))
     {
       NS_LOG_INFO("Dropping packet " << p << " due to route loop");

@@ -127,7 +127,7 @@ AquaSimMac::SendUp(Ptr<Packet> p)
   NS_ASSERT(m_device);
   AquaSimHeader ash;
   p->PeekHeader(ash);
-
+  NS_LOG_DEBUG("Me(" << this->m_address.GetAsInt() << "): Received packet from Phy : " << ash.GetSize() << " bytes ; " << ash.GetTxTime().GetSeconds() << " sec. ; Dest: " << ash.GetDAddr().GetAsInt() << " ; Src: " << ash.GetSAddr().GetAsInt() << " ; Next H.: " << ash.GetNextHop().GetAsInt());
   if (Routing()) {
     return Routing()->Recv(p,ash.GetDAddr(),0);
   }
@@ -178,7 +178,7 @@ AquaSimMac::SendDown(Ptr<Packet> p, TransStatus afterTrans)
       AquaSimHeader ash;
       p->PeekHeader(ash);
       if (ash.GetTxTime().IsNegative()) ash.SetTxTime(GetTxTime(p));
-      NS_LOG_DEBUG("Sending packet to Phy : " << ash.GetSize() << " bytes ; " << ash.GetTxTime().GetSeconds() << " sec. ; Dest: " << ash.GetDAddr().GetAsInt() << " ; Src: " << ash.GetSAddr().GetAsInt() << " ; Next H.: " << ash.GetNextHop().GetAsInt());
+      NS_LOG_DEBUG("Me(" << this->m_address.GetAsInt() << "): Sending packet to Phy : " << ash.GetSize() << " bytes ; " << ash.GetTxTime().GetSeconds() << " sec. ; Dest: " << ash.GetDAddr().GetAsInt() << " ; Src: " << ash.GetSAddr().GetAsInt() << " ; Next H.: " << ash.GetNextHop().GetAsInt());
       Simulator::Schedule(ash.GetTxTime(), &AquaSimNetDevice::SetTransmissionStatus,m_device,afterTrans);
       //slightly awkard but for phy header Buffer
       AquaSimPacketStamp pstamp;

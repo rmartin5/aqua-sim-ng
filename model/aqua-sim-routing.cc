@@ -121,7 +121,13 @@ AquaSimRouting::SendUp(Ptr<Packet> p)
   NS_LOG_FUNCTION(this << p << " : currently a dummy sendup on nodeAddr:" <<
       AquaSimAddress::ConvertFrom(m_device->GetAddress()).GetAsInt());
   m_sendUpPktCount++;
-  NS_LOG_INFO(m_sendUpPktCount);
+  NS_LOG_INFO("Me(" << AquaSimAddress::ConvertFrom(m_device->GetAddress()).GetAsInt() << "): SendUp: "
+              << ash.GetSize() << " bytes ; "
+              << ash.GetTxTime().GetSeconds() << " sec. ; Dest: "
+              << ash.GetDAddr().GetAsInt()
+              << " ; Src: " << ash.GetSAddr().GetAsInt()
+              << " ; Forwards: " << ash.GetNumForwards() << " ; Packet counter="
+              << m_sendUpPktCount);
   /*TODO this needs to be fully implemented with the multiplexer
 		  Or at least sent up for further processing
 		  ie. Sync, Localization, Application driven
