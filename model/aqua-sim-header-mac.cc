@@ -345,11 +345,6 @@ AlohaHeader::GetTypeId()
   return tid;
 }
 
-int
-AlohaHeader::size()
-{
-  return sizeof(AquaSimAddress)*2 + 1; /*for packet_type*/
-}
 void
 AlohaHeader::SetSA(AquaSimAddress sa)
 {
@@ -447,11 +442,6 @@ FamaHeader::GetTypeId()
   return tid;
 }
 
-int
-FamaHeader::size()
-{
-  return sizeof(AquaSimAddress)*4 + 1; /*for packet_type*/
-}
 void
 FamaHeader::SetSA(AquaSimAddress sa)
 {

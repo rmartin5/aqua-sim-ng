@@ -41,7 +41,7 @@ NS_OBJECT_ENSURE_REGISTERED(AquaSimHeader);
 AquaSimHeader::AquaSimHeader(void) :
     m_txTime(0), m_direction(DOWN),
     m_numForwards(0), m_errorFlag(0), m_uId(-1),
-    m_timestamp(0)
+    m_size(0), m_timestamp(0)
 {
   m_nextHop = AquaSimAddress(-1);
   m_src.addr = AquaSimAddress(-1);

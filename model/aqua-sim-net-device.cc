@@ -561,12 +561,39 @@ AquaSimNetDevice::NeedsArp (void) const
 {
   return false;
 }
-
+/*
+if(ashSize <= pktSize)
+{
+  packet->RemoveHeader(ash);
+  uint32_t size = ash.GetSize();
+  NS_LOG_INFO("Packet size set in ash: " << size << " bytes. Packet size (bytes): " << packet->GetSize());
+  if(size <= 0)
+  {
+    ash.SetSize(packet->GetSize());
+    NS_LOG_INFO("Setting packet size to " << ash.GetSize() << " bytes (packet->GetSize() - ash.GetSerializedSize())");
+  }
+  packet->AddHeader(ash);
+}
+else
+{
+  NS_LOG_ERROR("ashSize > pktSize (" << ashSize << " < " << pktSize << ")");
+  return false;
+}
+  */
 bool
 AquaSimNetDevice::Send (Ptr< Packet > packet, const Address &dest, uint16_t protocolNumber)
 {
   NS_LOG_FUNCTION(this << packet << dest << protocolNumber);
   m_totalSentPkts++;  //debugging
+
+  AquaSimHeader ash;
+  uint32_t pktSize = packet->GetSize();
+  ash.SetSize(pktSize);
+  ash.SetSAddr(AquaSimAddress::ConvertFrom(GetAddress()));
+  ash.SetDAddr(AquaSimAddress::ConvertFrom(dest));
+  ash.SetNextHop(AquaSimAddress::GetBroadcast());
+  packet->AddHeader(ash);
+
   //Quick hack. Named Data should be NULL pointer if unused/unset.
   if (m_ndn)
   {

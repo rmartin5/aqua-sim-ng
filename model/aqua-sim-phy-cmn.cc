@@ -471,7 +471,7 @@ AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p)
       GetNetDevice()->SetTransmissionStatus(RECV);
       //SetPhyStatus(PHY_RECV);
       //finish recv packet
-      Simulator::Schedule(CalcTxTime(p->GetSize()),&AquaSimNetDevice::SetTransmissionStatus,GetNetDevice(),NIDLE);
+      Simulator::Schedule(CalcTxTime(asHeader.GetSize()),&AquaSimNetDevice::SetTransmissionStatus,GetNetDevice(),NIDLE);
   }
 
   UpdateRxEnergy(txTime, (bool)asHeader.GetErrorFlag());
@@ -539,7 +539,7 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p, int channelId) {
   */
   StampTxInfo(p);
 
-  Time txSendDelay = this->CalcTxTime(p->GetSize(), &m_modulationName );
+  Time txSendDelay = this->CalcTxTime(asHeader.GetSize(), &m_modulationName );
   Simulator::Schedule(txSendDelay, &AquaSimNetDevice::SetTransmissionStatus, GetNetDevice(), NIDLE);
   //Simulator::Schedule(txSendDelay, &AquaSimPhyCmn::SetPhyStatus, this, PHY_IDLE);
   /**
