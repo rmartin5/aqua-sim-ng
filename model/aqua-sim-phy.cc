@@ -74,7 +74,10 @@ AquaSimPhy::GetMac()
 Ptr<AquaSimEnergyModel>
 AquaSimPhy::EM()
 {
-  return m_device->EnergyModel();
+  if(m_device)
+    return m_device->EnergyModel();
+  else
+    return 0;
 }
 
 

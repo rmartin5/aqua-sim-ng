@@ -57,9 +57,6 @@ public:
   virtual ~AquaSimPhyCmn(void);
   static TypeId GetTypeId(void);
 
-  virtual void SetTxPower(double ptConsume);
-  virtual void SetRxPower(double prConsume);
-  virtual void SetIdlePower(double pIdle);
   virtual void SetSinrChecker(Ptr<AquaSimSinrChecker> sinrChecker);
   virtual void SetSignalCache(Ptr<AquaSimSignalCache> sC);
   virtual void AddModulation(Ptr<AquaSimModulation> modulation, std::string modulationName);
@@ -123,16 +120,13 @@ public:
 
 protected:
   virtual Ptr<Packet> PrevalidateIncomingPkt(Ptr<Packet> p);
-  virtual void UpdateTxEnergy(Time txTime, double pT, double pIdle);
+  virtual void UpdateTxEnergy(Time txTime);
   virtual void UpdateRxEnergy(Time txTime, bool errorFlag);
   virtual Ptr<Packet> StampTxInfo(Ptr<Packet> p);
   virtual void EnergyDeplete(void);
 
   //TODO energy model could substitute this and better define it all.
   double m_pT;		// transmitted signal power (W)
-  double m_ptConsume;	// power consumption for transmission (W)
-  double m_prConsume;	// power consumption for reception (W)
-  double m_pIdle;         // idle power consumption (W)
   double m_updateEnergyTime;	// the last time we update energy.
 
   double m_RXThresh;	// receive power threshold (W)

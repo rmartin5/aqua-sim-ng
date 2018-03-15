@@ -57,8 +57,6 @@ AquaSimPhyCmn::AquaSimPhyCmn(void) :
   //m_mac = NULL;
 
   m_ptLevel = 0;
-  m_ptConsume = 0.660;
-  m_prConsume = 0.395;
   m_PoweredOn = true;
 
   m_RXThresh = 0;
@@ -68,7 +66,6 @@ AquaSimPhyCmn::AquaSimPhyCmn(void) :
   m_EnergyTurnOn = 0;
   m_EnergyTurnOff = 0;
   m_lambda = 0.0;
-  m_pIdle = 0.0;
   m_L = 0;
   m_K = 2.0;
   m_freq = 25;
@@ -146,18 +143,6 @@ AquaSimPhyCmn::GetTypeId(void)
       UintegerValue(0),
       MakeUintegerAccessor(&AquaSimPhyCmn::m_ptLevel),
       MakeUintegerChecker<uint32_t> ())
-    .AddAttribute("PTConsume", "Power consumption for transmission (W). Default is 0.660 (1.6W).",
-      DoubleValue(0.660),
-      MakeDoubleAccessor(&AquaSimPhyCmn::m_ptConsume),
-      MakeDoubleChecker<double>())
-    .AddAttribute("PRConsume", "Power consumption for reception (W). Default is 0.395 (1.2W).",
-      DoubleValue(0.395),
-      MakeDoubleAccessor(&AquaSimPhyCmn::m_prConsume),
-      MakeDoubleChecker<double>())
-    .AddAttribute("PIdle", "Idle power consumption (W). Default is 0.0 (0W).",
-      DoubleValue(0.0),
-      MakeDoubleAccessor(&AquaSimPhyCmn::m_pIdle),
-      MakeDoubleChecker<double>())
     .AddAttribute("SignalCache", "Signal cache attached to this node.",
       PointerValue(),
       MakePointerAccessor (&AquaSimPhyCmn::m_sC),
@@ -172,29 +157,6 @@ AquaSimPhyCmn::GetTypeId(void)
   return tid;
 }
 
-void
-AquaSimPhyCmn::SetTxPower(double ptConsume)
-{
-  m_ptConsume = ptConsume;
-  //NS_ASSERT(EM() != NULL);
-  EM()->SetTxPower(m_ptConsume);
-}
-
-void
-AquaSimPhyCmn::SetRxPower(double prConsume)
-{
-  m_prConsume = prConsume;
-  //NS_ASSERT(EM() != NULL);
-  EM()->SetRxPower(m_prConsume);
-}
-
-void
-AquaSimPhyCmn::SetIdlePower(double pIdle)
-{
-  m_pIdle = pIdle;
-  //NS_ASSERT(EM() != NULL);
-  EM()->SetIdlePower(m_pIdle);
-}
 
 /*
 void
@@ -254,16 +216,16 @@ AquaSimPhyCmn::AddModulation(Ptr<AquaSimModulation> modulation, std::string modu
  * update energy for transmitting for duration of P_t
  */
 void
-AquaSimPhyCmn::UpdateTxEnergy(Time txTime, double pT, double pIdle) {
+AquaSimPhyCmn::UpdateTxEnergy(Time txTime) {
 	NS_LOG_FUNCTION(this << "Currently not implemented");
 	double startTime = Simulator::Now().GetSeconds(), endTime = Simulator::Now().GetSeconds() + txTime.GetSeconds();
 
 	if (NULL != EM()) {
 		if (startTime >= m_updateEnergyTime) {
-			EM()->DecrIdleEnergy(startTime - m_updateEnergyTime, pIdle);
+			EM()->DecrIdleEnergy(startTime - m_updateEnergyTime);
 			m_updateEnergyTime = startTime;
 		}
-		EM()->DecrTxEnergy(txTime.GetSeconds(), pT);
+		EM()->DecrTxEnergy(txTime.GetSeconds());
 		m_updateEnergyTime = endTime;
 	}
 	else
@@ -284,15 +246,15 @@ AquaSimPhyCmn::UpdateRxEnergy(Time txTime, bool errorFlag) {
   }
 
   if (startTime > m_updateEnergyTime) {
-    EM()->DecrIdleEnergy(startTime - m_updateEnergyTime, m_pIdle);
-    EM()->DecrRcvEnergy(txTime.GetSeconds(), m_prConsume);
+    EM()->DecrIdleEnergy(startTime - m_updateEnergyTime);
+    EM()->DecrRcvEnergy(txTime.GetSeconds());
     m_updateEnergyTime = endTime;
   }
   else{
     /* In this case, this device is receiving some other packet*/
     if (endTime > m_updateEnergyTime && errorFlag)
     {
-      EM()->DecrRcvEnergy(endTime - m_updateEnergyTime, m_prConsume);
+      EM()->DecrRcvEnergy(endTime - m_updateEnergyTime);
       m_updateEnergyTime = endTime;
     }
   }
@@ -313,7 +275,7 @@ AquaSimPhyCmn::UpdateIdleEnergy()
     return;
 
   if (Simulator::Now().GetSeconds() > m_updateEnergyTime && m_PoweredOn) {
-    EM()->DecrIdleEnergy(Simulator::Now().GetSeconds() - m_updateEnergyTime, m_pIdle);
+    EM()->DecrIdleEnergy(Simulator::Now().GetSeconds() - m_updateEnergyTime);
     m_updateEnergyTime = Simulator::Now().GetSeconds();
   }
 
@@ -515,7 +477,7 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p, int channelId) {
 
   switch (GetNetDevice()->GetTransmissionStatus()){
   case SEND:
-    UpdateTxEnergy(asHeader.GetTxTime(), m_ptConsume, m_pIdle);
+    UpdateTxEnergy(asHeader.GetTxTime());
     break;
   case NIDLE:
     /*
@@ -657,7 +619,7 @@ AquaSimPhyCmn::PowerOff() {
     EM()->SetEnergy(std::max(0.0, EM()->GetEnergy() - m_EnergyTurnOff));
 
     if (Simulator::Now().GetSeconds() > m_updateEnergyTime) {
-      EM()->DecrIdleEnergy(Simulator::Now().GetSeconds() - m_updateEnergyTime, m_pIdle);
+      EM()->DecrIdleEnergy(Simulator::Now().GetSeconds() - m_updateEnergyTime);
       m_updateEnergyTime = Simulator::Now().GetSeconds();
     }
   }
@@ -691,13 +653,13 @@ AquaSimPhyCmn::StatusShift(double txTime) {
   {
     double overlapTime = m_updateEnergyTime - Simulator::Now().GetSeconds();
     double actualTxTime = endTime - m_updateEnergyTime;
-    EM()->DecrEnergy(overlapTime, m_ptConsume - m_prConsume);
-    EM()->DecrTxEnergy(actualTxTime, m_ptConsume);
+    EM()->DecrEnergy(overlapTime, EM()->GetTxPower() - EM()->GetRxPower());
+    EM()->DecrTxEnergy(actualTxTime);
     m_updateEnergyTime = endTime;
   }
   else {
     double overlapTime = txTime;
-    EM()->DecrEnergy(overlapTime, m_ptConsume - m_prConsume);
+    EM()->DecrEnergy(overlapTime, EM()->GetTxPower() - EM()->GetRxPower());
   }
 }
 

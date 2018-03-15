@@ -72,10 +72,6 @@ namespace ns3 {
     AquaSimPhy();
     static TypeId GetTypeId();
 
-    virtual void SetTxPower(double ptConsume) = 0;
-    virtual void SetRxPower(double prConsume) = 0;
-    virtual void SetIdlePower(double pIdle) = 0;
-
     void SetNetDevice(Ptr<AquaSimNetDevice> device);
     void SetChannel(std::vector<Ptr<AquaSimChannel> > channel);
     virtual void SetSinrChecker(Ptr<AquaSimSinrChecker> sinrChecker) = 0;
@@ -143,7 +139,7 @@ namespace ns3 {
 
   protected:
     virtual Ptr<Packet> PrevalidateIncomingPkt(Ptr<Packet> p) = 0;
-    virtual void UpdateTxEnergy(Time txTime, double pT, double pIdle) = 0;
+    virtual void UpdateTxEnergy(Time txTime) = 0;
     virtual void UpdateRxEnergy(Time txTime, bool errorFlag) = 0;
     virtual Ptr<Packet> StampTxInfo(Ptr<Packet> p) = 0;
     virtual void EnergyDeplete() = 0;
