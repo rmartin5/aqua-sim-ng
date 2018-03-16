@@ -134,6 +134,8 @@ namespace ns3 {
 
     virtual int64_t AssignStreams (int64_t stream) = 0;
     typedef void (* TracedCallback) (Ptr<Packet> pkt, double noise);
+    typedef void (* RxCallback)(std::string path, Ptr<Packet> p);
+    typedef void (* TxCallback)(std::string path, Ptr<Packet> p);
     void NotifyTx(Ptr<Packet> packet);
     void NotifyRx(Ptr<Packet> packet);
 
@@ -156,8 +158,8 @@ namespace ns3 {
 
     //PhyStatus m_status;	// status of modem
   private:
-      ns3::TracedCallback<Ptr<Packet> > m_phyTxTrace;
-      ns3::TracedCallback<Ptr<Packet> > m_phyRxTrace;
+      ns3::TracedCallback<Ptr<const Packet> > m_phyTxTrace;
+      ns3::TracedCallback<Ptr<const Packet> > m_phyRxTrace;
   }; //AquaSimPhy class
 
 } //ns3 namespace

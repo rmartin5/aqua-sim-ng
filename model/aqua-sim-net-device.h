@@ -177,6 +177,10 @@ public:
   bool IsAttacker(void);
 
   int TotalSentPkts() {return m_totalSentPkts;}
+
+  inline bool MacEnabled() {return m_macEnabled;}
+  inline void MacEnabled(bool value) {m_macEnabled = value;}
+
 protected:
 
   void GenerateFailure(void);
@@ -227,6 +231,8 @@ private:
   uint16_t m_mtu;
 
   int m_totalSentPkts;
+
+  bool m_macEnabled;
   //XXX remove counters
 };  // class AquaSimNetDevice
 

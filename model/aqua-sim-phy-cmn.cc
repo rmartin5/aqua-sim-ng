@@ -541,8 +541,9 @@ AquaSimPhyCmn::SendPktUp(Ptr<Packet> p)
 
   switch (mach.GetDemuxPType()){
   case MacHeader::UWPTYPE_OTHER:
-    if (!GetMac()->RecvProcess(p))
-      NS_LOG_DEBUG(this << "Mac Recv error");
+    if(m_device->MacEnabled())
+      if (!GetMac()->RecvProcess(p))
+        NS_LOG_DEBUG(this << "Mac Recv error");
     break;
   case MacHeader::UWPTYPE_LOC:
     GetNetDevice()->GetMacLoc()->Recv(p);

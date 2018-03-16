@@ -67,11 +67,11 @@ AquaSimMac::GetTypeId(void)
     MakePointerAccessor (&AquaSimMac::m_rout),
     MakePointerChecker<AquaSimMac> ())*/
   .AddTraceSource ("RoutingTx",
-    "Trace source indicating a packet has started transmitting.",
+    "Trace source indicating a packet has been delivered to the Mac layer for transmitting.",
     MakeTraceSourceAccessor (&AquaSimMac::m_macTxTrace),
     "ns3::AquaSimMac::TxCallback")
   .AddTraceSource ("RoutingRx",
-    "Trace source indicating a packet has been received.",
+    "Trace source indicating a packet has been received and will be delivered to the Routing layer.",
     MakeTraceSourceAccessor (&AquaSimMac::m_macRxTrace),
     "ns3::AquaSimMac::RxCallback")
   ;
@@ -178,10 +178,11 @@ AquaSimMac::SendDown(Ptr<Packet> p, TransStatus afterTrans)
   else {
       m_device->SetTransmissionStatus(SEND);
       AquaSimHeader ash;
-      p->PeekHeader(ash);
+      p->RemoveHeader(ash);
       if (ash.GetTxTime().IsNegative()) ash.SetTxTime(GetTxTime(p));
       NS_LOG_DEBUG("Me(" << this->m_address.GetAsInt() << "): Sending packet to Phy : " << ash.GetSize() << " bytes ; " << ash.GetTxTime().GetSeconds() << " sec. ; Dest: " << ash.GetDAddr().GetAsInt() << " ; Src: " << ash.GetSAddr().GetAsInt() << " ; Next H.: " << ash.GetNextHop().GetAsInt());
       Simulator::Schedule(ash.GetTxTime(), &AquaSimNetDevice::SetTransmissionStatus,m_device,afterTrans);
+      p->AddHeader(ash);
       //slightly awkard but for phy header Buffer
       AquaSimPacketStamp pstamp;
       p->AddHeader(pstamp);

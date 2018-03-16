@@ -82,7 +82,7 @@ PktSubmissionTimer::AddNewSubmission(Ptr<IncomingPacket> inPkt) {
                            m_sC->m_phy->GetMac()->GetBitRate() ); */
 
   /* Need to calcuate modulation here, aka how long until entire packet is received */
-  Time transmissionDelay = m_sC->m_phy->CalcTxTime((inPkt->packet)->GetSize());
+  Time transmissionDelay = m_sC->m_phy->CalcTxTime(asHeader.GetSize());
 
   NS_LOG_FUNCTION(this << "incomingPkt:" << inPkt << "txtime:" <<
                     asHeader.GetTxTime() << " transmissionDelay:" <<
