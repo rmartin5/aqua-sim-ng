@@ -678,6 +678,14 @@ AquaSimNetDevice::SetTransmissionStatus(TransStatus status)
       return;
   }
 
+  if(status == RECV)
+    NS_LOG_DEBUG("RECEIVING PACKET");
+  else if(status == NIDLE && m_transStatus == RECV)
+    NS_LOG_DEBUG("END RECEIVING PACKET");
+  else if (status == SEND)
+    NS_LOG_DEBUG("TRANSMITTING PACKET");
+  else if(status == NIDLE && m_transStatus == SEND)
+    NS_LOG_DEBUG("END TRANSMITTING PACKET");
   m_transStatus = status;
 
  if (!m_mac->SendQueueEmpty()) {
