@@ -30,15 +30,11 @@
 #include "ns3/mobility-model.h"
 #include "ns3/timer.h"
 
-
-#ifndef PI
-#define PI 3.1415926
-#endif
-
 // Aqua Sim Mobility Pattern
 
 namespace ns3{
 
+const double PI = 3.1415926;
 /* Some redudency within these classes, compared to ns3,
 but for this port this ns2 version will suffix
 */
