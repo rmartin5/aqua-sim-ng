@@ -38,10 +38,10 @@ NS_OBJECT_ENSURE_REGISTERED(AquaSimFama);
 
 
 AquaSimFama::AquaSimFama(): FamaStatus(PASSIVE), m_NDPeriod(4.0), m_maxBurst(1),
-		m_dataPktInterval(0.0001), m_estimateError(0.001),m_dataPktSize(1600),
-		m_neighborId(0), m_waitCTSTimer(Timer::CHECK_ON_DESTROY),//(Timer::CANCEL_ON_DESTROY),
+		m_dataPktInterval(0.00001), m_estimateError(0.001),m_dataPktSize(1600),
+		m_neighborId(0), m_waitCTSTimer(Timer::CANCEL_ON_DESTROY),
 		m_backoffTimer(Timer::CANCEL_ON_DESTROY), m_remoteTimer(Timer::CANCEL_ON_DESTROY),
-		m_remoteExpireTime(-1), m_famaNDCounter(2)
+		m_remoteExpireTime(-1), m_famaNDCounter(4)
 		//, backoff_timer(this), status_handler(this), NDTimer(this),
 		//WaitCTSTimer(this),DataBackoffTimer(this),RemoteTimer(this), CallBack_Handler(this)
 {
@@ -54,8 +54,6 @@ AquaSimFama::AquaSimFama(): FamaStatus(PASSIVE), m_NDPeriod(4.0), m_maxBurst(1),
 
   m_rand = CreateObject<UniformRandomVariable> ();
   Simulator::Schedule(Seconds(m_rand->GetValue(0.0,m_NDPeriod)+0.000001), &AquaSimFama::NDTimerExpire, this);
-
-  
 }
 
 AquaSimFama::~AquaSimFama()
@@ -87,7 +85,7 @@ AquaSimFama::AssignStreams (int64_t stream)
 void
 AquaSimFama::NDTimerExpire()
 {
-  NS_LOG_FUNCTION(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
+  NS_LOG_FUNCTION(this);
   SendPkt(MakeND());
   m_famaNDCounter--;
 
@@ -99,19 +97,11 @@ AquaSimFama::NDTimerExpire()
 void
 AquaSimFama::SendPkt(Ptr<Packet> pkt)
 {
-  NS_LOG_FUNCTION(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
-  //NS_LOG_INFO("SendPkt");
-
+  NS_LOG_FUNCTION(this);
   AquaSimHeader asHeader;
   pkt->RemoveHeader(asHeader);
 
   asHeader.SetDirection(AquaSimHeader::DOWN);
-
-  // print packet info
-  //std::cout << "Source: " << AquaSimAddress::ConvertFrom(m_device->GetAddress()) << std::endl;
-
-  //Packet::EnablePrinting();
-  //pkt->Print(std::cout);
 
   Time txtime = asHeader.GetTxTime();
 
@@ -123,22 +113,16 @@ AquaSimFama::SendPkt(Ptr<Packet> pkt)
       asHeader.SetTimeStamp(Simulator::Now());
       pkt->AddHeader(asHeader);
       SendDown(pkt);
-     // NS_LOG_INFO("SendDown!!");
       break;
     case RECV:
       NS_LOG_WARN("RECV-SEND Collision!!!!!");
-      
-
       pkt=0;
       break;
     default:
-
       //status is SEND
-      //NS_LOG_INFO("SendPkt node:" << m_device->GetNode() << " send data too fast");
+      NS_LOG_INFO("SendPkt node:" << m_device->GetNode() << " send data too fast");
       pkt=0;
   }
-
-
   return;
 }
 
@@ -185,13 +169,6 @@ AquaSimFama::TxProcess(Ptr<Packet> pkt)
 	pkt->AddPacketTag(ptag);
   PktQ.push(pkt);
 
-  // TEST
-  //std::cout << "--------TxProcess-------" << std::endl;
-  //std::cout << "NextHop is : " << asHeader.GetNextHop() << std::endl;
- // NS_LOG_INFO("TxProcess ---- ");
- // NS_LOG_INFO("DA: ");
- // NS_LOG_INFO(asHeader.GetNextHop());
-
   //fill the next hop when sending out the packet;
   if( (PktQ.size() == 1) /*the pkt is the first one*/
     && FamaStatus == PASSIVE ) {
@@ -210,11 +187,7 @@ AquaSimFama::TxProcess(Ptr<Packet> pkt)
 bool
 AquaSimFama::RecvProcess(Ptr<Packet> pkt)
 {
- 
- // NS_LOG_INFO("------------RecvProcess----------");
- // NS_LOG_INFO("Source: "<< AquaSimAddress::ConvertFrom(m_device->GetAddress()));
-
-	NS_LOG_FUNCTION("Call: " << AquaSimAddress::ConvertFrom(m_device->GetAddress()) << "m_waitCTSTimer : " << m_waitCTSTimer.GetDelayLeft());
+	NS_LOG_FUNCTION(this);
 
   AquaSimHeader asHeader;
 	MacHeader mach;
@@ -227,9 +200,7 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
 	pkt->AddHeader(mach);
 	pkt->AddHeader(asHeader);
   AquaSimAddress dst = FamaH.GetDA();
-  
-  NS_LOG_FUNCTION("FamaH: " << FamaH);
-  
+
 
   if( m_backoffTimer.IsRunning() ) {
       m_backoffTimer.Cancel();
@@ -238,7 +209,7 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
       m_remoteTimer.Cancel();
       m_remoteExpireTime = Seconds(-1);
   }
-
+  //test
   /*ND is not a part of AquaSimFama. We just want to use it to get next hop
    *So we do not care wether it collides with others
    */
@@ -250,7 +221,7 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
 
   if( asHeader.GetErrorFlag() )
   {
-      //NS_LOG_INFO("RecvProcess: pkt:" << pkt << " is corrupted at time " << Simulator::Now().GetSeconds());
+      NS_LOG_INFO("RecvProcess: pkt:" << pkt << " is corrupted at time " << Simulator::Now().GetSeconds());
       //if(drop_)
 	//drop_->recv(pkt,"Error/Collision");
     //else
@@ -260,51 +231,28 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
       return false;
   }
 
-/*
+
   if( m_waitCTSTimer.IsRunning() ) {
-      //printf("%f: node %d receive RTS\n", NOW, index_);
-      
-      //NS_LOG_INFO("time: " << Simulator::Now().GetSeconds() << "   node: " << AquaSimAddress::ConvertFrom(m_device->GetAddress()) << "receive RTS-------------------------------------");
-      NS_LOG_FUNCTION("CTSTimer.IsRunning()");
-      NS_LOG_FUNCTION("NextHop : " << asHeader.GetNextHop());
-      NS_LOG_FUNCTION("Address : " << m_device->GetAddress()); 
-     
-      NS_LOG_FUNCTION("ptag.GetPacketType(): " << ptag.GetPacketType());
-      NS_LOG_FUNCTION("FamaH.GetPType(): " << unsigned(FamaH.GetPType()));
-      NS_LOG_FUNCTION("FamaHeader::CTS" << FamaHeader::CTS);
-      NS_LOG_FUNCTION("m_device->GetAddress(): " << m_device->GetAddress());
-
+	  //printf("%f: node %d receive RTS\n", NOW, index_);
       m_waitCTSTimer.Cancel();
-      
-
-      if(dst == m_device->GetAddress()) {
-        SendDataPkt();
-      }
-
       if(( ptag.GetPacketType() == AquaSimPtTag::PT_FAMA )&&(FamaH.GetPType()==FamaHeader::CTS)
-	      && (dst == m_device->GetAddress())) {
+	      && (asHeader.GetNextHop() == m_device->GetAddress())) {
 	  //receiving the CTS
-	  NS_LOG_INFO("Receiving the CTS");
-	 
 	  SendDataPkt();
       }
       else {
-          //NS_LOG_INFO("Before DoBackoff");
 	  DoBackoff();
       }
       pkt=0;
       return true;
   }
-*/
+
 
   if( ptag.GetPacketType() == AquaSimPtTag::PT_FAMA ) {
       switch( FamaH.GetPType() ) {
 	case FamaHeader::RTS:
 	  //printf("%f: node %d receive RTS\n", NOW, index_);
-	//  NS_LOG_INFO("time: " << Simulator::Now().GetSeconds() << "  node: " << AquaSimAddress::ConvertFrom(m_device->GetAddress()) << "receive RTS------------------------------------");
-
-
-          if( dst == m_device->GetAddress() ) {
+	  if( dst == m_device->GetAddress() ) {
 	      ProcessRTS(FamaH.GetSA());
 	  }
 	  DoRemote(m_CTSTxTime+2*m_maxPropDelay+m_estimateError);
@@ -312,37 +260,14 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
 
 	case FamaHeader::CTS:
 	  //printf("%f: node %d receive CTS\n", NOW, index_);
-	  //NS_LOG_INFO("time: " << Simulator::Now().GetSeconds() << "  node: " << AquaSimAddress::ConvertFrom(m_device->GetAddress()) << "receive CTS------------------------------------");
-          if(m_waitCTSTimer.IsRunning()) {
-              m_waitCTSTimer.Cancel();
-            
-              if(dst == m_device->GetAddress()) {
-                  SendDataPkt();
-              }
-              else {
-                  DoBackoff();
-              } 
-          } 
-
-          // this CTS must not be for this node
-	  else
-            DoRemote(2*m_maxPropDelay+m_estimateError);
-	  
-          break;
+	  // this CTS must not be for this node
+	  DoRemote(2*m_maxPropDelay+m_estimateError);
+	  break;
 	default:
 	  //printf("%f: node %d receive DATA\n", NOW, index_);
-	  //NS_LOG_INFO("time: " << Simulator::Now().GetSeconds() << "  node: " <<  AquaSimAddress::ConvertFrom(m_device->GetAddress()) << "receive DATA------------------------------------");
-
-
-
-          //process Data packet
+	  //process Data packet
 	  if( dst == m_device->GetAddress() ) {
-	      //:w
-	        //ptag.SetPacketType(UpperLayerPktType);
-	        
-                NS_LOG_INFO("Process Data Packet!!!!");
-                //NS_LOG_INFO("Send UP");
-
+	      //ptag.SetPacketType(UpperLayerPktType);
 	    	SendUp(pkt);
 	    	return true;
 	  }
@@ -358,7 +283,7 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
 void
 AquaSimFama::SendDataPkt()
 {
-  NS_LOG_FUNCTION("Call: " << AquaSimAddress::ConvertFrom(m_device->GetAddress()));
+	NS_LOG_FUNCTION(this);
 
   int PktQ_Size = PktQ.size();
   int SentPkt = 0;
@@ -368,43 +293,14 @@ AquaSimFama::SendDataPkt()
   PktQ.front()->PeekHeader(asHeader);
   AquaSimAddress recver = asHeader.GetNextHop();
   Ptr<Packet> tmp;
-  
-  NS_LOG_FUNCTION("Before For statement");  
-
   for(int i=0; i<PktQ_Size && SentPkt<m_maxBurst; i++) {
     tmp = PktQ.front();
-
-    // Test
-    NS_LOG_INFO("after PktQ.front");
-   // NS_LOG_INFO(tmp);
-    //std::cout << "------SendDataPkt-------" << std::endl;
-    //Packet::EnablePrinting();
-    //tmp->Print(std::cout);
-
     tmp->PeekHeader(asHeader);
     PktQ.pop();
     if( asHeader.GetNextHop() == recver ) {
 	SentPkt++;
-        NS_LOG_FUNCTION("Before Schedule");
-
-        NS_LOG_FUNCTION("StartTime: " << StartTime);
-        NS_LOG_FUNCTION("Simulator::Now(): " << Simulator::Now());
-        NS_LOG_FUNCTION("StartTime - Simulator::Now() => " << StartTime - Simulator::Now());
-        NS_LOG_FUNCTION("This: " << this);
-        //NS_LOG_FUNCTION("Packet: " << tmp->Print(std:cout));
-        
-        //tmp->Print(std::cout);
-
-        //Timer timer;
-        //timer.SetFunction(&AquaSimFama::ProcessDataSendTimer, tmp);
-        //timer.Schedule(Seconds(0));
 	Simulator::Schedule(StartTime-Simulator::Now(),&AquaSimFama::ProcessDataSendTimer, this, tmp);
-	//Simulator::Schedule(Seconds(0), &AquaSimFama::ProcessDataSendTimer, this, tmp);
-        
-        //PktQ.front()->PeekHeader(asHeader);
-    
-        NS_LOG_FUNCTION("After Schedule");
-
+	PktQ.front()->PeekHeader(asHeader);
 	if( !PktQ.empty() ) {
 	  StartTime += asHeader.GetTxTime() + m_dataPktInterval;
 	}
@@ -443,9 +339,7 @@ AquaSimFama::ProcessDataBackoffTimer()
 Ptr<Packet>
 AquaSimFama::MakeND()
 {
-//	NS_LOG_FUNCTION(this);
-  NS_LOG_FUNCTION(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
-  //NS_LOG_INFO("MakeND");
+	NS_LOG_FUNCTION(this);
 
   Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
@@ -484,8 +378,8 @@ AquaSimFama::ProcessND(AquaSimAddress sa)
 Ptr<Packet>
 AquaSimFama::MakeRTS(AquaSimAddress Recver)
 {
-  NS_LOG_FUNCTION(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
-  //NS_LOG_INFO("MakeRTS");
+  NS_LOG_FUNCTION(this);
+
   Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
 	MacHeader mach;
@@ -514,22 +408,15 @@ AquaSimFama::MakeRTS(AquaSimAddress Recver)
 void
 AquaSimFama::SendRTS(Time DeltaTime)
 {
-  NS_LOG_FUNCTION(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
-  //NS_LOG_INFO("SendRTS");
+  NS_LOG_FUNCTION(this);
+
   AquaSimHeader asHeader;
   PktQ.front()->PeekHeader(asHeader);
   SendPkt( MakeRTS(asHeader.GetNextHop()) );
-  NS_LOG_FUNCTION("After SendPkt");
+
   FamaStatus = WAIT_CTS;
-  //m_waitCTSTimer.SetDelay(DeltaTime);
-  //m_waitCTSTimer.Schedule((DeltaTime));
-  //m_waitCTSTimer.Schedule();
-  //m_waitCTSTimer.Resume();
-  NS_LOG_FUNCTION("m_waitCTSTimer : " << m_waitCTSTimer.GetDelayLeft());
-  NS_LOG_FUNCTION("DeltaTIme : " << DeltaTime);
-  //NS_LOG_FUNCTION("TIMER STATE: " << State[m_waitCTSTimer.GetState()]);
+  m_waitCTSTimer.SetDelay(DeltaTime);
   m_waitCTSTimer.SetFunction(&AquaSimFama::DoBackoff,this);
-  m_waitCTSTimer.Schedule(DeltaTime);
 }
 
 
@@ -547,7 +434,7 @@ AquaSimFama::ProcessRTS(AquaSimAddress sa)
 Ptr<Packet>
 AquaSimFama::MakeCTS(AquaSimAddress RTS_Sender)
 {
-  NS_LOG_FUNCTION("Call : " <<  AquaSimAddress::ConvertFrom (m_device->GetAddress()) << "RTS Sender : " << RTS_Sender);
+  NS_LOG_FUNCTION(this << RTS_Sender);
 
   Ptr<Packet> pkt = Create<Packet>();
   AquaSimHeader asHeader;
@@ -588,17 +475,13 @@ void
 AquaSimFama::DoBackoff()
 {
   Time backoffTime = MilliSeconds(m_rand->GetValue(0.0,10 * m_RTSTxTime.ToDouble(Time::MS)));
- 
-
   FamaStatus = BACKOFF;
   if( m_backoffTimer.IsRunning() ) {
       m_backoffTimer.Cancel();
   }
 
-  //m_backoffTimer.SetDelay(backoffTime);
-  NS_LOG_FUNCTION("m_backoffTimer.GetDelay() : " << m_backoffTimer.GetDelayLeft());
+  m_backoffTimer.SetDelay(backoffTime);
   m_backoffTimer.SetFunction(&AquaSimFama::BackoffTimerExpire,this);
-  m_backoffTimer.Schedule(backoffTime);
 }
 
 
@@ -612,10 +495,8 @@ AquaSimFama::DoRemote(Time DeltaTime)
       if( m_remoteTimer.IsRunning() ) {
 	  m_remoteTimer.Cancel();
       }
-      //m_remoteTimer.SetDelay(DeltaTime);
+      m_remoteTimer.SetDelay(DeltaTime);
       m_remoteTimer.SetFunction(&AquaSimFama::ProcessRemoteTimer,this);
-      m_remoteTimer.Schedule(DeltaTime);
-      NS_LOG_FUNCTION("m_remoteTimer.GetDelay() : " << m_remoteTimer.GetDelayLeft());
   }
 }
 
@@ -648,4 +529,4 @@ void AquaSimFama::DoDispose()
 	AquaSimMac::DoDispose();
 }
 
-} // namespace ns2
+} // namespace ns3
