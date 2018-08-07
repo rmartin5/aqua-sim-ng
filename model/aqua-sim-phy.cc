@@ -36,6 +36,14 @@ AquaSimPhy::GetTypeId ()
 {
   static TypeId tid = TypeId("ns3::AquaSimPhy")
     .SetParent<Object>()
+    .AddTraceSource ("MacTx",
+      "Trace source indicating a packet has been delivered to the Phy layer for transmitting).",
+      MakeTraceSourceAccessor (&AquaSimPhy::m_phyTxTrace),
+      "ns3::AquaSimPhy::TxCallback")
+    .AddTraceSource ("MacRx",
+      "Trace source indicating a packet has been received and will be delivered to the Mac layer.",
+      MakeTraceSourceAccessor (&AquaSimPhy::m_phyRxTrace),
+      "ns3::AquaSimPhy::RxCallback")
   ;
   return tid;
 }
@@ -74,7 +82,10 @@ AquaSimPhy::GetMac()
 Ptr<AquaSimEnergyModel>
 AquaSimPhy::EM()
 {
-  return m_device->EnergyModel();
+  if(m_device)
+    return m_device->EnergyModel();
+  else
+    return 0;
 }
 
 

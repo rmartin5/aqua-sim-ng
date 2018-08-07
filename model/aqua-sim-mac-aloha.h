@@ -105,7 +105,7 @@ protected:
   int	m_AckOn;
   double m_minBackoff;
   double m_maxBackoff;
-  double m_waitACKTime;
+  double m_waitACKTimeOffset;
   double m_maxACKRetryInterval;
 
   bool m_blocked;

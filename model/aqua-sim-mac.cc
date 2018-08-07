@@ -67,11 +67,11 @@ AquaSimMac::GetTypeId(void)
     MakePointerAccessor (&AquaSimMac::m_rout),
     MakePointerChecker<AquaSimMac> ())*/
   .AddTraceSource ("RoutingTx",
-    "Trace source indicating a packet has started transmitting.",
+    "Trace source indicating a packet has been delivered to the Mac layer for transmitting.",
     MakeTraceSourceAccessor (&AquaSimMac::m_macTxTrace),
     "ns3::AquaSimMac::TxCallback")
   .AddTraceSource ("RoutingRx",
-    "Trace source indicating a packet has been received.",
+    "Trace source indicating a packet has been received and will be delivered to the Routing layer.",
     MakeTraceSourceAccessor (&AquaSimMac::m_macRxTrace),
     "ns3::AquaSimMac::RxCallback")
   ;
@@ -127,8 +127,9 @@ AquaSimMac::SendUp(Ptr<Packet> p)
   NS_ASSERT(m_device);
   AquaSimHeader ash;
   p->PeekHeader(ash);
-
+  NS_LOG_DEBUG("Me(" << this->m_address.GetAsInt() << "): Received packet from Phy : " << ash.GetSize() << " bytes ; " << ash.GetTxTime().GetSeconds() << " sec. ; Dest: " << ash.GetDAddr().GetAsInt() << " ; Src: " << ash.GetSAddr().GetAsInt() << " ; Next H.: " << ash.GetNextHop().GetAsInt());
   if (Routing()) {
+    m_macRxTrace(p);
     return Routing()->Recv(p,ash.GetDAddr(),0);
   }
 
@@ -136,6 +137,7 @@ AquaSimMac::SendUp(Ptr<Packet> p)
     //I am sink, no pass up implemented.
     NS_LOG_INFO("Mac:SendUp : packet at destination node:" << m_device->GetAddress() <<
       ", with end-to-end delay of " << (Simulator::Now()-ash.GetTimeStamp()).ToDouble(Time::S));
+    m_macRxTrace(p);
     return true;
   }
 
@@ -162,7 +164,7 @@ AquaSimMac::SendDown(Ptr<Packet> p, TransStatus afterTrans)
   p->Print(std::cout);
   std::cout << "\n";
   */
-
+  m_macTxTrace(p);
   if (m_device->GetTransmissionStatus() == SLEEP) {
     NS_LOG_DEBUG("SendDown::Sleeping, drop pkt");
       return false;
@@ -176,9 +178,11 @@ AquaSimMac::SendDown(Ptr<Packet> p, TransStatus afterTrans)
   else {
       m_device->SetTransmissionStatus(SEND);
       AquaSimHeader ash;
-      p->PeekHeader(ash);
+      p->RemoveHeader(ash);
       if (ash.GetTxTime().IsNegative()) ash.SetTxTime(GetTxTime(p));
+      NS_LOG_DEBUG("Me(" << this->m_address.GetAsInt() << "): Sending packet to Phy : " << ash.GetSize() << " bytes ; " << ash.GetTxTime().GetSeconds() << " sec. ; Dest: " << ash.GetDAddr().GetAsInt() << " ; Src: " << ash.GetSAddr().GetAsInt() << " ; Next H.: " << ash.GetNextHop().GetAsInt());
       Simulator::Schedule(ash.GetTxTime(), &AquaSimNetDevice::SetTransmissionStatus,m_device,afterTrans);
+      p->AddHeader(ash);
       //slightly awkard but for phy header Buffer
       AquaSimPacketStamp pstamp;
       p->AddHeader(pstamp);

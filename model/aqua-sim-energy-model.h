@@ -77,9 +77,9 @@ public:
   double GetEnergy(void);
   double GetInitialEnergy(void);
   ///To be called after an event occurs
-  void DecrIdleEnergy(double t, double idleP);
-  void DecrRcvEnergy(double t, double rcv);
-  void DecrTxEnergy(double t, double pT);
+  void DecrIdleEnergy(double t);
+  void DecrRcvEnergy(double t);
+  void DecrTxEnergy(double t);
   void DecrEnergy(double t, double decrEnergy);  //allow user to specify energy decr value
 
   /* TODO : Future work needs to incorporate total times in each state */
@@ -90,7 +90,9 @@ protected:
 private:
   double m_energy;
   double m_initialEnergy;
-  double m_rxP, m_txP, m_idleP;
+  double m_rxP,   // power consumption for reception (W)
+         m_txP,   // power consumption for transmission (W)
+         m_idleP; // idle power consumption (W)
   double m_totalEnergyConsumption;	//if energy recharging where incorporated
 
   Ptr<AquaSimNetDevice> m_device;

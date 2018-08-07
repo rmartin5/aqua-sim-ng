@@ -72,10 +72,6 @@ namespace ns3 {
     AquaSimPhy();
     static TypeId GetTypeId();
 
-    virtual void SetTxPower(double ptConsume) = 0;
-    virtual void SetRxPower(double prConsume) = 0;
-    virtual void SetIdlePower(double pIdle) = 0;
-
     void SetNetDevice(Ptr<AquaSimNetDevice> device);
     void SetChannel(std::vector<Ptr<AquaSimChannel> > channel);
     virtual void SetSinrChecker(Ptr<AquaSimSinrChecker> sinrChecker) = 0;
@@ -138,12 +134,14 @@ namespace ns3 {
 
     virtual int64_t AssignStreams (int64_t stream) = 0;
     typedef void (* TracedCallback) (Ptr<Packet> pkt, double noise);
+    typedef void (* RxCallback)(std::string path, Ptr<Packet> p);
+    typedef void (* TxCallback)(std::string path, Ptr<Packet> p);
     void NotifyTx(Ptr<Packet> packet);
     void NotifyRx(Ptr<Packet> packet);
 
   protected:
     virtual Ptr<Packet> PrevalidateIncomingPkt(Ptr<Packet> p) = 0;
-    virtual void UpdateTxEnergy(Time txTime, double pT, double pIdle) = 0;
+    virtual void UpdateTxEnergy(Time txTime) = 0;
     virtual void UpdateRxEnergy(Time txTime, bool errorFlag) = 0;
     virtual Ptr<Packet> StampTxInfo(Ptr<Packet> p) = 0;
     virtual void EnergyDeplete() = 0;
@@ -160,8 +158,8 @@ namespace ns3 {
 
     //PhyStatus m_status;	// status of modem
   private:
-      ns3::TracedCallback<Ptr<Packet> > m_phyTxTrace;
-      ns3::TracedCallback<Ptr<Packet> > m_phyRxTrace;
+      ns3::TracedCallback<Ptr<const Packet> > m_phyTxTrace;
+      ns3::TracedCallback<Ptr<const Packet> > m_phyRxTrace;
   }; //AquaSimPhy class
 
 } //ns3 namespace

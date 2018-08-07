@@ -44,19 +44,19 @@ AquaSimEnergyModel::GetTypeId()
       PointerValue (),
       MakePointerAccessor (&AquaSimEnergyModel::m_device),
       MakePointerChecker<AquaSimNetDevice>())
-    .AddAttribute ("RxPower", "Rx power",
-      DoubleValue (0.75),
+    .AddAttribute ("RxPower", "Rx power: power consumption for reception (W). Default is 0.395 (1.2W).",
+      DoubleValue (0.395),
       MakeDoubleAccessor (&AquaSimEnergyModel::m_rxP),
       MakeDoubleChecker<double>())
-    .AddAttribute ("TxPower", "Tx power",
-      DoubleValue (2.0),
+    .AddAttribute ("TxPower", "Tx power: power consumption for transmission (W). Default is 0.660 (1.6W).",
+      DoubleValue (0.660),
       MakeDoubleAccessor (&AquaSimEnergyModel::m_txP),
       MakeDoubleChecker<double>())
     .AddAttribute ("InitialEnergy", "Starting energy",
       DoubleValue (10000.0),
       MakeDoubleAccessor (&AquaSimEnergyModel::SetInitialEnergy),
       MakeDoubleChecker<double>())
-    .AddAttribute ("IdlePower", "Idle power",
+    .AddAttribute ("IdlePower", "Idle power: idle power consumption (W). Default is 0.0 (0.008W)",
       DoubleValue (0.008),
       MakeDoubleAccessor (&AquaSimEnergyModel::m_idleP),
       MakeDoubleChecker<double>())
@@ -201,7 +201,7 @@ AquaSimEnergyModel::GetInitialEnergy()
 }
 
 void
-AquaSimEnergyModel::DecrIdleEnergy(double t, double idleP)
+AquaSimEnergyModel::DecrIdleEnergy(double t)
 {
   NS_LOG_FUNCTION(this << m_energy);
 
@@ -217,11 +217,11 @@ AquaSimEnergyModel::DecrIdleEnergy(double t, double idleP)
 }
 
 void
-AquaSimEnergyModel::DecrRcvEnergy(double t, double rcv)
+AquaSimEnergyModel::DecrRcvEnergy(double t)
 {
   NS_LOG_FUNCTION(this);
 
-  double dEng = t * rcv;
+  double dEng = t * m_rxP;
   if (m_energy <= dEng) {
 	  m_energy = 0.0;
 	  HandleEnergyDepletion();
@@ -233,11 +233,11 @@ AquaSimEnergyModel::DecrRcvEnergy(double t, double rcv)
 }
 
 void
-AquaSimEnergyModel::DecrTxEnergy(double t, double pT)
+AquaSimEnergyModel::DecrTxEnergy(double t)
 {
   NS_LOG_FUNCTION(this);
 
-  double dEng = t * pT;
+  double dEng = t * m_txP;
   if (m_energy <= dEng) {
 	  m_energy = 0.0;
 	  HandleEnergyDepletion();
