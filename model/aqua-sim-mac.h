@@ -119,7 +119,7 @@ private:
   //override RecvProcess and TxProcess
   void Recv(Ptr<Packet> p);
 
-  TracedCallback<Ptr<const Packet> > m_macRxTrace;
+  TracedCallback<Ptr<const Packet> > m_routingRxTrace;
   TracedCallback<Ptr<const Packet> > m_macTxTrace;
   /*
    * virtual void Recv(Ptr<Packet>);	//handler not imlemented... handler can be 0 unless needed in operation
@@ -139,6 +139,8 @@ protected:
 
   Callback<void,const AquaSimAddress&> m_callback;  // for the upper layer protocol
   virtual void DoDispose();
+
+  bool m_dummyRouting; //See Attribute description in .cpp for more info
 };  //class AquaSimMac
 
 }  // namespace ns3
