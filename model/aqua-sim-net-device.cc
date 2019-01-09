@@ -574,7 +574,6 @@ AquaSimNetDevice::Send (Ptr< Packet > packet, const Address &dest, uint16_t prot
   ash.SetSize(pktSize);
   ash.SetSAddr(AquaSimAddress::ConvertFrom(GetAddress()));
   ash.SetDAddr(AquaSimAddress::ConvertFrom(dest));
-  ash.SetNextHop(AquaSimAddress::GetBroadcast());
 
   //Quick hack. Named Data should be NULL pointer if unused/unset.
   if (m_ndn)
@@ -584,13 +583,14 @@ AquaSimNetDevice::Send (Ptr< Packet > packet, const Address &dest, uint16_t prot
 
   if(m_routing)
     {//Note : https://www.nsnam.org/docs/release/3.24/doxygen/uan-mac-cw_8cc_source.html#l00123
-
+      ash.SetNextHop(AquaSimAddress::GetBroadcast());
       packet->AddHeader(ash);
       NS_LOG_DEBUG("Me(" << AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt()  << "): Sending packet to Routing layer : " << ash.GetSize() << " bytes ; " << ash.GetTxTime().GetSeconds() << " sec. ; Dest: " << ash.GetDAddr().GetAsInt() << " ; Src: " << ash.GetSAddr().GetAsInt() << " ; Next H.: " << ash.GetNextHop().GetAsInt());
       return m_routing->Recv(packet, dest, protocolNumber);
     }
   else if (MacEnabled() && m_mac)
     {
+      ash.SetNextHop(ash.GetDAddr());
       packet->AddHeader(ash);
       NS_LOG_DEBUG("Me(" << AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt()  << "): Sending packet to MAC layer : " << ash.GetSize() << " bytes ; " << ash.GetTxTime().GetSeconds() << " sec. ; Dest: " << ash.GetDAddr().GetAsInt() << " ; Src: " << ash.GetSAddr().GetAsInt() << " ; Next H.: " << ash.GetNextHop().GetAsInt());
       return m_mac->TxProcess(packet);
@@ -598,6 +598,7 @@ AquaSimNetDevice::Send (Ptr< Packet > packet, const Address &dest, uint16_t prot
   else if (m_phy)
     {
       SetTransmissionStatus(SEND);
+      ash.SetNextHop(ash.GetDAddr());
       ash.SetTxTime(m_phy->CalcTxTime(pktSize));
       NS_LOG_DEBUG("Me(" << AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt()  << "): Sending packet to Phy layer : " << ash.GetSize() << " bytes ; " << ash.GetTxTime().GetSeconds() << " sec. ; Dest: " << ash.GetDAddr().GetAsInt() << " ; Src: " << ash.GetSAddr().GetAsInt() << " ; Next H.: " << ash.GetNextHop().GetAsInt());
       Simulator::Schedule(ash.GetTxTime(), &AquaSimNetDevice::SetTransmissionStatus,this, NIDLE);
