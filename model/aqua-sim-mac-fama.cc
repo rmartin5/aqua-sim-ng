@@ -38,24 +38,15 @@ NS_OBJECT_ENSURE_REGISTERED(AquaSimFama);
 
 
 AquaSimFama::AquaSimFama(): FamaStatus(PASSIVE), m_NDPeriod(4.0), m_maxBurst(1),
-		m_dataPktInterval(0.0001), m_estimateError(0.001),m_dataPktSize(1600),
-		m_neighborId(0), m_waitCTSTimer(Timer::CHECK_ON_DESTROY),//(Timer::CANCEL_ON_DESTROY),
+        m_dataPktInterval(0.0001), m_estimateError(0.001),m_dataPktSize(200),
+        m_neighborId(0), m_transmitDistance(3000.0), m_waitCTSTimer(Timer::CHECK_ON_DESTROY),//(Timer::CANCEL_ON_DESTROY),
 		m_backoffTimer(Timer::CANCEL_ON_DESTROY), m_remoteTimer(Timer::CANCEL_ON_DESTROY),
-		m_remoteExpireTime(-1), m_famaNDCounter(2)
+        m_remoteExpireTime(-1), m_famaNDCounter(4)
 		//, backoff_timer(this), status_handler(this), NDTimer(this),
 		//WaitCTSTimer(this),DataBackoffTimer(this),RemoteTimer(this), CallBack_Handler(this)
 {
-  m_transmitDistance=3000.0;
-  m_maxPropDelay = Seconds(m_transmitDistance/1500.0);
-  m_RTSTxTime = m_maxPropDelay;
-  m_CTSTxTime = m_RTSTxTime + 2*m_maxPropDelay;
-
-  m_maxDataTxTime = MilliSeconds(m_dataPktSize/m_bitRate);  //1600bits/10kbps
-
   m_rand = CreateObject<UniformRandomVariable> ();
-  Simulator::Schedule(Seconds(m_rand->GetValue(0.0,m_NDPeriod)+0.000001), &AquaSimFama::NDTimerExpire, this);
-
-  
+  Simulator::Schedule(Seconds(0), &AquaSimFama::Init, this);
 }
 
 AquaSimFama::~AquaSimFama()
@@ -72,8 +63,36 @@ AquaSimFama::GetTypeId(void)
 	IntegerValue(1),
 	MakeIntegerAccessor (&AquaSimFama::m_maxBurst),
 	MakeIntegerChecker<int>())
+      .AddAttribute("MaxTransmitDistance", "The maximum transmission distance in meters",
+        DoubleValue(3000.0),
+        MakeDoubleAccessor (&AquaSimFama::m_transmitDistance),
+        MakeDoubleChecker<double>())
+      .AddAttribute("DataPacketSize", "if > 0: sets a fixed data packet size in bytes "
+                                      "else: the size set in the AquaSimHeader of each data packet is used",
+        IntegerValue(200),
+        MakeIntegerAccessor (&AquaSimFama::m_dataPktSize),
+        MakeIntegerChecker<int>())
+      .AddAttribute("RTSToNextHop", "If disabled, there will be a neighbour discovery"
+                                    "at the beginning of the simulation. Then, each data packet will be sent to a neighbour selected"
+                                    "in a rotative manner."
+                                    "Otherwise the RTS packets will only be destinated to the next hop,"
+                                    "which is indicated in the AquaSimHeader of the packet passed to the TxProcess method",
+        BooleanValue(false),
+        MakeBooleanAccessor(&AquaSimFama::m_RTSToNextHop),
+        MakeBooleanChecker())
     ;
   return tid;
+}
+
+void AquaSimFama::Init()
+{
+    m_maxPropDelay = Seconds(m_transmitDistance/1500.0);
+    m_RTSTxTime = m_maxPropDelay;
+    m_CTSTxTime = m_RTSTxTime + 2*m_maxPropDelay;
+    m_maxDataTxTime = Seconds(m_dataPktSize*8/m_bitRate); // b / bps
+
+    if(!m_RTSToNextHop)
+        Simulator::Schedule(Seconds(m_rand->GetValue(0.0,m_NDPeriod)+0.000001), &AquaSimFama::NDTimerExpire, this);
 }
 
 int64_t
@@ -136,32 +155,50 @@ AquaSimFama::SendPkt(Ptr<Packet> pkt)
 bool
 AquaSimFama::TxProcess(Ptr<Packet> pkt)
 {
+   // m_maxDataTxTime = MilliSeconds(m_dataPktSize/m_bitRate);  //1600bits/10kbps
   //callback to higher level, should be implemented differently
   //Scheduler::instance().schedule(&CallBack_Handler, &m_callbackEvent, CALLBACK_DELAY);
 
-  if( NeighborList.empty() ) {
-      pkt=0;
-      return false;
-  }
   //figure out how to cache the packet will be sent out!!!!!!!
   AquaSimHeader asHeader;
-	VBHeader vbh;
+  VBHeader vbh;
   FamaHeader FamaH;
-	MacHeader mach;
-	AquaSimPtTag ptag;
+  MacHeader mach;
+  AquaSimPtTag ptag;
   pkt->RemoveHeader(asHeader);
-	pkt->RemoveHeader(mach);
+  pkt->RemoveHeader(mach);
   pkt->RemoveHeader(FamaH);
-	pkt->RemovePacketTag(ptag);
+  pkt->RemovePacketTag(ptag);
 
-	asHeader.SetSize(m_dataPktSize);
-  asHeader.SetTxTime(m_maxDataTxTime);
+  if(!m_RTSToNextHop)
+  {
+    if( NeighborList.empty() ) {
+        pkt=0;
+        return false;
+    }
+    int myadd = AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt();
+    std::string msg;
+    for(auto nei : NeighborList)
+    {
+        msg = msg + std::to_string(nei.GetAsInt()) + " ";
+    }
+    NS_LOG_DEBUG("(" << myadd << ") discovered neighbors: " << msg);
+
+    asHeader.SetNextHop(NeighborList[m_neighborId]);
+    m_neighborId = (m_neighborId+1)%NeighborList.size();
+  }
+
+  if(m_dataPktSize > 0)
+  {
+      //Force a fixed data packet size
+      asHeader.SetSize(m_dataPktSize);
+      asHeader.SetTxTime(m_maxDataTxTime);
+  }
+
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);
   //UpperLayerPktType = ptag.GetPacketType();
 
-  asHeader.SetNextHop(NeighborList[m_neighborId]);
-  m_neighborId = (m_neighborId+1)%NeighborList.size();
 	ptag.SetPacketType(AquaSimPtTag::PT_FAMA);
 
   vbh.SetTargetAddr(asHeader.GetNextHop());
@@ -311,7 +348,7 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
 	  //NS_LOG_INFO("time: " << Simulator::Now().GetSeconds() << "  node: " <<  AquaSimAddress::ConvertFrom(m_device->GetAddress()) << "receive DATA------------------------------------");
 
           //process Data packet
-	  if( dst == m_device->GetAddress() ) {
+      if( dst == m_device->GetAddress()) {
 	      //:w
 	        //ptag.SetPacketType(UpperLayerPktType);
 	        
@@ -447,7 +484,9 @@ AquaSimFama::MakeRTS(AquaSimAddress Recver)
   FamaHeader FamaH;
 	AquaSimPtTag ptag;
 
-  asHeader.SetSize(GetSizeByTxTime(m_RTSTxTime.ToDouble(Time::S)));
+  auto size = GetSizeByTxTime(m_RTSTxTime.ToDouble(Time::S));
+  NS_LOG_DEBUG("RTS: pkt size " << size << " bytes ; pkt time " << m_RTSTxTime.GetSeconds() << " secs");
+  asHeader.SetSize(size);
   asHeader.SetTxTime(m_RTSTxTime);
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);
@@ -469,6 +508,11 @@ AquaSimFama::MakeRTS(AquaSimAddress Recver)
 void
 AquaSimFama::SendRTS(Time DeltaTime)
 {
+  //avoid error: "Event is still running while re-scheduling."
+  if(m_waitCTSTimer.IsRunning())
+  {
+      return;
+  }
   NS_LOG_FUNCTION(AquaSimAddress::ConvertFrom(m_device->GetAddress()));
   AquaSimHeader asHeader;
   PktQ.front()->PeekHeader(asHeader);
