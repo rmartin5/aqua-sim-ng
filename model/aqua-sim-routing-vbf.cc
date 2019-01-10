@@ -339,6 +339,9 @@ AquaSimVBF::Recv(Ptr<Packet> packet, const Address &dest, uint16_t protocolNumbe
     ash.SetDAddr(AquaSimAddress::ConvertFrom(dest));
     ash.SetTimeStamp(Simulator::Now());
 
+    // Yiqian Xia(xiayiqian71@zju.edu.cn) added to set unique pkt id. -2019/1/10
+	ash.SetUId (packet->GetUid());
+
     vbh.SetMessType(AS_DATA);
     vbh.SetSenderAddr(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()));
     vbh.SetForwardAddr(AquaSimAddress::ConvertFrom(GetNetDevice()->GetAddress()));
