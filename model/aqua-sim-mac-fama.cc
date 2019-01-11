@@ -166,9 +166,6 @@ AquaSimFama::TxProcess(Ptr<Packet> pkt)
   MacHeader mach;
   AquaSimPtTag ptag;
   pkt->RemoveHeader(asHeader);
-  pkt->RemoveHeader(mach);
-  pkt->RemoveHeader(FamaH);
-  pkt->RemovePacketTag(ptag);
 
   if(!m_RTSToNextHop)
   {
@@ -355,6 +352,10 @@ AquaSimFama::RecvProcess(Ptr<Packet> pkt)
                 NS_LOG_INFO("Process Data Packet!!!!");
                 //NS_LOG_INFO("Send UP");
 
+            pkt->RemoveHeader(asHeader);
+            pkt->RemoveHeader(mach);
+            pkt->RemoveHeader(FamaH);
+            pkt->AddHeader(asHeader);
 	    	SendUp(pkt);
 	    	return true;
 	  }
