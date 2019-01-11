@@ -105,15 +105,16 @@ protected:
   int	m_AckOn;
   double m_minBackoff;
   double m_maxBackoff;
-  double m_waitACKTimeOffset;
   double m_maxACKRetryInterval;
+  double m_maxPropDelay;
+  double m_maxTransmitDistance;
+  int m_maxDataPktSize;
 
   bool m_blocked;
   bool m_isAck;	//status handler
 
   //int m_seqN;
 
-  double m_maxPropDelay;
   double m_dataTxTime;
   double m_AckTxTime;
 
@@ -146,6 +147,7 @@ protected:
   //void	BackoffProcess();
   //bool	CarrierDected();
 
+  void Init();
   virtual void DoDispose();
 private:
   std::queue<Ptr<Packet> >	PktQ_;
