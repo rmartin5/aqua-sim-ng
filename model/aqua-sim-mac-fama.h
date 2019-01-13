@@ -64,6 +64,7 @@ protected:
   }FamaStatus;
 
   double m_NDPeriod;
+  bool m_RTSToNextHop; //See RTSToNextHop attribute for detailed description
   int  m_maxBurst;	//the maximum number of packet burst. default is 1
   Time m_dataPktInterval;  //0.0001??
 
@@ -112,6 +113,7 @@ protected:
   bool CarrierDected();
   void DoBackoff();
   void DoRemote(Time DeltaTime);
+  void Init();
 
   virtual void DoDispose();
 

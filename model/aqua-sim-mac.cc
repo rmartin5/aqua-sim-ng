@@ -66,14 +66,20 @@ AquaSimMac::GetTypeId(void)
     PointerValue (),
     MakePointerAccessor (&AquaSimMac::m_rout),
     MakePointerChecker<AquaSimMac> ())*/
-  .AddTraceSource ("RoutingTx",
-    "Trace source indicating a packet has been delivered to the Mac layer for transmitting.",
+  .AddTraceSource ("MacTx",
+    "Trace source indicating a packet has been delivered to the Phy layer for transmitting.",
     MakeTraceSourceAccessor (&AquaSimMac::m_macTxTrace),
     "ns3::AquaSimMac::TxCallback")
   .AddTraceSource ("RoutingRx",
-    "Trace source indicating a packet has been received and will be delivered to the Routing layer.",
-    MakeTraceSourceAccessor (&AquaSimMac::m_macRxTrace),
+    "Trace source indicating a packet will be delivered to the Routing layer.",
+    MakeTraceSourceAccessor (&AquaSimMac::m_routingRxTrace),
     "ns3::AquaSimMac::RxCallback")
+  .AddAttribute("DummyRouting", "Used when the routing layer is not available. If enabled,"
+                                "the received packets which have this device as the next hop are retransmited."
+                                "Otherwise nothing is done (see SendUp method)",
+    BooleanValue(false),
+    MakeBooleanAccessor(&AquaSimMac::m_dummyRouting),
+    MakeBooleanChecker())
   ;
   return tid;
 }
@@ -129,7 +135,7 @@ AquaSimMac::SendUp(Ptr<Packet> p)
   p->PeekHeader(ash);
   NS_LOG_DEBUG("Me(" << this->m_address.GetAsInt() << "): Received packet from Phy : " << ash.GetSize() << " bytes ; " << ash.GetTxTime().GetSeconds() << " sec. ; Dest: " << ash.GetDAddr().GetAsInt() << " ; Src: " << ash.GetSAddr().GetAsInt() << " ; Next H.: " << ash.GetNextHop().GetAsInt());
   if (Routing()) {
-    m_macRxTrace(p);
+    m_routingRxTrace(p);
     return Routing()->Recv(p,ash.GetDAddr(),0);
   }
 
@@ -137,19 +143,22 @@ AquaSimMac::SendUp(Ptr<Packet> p)
     //I am sink, no pass up implemented.
     NS_LOG_INFO("Mac:SendUp : packet at destination node:" << m_device->GetAddress() <<
       ", with end-to-end delay of " << (Simulator::Now()-ash.GetTimeStamp()).ToDouble(Time::S));
-    m_macRxTrace(p);
+    m_routingRxTrace(p);
     return true;
   }
+   m_routingRxTrace(p);
 
   /* if no routing layer is currently implemented */
+  if(m_dummyRouting)
+  {
+      //Change to DOWN and send packet (mac layer wise).
+      p->RemoveHeader(ash);
+      ash.SetDirection(AquaSimHeader::DOWN);
+      p->AddHeader(ash);
 
-  //Change to DOWN and send packet (mac layer wise).
-  p->RemoveHeader(ash);
-  ash.SetDirection(AquaSimHeader::DOWN);
-  p->AddHeader(ash);
-
-  if (!TxProcess(p)) {
-    NS_LOG_DEBUG(this << "Mac recv error");
+      if (!TxProcess(p)) {
+        NS_LOG_DEBUG(this << "Mac recv error");
+      }
   }
   return false;
 }

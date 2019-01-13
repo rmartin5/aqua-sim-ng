@@ -713,7 +713,7 @@ AquaSimPhyCmn::CalcTxTime (uint32_t pktSize, std::string * modName)
 double
 AquaSimPhyCmn::CalcPktSize (double txTime, std::string * modName)
 {
-  return Modulation(modName)->PktSize (txTime - Preamble());
+  return Modulation(modName)->PktSize (txTime - Preamble()) / 8.;
 }
 
 int

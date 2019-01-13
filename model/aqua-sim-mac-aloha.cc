@@ -48,11 +48,18 @@ AquaSimAloha::AquaSimAloha() :
 	m_blocked(false)
 {
 	m_rand = CreateObject<UniformRandomVariable> ();
+    Simulator::Schedule(Seconds(0), &AquaSimAloha::Init, this);
 }
 
 AquaSimAloha::~AquaSimAloha()
 {
 }
+
+void AquaSimAloha::Init()
+{
+    m_maxPropDelay = m_maxTransmitDistance/1500.0;
+}
+
 
 TypeId
 AquaSimAloha::GetTypeId(void)
@@ -76,10 +83,10 @@ AquaSimAloha::GetTypeId(void)
 	DoubleValue(1.5),
 	MakeDoubleAccessor (&AquaSimAloha::m_maxBackoff),
 	MakeDoubleChecker<double>())
-      .AddAttribute("WaitAckTime", "Acknowledgement wait time (seconds)",
-        DoubleValue(0.03),
-        MakeDoubleAccessor (&AquaSimAloha::m_waitACKTimeOffset),
-	MakeDoubleChecker<double>())
+      .AddAttribute("MaxTransmitDistance", "The maximum transmission distance in meters",
+    DoubleValue(3000.0),
+    MakeDoubleAccessor (&AquaSimAloha::m_maxTransmitDistance),
+    MakeDoubleChecker<double>())
     ;
   return tid;
 }
@@ -226,7 +233,7 @@ void AquaSimAloha::SendPkt(Ptr<Packet> pkt)
 
   //compute estimated RTT
   Time txtime = asHeader.GetTxTime();
-  Time ertt = txtime + GetTxTime(alohaH.GetSerializedSize()) + Seconds(m_waitACKTimeOffset);
+  Time ertt = txtime + GetTxTime(alohaH.GetSerializedSize()*2) + Seconds(m_maxPropDelay*2);
 
   switch( m_device->GetTransmissionStatus() ) {
     case SLEEP:
