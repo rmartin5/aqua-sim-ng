@@ -53,6 +53,8 @@
 #include "ns3/packet.h"
 #include "ns3/timer.h"
 #include "ns3/nstime.h"
+#include "ns3/traced-value.h"
+#include "ns3/trace-source-accessor.h"
 
 #include "aqua-sim-mac.h"
 #include "aqua-sim-header-goal.h"
@@ -104,7 +106,7 @@ public:
 	}
 
 protected:
-	AquaSimGoal*		mac_;
+	AquaSimGoal*	mac_;
 	Ptr<Packet>		m_pkt;
 	void expire();
 	friend class AquaSimGoal;
@@ -121,10 +123,10 @@ public:
 	AquaSimGoal_BackoffTimer(AquaSimGoal* mac): Timer(), mac_(mac) {
 	}
 
-	Ptr<Packet>	ReqPkt() {
+	Ptr<Packet>& ReqPkt() {
 		return m_ReqPkt;
 	}
-	Time BackoffTime() {
+	Time& BackoffTime() {
 		return m_BackoffTime;
 	}
 	SchedElem* SE() {
@@ -324,8 +326,8 @@ public:
 class AquaSimGoal: public AquaSimMac{
 public:
 	AquaSimGoal();
-  ~AquaSimGoal();
-  static TypeId GetTypeId(void);
+	~AquaSimGoal();
+	static TypeId GetTypeId(void);
 	int64_t AssignStreams (int64_t stream);
 
 	// to process the incomming packet
@@ -428,10 +430,9 @@ private:
 	double  DistToLine(Vector LinePoint1, Vector LinePoint2);
 	Time	JitterStartTime(Time Txtime); //Jitter the start time to avoid collision
 
-	void SetupTransDistance(double range);
 	Ptr<UniformRandomVariable> m_rand;
-protected:
 
+protected:
 	friend class AquaSimGoal_CallbackHandler;
 	friend class AquaSimGoal_BackoffTimer;
 	friend class AquaSimGoal_PreSendTimer;
