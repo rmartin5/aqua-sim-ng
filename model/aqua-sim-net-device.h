@@ -151,8 +151,8 @@ public:
   inline double FailurePro(void) { return m_failurePro; }
   inline double FailureStatusPro(void) { return m_failureStatusPro; }
 
-  void SetTransmissionStatus(TransStatus status);
-  TransStatus GetTransmissionStatus(void);
+  virtual void SetTransmissionStatus(TransStatus status);
+  virtual TransStatus GetTransmissionStatus(void);
 
   inline bool CarrierSense(void) { return m_carrierSense; }
   inline void ResetCarrierSense(void) { m_carrierSense = false; }
