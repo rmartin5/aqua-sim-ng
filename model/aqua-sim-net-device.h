@@ -117,6 +117,7 @@ public:
   virtual bool IsMulticast (void) const;
   virtual bool IsPointToPoint (void) const;
   virtual bool NeedsArp (void) const;
+  virtual bool SendWithHeader (Ptr<Packet> packet, uint16_t protocolNumber);
   virtual bool Send (Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber);
   virtual bool SendFrom (Ptr<Packet> packet, const Address &source,
                            const Address &dest, uint16_t protocolNumber);

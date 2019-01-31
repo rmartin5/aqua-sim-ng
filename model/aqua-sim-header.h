@@ -74,6 +74,7 @@ public:
   bool GetErrorFlag();
   uint16_t GetUId();
   Time GetTimeStamp();
+  uint32_t GetSeqNum();
 
   //Setters
   void SetTxTime(Time time);
@@ -88,6 +89,7 @@ public:
   void SetErrorFlag(bool error);
   void SetUId(uint16_t uId);
   void SetTimeStamp(Time timestamp);
+  void SetSeqNum(const uint32_t & seq);
 
   //inherited by Header class
   virtual TypeId GetInstanceTypeId(void) const;
@@ -109,6 +111,7 @@ private:
   uint16_t m_uId;
   uint16_t m_size; //figmented size of packet...
   Time m_timestamp;
+  uint32_t m_seq;
 
 }; //class AquaSimHeader
 
