@@ -648,10 +648,10 @@ SFamaHeader::GetTypeId()
 int
 SFamaHeader::GetSize(enum PacketType pType)
 {
-  int pkt_size = 2*sizeof(Address); //source and destination addr in hdr_mac
+  int pkt_size = 2*sizeof(uint16_t)+1; //source and destination addr AND packet_type
 
   if( pType == SFAMA_RTS || pType == SFAMA_CTS ) {
-    pkt_size += sizeof(uint16_t)+1; //size of packet_type and slotnum
+    pkt_size += sizeof(uint16_t); //slotnum
   }
 
   return pkt_size;

@@ -194,6 +194,7 @@ private:
 	//index_ is the mac address of this node
 	double m_guardTime;  //need to be binded
 	double m_slotLen;
+    double m_rtsCtsAckNumSlotWait;
 
 	bool m_isInRound;
 	bool m_isInBackoff;

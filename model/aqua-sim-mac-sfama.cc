@@ -188,10 +188,13 @@ AquaSimSFama::InitSlotLen()
   double slotLen;
   ns3::Time txTime = GetTxTime(SFAMA.GetSize(SFamaHeader::SFAMA_CTS));
   double txTimeSec = txTime.ToDouble(Time::S);
-  double prTimeSec = Device()->GetPhy()->GetTransRange()/1500.0;
+  double prTimeSec = Device()->GetPhy()->GetTransRange()/Device()->GetPropSpeed();
   slotLen = m_guardTime + txTimeSec + prTimeSec;
 
   m_slotLen = slotLen;
+
+  m_rtsCtsAckNumSlotWait = (m_guardTime + txTimeSec * 2 + prTimeSec * 2) / m_slotLen;
+  m_rtsCtsAckNumSlotWait = std::ceil(m_rtsCtsAckNumSlotWait);
 }
 
 double
@@ -201,7 +204,7 @@ AquaSimSFama::GetTime2ComingSlot(double t)
 	double numElapseSlot = t/m_slotLen;
     double res = m_slotLen*(std::ceil(numElapseSlot))-t;
 
-    NS_LOG_DEBUG("Elapsed slots: " << numElapseSlot << " ; Time to coming slot: " << res << " (slot len.: " << m_slotLen << ")");
+    NS_LOG_DEBUG("GetTime2ComingSlot. Elapsed slots: " << numElapseSlot << " ; Time to coming slot: " << res << " (slot len.: " << m_slotLen << ")");
 
     return res;
 }
@@ -667,6 +670,12 @@ AquaSimSFama::ScheduleRTS(AquaSimAddress recver, int slot_num)
     double backoff_time = RandBackoffSlots()*m_slotLen+GetTime2ComingSlot(Simulator::Now().ToDouble(Time::S));
 	SetStatus(WAIT_SEND_RTS);
 	m_waitSendTimer.m_pkt = MakeRTS(recver, slot_num);
+
+    double t = Simulator::Now().ToDouble(Time::S);
+    double numElapseSlot = t/m_slotLen;
+    double res = m_slotLen*(std::ceil(numElapseSlot))-t;
+    NS_LOG_DEBUG("ScheduleRTS. Elapsed slots: " << numElapseSlot << " ; Time to coming slot: " << res << " (slot len.: " << m_slotLen << ")");
+
     double sendSlot = (backoff_time + Simulator::Now().ToDouble(Time::S)) / m_slotLen;
     NS_LOG_DEBUG("Time to the RTS transmission: " << backoff_time << " ; RTS slot: " << sendSlot);
   m_waitSendTimer.SetFunction(&AquaSimSFama_Wait_Send_Timer::expire,&m_waitSendTimer);
@@ -747,16 +756,19 @@ AquaSimSFama::StatusProcess(int slotnum)
     //int myadd = AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt();
 	switch(GetStatus()) {
 	  case WAIT_SEND_RTS:
-        slotnum = 1;
+        slotnum = m_rtsCtsAckNumSlotWait;
+        NS_LOG_DEBUG("Wait CTS: " << slotnum << " slots");
 		SetStatus(WAIT_RECV_CTS);
 		break;
 	  case WAIT_SEND_CTS:
 		//slotnum += 1;
+        NS_LOG_DEBUG("Wait DATA: " << slotnum << " slots");
 		SetStatus(WAIT_RECV_DATA);
 		break;
 	  case WAIT_SEND_DATA:
 		//cannot reach here
-        slotnum = 1;
+        slotnum = m_rtsCtsAckNumSlotWait;
+        NS_LOG_DEBUG("Wait ACK: " << slotnum << " slots");
 		SetStatus(WAIT_RECV_ACK);
 		//wait_reply time has been scheduled.
 		return;
@@ -815,7 +827,7 @@ AquaSimSFama::WaitSendTimerProcess(Ptr<Packet> pkt)
     double t = Simulator::Now().ToDouble(Time::S);
     double numElapseSlot = t/m_slotLen;
     double res = m_slotLen*(std::ceil(numElapseSlot))-t;
-    NS_LOG_DEBUG("Elapsed slots: " << numElapseSlot << " ; Time to coming slot: " << res << " (slot len.: " << m_slotLen << ")");
+    NS_LOG_DEBUG("WaitSendTimerProcess. Elapsed slots: " << numElapseSlot << " ; Time to coming slot: " << res << " (slot len.: " << m_slotLen << ")");
 	if( NULL == pkt ) {
     NS_LOG_DEBUG("pkt == NULL");
     m_datasendTimer.SetFunction(&AquaSimSFama_DataSend_Timer::expire,&m_datasendTimer);
