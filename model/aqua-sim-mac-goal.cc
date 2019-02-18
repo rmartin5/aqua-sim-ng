@@ -1155,10 +1155,10 @@ AquaSimGoal::ProcessAckPkt(Ptr<Packet> AckPkt)
 			if( AckTimeoutTimer->PktSet().count(PktID) != 0 )
 			{
 				pkt = AckTimeoutTimer->PktSet().operator[](PktID);
-				//pkt=0;
+				pkt=0;
 
 				// xia added
-				pkt->Cleanup();
+				// pkt->Cleanup();
 				AckTimeoutTimer->PktSet().erase(PktID);
 				// xia added
 				NS_LOG_FUNCTION ("me:" << AquaSimAddress::ConvertFrom(m_device->GetAddress()) <<
