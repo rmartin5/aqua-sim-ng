@@ -99,6 +99,8 @@ public:
   virtual void DoDispose (void);
   virtual void DoInitialize (void);
 
+  virtual double GetPropSpeed(void); //m/s
+
   void ForwardUp (Ptr<Packet> packet, Ptr<MobilityModel> src, Ptr<MobilityModel> dst);	//not used.
 
   //inherited functions from NetDevice class

@@ -712,3 +712,9 @@ AquaSimNetDevice::GetTransmissionStatus(void)
 {
   return m_transStatus;
 }
+
+double
+AquaSimNetDevice::GetPropSpeed()
+{
+    return 1500;
+}

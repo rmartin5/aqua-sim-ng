@@ -57,7 +57,7 @@ AquaSimAloha::~AquaSimAloha()
 
 void AquaSimAloha::Init()
 {
-    m_maxPropDelay = m_maxTransmitDistance/1500.0;
+    m_maxPropDelay = m_maxTransmitDistance / Device()->GetPropSpeed();
 }
 
 
