@@ -59,7 +59,7 @@ void AquaSimSFama_DataSend_Timer::expire()
 }
 
 
-AquaSimSFama::AquaSimSFama():m_status(IDLE_WAIT), m_guardTime(0.00001),
+AquaSimSFama::AquaSimSFama():m_status(IDLE_WAIT), m_guardTime(0.005),
     m_slotLen(0), m_isInRound(false), m_isInBackoff(false),
     m_maxBackoffSlots(4), m_maxBurst(1), m_dataSendingInterval(0.0000001),
   m_waitSendTimer(this), m_waitReplyTimer(this),
@@ -83,8 +83,8 @@ AquaSimSFama::GetTypeId(void)
   static TypeId tid = TypeId("ns3::AquaSimSFama")
     .SetParent<AquaSimMac>()
     .AddConstructor<AquaSimSFama>()
-    .AddAttribute("GuardTime", "The guard time in double. Default is 0.00001",
-      DoubleValue(0.00001),
+    .AddAttribute("GuardTime", "The guard time in double. Default is 0.005",
+      DoubleValue(0.005),
       MakeDoubleAccessor(&AquaSimSFama::m_guardTime),
       MakeDoubleChecker<double>())
     .AddAttribute("MaxBackoffSlots", "The maximum number of backoff slots. default is 4",
@@ -119,7 +119,7 @@ AquaSimSFama::RecvProcess(Ptr<Packet> p)
 	p->AddHeader(SFAMAh);
 	p->AddHeader(ash);
 
-  NS_LOG_DEBUG("Time:" << Simulator::Now().GetSeconds() << ",node:" << m_device->GetNode() <<
+  NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; Time:" << Simulator::Now().GetSeconds() << ",node:" << m_device->GetNode() <<
                 ",node " << mach.GetDA() << " recv from node " << mach.GetSA());
 
 		switch( SFAMAh.GetPType() ) {
@@ -193,7 +193,7 @@ AquaSimSFama::InitSlotLen()
 
   m_slotLen = slotLen;
 
-  m_rtsCtsAckNumSlotWait = (m_guardTime + txTimeSec * 2 + prTimeSec * 2) / m_slotLen;
+  m_rtsCtsAckNumSlotWait = 1;
   m_rtsCtsAckNumSlotWait = std::ceil(m_rtsCtsAckNumSlotWait);
 }
 
@@ -204,7 +204,7 @@ AquaSimSFama::GetTime2ComingSlot(double t)
 	double numElapseSlot = t/m_slotLen;
     double res = m_slotLen*(std::ceil(numElapseSlot))-t;
 
-    NS_LOG_DEBUG("GetTime2ComingSlot. Elapsed slots: " << numElapseSlot << " ; Time to coming slot: " << res << " (slot len.: " << m_slotLen << ")");
+    NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; GetTime2ComingSlot. Elapsed slots: " << numElapseSlot << " ; Time to coming slot: " << res << " (slot len.: " << m_slotLen << ")");
 
     return res;
 }
@@ -383,6 +383,8 @@ AquaSimSFama::ProcessRTS(Ptr<Packet> rts_pkt)
 			SFAMAh.GetSlotNum()*m_slotLen /*for data*/+ 1 /*for ack*/;
 
 		StopTimers();
+        NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; RTS detected; Backoff time: " << backoff_time << " s (slots: " << (backoff_time / m_slotLen) << "; Data slots: "<< SFAMAh.GetSlotNum()<<")");
+        m_isInBackoff = true;
 		SetStatus(BACKOFF);
 
     m_backoffTimer.SetFunction(&AquaSimSFama_Backoff_Timer::expire,&m_backoffTimer);
@@ -433,6 +435,8 @@ AquaSimSFama::ProcessCTS(Ptr<Packet> cts_pkt)
 			1 /*for ack*/+time2comingslot;
 
 		StopTimers();
+        NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; CTS detected; backoff time: " << backoff_time << " s (slots: " << (backoff_time / m_slotLen) << "; Data slots: "<< SFAMAh.GetSlotNum()<<")");
+        m_isInBackoff = true;
 		SetStatus(BACKOFF);
 
     m_backoffTimer.SetFunction(&AquaSimSFama_Backoff_Timer::expire,&m_backoffTimer);
@@ -478,6 +482,8 @@ AquaSimSFama::ProcessDATA(Ptr<Packet> data_pkt)
 		double backoff_time = 1+GetTime2ComingSlot(Simulator::Now().ToDouble(Time::S)) /*for ack*/;
 
 		StopTimers();
+        NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; DATA detected; backoff time: " << backoff_time << " s (slots: " << (backoff_time / m_slotLen) << ")");
+        m_isInBackoff = true;
 		SetStatus(BACKOFF);
 
     m_backoffTimer.SetFunction(&AquaSimSFama_Backoff_Timer::expire,&m_backoffTimer);
@@ -499,11 +505,11 @@ AquaSimSFama::ProcessACK(Ptr<Packet> ack_pkt)
 	ack_pkt->AddHeader(SFAMAh);
 	ack_pkt->AddHeader(ash);
 
-  NS_LOG_DEBUG("ProcessACK(before)");
+  NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; ProcessACK(before)");
 #ifdef AquaSimSFama_DEBUG
   NS_LOG_DEBUG(PrintAllQ());
 #endif
-  NS_LOG_DEBUG("ProcessACK: Status is " << GetStatus());
+  NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; ProcessACK: Status is " << GetStatus());
 
 	if( mach.GetDA() == AquaSimAddress::ConvertFrom(m_device->GetAddress()) && GetStatus() == WAIT_RECV_ACK ) {
 		StopTimers();
@@ -579,7 +585,7 @@ AquaSimSFama::PrepareSendingDATA()
 			m_sendingPktQ.front()->AddHeader(ash);
       recver_addr = mach.GetDA();
 	} else if( !m_CachedPktQ.empty() && GetStatus() == IDLE_WAIT ) {
-    NS_LOG_DEBUG("PrepareSendingDATA(before)");
+    NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; PrepareSendingDATA(before)");
 #ifdef AquaSimSFama_DEBUG
     NS_LOG_DEBUG(PrintAllQ());
 #endif
@@ -624,7 +630,7 @@ AquaSimSFama::PrepareSendingDATA()
 			tmpQ_.pop();
 		}
 
-  NS_LOG_DEBUG("PrepareSendingDATA(after)");
+  NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; PrepareSendingDATA(after)");
 #ifdef AquaSimSFama_DEBUG
   NS_LOG_DEBUG(PrintAllQ());
 #endif
@@ -641,7 +647,7 @@ AquaSimSFama::GetPktTrainTxTime()
 	double txtime = 0.0;
 
 	int q_size = m_sendingPktQ.size();
-  NS_LOG_DEBUG("GetPktTrainTxTime(before) \n");
+  NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; GetPktTrainTxTime(before) \n");
 #ifdef AquaSimSFama_DEBUG
 	NS_LOG_DEBUG(PrintAllQ());
 #endif
@@ -652,7 +658,7 @@ AquaSimSFama::GetPktTrainTxTime()
 		m_sendingPktQ.push(m_sendingPktQ.front());
 		m_sendingPktQ.pop();
 	}
-NS_LOG_DEBUG("GetPktTrainTxTime(after) \n");
+NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; GetPktTrainTxTime(after) \n");
 #ifdef AquaSimSFama_DEBUG
 NS_LOG_DEBUG(PrintAllQ());
 #endif
@@ -667,17 +673,23 @@ void
 AquaSimSFama::ScheduleRTS(AquaSimAddress recver, int slot_num)
 {
     NS_LOG_FUNCTION(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << recver.GetAsInt() << "Required slots to send data packet: " << slot_num);
-    double backoff_time = RandBackoffSlots()*m_slotLen+GetTime2ComingSlot(Simulator::Now().ToDouble(Time::S));
+    int backoff_slots;
+    if(m_isInBackoff)
+        backoff_slots = 0;
+    else
+        backoff_slots = RandBackoffSlots();
+    m_isInBackoff = false;
+    double backoff_time = backoff_slots*m_slotLen+GetTime2ComingSlot(Simulator::Now().ToDouble(Time::S));
 	SetStatus(WAIT_SEND_RTS);
 	m_waitSendTimer.m_pkt = MakeRTS(recver, slot_num);
 
     double t = Simulator::Now().ToDouble(Time::S);
     double numElapseSlot = t/m_slotLen;
     double res = m_slotLen*(std::ceil(numElapseSlot))-t;
-    NS_LOG_DEBUG("ScheduleRTS. Elapsed slots: " << numElapseSlot << " ; Time to coming slot: " << res << " (slot len.: " << m_slotLen << ")");
+    NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; ScheduleRTS. Elapsed slots: " << numElapseSlot << " ; Time to coming slot: " << res << " (slot len.: " << m_slotLen << ")");
 
     double sendSlot = (backoff_time + Simulator::Now().ToDouble(Time::S)) / m_slotLen;
-    NS_LOG_DEBUG("Time to the RTS transmission: " << backoff_time << " ; RTS slot: " << sendSlot);
+    NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; Time to the RTS transmission: " << backoff_time << " (Backoff Slots: "<< backoff_slots <<") ; RTS slot: " << sendSlot);
   m_waitSendTimer.SetFunction(&AquaSimSFama_Wait_Send_Timer::expire,&m_waitSendTimer);
   m_waitSendTimer.Schedule(Seconds(backoff_time));
 }
@@ -735,12 +747,12 @@ AquaSimSFama::SendPkt(Ptr<Packet> pkt)
 			NS_LOG_DEBUG(Simulator::Now().GetSeconds() << ": node " << mach.GetSA() <<
 					       " send to node " << mach.GetDA() );
 			SendDown(pkt);
-            NS_LOG_DEBUG("txTime: " << txtime);
+            NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; txTime: " << txtime);
 			Simulator::Schedule(txtime, &AquaSimSFama::SlotInitHandler,this);
 			break;
 		default:
 			//status is SEND, send too fast
-      NS_LOG_INFO("Node:" << m_device->GetNode() << " send data too fast");
+      NS_LOG_INFO(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; Node:" << m_device->GetNode() << " send data too fast");
 			pkt=0;
 			break;
 	}
@@ -757,18 +769,18 @@ AquaSimSFama::StatusProcess(int slotnum)
 	switch(GetStatus()) {
 	  case WAIT_SEND_RTS:
         slotnum = m_rtsCtsAckNumSlotWait;
-        NS_LOG_DEBUG("Wait CTS: " << slotnum << " slots");
+        NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; Wait CTS: " << slotnum << " slots");
 		SetStatus(WAIT_RECV_CTS);
 		break;
 	  case WAIT_SEND_CTS:
 		//slotnum += 1;
-        NS_LOG_DEBUG("Wait DATA: " << slotnum << " slots");
+        NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; Wait DATA: " << slotnum << " slots");
 		SetStatus(WAIT_RECV_DATA);
 		break;
 	  case WAIT_SEND_DATA:
 		//cannot reach here
         slotnum = m_rtsCtsAckNumSlotWait;
-        NS_LOG_DEBUG("Wait ACK: " << slotnum << " slots");
+        NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; Wait ACK: " << slotnum << " slots");
 		SetStatus(WAIT_RECV_ACK);
 		//wait_reply time has been scheduled.
 		return;
@@ -827,9 +839,9 @@ AquaSimSFama::WaitSendTimerProcess(Ptr<Packet> pkt)
     double t = Simulator::Now().ToDouble(Time::S);
     double numElapseSlot = t/m_slotLen;
     double res = m_slotLen*(std::ceil(numElapseSlot))-t;
-    NS_LOG_DEBUG("WaitSendTimerProcess. Elapsed slots: " << numElapseSlot << " ; Time to coming slot: " << res << " (slot len.: " << m_slotLen << ")");
+    NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; WaitSendTimerProcess. Elapsed slots: " << numElapseSlot << " ; Time to coming slot: " << res << " (slot len.: " << m_slotLen << ")");
 	if( NULL == pkt ) {
-    NS_LOG_DEBUG("pkt == NULL");
+    NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; pkt == NULL");
     m_datasendTimer.SetFunction(&AquaSimSFama_DataSend_Timer::expire,&m_datasendTimer);
     m_datasendTimer.Schedule(Seconds(0.00001));
 	}
@@ -848,16 +860,19 @@ AquaSimSFama::WaitReplyTimerProcess(bool directcall)
 	if( !directcall )
     NS_LOG_WARN(Simulator::Now().GetSeconds() << " node " << m_device->GetNode() << "TIME OUT!!!!!");
 	#endif  //AquaSimSFama_DEBUG
+        if(m_backoffTimer.IsRunning()) //TODO: fix it
+        {
+            m_backoffTimer.Cancel();
+        }
 	if( directcall ) {
-		SetStatus(BACKOFF_FAIR);
-    m_backoffTimer.SetFunction(&AquaSimSFama_Backoff_Timer::expire,&m_backoffTimer);
-    m_backoffTimer.Schedule(Seconds(GetTime2ComingSlot(Simulator::Now().ToDouble(Time::S))));
+                SetStatus(BACKOFF_FAIR);
+                m_backoffTimer.SetFunction(&AquaSimSFama_Backoff_Timer::expire,&m_backoffTimer);
+                m_backoffTimer.Schedule(Seconds(GetTime2ComingSlot(Simulator::Now().ToDouble(Time::S))));
 	} else {
-		SetStatus(BACKOFF);
-    m_backoffTimer.SetFunction(&AquaSimSFama_Backoff_Timer::expire,&m_backoffTimer);
-    m_backoffTimer.Schedule(Seconds(backoff_time));
-	}
-
+                SetStatus(BACKOFF);
+                m_backoffTimer.SetFunction(&AquaSimSFama_Backoff_Timer::expire,&m_backoffTimer);
+                m_backoffTimer.Schedule(Seconds(backoff_time));
+        }
 }
 
 
@@ -865,7 +880,7 @@ void
 AquaSimSFama::DataSendTimerProcess()
 {
   NS_LOG_FUNCTION(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt());
-  NS_LOG_DEBUG("DataSendTimerProcess(before) \n");
+  NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; DataSendTimerProcess(before) \n");
 #ifdef AquaSimSFama_DEBUG
   NS_LOG_DEBUG(PrintAllQ());
 #endif
@@ -913,7 +928,7 @@ AquaSimSFama::DataSendTimerProcess()
 			}
 			*/
 	}
-  NS_LOG_DEBUG("DataSendTimerProcess(after) \n");
+  NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; DataSendTimerProcess(after) \n");
 #ifdef AquaSimSFama_DEBUG
   NS_LOG_DEBUG(PrintAllQ());
 #endif
@@ -941,7 +956,7 @@ AquaSimSFama::SendDataPkt(Ptr<Packet> pkt)
 		case RECV:
       NS_LOG_INFO("RECV-SEND Collision!!!!!");
       pkt=0;
-			//do backoff??
+            //do backoff??
 			break;
 		case NIDLE:
 			//m_device->SetTransmissionStatus(SEND);
@@ -950,13 +965,13 @@ AquaSimSFama::SendDataPkt(Ptr<Packet> pkt)
       pkt->PeekHeader(mach);
 			pkt->AddHeader(SFAMAh);
 			pkt->AddHeader(ash);
-      NS_LOG_DEBUG(Simulator::Now().GetSeconds() << ": node " << mach.GetSA() <<
+      NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; " << Simulator::Now().GetSeconds() << ": node " << mach.GetSA() <<
             " send to node " << mach.GetDA() );
 			SendDown(pkt);
 			break;
 		default:
 			//status is SEND, send too fast
-      NS_LOG_INFO("Node:" << m_device->GetNode() << " send data too fast");
+      NS_LOG_INFO(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; Node:" << m_device->GetNode() << " send data too fast");
       pkt=0;
 			break;
 	}
