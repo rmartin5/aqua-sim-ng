@@ -117,6 +117,7 @@ void AquaSimAloha::DoBackoff()
 			if (!PktQ_.empty()) {
       	PktQ_.front()=0;
       	PktQ_.pop();
+        m_txPacketDrops += 1;
       ProcessPassive();
 		}
   }
@@ -230,6 +231,7 @@ void AquaSimAloha::SendPkt(Ptr<Packet> pkt)
   pkt->PeekHeader(alohaH);
 
   asHeader.SetDirection(AquaSimHeader::DOWN);
+  asHeader.SetTimeStamp(Simulator::Now()); //why?
 
   //compute estimated RTT
   Time txtime = asHeader.GetTxTime();
@@ -240,10 +242,6 @@ void AquaSimAloha::SendPkt(Ptr<Packet> pkt)
       PowerOn();
 
     case NIDLE: {
-      //m_device->SetTransmissionStatus(SEND);
-      asHeader.SetTimeStamp(Simulator::Now()); //why?
-      asHeader.SetDirection(AquaSimHeader::DOWN);	//already set...
-
       //ACK doesn't affect the status, only process DATA here
       if (alohaH.GetPType() == AlohaHeader::DATA) {
 				//must be a DATA packet, so setup wait ack timer
@@ -281,13 +279,15 @@ void AquaSimAloha::SendPkt(Ptr<Packet> pkt)
     case RECV:
       NS_LOG_INFO("SendPkt: RECV-SEND collision!!!");
       if( alohaH.GetPType() == AlohaHeader::ACK) {
-	pkt->AddHeader(asHeader);
-	RetryACK(pkt);
+        pkt->AddHeader(asHeader);
+        RetryACK(pkt);
+        ALOHA_Status = PASSIVE;
       }
       else
-	pkt=0;
-
-      ALOHA_Status = PASSIVE;
+      {
+          DoBackoff();
+          pkt=0;
+      }
       break;
 
     default:
@@ -296,10 +296,13 @@ void AquaSimAloha::SendPkt(Ptr<Packet> pkt)
       if( alohaH.GetPType() == AlohaHeader::ACK ) {
 	pkt->AddHeader(asHeader);
 	RetryACK(pkt);
+    ALOHA_Status = PASSIVE;
       }
       else
-	pkt=0;
-      ALOHA_Status = PASSIVE;
+          {
+              DoBackoff();
+              pkt=0;
+          }
   }
 }
 
