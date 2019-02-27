@@ -80,6 +80,21 @@ AquaSimMac::GetTypeId(void)
     BooleanValue(false),
     MakeBooleanAccessor(&AquaSimMac::m_dummyRouting),
     MakeBooleanChecker())
+  .AddTraceSource(
+      "TxFifoSize",
+      "Current number of bytes in the transmission fifo of the mac layer",
+      MakeTraceSourceAccessor(&AquaSimMac::m_currentTxFifoSize),
+      "ns3::TracedValueCallback::Uint32")
+  .AddTraceSource(
+      "TxPacketDrops",
+      "Number of transmitted packet drops due to the TxFifo is full",
+      MakeTraceSourceAccessor(&AquaSimMac::m_txPacketDrops),
+      "ns3::TracedValueCallback::Uint32")
+  .AddTraceSource(
+      "DataPktRetransmissions",
+      "Number of retransmitted data packets",
+      MakeTraceSourceAccessor(&AquaSimMac::m_dataPktRetransmissions),
+      "ns3::TracedValueCallback::Uint32")
   ;
   return tid;
 }
@@ -87,10 +102,24 @@ AquaSimMac::GetTypeId(void)
 AquaSimMac::AquaSimMac() :
   m_bitRate(1e4)/*10kbps*/, m_encodingEfficiency(1)
 {
+    InitTracedValues();
 }
 
 AquaSimMac::~AquaSimMac()
 {
+}
+
+void AquaSimMac::InitTracedValues() {
+  m_currentTxFifoSize = UINT32_MAX;
+  m_txPacketDrops = UINT32_MAX;
+  m_dataPktRetransmissions = UINT32_MAX;
+  Simulator::Schedule(Seconds(0) /*callback delay*/, &AquaSimMac::StartTracedValues, this);
+}
+
+void AquaSimMac::StartTracedValues() {
+  m_currentTxFifoSize = 0;
+  m_txPacketDrops = 0;
+  m_dataPktRetransmissions = 0;
 }
 
 void
@@ -181,7 +210,7 @@ AquaSimMac::SendDown(Ptr<Packet> p, TransStatus afterTrans)
 
   if (m_device->GetTransmissionStatus() == RECV) {
       NS_LOG_DEBUG("SendDown::Recv, queuing pkt");
-      m_sendQueue.push(std::make_pair(p,afterTrans));
+      SendQueuePush(std::make_pair(p, afterTrans));
       return true;
   }
   else {
@@ -335,9 +364,24 @@ std::pair<Ptr<Packet>,TransStatus>
 AquaSimMac::SendQueuePop()
 {
   std::pair<Ptr<Packet>,TransStatus> element = m_sendQueue.front();
+
+  AquaSimHeader ash;
+  element.first->PeekHeader(ash);
+  m_currentTxFifoSize -= ash.GetSize();
+
   m_sendQueue.front().first=0;
   m_sendQueue.pop();
   return element;
+}
+
+void
+AquaSimMac::SendQueuePush(std::pair<Ptr<Packet>, TransStatus> pair)
+{
+    AquaSimHeader ash;
+    pair.first->PeekHeader(ash);
+    m_currentTxFifoSize += ash.GetSize();
+
+    m_sendQueue.push(pair);
 }
 
 Ptr<AquaSimNetDevice>
