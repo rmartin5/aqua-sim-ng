@@ -203,6 +203,7 @@ private:
 
 	int m_maxBurst; /*maximum number of packets in the train*/
 	double m_dataSendingInterval;
+    double m_lastRxDataSlotsNum;
 
 	//wait to send pkt at the beginning of next slot
 	AquaSimSFama_Wait_Send_Timer m_waitSendTimer;
