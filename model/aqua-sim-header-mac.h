@@ -157,7 +157,7 @@ public:
   virtual ~AlohaHeader();
   static TypeId GetTypeId(void);
 
-  static int size();
+  static int GetSize();
 
   void SetSA(AquaSimAddress sa);
   void SetDA(AquaSimAddress da);

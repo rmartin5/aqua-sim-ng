@@ -166,7 +166,7 @@ bool AquaSimAloha::TxProcess(Ptr<Packet> pkt)
   AlohaHeader alohaH;
   pkt->RemoveHeader(asHeader);
   //pkt->RemoveHeader(alohaH);	This may need to be fixed for multi hop.
-        asHeader.SetSize(alohaH.GetSerializedSize()+asHeader.GetSize());
+        asHeader.SetSize(alohaH.GetSize()+asHeader.GetSize());
   asHeader.SetTxTime(GetTxTime(asHeader.GetSize()));
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);
@@ -235,7 +235,7 @@ void AquaSimAloha::SendPkt(Ptr<Packet> pkt)
 
   //compute estimated RTT
   Time txtime = asHeader.GetTxTime();
-  Time ertt = txtime + GetTxTime(alohaH.GetSerializedSize()*2) + Seconds(m_maxPropDelay*2);
+  Time ertt = txtime + GetTxTime(alohaH.GetSize()*2) + Seconds(m_maxPropDelay*2);
 
   switch( m_device->GetTransmissionStatus() ) {
     case SLEEP:
@@ -357,7 +357,7 @@ bool AquaSimAloha::RecvProcess(Ptr<Packet> pkt)
                         auto cpkt = pkt->Copy();
                         pkt->AddHeader(asHeader);
                         cpkt->RemoveHeader(alohaH);
-                        asHeader.SetSize(asHeader.GetSize() - alohaH.GetSerializedSize());
+                        asHeader.SetSize(asHeader.GetSize() - alohaH.GetSize());
                         cpkt->AddHeader(asHeader);
                         SendUp(cpkt);
 
@@ -395,8 +395,8 @@ Ptr<Packet> AquaSimAloha::MakeACK(AquaSimAddress Data_Sender)
   AlohaHeader alohaH;
 	AquaSimPtTag ptag;
 
-        asHeader.SetSize(alohaH.GetSerializedSize());
-  asHeader.SetTxTime(GetTxTime(alohaH.GetSerializedSize()));
+        asHeader.SetSize(alohaH.GetSize());
+  asHeader.SetTxTime(GetTxTime(alohaH.GetSize()));
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);
   asHeader.SetNextHop(Data_Sender);
