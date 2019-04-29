@@ -204,6 +204,8 @@ AquaSimSFama::GetTime2ComingSlot(double t)
     NS_LOG_FUNCTION(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << t);
 	double numElapseSlot = t/m_slotLen;
     double res = m_slotLen*(std::ceil(numElapseSlot))-t;
+    if(res < 0)
+        res = 0;
 
     NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; GetTime2ComingSlot. Elapsed slots: " << numElapseSlot << " ; Time to coming slot: " << res << " (slot len.: " << m_slotLen << ")");
 

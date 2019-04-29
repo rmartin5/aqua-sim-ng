@@ -378,7 +378,7 @@ AlohaHeader::GetPType()
 int
 AlohaHeader::GetSize()
 {
-  return 2+2+1+2; //src, dst, type, crc16
+  return 2+2+1; //src, dst, type
 }
 
 uint32_t
@@ -653,7 +653,7 @@ SFamaHeader::GetTypeId()
 int
 SFamaHeader::GetSize(enum PacketType pType)
 {
-  int pkt_size = 2*sizeof(uint16_t)+1+2; //source and destination address, packet_type and crc16
+  int pkt_size = 2*sizeof(uint16_t)+1; //source and destination address, packet_type
 
   if( pType == SFAMA_RTS || pType == SFAMA_CTS ) {
     pkt_size += sizeof(uint16_t); //slotnum

@@ -235,7 +235,10 @@ void AquaSimAloha::SendPkt(Ptr<Packet> pkt)
 
   //compute estimated RTT
   Time txtime = asHeader.GetTxTime();
-  Time ertt = txtime + GetTxTime(alohaH.GetSize()*2) + Seconds(m_maxPropDelay*2);
+  NS_LOG_DEBUG("pkt txTime: " << txtime.GetSeconds() << "("<<asHeader.GetSize()<<")");
+  NS_LOG_DEBUG("AlohaHeader txTime: " << GetTxTime(alohaH.GetSize()) << " (" << alohaH.GetSize() << ")");
+  NS_LOG_DEBUG("PropDelay: " << m_maxPropDelay);
+  Time ertt = txtime + GetTxTime(alohaH.GetSize()) + GetTxTime(alohaH.GetSize()) + Seconds(m_maxPropDelay*2);
 
   switch( m_device->GetTransmissionStatus() ) {
     case SLEEP:
