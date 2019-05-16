@@ -295,9 +295,12 @@ AquaSimSFama::FillDATA(Ptr<Packet> data_pkt)
   MacHeader mach;
   data_pkt->RemoveHeader(ash);
 
+
   ash.SetSize(ash.GetSize()+SFAMAh.GetSize(SFamaHeader::SFAMA_DATA));
-  ash.SetTxTime(GetTxTime(ash.GetSize()) );
-  NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; New Data Pkt to transmit = " << ash.GetSize() << " bytes ; TxTime = " << ash.GetTxTime().ToDouble(Time::S));
+  auto bytes = ash.GetSize();
+  auto txtime = GetTxTime(bytes);
+  ash.SetTxTime(txtime);
+  NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; New Data Pkt to transmit = " << bytes << " bytes ; TxTime = " << txtime.ToDouble(Time::S));
   ash.SetErrorFlag(false);
   ash.SetDirection(AquaSimHeader::DOWN);
 
@@ -820,6 +823,8 @@ AquaSimSFama::StatusProcess(int slotnum)
 // 	}
 
 	//if( ! status_handler.is_ack() ) {
+  if(m_waitReplyTimer.IsRunning())
+      return;
   m_waitReplyTimer.SetFunction(&AquaSimSFama_Wait_Reply_Timer::expire,&m_waitReplyTimer);
   m_waitReplyTimer.Schedule(Seconds(m_slotLen*slotnum+GetTime2ComingSlot(Simulator::Now().ToDouble(Time::S))));
 	//}
