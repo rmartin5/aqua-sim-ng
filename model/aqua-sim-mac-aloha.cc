@@ -199,25 +199,23 @@ bool AquaSimAloha::TxProcess(Ptr<Packet> pkt)
 
 void AquaSimAloha::SendDataPkt()
 {
-	NS_LOG_FUNCTION(this);
-  double P = m_rand->GetValue(0,1);
-  Ptr<Packet> tmp = PktQ_.front();
-  AquaSimHeader asHeader;
-	tmp->PeekHeader(asHeader);
-  AquaSimAddress recver = asHeader.GetNextHop();
+  NS_LOG_FUNCTION(this);
+  if(!PktQ_.empty())
+  {
+      double P = m_rand->GetValue(0,1);
+      Ptr<Packet> tmp = PktQ_.front();
 
-  ALOHA_Status = SEND_DATA;
+      ALOHA_Status = SEND_DATA;
 
-  if( P<=m_persistent ) {
-    if( asHeader.GetNextHop() == recver ) //why? {
-	SendPkt(tmp->Copy());
+      if( P<=m_persistent ) {
+            SendPkt(tmp->Copy());
+      }
+      else {
+        //Binary Exponential Backoff
+        m_boCounter--;
+        DoBackoff();
+      }
   }
-  else {
-    //Binary Exponential Backoff
-    m_boCounter--;
-    DoBackoff();
-  }
-
   return;
 }
 
