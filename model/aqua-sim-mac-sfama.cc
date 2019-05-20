@@ -191,6 +191,7 @@ AquaSimSFama::InitSlotLen()
   double txTimeSec = txTime.ToDouble(Time::S);
   double prTimeSec = Device()->GetPhy()->GetTransRange()/Device()->GetPropSpeed();
   slotLen = m_guardTime + txTimeSec + prTimeSec;
+  m_maxPrTimeSec = prTimeSec;
 
   m_slotLen = slotLen;
 
@@ -672,7 +673,7 @@ NS_LOG_DEBUG(PrintAllQ());
 #endif
 
     NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; txTime = " << txtime << " ; T.Bytes = " << bytes << " ; Q.Size = " << q_size);
-	txtime += (q_size-1)*m_dataSendingInterval;
+    txtime += (q_size-1)*m_dataSendingInterval + m_maxPrTimeSec;
 
 	return txtime;
 }

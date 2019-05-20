@@ -195,6 +195,7 @@ private:
 	double m_guardTime;  //need to be binded
 	double m_slotLen;
     double m_rtsCtsAckNumSlotWait;
+    double m_maxPrTimeSec;
 
 	bool m_isInRound;
 	bool m_isInBackoff;
