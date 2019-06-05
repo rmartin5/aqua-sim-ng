@@ -59,9 +59,9 @@ void AquaSimSFama_DataSend_Timer::expire()
 }
 
 
-AquaSimSFama::AquaSimSFama():m_status(IDLE_WAIT), m_guardTime(0.005),
+AquaSimSFama::AquaSimSFama():m_status(IDLE_WAIT), m_guardTime(0.015),
     m_slotLen(0), m_isInRound(false), m_isInBackoff(false),
-    m_maxBackoffSlots(4), m_maxBurst(1), m_dataSendingInterval(0.0000001),
+    m_maxBackoffSlots(20), m_maxBurst(1), m_dataSendingInterval(0.0000001),
   m_waitSendTimer(this), m_waitReplyTimer(this),
   m_backoffTimer(this), m_datasendTimer(this)
 {
@@ -382,6 +382,9 @@ AquaSimSFama::ProcessRTS(Ptr<Packet> rts_pkt)
 				m_waitSendTimer.m_pkt = MakeCTS(mach.GetSA(), SFAMAh.GetSlotNum());
         m_waitSendTimer.SetFunction(&AquaSimSFama_Wait_Send_Timer::expire,&m_waitSendTimer);
         m_waitSendTimer.Schedule(Seconds(time2comingslot));
+        }
+        else {
+            NS_LOG_WARN(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; RTS received but unable to process (" << GetStatus() <<")");
         }
 	}
 	else {
@@ -791,9 +794,8 @@ AquaSimSFama::StatusProcess(int slotnum)
 		//cannot reach here
         slotnum = m_rtsCtsAckNumSlotWait;
         NS_LOG_DEBUG(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; Wait ACK: " << slotnum << " slots");
-		SetStatus(WAIT_RECV_ACK);
-		//wait_reply time has been scheduled.
-		return;
+        SetStatus(WAIT_RECV_ACK);
+        break;
 	  case WAIT_SEND_ACK:
 		WaitReplyTimerProcess(true); //go to next round
 		return;
@@ -825,7 +827,10 @@ AquaSimSFama::StatusProcess(int slotnum)
 
 	//if( ! status_handler.is_ack() ) {
   if(m_waitReplyTimer.IsRunning())
+  {
+      NS_LOG_WARN(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; m_waitReplyTimer running");
       return;
+  }
   m_waitReplyTimer.SetFunction(&AquaSimSFama_Wait_Reply_Timer::expire,&m_waitReplyTimer);
   m_waitReplyTimer.Schedule(Seconds(m_slotLen*slotnum+GetTime2ComingSlot(Simulator::Now().ToDouble(Time::S))));
 	//}
@@ -874,6 +879,7 @@ AquaSimSFama::WaitReplyTimerProcess(bool directcall)
 	#endif  //AquaSimSFama_DEBUG
         if(m_backoffTimer.IsRunning()) //TODO: fix it
         {
+            NS_LOG_WARN(AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt() << "; m_backoffTimer running");
             m_backoffTimer.Cancel();
         }
 	if( directcall ) {
