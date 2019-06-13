@@ -99,6 +99,8 @@ public:
   virtual void DoDispose (void);
   virtual void DoInitialize (void);
 
+  virtual double GetPropSpeed(void); //m/s
+
   void ForwardUp (Ptr<Packet> packet, Ptr<MobilityModel> src, Ptr<MobilityModel> dst);	//not used.
 
   //inherited functions from NetDevice class
@@ -117,6 +119,7 @@ public:
   virtual bool IsMulticast (void) const;
   virtual bool IsPointToPoint (void) const;
   virtual bool NeedsArp (void) const;
+  virtual bool SendWithHeader (Ptr<Packet> packet, uint16_t protocolNumber);
   virtual bool Send (Ptr<Packet> packet, const Address &dest, uint16_t protocolNumber);
   virtual bool SendFrom (Ptr<Packet> packet, const Address &source,
                            const Address &dest, uint16_t protocolNumber);
@@ -151,8 +154,8 @@ public:
   inline double FailurePro(void) { return m_failurePro; }
   inline double FailureStatusPro(void) { return m_failureStatusPro; }
 
-  void SetTransmissionStatus(TransStatus status);
-  TransStatus GetTransmissionStatus(void);
+  virtual void SetTransmissionStatus(TransStatus status);
+  virtual TransStatus GetTransmissionStatus(void);
 
   inline bool CarrierSense(void) { return m_carrierSense; }
   inline void ResetCarrierSense(void) { m_carrierSense = false; }

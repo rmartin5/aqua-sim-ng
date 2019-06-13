@@ -86,7 +86,7 @@ AquaSimFama::GetTypeId(void)
 
 void AquaSimFama::Init()
 {
-    m_maxPropDelay = Seconds(m_transmitDistance/1500.0);
+    m_maxPropDelay = Seconds(m_transmitDistance/Device()->GetPropSpeed());
     m_RTSTxTime = m_maxPropDelay;
     m_CTSTxTime = m_RTSTxTime + 2*m_maxPropDelay;
     m_maxDataTxTime = Seconds(m_dataPktSize*8/m_bitRate); // b / bps
@@ -447,7 +447,7 @@ AquaSimFama::MakeND()
   FamaHeader FamaH;
 	AquaSimPtTag ptag;
 
-	asHeader.SetSize(2*sizeof(AquaSimAddress)+1);
+    asHeader.SetSize(mach.GetSerializedSize());
   asHeader.SetTxTime(GetTxTime(asHeader.GetSize()));
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);
@@ -485,10 +485,14 @@ AquaSimFama::MakeRTS(AquaSimAddress Recver)
   FamaHeader FamaH;
 	AquaSimPtTag ptag;
 
-  auto size = GetSizeByTxTime(m_RTSTxTime.ToDouble(Time::S));
-  NS_LOG_DEBUG("RTS: pkt size " << size << " bytes ; pkt time " << m_RTSTxTime.GetSeconds() << " secs");
+  auto size0 = GetSizeByTxTime(m_RTSTxTime.ToDouble(Time::S));
+  auto famaHeaderSize = FamaH.GetSerializedSize();
+  auto size = size0 >= famaHeaderSize ? size0 : famaHeaderSize;
+  auto timeFromSize = GetTxTime(size);
+  auto rtsTxTime = m_RTSTxTime >= timeFromSize ? m_RTSTxTime : timeFromSize;
+  NS_LOG_DEBUG("RTS: pkt size " << size << " bytes ; pkt time " << rtsTxTime.GetSeconds() << " secs");
   asHeader.SetSize(size);
-  asHeader.SetTxTime(m_RTSTxTime);
+  asHeader.SetTxTime(rtsTxTime);
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);
 	ptag.SetPacketType(AquaSimPtTag::PT_FAMA);
@@ -549,8 +553,13 @@ AquaSimFama::MakeCTS(AquaSimAddress RTS_Sender)
 	FamaHeader FamaH;
 	AquaSimPtTag ptag;
 
-  asHeader.SetSize(GetSizeByTxTime(m_CTSTxTime.ToDouble(Time::S)));
-  asHeader.SetTxTime(m_CTSTxTime);
+  auto size0 = GetSizeByTxTime(m_CTSTxTime.ToDouble(Time::S));
+  auto famaHeaderSize = FamaH.GetSerializedSize();
+  auto size = size0 >= famaHeaderSize ? size0 : famaHeaderSize;
+  auto timeFromSize = GetTxTime(size);
+  auto ctsTxTime = m_CTSTxTime >= timeFromSize ? m_CTSTxTime : timeFromSize;
+  asHeader.SetSize(size);
+  asHeader.SetTxTime(ctsTxTime);
   asHeader.SetErrorFlag(false);
   asHeader.SetDirection(AquaSimHeader::DOWN);
 	ptag.SetPacketType(AquaSimPtTag::PT_FAMA);

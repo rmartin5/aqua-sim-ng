@@ -41,7 +41,7 @@ NS_OBJECT_ENSURE_REGISTERED(AquaSimHeader);
 AquaSimHeader::AquaSimHeader(void) :
     m_txTime(0), m_direction(DOWN),
     m_numForwards(0), m_errorFlag(0), m_uId(-1),
-    m_size(0), m_timestamp(0)
+    m_size(0), m_timestamp(0), m_seq(0)
 {
   m_nextHop = AquaSimAddress(-1);
   m_src.addr = AquaSimAddress(-1);
@@ -77,13 +77,14 @@ uint32_t
 AquaSimHeader::Deserialize(Buffer::Iterator start)
 {
   Buffer::Iterator i = start;
-  m_txTime = Seconds ( ( (double) i.ReadU32 ()) / 1000.0 );
+  m_txTime = Seconds ( (double) (i.ReadU64() / 1e9));
   m_size = i.ReadU16();
   m_direction = i.ReadU8();
   m_numForwards = i.ReadU16();
   m_nextHop = (AquaSimAddress) i.ReadU16();
   m_src.addr = (AquaSimAddress) i.ReadU16();
   m_dst.addr = (AquaSimAddress) i.ReadU16();
+  m_seq = i.ReadU32();
   m_errorFlag = i.ReadU8();	//wasted space due to only needing 1 bit
   m_uId = i.ReadU16();
   m_timestamp = Seconds ( ( (double) i.ReadU32 ()) / 1000.0 );
@@ -100,20 +101,21 @@ AquaSimHeader::GetSerializedSize(void) const
   example can be seen @ main-packet-header.cc*/
 
   //reserved bytes for header
-  return (4+2+1+2+1+2+2+2+2+4);
+  return (8+2+1+2+1+2+2+2+2+4+4);
 }
 
 void
 AquaSimHeader::Serialize(Buffer::Iterator start) const
 {
   Buffer::Iterator i = start;
-  i.WriteU32((uint32_t)(m_txTime.GetSeconds() * 1000.0));
+  i.WriteU64((uint64_t)(m_txTime.GetSeconds() * 1e9)); //nanos
   i.WriteU16(m_size);
   i.WriteU8(m_direction);
   i.WriteU16(m_numForwards);
   i.WriteU16(m_nextHop.GetAsInt());
   i.WriteU16(m_src.addr.GetAsInt());
   i.WriteU16(m_dst.addr.GetAsInt());
+  i.WriteU32(m_seq);
   i.WriteU8(m_errorFlag);
   i.WriteU16(m_uId);
   //src/dst port
@@ -212,6 +214,11 @@ AquaSimHeader::GetTimeStamp()
   return m_timestamp;
 }
 
+uint32_t AquaSimHeader::GetSeqNum()
+{
+  return m_seq;
+}
+
 void
 AquaSimHeader::SetTxTime(Time time)
 {
@@ -285,6 +292,11 @@ AquaSimHeader::SetTimeStamp(Time timestamp)
   m_timestamp = timestamp;
 }
 
+void
+AquaSimHeader::SetSeqNum(const uint32_t & seqnum)
+{
+  m_seq = seqnum;
+}
 
 //PacketStampHeader
 

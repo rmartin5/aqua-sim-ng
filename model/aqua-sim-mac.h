@@ -107,6 +107,7 @@ public:
 
   bool SendQueueEmpty();
   std::pair<Ptr<Packet>,TransStatus> SendQueuePop();
+  void SendQueuePush(std::pair<Ptr<Packet>, TransStatus>);
 
   double GetBitRate();
   double GetEncodingEff();
@@ -141,6 +142,10 @@ protected:
   virtual void DoDispose();
 
   bool m_dummyRouting; //See Attribute description in .cpp for more info
+  TracedValue<uint32_t> m_currentTxFifoSize, m_txPacketDrops, m_dataPktRetransmissions;
+
+  void InitTracedValues();
+  void StartTracedValues();
 };  //class AquaSimMac
 
 }  // namespace ns3

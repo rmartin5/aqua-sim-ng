@@ -563,6 +563,51 @@ AquaSimNetDevice::NeedsArp (void) const
   return false;
 }
 
+
+bool
+AquaSimNetDevice::SendWithHeader(Ptr<Packet> packet, uint16_t protocolNumber){
+    AquaSimHeader ash;
+    packet->RemoveHeader(ash);
+    Address dest = ash.GetDAddr();
+    uint32_t pktSize = ash.GetSize();
+
+    //Quick hack. Named Data should be NULL pointer if unused/unset.
+    if (m_ndn)
+    {
+      return m_ndn->Recv(packet);
+    }
+
+    if(m_routing)
+      {//Note : https://www.nsnam.org/docs/release/3.24/doxygen/uan-mac-cw_8cc_source.html#l00123
+        ash.SetNextHop(AquaSimAddress::GetBroadcast());
+        packet->AddHeader(ash);
+        NS_LOG_DEBUG("Me(" << AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt()  << "): Sending packet to Routing layer : " << ash.GetSize() << " bytes ; " << ash.GetTxTime().GetSeconds() << " sec. ; Dest: " << ash.GetDAddr().GetAsInt() << " ; Src: " << ash.GetSAddr().GetAsInt() << " ; Next H.: " << ash.GetNextHop().GetAsInt());
+        return m_routing->Recv(packet, dest, protocolNumber);
+      }
+    else if (MacEnabled() && m_mac)
+      {
+        ash.SetNextHop(ash.GetDAddr());
+        packet->AddHeader(ash);
+        NS_LOG_DEBUG("Me(" << AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt()  << "): Sending packet to MAC layer : " << ash.GetSize() << " bytes ; " << ash.GetTxTime().GetSeconds() << " sec. ; Dest: " << ash.GetDAddr().GetAsInt() << " ; Src: " << ash.GetSAddr().GetAsInt() << " ; Next H.: " << ash.GetNextHop().GetAsInt());
+        return m_mac->TxProcess(packet);
+      }
+    else if (m_phy)
+      {
+        SetTransmissionStatus(SEND);
+        ash.SetNextHop(ash.GetDAddr());
+        ash.SetTxTime(m_phy->CalcTxTime(pktSize));
+        NS_LOG_DEBUG("Me(" << AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt()  << "): Sending packet to Phy layer : " << ash.GetSize() << " bytes ; " << ash.GetTxTime().GetSeconds() << " sec. ; Dest: " << ash.GetDAddr().GetAsInt() << " ; Src: " << ash.GetSAddr().GetAsInt() << " ; Next H.: " << ash.GetNextHop().GetAsInt());
+        Simulator::Schedule(ash.GetTxTime(), &AquaSimNetDevice::SetTransmissionStatus,this, NIDLE);
+        packet->AddHeader(ash);
+        //slightly awkard but for phy header Buffer
+        AquaSimPacketStamp pstamp;
+        packet->AddHeader(pstamp);
+        return m_phy->PktTransmit(packet, 0);
+      }
+    else NS_LOG_WARN("Routing/Mac/Phy layers are not attached to this device. Can not send.");
+    return false;
+}
+
 bool
 AquaSimNetDevice::Send (Ptr< Packet > packet, const Address &dest, uint16_t protocolNumber)
 {
@@ -575,41 +620,8 @@ AquaSimNetDevice::Send (Ptr< Packet > packet, const Address &dest, uint16_t prot
   ash.SetSAddr(AquaSimAddress::ConvertFrom(GetAddress()));
   ash.SetDAddr(AquaSimAddress::ConvertFrom(dest));
 
-  //Quick hack. Named Data should be NULL pointer if unused/unset.
-  if (m_ndn)
-  {
-    return m_ndn->Recv(packet);
-  }
-
-  if(m_routing)
-    {//Note : https://www.nsnam.org/docs/release/3.24/doxygen/uan-mac-cw_8cc_source.html#l00123
-      ash.SetNextHop(AquaSimAddress::GetBroadcast());
-      packet->AddHeader(ash);
-      NS_LOG_DEBUG("Me(" << AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt()  << "): Sending packet to Routing layer : " << ash.GetSize() << " bytes ; " << ash.GetTxTime().GetSeconds() << " sec. ; Dest: " << ash.GetDAddr().GetAsInt() << " ; Src: " << ash.GetSAddr().GetAsInt() << " ; Next H.: " << ash.GetNextHop().GetAsInt());
-      return m_routing->Recv(packet, dest, protocolNumber);
-    }
-  else if (MacEnabled() && m_mac)
-    {
-      ash.SetNextHop(ash.GetDAddr());
-      packet->AddHeader(ash);
-      NS_LOG_DEBUG("Me(" << AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt()  << "): Sending packet to MAC layer : " << ash.GetSize() << " bytes ; " << ash.GetTxTime().GetSeconds() << " sec. ; Dest: " << ash.GetDAddr().GetAsInt() << " ; Src: " << ash.GetSAddr().GetAsInt() << " ; Next H.: " << ash.GetNextHop().GetAsInt());
-      return m_mac->TxProcess(packet);
-    }
-  else if (m_phy)
-    {
-      SetTransmissionStatus(SEND);
-      ash.SetNextHop(ash.GetDAddr());
-      ash.SetTxTime(m_phy->CalcTxTime(pktSize));
-      NS_LOG_DEBUG("Me(" << AquaSimAddress::ConvertFrom(GetAddress()).GetAsInt()  << "): Sending packet to Phy layer : " << ash.GetSize() << " bytes ; " << ash.GetTxTime().GetSeconds() << " sec. ; Dest: " << ash.GetDAddr().GetAsInt() << " ; Src: " << ash.GetSAddr().GetAsInt() << " ; Next H.: " << ash.GetNextHop().GetAsInt());
-      Simulator::Schedule(ash.GetTxTime(), &AquaSimNetDevice::SetTransmissionStatus,this, NIDLE);
-      packet->AddHeader(ash);
-      //slightly awkard but for phy header Buffer
-      AquaSimPacketStamp pstamp;
-      packet->AddHeader(pstamp);
-      return m_phy->PktTransmit(packet, 0);
-    }
-  else NS_LOG_WARN("Routing/Mac/Phy layers are not attached to this device. Can not send.");
-  return false;
+  packet->AddHeader(ash);
+  return SendWithHeader(packet, protocolNumber);
 }
 
 bool
@@ -699,4 +711,10 @@ TransStatus
 AquaSimNetDevice::GetTransmissionStatus(void)
 {
   return m_transStatus;
+}
+
+double
+AquaSimNetDevice::GetPropSpeed()
+{
+    return 1500;
 }
