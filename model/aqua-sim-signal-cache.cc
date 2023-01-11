@@ -29,7 +29,7 @@
 #include "ns3/log.h"
 
 #include <complex.h>
-
+#include <complex>
 //Aqua Sim Signal Cache
 
 namespace ns3 {
@@ -420,13 +420,13 @@ AquaSimMultiPathSignalCache::ReflCoeff(double theta, double s, double s_bottom)
   rho1=1000;  // in kg/m3
   rho2=1800;  // in kg/m3
 
-  thetac=(s>s_bottom)?creal(acos(s/s_bottom)):acos(s/s_bottom);
+  thetac=(s>s_bottom)?std::real(acos(s/s_bottom)):acos(s/s_bottom);
 
   if (theta<thetac) {
     if (thetac==0) return -1;
     else {
       double pi = 4 * atan(1.0);
-      return creal(cexp(sqrt(-1) * pi * (1-theta/thetac)));
+      return std::real(std::exp(sqrt(-1) * pi * (1-theta/thetac)));
     }
   }
   //theta>=thetac

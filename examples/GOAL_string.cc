@@ -148,7 +148,7 @@ main (int argc, char *argv[])
       model->SetVelocity(Vector(rand->GetValue(m_minSpeed,m_maxSpeed),0,0));
 
       ConstantVelocityHelper m_helper = ConstantVelocityHelper(model->GetPosition(), model->GetVelocity());
-      for (Time update = m_positionUpdateInterval; update < m_simStop-Seconds(1); update += m_positionUpdateInterval)
+      for (Time update = m_positionUpdateInterval; update.GetDouble() < m_simStop-Seconds(1).GetDouble(); update += m_positionUpdateInterval)
       {
         Simulator::Schedule(update, &ASGoalString::UpdatePosition, &goal, m_helper);
       }

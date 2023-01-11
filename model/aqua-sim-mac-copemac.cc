@@ -167,7 +167,7 @@ RevQueues::ClearExpired(Time ExpireTime)
 {
   RevElem* tmp = NULL;
 
-  while( Head_ != NULL && Head_->EndTime < ExpireTime + BACKOFF_DELAY_ERROR ) {
+  while( Head_ != NULL && Head_->EndTime.GetDouble() < ExpireTime.GetDouble() + BACKOFF_DELAY_ERROR ) {
       tmp = Head_;
       Head_ = Head_->next;
       delete tmp;
@@ -271,13 +271,13 @@ RevQueues::UpdateStatus(int RevID, RevType new_type)
     if( pos->RevID == RevID ) {
       pos->rev_type = new_type;
       send_time = pos->StartTime - Simulator::Now() + mac_->m_guardTime/2;
-      if( send_time < 0.0 ) {
+      if( send_time.GetDouble() < 0.0 ) {
 	  NS_LOG_WARN("UpdateStatus: handshake time takes too long, cancel sending");
 	  DeleteRev(RevID);
 	  return;
       }
 
-      if( send_time > 0.0 && pos->m_sendTimer != NULL) {
+      if( send_time.GetDouble() > 0.0 && pos->m_sendTimer != NULL) {
 	  pos->m_sendTimer->SetFunction(&PktSendTimer::PktSendTimerExpire,pos->m_sendTimer);
 	  pos->m_sendTimer->Schedule(send_time);
 
@@ -1179,7 +1179,7 @@ AquaSimCopeMac::ProcessMultiRevAck(Ptr<Packet> pkt)
       tmp->rejectedRevID = *(int*)data;
       data += sizeof(int);
 
-      if( tmp->StartTime > 0 ) {
+      if( tmp->StartTime.GetDouble() > 0.0 ) {
 	  if( tmp->requestor == m_device->GetAddress() ) {
 	      //start timer in updateStatus
 	      m_RevQ.UpdateStatus(tmp->acceptedRevID, SENDING);

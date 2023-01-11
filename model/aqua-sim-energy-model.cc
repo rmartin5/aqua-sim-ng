@@ -216,6 +216,9 @@ AquaSimEnergyModel::DecrIdleEnergy(double t)
   m_totalEnergyConsumption += dEng;
 }
 
+void AquaSimEnergyModel::HandleEnergyChanged(void) {
+}
+
 void
 AquaSimEnergyModel::DecrRcvEnergy(double t)
 {

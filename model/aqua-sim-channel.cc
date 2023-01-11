@@ -86,7 +86,7 @@ AquaSimChannel::SetPropagation (Ptr<AquaSimPropagation> prop)
 }
 
 Ptr<NetDevice>
-AquaSimChannel::GetDevice (uint32_t i) const
+AquaSimChannel::GetDevice (size_t i) const
 {
   return m_deviceList[i];
 }
@@ -98,7 +98,7 @@ AquaSimChannel::GetId (void) const
   return 0;
 }
 
-uint32_t
+size_t
 AquaSimChannel::GetNDevices (void) const
 {
   return m_deviceList.size();
