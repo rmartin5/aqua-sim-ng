@@ -56,6 +56,7 @@ public:
   virtual double DoGetCurrentA(void) const; //maybe depending if current draw for its states are know or not
   virtual void HandleEnergyDepletion(void);
   virtual void HandleEnergyRecharged(void);
+  virtual void HandleEnergyChanged(void);
 
   //inherited
   double GetCurrentA(void) const;

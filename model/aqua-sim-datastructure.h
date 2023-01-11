@@ -49,7 +49,7 @@
 #define EXPENSION_DATA 16
 
 // next hop status
-#define UNKNOWN 1
+//#define UNKNOWN 1 // causes compilation issues
 #define FRESHED 2
 #define DEAD 3
 //#define SUPPRESSED 4

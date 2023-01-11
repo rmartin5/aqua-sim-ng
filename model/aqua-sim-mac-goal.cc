@@ -629,7 +629,7 @@ AquaSimGoal::ProcessReqPkt(Ptr<Packet> ReqPkt)
 
 
 		//this node is in the forwarding area.
-		if( BackoffTimeLen > 0.0 ) {
+		if( BackoffTimeLen.GetDouble() > 0.0 ) {
 			NS_LOG_FUNCTION ("This node is in the forwarding area, start to back off."); // Xia added
 
 			AquaSimGoal_BackoffTimer* backofftimer = new AquaSimGoal_BackoffTimer(this);
@@ -1485,7 +1485,7 @@ AquaSimGoal::SendoutPkt(Ptr<Packet> pkt)
 								<< ash.GetTimeStamp().ToDouble(Time::S));
 
 						// xia added:
-						if (temp < 0) {
+						if (temp.GetInteger() < 0) {
 							temp = Seconds(0);
 						}
 

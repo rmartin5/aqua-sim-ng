@@ -62,9 +62,10 @@ public:
   void RemoveDevice(Ptr<AquaSimNetDevice> device);
 
   //inherited
-  virtual Ptr<NetDevice> GetDevice (uint32_t i) const;
+ 
+  virtual Ptr<NetDevice> GetDevice (size_t i) const;
   uint32_t GetId (void) const;
-  virtual uint32_t GetNDevices (void) const;
+  virtual size_t GetNDevices (void) const;
   Ptr<AquaSimNoiseGen> GetNoiseGen();
 
   /// Incoming packet from specified phy layer (device)
