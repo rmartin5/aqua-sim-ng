@@ -18,7 +18,7 @@ Work supported by the UWSN Lab at University of Connecticut.
 --------------------------------------
 
 ## Requirements
-This code is meant to be an add-on to current NS-3 software and therefore requires NS-3 and all pre-requirements of said software. Current tested and supported versions of NS-3 include 3.24, 3.26, and 3.27.
+This code is meant to be an add-on to current NS-3 software and therefore requires NS-3 and all pre-requirements of said software. Current tested and supported versions of NS-3 include 3.24, 3.26, 3.27, 3.33 and 3.37.
 
 --------------------------------------
 
