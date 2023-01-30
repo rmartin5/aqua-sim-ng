@@ -154,6 +154,10 @@ AquaSimGoal::GetTypeId(void)
 		IntegerValue (5),
 		MakeIntegerAccessor (&AquaSimGoal::m_maxBurst),
 		MakeIntegerChecker<int>())
+      .AddAttribute("MaxRetransTimes","The maximum number of packet retransmission. default is 3",
+        IntegerValue(3),
+        MakeIntegerAccessor (&AquaSimGoal::m_maxRetransTimes),
+        MakeIntegerChecker<int>())
       .AddAttribute ("VBFMaxDelay", "Max delay for VBF.",
 		TimeValue (Seconds(2.0)),
 		MakeTimeAccessor (&AquaSimGoal::m_VBF_MaxDelay),

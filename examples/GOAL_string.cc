@@ -99,7 +99,7 @@ main (int argc, char *argv[])
   asHelper.SetChannel(channel.Create());
   asHelper.SetMac("ns3::AquaSimGoal",
                     "MaxBurst", IntegerValue(m_maxBurst),
-                    "MaxRetxTimes", IntegerValue(m_maxRetxTimes),
+                    "MaxRetransTimes", IntegerValue(m_maxRetxTimes),
                     "VBFMaxDelay", TimeValue(m_vbfMaxDelay));
   asHelper.SetRouting("ns3::AquaSimVBF",
                     "HopByHop", IntegerValue(0),
