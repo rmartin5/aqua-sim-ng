@@ -18,12 +18,60 @@ Work supported by the UWSN Lab at University of Connecticut.
 --------------------------------------
 
 ## Requirements
-This code is meant to be an add-on to current NS-3 software and therefore requires NS-3 and all pre-requirements of said software. Current tested and supported versions of NS-3 include 3.24, 3.26, 3.27, 3.33 and 3.37.
+This code is meant to be an add-on to current NS-3 software and therefore requires NS-3 and all pre-requirements of said software.
+
+Current recommended NS-3 version is `3.40`. The following system requirements must be met:
+
+- `gcc-11`, `g++-11` or higher for Linux
+- `clang` version `15.0.0` for Mac OS
+- `cmake` version `3.16` or higher
+
 
 --------------------------------------
 
 ## Documentation and Installation
-Further documentation, installation steps, example script walk through, and protocol creation guides can be found under [Aqua-Sim NG Documentation](documentation/).
+
+To build current version of `aqua-sim-ng`, please follow these steps:
+
+- download and install `ns-3.40`:
+
+```
+mkdir workspace
+cd workspace
+wget https://www.nsnam.org/releases/ns-allinone-3.40.tar.bz2
+tar xvf ns-allinone-3.40.tar.bz2
+cd ns-allinone-3.40/ns-3.40/
+./ns3 clean
+./ns3 configure --build-profile=debug --enable-examples --enable-tests --disable-python --disable-werror
+./ns3 build
+```
+
+- after the initial NS-3 build, copy `aqua-sim-ng` code into `src/` folder:
+
+```
+cd src/
+git clone https://github.com/rmartin5/aqua-sim-ng.git 
+```
+
+- reconfigure ns-3 project and build the new module:
+
+```
+cd ..
+./ns3 configure --build-profile=debug --enable-examples --enable-tests --disable-python --disable-werror
+./ns3 build
+```
+
+After that, you should be able to run example scripts located under `src/aqua-sim-ng/examples/` folder.
+
+--------------------------------------
+## Running Examples
+
+TBD.
+
+--------------------------------------
+## Legacy Documentation
+
+Older tested and supported versions of NS-3 included 3.24, 3.26, 3.27, 3.33 and 3.37. Older documentation, installation steps, example script walk through, and protocol creation guides can be found under [Aqua-Sim NG Documentation](documentation/).
 
 ![Aqua-Sim NG Diagram](/documentation/asDiagram.png "Aqua-Sim NG Diagram")
 
