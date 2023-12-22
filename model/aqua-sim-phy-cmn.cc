@@ -671,14 +671,13 @@ AquaSimPhyCmn::StatusShift(double txTime) {
 */
 Ptr<AquaSimModulation>
 AquaSimPhyCmn::Modulation(std::string * modName) {
-  std::map<std::string, Ptr<AquaSimModulation> >::iterator pos;
   if (m_modulations.size() == 0) {
     NS_LOG_WARN("No modulations\n");
     return NULL;
   }
   else if (modName == NULL) {
     modName = &m_modulationName;
-    pos = m_modulations.find(*modName);
+    auto pos = m_modulations.find(*modName);
     if (m_modulations.end() != pos) {
       return pos->second;
     }

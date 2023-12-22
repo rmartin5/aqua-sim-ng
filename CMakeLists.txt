@@ -135,10 +135,10 @@ build_lib(
         model/aqua-sim-routing-dummy.h
         model/aqua-sim-routing-ddbr.h
         model/lib/svm.h
-    LIBRARIES_TO_LINK ${network}
-                      ${energy}
-                      ${mobility}
-                      ${internet}
+    LIBRARIES_TO_LINK ${libnetwork}
+                      ${libenergy}
+                      ${libmobility}
+                      ${libinternet}
 #    TEST_SOURCES test/aqua-sim-test-suite.cc
 )
 
