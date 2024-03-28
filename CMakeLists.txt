@@ -1,6 +1,7 @@
 build_lib(
     LIBNAME aqua-sim-ng
     SOURCE_FILES
+        model/aqua-sim-application.cc
         model/aqua-sim-address.cc
         model/aqua-sim-pt-tag.cc
         model/aqua-sim-channel.cc
@@ -31,6 +32,7 @@ build_lib(
         model/aqua-sim-mac-copemac.cc
         model/aqua-sim-mac-goal.cc
         model/aqua-sim-mac-sfama.cc
+        model/aqua-sim-mac-libra.cc
         model/aqua-sim-mac-uwan.cc
         model/aqua-sim-rmac.cc
         model/aqua-sim-rmac-buffer.cc
@@ -62,12 +64,14 @@ build_lib(
         model/ndn/onoff-nd-application.cc
         helper/named-data-helper.cc
         helper/on-off-nd-helper.cc
+        helper/aqua-sim-application-helper.cc
         helper/aqua-sim-traffic-gen-helper.cc
         model/aqua-sim-traffic-gen.cc
         model/aqua-sim-routing-dummy.cc
         model/aqua-sim-routing-ddbr.cc
         model/lib/svm.cpp
     HEADER_FILES
+        model/aqua-sim-application.h
         model/aqua-sim-address.h
         model/aqua-sim-pt-tag.h
         model/aqua-sim-channel.h
@@ -98,6 +102,7 @@ build_lib(
         model/aqua-sim-mac-copemac.h
         model/aqua-sim-mac-goal.h
         model/aqua-sim-mac-sfama.h
+        model/aqua-sim-mac-libra.h
         model/aqua-sim-mac-uwan.h
         model/aqua-sim-rmac.h
         model/aqua-sim-rmac-buffer.h
@@ -130,6 +135,7 @@ build_lib(
         model/ndn/onoff-nd-application.h
         helper/named-data-helper.h
         helper/on-off-nd-helper.h
+        helper/aqua-sim-application-helper.h
         helper/aqua-sim-traffic-gen-helper.h
         model/aqua-sim-traffic-gen.h
         model/aqua-sim-routing-dummy.h
@@ -223,3 +229,32 @@ build_lib_example(
                       ${libaqua-sim-ng}
 )
 
+build_lib_example(
+    NAME LibraGridTest
+    SOURCE_FILES examples/libra_grid_test.cc
+    LIBRARIES_TO_LINK ${libnetwork}
+                      ${libenergy}
+                      ${libmobility}
+                      ${libapplications}
+                      ${libaqua-sim-ng}
+)
+
+build_lib_example(
+    NAME AlohaGridTest
+    SOURCE_FILES examples/aloha_grid_test.cc
+    LIBRARIES_TO_LINK ${libnetwork}
+                      ${libenergy}
+                      ${libmobility}
+                      ${libapplications}
+                      ${libaqua-sim-ng}
+)
+
+build_lib_example(
+    NAME SfamaGridTest
+    SOURCE_FILES examples/sfama_grid_test.cc
+    LIBRARIES_TO_LINK ${libnetwork}
+                      ${libenergy}
+                      ${libmobility}
+                      ${libapplications}
+                      ${libaqua-sim-ng}
+)

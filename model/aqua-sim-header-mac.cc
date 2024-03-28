@@ -868,3 +868,491 @@ LocalizationHeader::GetInstanceTypeId(void) const
 {
   return GetTypeId();
 }
+
+/*
+ * MacLibraHeader
+ */
+MacLibraHeader::MacLibraHeader()
+{
+}
+
+MacLibraHeader::~MacLibraHeader()
+{
+}
+
+TypeId
+MacLibraHeader::GetTypeId()
+{
+  static TypeId tid = TypeId("ns3::MacLibraHeader")
+    .SetParent<Header>()
+    .AddConstructor<MacLibraHeader>()
+  ;
+  return tid;
+}
+
+uint32_t
+MacLibraHeader::GetSerializedSize(void) const
+{
+	// DATA
+	if (m_ptype == 0)
+	{
+		// ptype + header_id + hop_count + reward + ... [in bytes]
+		return 45;
+	}
+	// RREQ / RREP
+	if ((m_ptype == 1) || (m_ptype == 2))
+	{
+		return 1 + 4 + 1 + 2 + 2 + 16;	// Add tx/rx parameters
+	}
+	// ACK
+	if (m_ptype == 3)
+	{
+		return 1 + 4 + 4 + 4 + 4 + 16;	// Add tx/rx parameters
+	}
+	// INIT
+	if (m_ptype == 4)
+	{
+		return 1 + 4 + 4 + 16;	// Add tx/rx parameters
+	}
+	// RTS
+	if (m_ptype == 5)
+	{
+		return 1 + 4 + 4 + 16;	// Add tx/rx parameters
+	}
+	// CTS
+	if (m_ptype == 6)
+	{
+		return 1 + 4 + 4 + 16;	// Add tx/rx parameters
+	}
+	// Direct Reward Message
+	if (m_ptype == 7)
+	{
+		return 29 + 4;
+	}
+
+	// This should not happen
+	return 0;
+}
+
+void
+MacLibraHeader::Serialize (Buffer::Iterator start) const
+{
+  Buffer::Iterator i = start;
+  if (m_ptype == 0)
+  {
+	  i.WriteU8 ((uint8_t)(m_ptype));
+	  i.WriteU32 ((uint32_t)(m_header_id));
+	  i.WriteU8 ((uint8_t)(m_hop_count));
+	  i.WriteU32 ((uint32_t)(m_reward));
+	  i.WriteU16 ((uint16_t)(m_sender_addr.GetAsInt()));
+	  i.WriteU16 ((uint16_t)(m_src_addr.GetAsInt()));
+	  i.WriteU16 ((uint16_t)(m_dst_addr.GetAsInt()));
+	  i.WriteU32 ((uint32_t)(m_direct_distance));
+	  // Add tx/rx parameters
+	  i.WriteU64 ((uint64_t)(m_tx_power));
+	  i.WriteU64 ((uint64_t)(m_rx_power));
+	  i.WriteU32 ((uint32_t)(m_next_hop_distance));
+	  i.WriteU32 ((uint32_t)(m_optimal_distance));
+	  i.WriteU8 ((uint8_t)(m_max_hops_number));
+  }
+  if (m_ptype == 1)
+  {
+	  i.WriteU8 ((uint8_t)(m_ptype));
+	  i.WriteU32 ((uint32_t)(m_header_id));
+	  i.WriteU8 ((uint8_t)(m_hop_count));
+	  i.WriteU16 ((uint16_t)(m_src_addr.GetAsInt()));
+	  i.WriteU16 ((uint16_t)(m_dst_addr.GetAsInt()));
+	  // Add tx/rx parameters
+	  i.WriteU64 ((uint64_t)(m_tx_power));
+	  i.WriteU64 ((uint64_t)(m_rx_power));
+  }
+  if (m_ptype == 2)
+  {
+	  i.WriteU8 ((uint8_t)(m_ptype));
+	  i.WriteU32 ((uint32_t)(m_header_id));
+	  i.WriteU8 ((uint8_t)(m_hop_count));
+	  i.WriteU16 ((uint16_t)(m_src_addr.GetAsInt()));
+	  i.WriteU16 ((uint16_t)(m_dst_addr.GetAsInt()));
+	  // Add tx/rx parameters
+	  i.WriteU64 ((uint64_t)(m_tx_power));
+	  i.WriteU64 ((uint64_t)(m_rx_power));
+  }
+  if (m_ptype == 3)
+  {
+	  i.WriteU8 ((uint8_t)(m_ptype));
+	  i.WriteU32 ((uint32_t)(m_header_id));
+	  i.WriteU8 ((uint32_t)(m_reward));
+	  i.WriteU32 ((uint32_t)(m_ack_message_id));
+	  i.WriteU16 ((uint16_t)(m_src_addr.GetAsInt()));
+	  i.WriteU16 ((uint16_t)(m_dst_addr.GetAsInt()));
+	  // Add tx/rx parameters
+	  i.WriteU64 ((uint64_t)(m_tx_power));
+	  i.WriteU64 ((uint64_t)(m_rx_power));
+  }
+  // 4 - INIT
+  if (m_ptype == 4)
+  {
+	  i.WriteU8 ((uint8_t)(m_ptype));
+	  i.WriteU32 ((uint32_t)(m_header_id));
+	  i.WriteU16 ((uint16_t)(m_src_addr.GetAsInt()));
+	  i.WriteU16 ((uint16_t)(m_dst_addr.GetAsInt()));
+	  // Add tx/rx parameters
+	  i.WriteU64 ((uint64_t)(m_tx_power));
+	  i.WriteU64 ((uint64_t)(m_rx_power));
+  }
+  // 5 - RTS
+  if (m_ptype == 5)
+  {
+	  i.WriteU8 ((uint8_t)(m_ptype));
+	  i.WriteU32 ((uint32_t)(m_header_id));
+	  i.WriteU16 ((uint16_t)(m_src_addr.GetAsInt()));
+	  i.WriteU16 ((uint16_t)(m_dst_addr.GetAsInt()));
+	  // Add tx/rx parameters
+	  i.WriteU64 ((uint64_t)(m_tx_power));
+	  i.WriteU64 ((uint64_t)(m_rx_power));
+  }
+  // 6 - CTS
+  if (m_ptype == 6)
+  {
+	  i.WriteU8 ((uint8_t)(m_ptype));
+	  i.WriteU32 ((uint32_t)(m_header_id));
+	  i.WriteU16 ((uint16_t)(m_src_addr.GetAsInt()));
+	  i.WriteU16 ((uint16_t)(m_dst_addr.GetAsInt()));
+	  // Add tx/rx parameters
+	  i.WriteU64 ((uint64_t)(m_tx_power));
+	  i.WriteU64 ((uint64_t)(m_rx_power));
+  }
+  // 7 - Direct Reward Message
+  if (m_ptype == 7)
+  {
+	  i.WriteU8 ((uint8_t)(m_ptype));
+	  i.WriteU32 ((uint32_t)(m_header_id));
+	  i.WriteU16 ((uint16_t)(m_src_addr.GetAsInt()));
+	  i.WriteU16 ((uint16_t)(m_dst_addr.GetAsInt()));
+	  i.WriteU32 ((uint32_t)(m_reward));
+	  // Add tx/rx parameters
+	  i.WriteU64 ((uint64_t)(m_tx_power));
+	  i.WriteU64 ((uint64_t)(m_rx_power));
+	  i.WriteU32 ((uint32_t)(m_next_hop_distance));
+  }
+
+}
+
+uint32_t
+MacLibraHeader::Deserialize (Buffer::Iterator start)
+{
+  Buffer::Iterator i = start;
+  m_ptype = i.ReadU8();
+//  std::cout << "DESERIALIZED:" << m_ptype << "\n";
+
+  // DATA frame format: | PTYPE | ID | HOP_COUNT | REWARD_VALUE | SENDER_ADDR | SRC_ADDR | DST_ADDR | DIRECT_DISTANCE | TX_POWER | RX_POWER |
+  if (m_ptype == 0)
+  {
+//	  m_ptype = i.ReadU8();
+	  m_header_id = i.ReadU32();
+	  m_hop_count = i.ReadU8();
+	  m_reward = i.ReadU32();
+	  m_sender_addr = (AquaSimAddress) i.ReadU16();
+	  m_src_addr = (AquaSimAddress) i.ReadU16();
+	  m_dst_addr = (AquaSimAddress) i.ReadU16();
+	  m_direct_distance = i.ReadU32();
+	  // Get tx/rx parameters
+	  m_tx_power = i.ReadU64();
+	  m_rx_power = i.ReadU64();
+	  m_next_hop_distance = i.ReadU32();
+	  // Carry optimal_distance value
+	  m_optimal_distance = i.ReadU32();
+	  m_max_hops_number = i.ReadU8();
+  }
+  if (m_ptype == 1)
+  {
+//	  m_ptype = i.ReadU16();
+	  m_header_id = i.ReadU32();
+	  m_hop_count = i.ReadU8();
+	  m_src_addr = (AquaSimAddress) i.ReadU16();
+	  m_dst_addr = (AquaSimAddress) i.ReadU16();
+	  // Get tx/rx parameters
+	  m_tx_power = i.ReadU64();
+	  m_rx_power = i.ReadU64();
+  }
+  if (m_ptype == 2)
+  {
+//	  m_ptype = i.ReadU8();
+	  m_header_id = i.ReadU32();
+	  m_hop_count = i.ReadU8();
+	  m_src_addr = (AquaSimAddress) i.ReadU16();
+	  m_dst_addr = (AquaSimAddress) i.ReadU16();
+	  // Get tx/rx parameters
+	  m_tx_power = i.ReadU64();
+	  m_rx_power = i.ReadU64();
+  }
+  if (m_ptype == 3)
+  {
+//	  m_ptype = i.ReadU8();
+	  m_header_id = i.ReadU32();
+	  m_reward = i.ReadU32();
+	  m_ack_message_id = i.ReadU32();
+	  m_src_addr = (AquaSimAddress) i.ReadU16();
+	  m_dst_addr = (AquaSimAddress) i.ReadU16();
+	  // Get tx/rx parameters
+	  m_tx_power = i.ReadU64();
+	  m_rx_power = i.ReadU64();
+  }
+  // 4 - INIT
+  if (m_ptype == 4)
+  {
+//	  m_ptype = i.ReadU8();
+	  m_header_id = i.ReadU32();
+//	  m_reward = i.ReadU32();
+//	  m_ack_message_id = i.ReadU32();
+	  m_src_addr = (AquaSimAddress) i.ReadU16();
+	  m_dst_addr = (AquaSimAddress) i.ReadU16();
+	  // Get tx/rx parameters
+	  m_tx_power = i.ReadU64();
+	  m_rx_power = i.ReadU64();
+  }
+  // 5 - RTS
+  if (m_ptype == 5)
+  {
+//	  m_ptype = i.ReadU8();
+	  m_header_id = i.ReadU32();
+//	  m_reward = i.ReadU32();
+//	  m_ack_message_id = i.ReadU32();
+	  m_src_addr = (AquaSimAddress) i.ReadU16();
+	  m_dst_addr = (AquaSimAddress) i.ReadU16();
+	  // Get tx/rx parameters
+	  m_tx_power = i.ReadU64();
+	  m_rx_power = i.ReadU64();
+  }
+  // 6 - CTS
+  if (m_ptype == 6)
+  {
+//	  m_ptype = i.ReadU8();
+	  m_header_id = i.ReadU32();
+//	  m_reward = i.ReadU32();
+//	  m_ack_message_id = i.ReadU32();
+	  m_src_addr = (AquaSimAddress) i.ReadU16();
+	  m_dst_addr = (AquaSimAddress) i.ReadU16();
+	  // Get tx/rx parameters
+	  m_tx_power = i.ReadU64();
+	  m_rx_power = i.ReadU64();
+  }
+  // 7 - Direct Reward Message
+  if (m_ptype == 7)
+  {
+//	  m_ptype = i.ReadU8();
+	  m_header_id = i.ReadU32();
+//	  m_reward = i.ReadU32();
+//	  m_ack_message_id = i.ReadU32();
+	  m_src_addr = (AquaSimAddress) i.ReadU16();
+	  m_dst_addr = (AquaSimAddress) i.ReadU16();
+	  m_reward = i.ReadU32();
+	  // Get tx/rx parameters
+	  m_tx_power = i.ReadU64();
+	  m_rx_power = i.ReadU64();
+	  // Carry next_hop_distance
+	  m_next_hop_distance = i.ReadU32();
+  }
+
+  return GetSerializedSize();
+}
+
+void
+MacLibraHeader::Print (std::ostream &os) const
+{
+  os << "MacRouting Header: ";
+
+  if (m_ptype == 0)
+  {
+	  os << "PType=" << int(m_ptype) << " ";
+	  os << "Header_id=" << m_header_id << " ";
+	  os << "Hop_count=" << int(m_hop_count) << " ";
+	  os << "Reward=" << m_reward / m_multiplier_32 << " ";
+	  os << "Sender_addr=" << m_sender_addr << " ";
+	  os << "Src_addr=" << m_src_addr << " ";
+	  os << "Dst_addr=" << m_dst_addr << " ";
+	  os << "Direct_distance=" << m_direct_distance / m_multiplier_32 << " ";
+	  os << "Tx_power=" << m_tx_power / m_multiplier_64 << " ";
+	  os << "Rx_power=" << m_rx_power / m_multiplier_64 << " ";
+	  os << "Next_hop_distance=" << m_next_hop_distance / m_multiplier_32 << " ";
+	  os << "Optimal_distance=" << m_optimal_distance / m_multiplier_32 << " ";
+	  os << "Max_hops_number=" << int(m_max_hops_number) << " ";
+  }
+
+  if (m_ptype == 7)
+  {
+	  os << "PType=" << int(m_ptype) << " ";
+	  os << "Header_id=" << m_header_id << " ";
+	  os << "Src_addr=" << m_src_addr << " ";
+	  os << "Dst_addr=" << m_dst_addr << " ";
+	  os << "Reward=" << m_reward / m_multiplier_32 << " ";
+	  os << "Tx_power=" << m_tx_power / m_multiplier_64 << " ";
+	  os << "Rx_power=" << m_rx_power / m_multiplier_64 << " ";
+	  os << "Next_hop_distance=" << m_next_hop_distance / m_multiplier_32 << " ";
+  }
+
+  os << "\n";
+}
+
+TypeId
+MacLibraHeader::GetInstanceTypeId(void) const
+{
+  return GetTypeId();
+}
+
+void
+MacLibraHeader::SetPType(uint8_t ptype)
+{
+	m_ptype = ptype;
+}
+
+int
+MacLibraHeader::GetPType()
+{
+	return m_ptype;
+}
+
+void
+MacLibraHeader::SetId(uint32_t header_id)
+{
+	m_header_id = header_id;
+}
+
+void
+MacLibraHeader::SetHopCount(uint8_t hop_count)
+{
+	m_hop_count = hop_count;
+}
+
+void
+MacLibraHeader::SetSrcAddr(AquaSimAddress src_addr)
+{
+	m_src_addr = src_addr;
+}
+
+void
+MacLibraHeader::SetDstAddr(AquaSimAddress dst_addr)
+{
+	m_dst_addr = dst_addr;
+}
+
+void
+MacLibraHeader::SetSenderAddr(AquaSimAddress sender_addr)
+{
+	m_sender_addr = sender_addr;
+}
+
+AquaSimAddress
+MacLibraHeader::GetSrcAddr()
+{
+	return m_src_addr;
+}
+
+AquaSimAddress
+MacLibraHeader::GetDstAddr()
+{
+	return m_dst_addr;
+}
+
+AquaSimAddress
+MacLibraHeader::GetSenderAddr()
+{
+	return m_sender_addr;
+}
+
+void
+MacLibraHeader::SetReward(double reward_value)
+{
+	m_reward = reward_value * m_multiplier_32;
+}
+
+double
+MacLibraHeader::GetReward()
+{
+	return m_reward / m_multiplier_32;
+}
+
+int
+MacLibraHeader::GetHopCount()
+{
+	return m_hop_count;
+}
+
+void
+MacLibraHeader::IncrementHopCount()
+{
+	m_hop_count++;
+}
+
+void
+MacLibraHeader::SetRxPower(double rx_power)
+{
+	m_rx_power = rx_power * m_multiplier_64;
+//	std::cout << "SET RX POWER: " << m_tx_power << "\n";
+}
+
+void
+MacLibraHeader::SetTxPower(double tx_power)
+{
+	m_tx_power = tx_power * m_multiplier_64;
+}
+
+void
+MacLibraHeader::SetDirectDistance(double direct_distance)
+{
+	m_direct_distance = direct_distance * m_multiplier_32;
+}
+
+void
+MacLibraHeader::SetOptimalDistance(double optimal_distance)
+{
+	m_optimal_distance = optimal_distance * m_multiplier_32;
+}
+
+void
+MacLibraHeader::SetNextHopDistance(double next_hop_distance)
+{
+	m_next_hop_distance = next_hop_distance * m_multiplier_32;
+}
+
+void
+MacLibraHeader::SetMaxHopsNumber(uint8_t max_hops_number)
+{
+	m_max_hops_number = max_hops_number;
+}
+
+double
+MacLibraHeader::GetRxPower()
+{
+	return m_rx_power / m_multiplier_64;
+}
+
+double
+MacLibraHeader::GetTxPower()
+{
+	return m_tx_power / m_multiplier_64;
+}
+
+double
+MacLibraHeader::GetDirectDistance()
+{
+	return m_direct_distance / m_multiplier_32;
+}
+
+double
+MacLibraHeader::GetOptimalDistance()
+{
+	return m_optimal_distance / m_multiplier_32;
+}
+
+double
+MacLibraHeader::GetNextHopDistance()
+{
+	return m_next_hop_distance / m_multiplier_32;
+}
+
+uint8_t
+MacLibraHeader::GetMaxHopsNumber()
+{
+	return m_max_hops_number;
+}

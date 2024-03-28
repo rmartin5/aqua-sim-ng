@@ -66,7 +66,65 @@ After that, you should be able to run example scripts located under `src/aqua-si
 --------------------------------------
 ## Running Examples
 
-TBD.
+### LIBRA MAC protocol example
+
+LIBRA MAC protocol is a MAC protocol for UWSNs with multi-hop transmission range control capabilities, powered by Reinforcement Learning for adaptive route selection. More description can be found in the paper [] (See `References` section down below).
+
+To run LIBRA simulations, execute `libra_grid_test.cc` script from `examples/` folder by running:
+
+```
+./ns3 run "LibraGridTest --lambda=0.01 --packet_size=800 --grid_size=10000 --range=3000 --n_nodes=128 --tx_power=60 --simStop=10000 --RngRun=0"
+```
+where:
+
+`LibraGridTest`: name of the simulation script that refers to `libra_grid_test.cc`
+
+`--lambda`: application traffic rate, following Poisson distribution, pkts/sec
+
+`--packet_size`: user packet size, bytes
+
+`--grid_size`: size of the node allocation area, X by X meters
+
+`--range`: maximum transmission range, meters
+
+`--n_nodes`: number of nodes to allocate
+
+`--tx_power`: maximum Tx power, Watts
+
+`--simStop`: total simulation time, seconds
+
+`--RngRun`: seed for random generator
+
+After successful run, the script should generate a simulation trace-file with the following name: `libra-density-trace-0.01-128-0.asc`
+
+The trace-file contains raw simulation logs with every Tx/Rx event traced in a specific format. To extract useful data from the trace-file, such as network throughput, PDR, and more, please refer to `print_results_libra.py` script, located under `scripts/` folder.
+
+After executing the script, the parsed `.txt` file should be generated that will contain network metrics. An example of the parsed `libra-density-0.01.txt` content is the following:
+
+```
+Density	NodesNumber	Lambda	TxPackets	RxPackets	TxCount	RxCount	CollisionCount	TotalEnergyConsumption	EnergyPerBit	TotalThroughput	PDR	AvgHopCount
+1.28	128	0.01	12871	8936	22730	152065	174667	69036.9	0.0012	5709733134989.97	0.69	1.89
+d
+```
+
+### ALOHA and SFAMA simulations
+
+Similar to `LIBRA` simulations described above, the following scripts are available for `ALOHA` and `SFAMA` protocols: `aloha_grid_test.cc` and `sfama_grid_test.cc`.
+
+The simulation commands are similar to `LIBRA` as well:
+
+```
+./ns3 run "AlohaGridTest --lambda=0.01 --packet_size=800 --grid_size=10000 --range=3000 --n_nodes=128 --tx_power=60 --simStop=10000 --RngRun=0"
+```
+
+and
+
+```
+./ns3 run "SfamaGridTest --lambda=0.01 --packet_size=800 --grid_size=10000 --range=3000 --n_nodes=128 --tx_power=60 --simStop=10000 --RngRun=0"
+```
+
+To process raw trace-files after simulations, similar Python-scripts are available: `print_results_aloha.py` and `print_results_sfama.py`.
+
 
 --------------------------------------
 ## Legacy Documentation
@@ -122,6 +180,11 @@ Like any other network type, UWSN are susceptible to attacks. By implementing ja
 ### Information-Centric Integration
 We implement adapted Named Data Networking (NDN) techniques alongside specialized NDN protocols for UWSNs. By implementing these features, we can better depict and evaluate the improvements NDN can have in this environment. This integration consists of introducing interest and data structured packets, Pending Interest Tables, Forwarding Information Bases, and Context Storages for overall NDN inclusion that is specialized for underwater. Additionally, we implement this module through a packet demux on the physical layer, allowing for protocols to implement certain NDN features without completely revamping how our simulator functions.
 
+## References
+
+[1] Dugaev, D.; Peng, Z.; Luo, Y.; Pu, L. Reinforcement-Learning Based Dynamic Transmission Range Adjustment in Medium Access Control for Underwater Wireless Sensor Networks. Electronics 2020, 9, 1727. https://doi.org/10.3390/electronics9101727
+
+
 --------------------------------------
 #### License and Contact
 
@@ -131,3 +194,5 @@ All rights reserved.
 Robert Martin : <robert.martin@uconn.edu>
 
 Zheng Peng, Ph.D : <zheng@cs.ccny.cuny.edu>
+
+Dmitrii Dugaev : <ddugaev@gradcenter.cuny.edu>

@@ -194,8 +194,9 @@ private:
 	//index_ is the mac address of this node
 	double m_guardTime;  //need to be binded
 	double m_slotLen;
-    double m_rtsCtsAckNumSlotWait;
-    double m_maxPrTimeSec;
+
+	// Store data packet size value from the app
+	double m_packet_size = 50;
 
 	bool m_isInRound;
 	bool m_isInBackoff;
@@ -204,7 +205,6 @@ private:
 
 	int m_maxBurst; /*maximum number of packets in the train*/
 	double m_dataSendingInterval;
-    double m_lastRxDataSlotsNum;
 
 	//wait to send pkt at the beginning of next slot
 	AquaSimSFama_Wait_Send_Timer m_waitSendTimer;

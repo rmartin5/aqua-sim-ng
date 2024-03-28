@@ -47,7 +47,8 @@ public:
     UWPTYPE_LOC,
     UWPTYPE_SYNC,
     UWPTYPE_SYNC_BEACON,
-    UWPTYPE_NDN };
+    UWPTYPE_NDN,
+    UWPTYPE_MAC_LIBRA}; // Add mac_libra mac type
 
   MacHeader();
   static TypeId GetTypeId(void);
@@ -348,6 +349,98 @@ private:
   Vector m_nodePosition;
   double m_confidence;
 };  // class LocalizationHeader
+
+/**
+ * \brief mac-libra header
+ */
+class MacLibraHeader : public Header
+{
+public:
+	MacLibraHeader();
+  virtual ~MacLibraHeader();
+  static TypeId GetTypeId(void);
+
+  void SetPType(uint8_t m_ptype);
+  int GetPType();
+  void SetId(uint32_t m_header_id);
+  void SetHopCount(uint8_t m_hop_count);
+  void IncrementHopCount();
+
+  void SetSrcAddr (AquaSimAddress src_addr);
+  void SetDstAddr (AquaSimAddress dst_addr);
+  void SetSenderAddr (AquaSimAddress sender_addr);
+
+  AquaSimAddress GetSrcAddr ();
+  AquaSimAddress GetDstAddr ();
+  AquaSimAddress GetSenderAddr ();
+
+  void SetReward (double reward_value);
+  double GetReward ();
+
+  int GetHopCount ();
+
+  void SetRxPower (double rx_power);
+  void SetTxPower (double tx_power);
+  void SetDirectDistance (double direct_distance);
+  void SetNextHopDistance (double next_hop_distance);
+  void SetOptimalDistance (double m_optimal_distance);
+  void SetMaxHopsNumber (uint8_t m_max_hops_number);
+
+  double GetRxPower ();
+  double GetTxPower ();
+  double GetDirectDistance ();
+  double GetNextHopDistance ();
+  double GetOptimalDistance ();
+  uint8_t GetMaxHopsNumber ();
+
+  //inherited methods
+  virtual uint32_t GetSerializedSize(void) const;
+  virtual void Serialize (Buffer::Iterator start) const;
+  virtual uint32_t Deserialize (Buffer::Iterator start);
+  virtual void Print (std::ostream &os) const;
+  virtual TypeId GetInstanceTypeId(void) const;
+
+private:
+  // Packet type: 0 - data_packet, 1 - RREQ, 2 - RREP, 3 - ACK, 4 - INIT, 5 - RTS, 6 - CTS, 7 - DIRECT_REWARD
+  uint8_t m_ptype;
+  // Unique header ID
+  uint32_t m_header_id;
+  // Hop count
+  uint8_t m_hop_count = 0;
+  // Source address
+  AquaSimAddress m_src_addr;
+  // Destination address
+  AquaSimAddress m_dst_addr;
+  // Sender address to send back the reward to
+  AquaSimAddress m_sender_addr;
+  // Reward value
+  uint32_t m_reward = 0;
+  // Message ID the ACK is replying to
+  uint32_t m_ack_message_id = 0;
+
+  // Tx power for sending frame
+  uint64_t m_tx_power;
+
+  // Rx power for receiving frame
+  uint64_t m_rx_power = 0;
+
+  // Direct distance from source to destination
+  uint32_t m_direct_distance = 0;
+
+  // Next hop distance, needed for the propagation model
+  uint32_t m_next_hop_distance = 0;
+
+  // Optimal distance, calculated by the source
+  uint32_t m_optimal_distance = 0;
+
+  // Max number of hops, calculated by the source
+  uint8_t m_max_hops_number = 0;
+
+  // Store a multipler to convert from double to uint32/64 and back
+  double m_multiplier_64 = 10000000000000;
+  double m_multiplier_32 = 10000;
+
+};  // class MacLibraHeader
 
 } // namespace ns3
 
