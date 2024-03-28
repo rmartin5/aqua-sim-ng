@@ -68,7 +68,7 @@ After that, you should be able to run example scripts located under `src/aqua-si
 
 ### LIBRA MAC protocol example
 
-LIBRA MAC protocol is a MAC protocol for UWSNs with multi-hop transmission range control capabilities, powered by Reinforcement Learning for adaptive route selection. More description can be found in the paper [] (See `References` section down below).
+LIBRA MAC protocol is a MAC protocol for UWSNs with multi-hop transmission range control capabilities, powered by Reinforcement Learning for adaptive route selection. More description can be found in the paper [1] (See `References` section down below).
 
 To run LIBRA simulations, execute `libra_grid_test.cc` script from `examples/` folder by running:
 
