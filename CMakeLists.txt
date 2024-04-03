@@ -33,6 +33,9 @@ build_lib(
         model/aqua-sim-mac-goal.cc
         model/aqua-sim-mac-sfama.cc
         model/aqua-sim-mac-libra.cc
+        model/aqua-sim-mac-trumac.cc
+        model/aqua-sim-mac-jmac.cc
+        model/aqua-sim-mac-tdma.cc
         model/aqua-sim-mac-uwan.cc
         model/aqua-sim-rmac.cc
         model/aqua-sim-rmac-buffer.cc
@@ -52,6 +55,7 @@ build_lib(
         model/aqua-sim-routing-ddos.cc
         model/aqua-sim-attack-model.cc
         model/aqua-sim-trace-reader.cc
+        model/aqua-sim-time-tag.cc
         model/ndn/named-data.cc
         model/ndn/named-data-header.cc
         model/ndn/name-discovery.cc
@@ -103,6 +107,9 @@ build_lib(
         model/aqua-sim-mac-goal.h
         model/aqua-sim-mac-sfama.h
         model/aqua-sim-mac-libra.h
+        model/aqua-sim-mac-trumac.h
+        model/aqua-sim-mac-jmac.h
+        model/aqua-sim-mac-tdma.h
         model/aqua-sim-mac-uwan.h
         model/aqua-sim-rmac.h
         model/aqua-sim-rmac-buffer.h
@@ -123,6 +130,7 @@ build_lib(
         model/aqua-sim-routing-ddos.h
         model/aqua-sim-attack-model.h
         model/aqua-sim-trace-reader.h
+        model/aqua-sim-time-tag.h
         model/ndn/named-data.h
         model/ndn/named-data-header.h
         model/ndn/name-discovery.h
@@ -252,6 +260,26 @@ build_lib_example(
 build_lib_example(
     NAME SfamaGridTest
     SOURCE_FILES examples/sfama_grid_test.cc
+    LIBRARIES_TO_LINK ${libnetwork}
+                      ${libenergy}
+                      ${libmobility}
+                      ${libapplications}
+                      ${libaqua-sim-ng}
+)
+
+build_lib_example(
+    NAME TrumacTest
+    SOURCE_FILES examples/trumac_test.cc
+    LIBRARIES_TO_LINK ${libnetwork}
+                      ${libenergy}
+                      ${libmobility}
+                      ${libapplications}
+                      ${libaqua-sim-ng}
+)
+
+build_lib_example(
+    NAME JmacTest
+    SOURCE_FILES examples/jmac_test.cc
     LIBRARIES_TO_LINK ${libnetwork}
                       ${libenergy}
                       ${libmobility}

@@ -153,6 +153,9 @@ AquaSimPhyCmn::GetTypeId(void)
     .AddTraceSource("Tx", "A packet was transmitted.",
       MakeTraceSourceAccessor (&AquaSimPhyCmn::m_txLogger),
       "ns3::AquaSimPhy::TracedCallback")
+    .AddTraceSource("RxColl", "Count collision on Rx",
+      MakeTraceSourceAccessor (&AquaSimPhyCmn::m_rxCollTrace),
+      "ns3::AquaSimPhy::TracedCallback")
     ;
   return tid;
 }
@@ -477,6 +480,7 @@ AquaSimPhyCmn::PrevalidateIncomingPkt(Ptr<Packet> p)
     asHeader.SetErrorFlag(true);
     // Set the collision flag to true as well
     m_collision_flag = true;
+    m_rxCollTrace();
   }
   else {
       GetNetDevice()->SetTransmissionStatus(RECV);

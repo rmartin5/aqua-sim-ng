@@ -870,6 +870,291 @@ LocalizationHeader::GetInstanceTypeId(void) const
 }
 
 /*
+ * JMAC header
+ */
+JammingMacHeader::JammingMacHeader()
+{
+  // // Initialize schedule map
+  // // TODO: make the number of nodes a variable (it's fixed to 2 now)
+  // for (uint8_t i=0; i<2; i++)
+  // {
+  //   m_delays_ms.insert(std::make_pair(i, 65535));  // 2**16-1 is the maximum possible delay in ms - this means that the delay is NOT set, by default
+  // }
+}
+
+JammingMacHeader::~JammingMacHeader()
+{
+}
+
+TypeId
+JammingMacHeader::GetTypeId()
+{
+  static TypeId tid = TypeId("ns3::JammingMacHeader")
+    .SetParent<Header>()
+    .AddConstructor<JammingMacHeader>()
+  ;
+  return tid;
+}
+
+uint32_t
+JammingMacHeader::GetSerializedSize(void) const
+{
+	// DATA
+	if (m_ptype == 0)
+	{
+		// ptype + node_id [in bytes]
+		return 2;
+	}
+	// CC-request
+	if (m_ptype == 1)
+	{
+		return 2 + 3*4; // (x,y,z) coordinates each 4-byte long
+	}
+	// CS-reply (contains a schedule)
+	if (m_ptype == 2)
+	{
+		return 2 + 8 + 2*GetNodesAmount(); // 16-bits for every node (64 nodes max, currently)
+	}
+
+	// This should not happen
+  NS_FATAL_ERROR ("JammingMAC packet-type is invalid!");
+	return 0;
+}
+
+void
+JammingMacHeader::Serialize (Buffer::Iterator start) const
+{
+  Buffer::Iterator i = start;
+  i.WriteU8 ((uint8_t)(m_ptype));
+  i.WriteU8 ((uint8_t)(m_node_id));
+  if (m_ptype == 2)
+  {
+    // Serialize node_list
+    i.WriteU64(m_node_list);
+    // Serialize the schedule
+    for (uint8_t j=0; j<64; j++)
+    {
+      if (GetNodeBit(j) == 1)
+      {
+        i.WriteU16(m_delays_ms.at(j));
+      }
+    }
+  }
+  if (m_ptype == 1)
+  {
+    // serialize coordinates
+    i.WriteU32(m_x_coord);
+    i.WriteU32(m_y_coord);
+    i.WriteU32(m_z_coord);
+  }
+}
+
+uint32_t
+JammingMacHeader::Deserialize (Buffer::Iterator start)
+{
+  Buffer::Iterator i = start;
+  m_ptype = i.ReadU8();
+  m_node_id = i.ReadU8();
+  if (m_ptype == 2)
+  {
+    // Deserialize node_list
+    m_node_list = i.ReadU64();
+    // Deserialize the schedule
+    for (uint8_t j=0; j<64; j++)
+    {
+      if (GetNodeBit(j) == 1)
+      {
+        m_delays_ms.insert(std::make_pair(j, i.ReadU16()));
+      }
+    }
+  }
+  if (m_ptype == 1)
+  {
+    m_x_coord = i.ReadU32();
+    m_y_coord = i.ReadU32();
+    m_z_coord = i.ReadU32();
+  }
+  return GetSerializedSize();
+}
+
+void
+JammingMacHeader::Print (std::ostream &os) const
+{
+  os << "JammingMAC Header: ";
+
+  os << "PType=" << int(m_ptype) << " ";
+  os << "\n";
+}
+
+TypeId
+JammingMacHeader::GetInstanceTypeId(void) const
+{
+  return GetTypeId();
+}
+
+void
+JammingMacHeader::SetPType(uint8_t ptype)
+{
+	m_ptype = ptype;
+}
+
+uint8_t
+JammingMacHeader::GetPType()
+{
+	return m_ptype;
+}
+
+void
+JammingMacHeader::SetSchedule(uint8_t node_id, uint16_t delay_ms)
+{
+  m_delays_ms.insert(std::make_pair(node_id, delay_ms));
+  SetNodeBit(node_id);
+}
+
+uint16_t
+JammingMacHeader::GetSchedule(uint8_t node_id)
+{
+	return m_delays_ms.at(node_id);
+}
+
+void
+JammingMacHeader::SetCoordinates(Vector coords)
+{
+  m_x_coord = coords.x * 1000000;
+  m_y_coord = coords.y * 1000000;
+  m_z_coord = coords.z * 1000000;
+}
+
+Vector
+JammingMacHeader::GetCoordinates()
+{
+  Vector coords = Vector((double) m_x_coord/1000000, (double) m_y_coord/1000000, (double) m_z_coord/1000000);
+  return coords;
+}
+
+void
+JammingMacHeader::SetNodeBit(uint8_t node_id)
+{
+  int mask = 1 << node_id;  // node_id serves as position
+  m_node_list = (m_node_list & ~mask) | ((1 << node_id) & mask);
+}
+
+uint8_t
+JammingMacHeader::GetNodeBit(uint8_t node_id) const
+{
+  return (((1 << 1) - 1) & (m_node_list >> node_id));
+}
+
+void
+JammingMacHeader::SetNodeId(uint8_t node_id)
+{
+  m_node_id = node_id;
+}
+
+uint8_t
+JammingMacHeader::GetNodeId()
+{
+  return m_node_id;
+}
+
+uint8_t
+JammingMacHeader::GetNodesAmount() const
+{
+  uint8_t count = 0;
+  uint64_t n = m_node_list;
+  while (n)
+  { 
+    count += n & 1; 
+    n >>= 1; 
+  }
+  return count;
+}
+
+/*
+ * TRUMAC header
+ */
+TrumacHeader::TrumacHeader()
+{
+}
+
+TrumacHeader::~TrumacHeader()
+{
+}
+
+TypeId
+TrumacHeader::GetTypeId()
+{
+  static TypeId tid = TypeId("ns3::TrumacHeader")
+    .SetParent<Header>()
+    .AddConstructor<TrumacHeader>()
+  ;
+  return tid;
+}
+
+uint32_t
+TrumacHeader::GetSerializedSize(void) const
+{
+  return 1+1; // ptype + next_sender_id
+}
+
+void
+TrumacHeader::Serialize (Buffer::Iterator start) const
+{
+  Buffer::Iterator i = start;
+  i.WriteU8 ((uint8_t)(m_ptype));
+  i.WriteU8 ((uint8_t)(m_next_sender_id));
+}
+
+uint32_t
+TrumacHeader::Deserialize (Buffer::Iterator start)
+{
+  Buffer::Iterator i = start;
+  m_ptype = i.ReadU8();
+  m_next_sender_id = i.ReadU8();
+  return GetSerializedSize();
+}
+
+void
+TrumacHeader::Print (std::ostream &os) const
+{
+  os << "TR-MAC Header: ";
+
+  os << "PType=" << int(m_ptype) << " ";
+  os << "NextId=" << int(m_next_sender_id) << " ";
+  os << "\n";
+}
+
+TypeId
+TrumacHeader::GetInstanceTypeId(void) const
+{
+  return GetTypeId();
+}
+
+void
+TrumacHeader::SetPType(uint8_t ptype)
+{
+	m_ptype = ptype;
+}
+
+uint8_t
+TrumacHeader::GetPType()
+{
+	return m_ptype;
+}
+
+void
+TrumacHeader::SetNextNodeId(uint8_t next_node_id)
+{
+  m_next_sender_id = next_node_id;
+}
+
+uint8_t
+TrumacHeader::GetNextNodeId()
+{
+  return m_next_sender_id;
+}
+
+/*
  * MacLibraHeader
  */
 MacLibraHeader::MacLibraHeader()

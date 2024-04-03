@@ -193,6 +193,7 @@ private:
 
   ns3::TracedCallback<Ptr<Packet>, double > m_rxLogger;
   ns3::TracedCallback<Ptr<Packet>, double > m_txLogger;
+  ns3::TracedCallback<> m_rxCollTrace;
 
   // Collision flag in order to monitor whether there have been incoming packets wihtin the TxTime delay of the original packet.
   // If yes, then mark the original packet as collided as well.

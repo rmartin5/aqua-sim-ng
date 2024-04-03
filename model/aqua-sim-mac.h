@@ -114,6 +114,9 @@ public:
 
   virtual int64_t AssignStreams (int64_t stream) = 0;
 
+  TracedCallback<uint32_t> m_queueSizeTrace;
+  TracedCallback<uint32_t> m_e2eDelayTrace;
+
 private:
   // to receive packet from upper layer and lower layer
   //we hide this interface and demand derived classes to
