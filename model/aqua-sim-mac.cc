@@ -95,6 +95,12 @@ AquaSimMac::GetTypeId(void)
       "Number of retransmitted data packets",
       MakeTraceSourceAccessor(&AquaSimMac::m_dataPktRetransmissions),
       "ns3::TracedValueCallback::Uint32")
+  .AddTraceSource ("QueueSizeTrace",
+                    "Trace current send-queue size",
+                    MakeTraceSourceAccessor (&AquaSimMac::m_queueSizeTrace), "ns3::Packet::TracedCallback")
+  .AddTraceSource ("E2EDelayTrace",
+                    "Trace current end-to-end delay of a packet",
+                    MakeTraceSourceAccessor (&AquaSimMac::m_e2eDelayTrace), "ns3::Packet::TracedCallback")
   ;
   return tid;
 }

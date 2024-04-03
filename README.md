@@ -66,7 +66,7 @@ After that, you should be able to run example scripts located under `src/aqua-si
 --------------------------------------
 ## Running Examples
 
-### LIBRA MAC protocol example
+### LIBRA MAC protocol
 
 LIBRA MAC protocol is a MAC protocol for UWSNs with multi-hop transmission range control capabilities, powered by Reinforcement Learning for adaptive route selection. More description can be found in the paper [1] (See `References` section down below).
 
@@ -104,7 +104,6 @@ After executing the script, the parsed `.txt` file should be generated that will
 ```
 Density	NodesNumber	Lambda	TxPackets	RxPackets	TxCount	RxCount	CollisionCount	TotalEnergyConsumption	EnergyPerBit	TotalThroughput	PDR	AvgHopCount
 1.28	128	0.01	12871	8936	22730	152065	174667	69036.9	0.0012	5709733134989.97	0.69	1.89
-d
 ```
 
 ### ALOHA and SFAMA simulations
@@ -125,6 +124,111 @@ and
 
 To process raw trace-files after simulations, similar Python-scripts are available: `print_results_aloha.py` and `print_results_sfama.py`.
 
+### TRUMAC protocol
+
+TRUMAC is a token-ring based MAC protocol for UWNs that leverages spatial-temporary diversity of underwater channel to improve channel utilization under high traffic loads. Please refer to [TBD] for more details.
+
+To repeat simulations from [TBD], `trumac_test.cc` simulation script is available. The script compares `TRUMAC`, `TDMA`, and `ALOHA` against various network sizes and traffic rates. Here is an example:
+
+```
+./ns3 run "TrumacTest --seed=0 --psize=100 --nodes=40 --simStop=1000 --mac=trumac --rate=120 --dist=120 --algo=0"
+```
+
+where:
+
+`--seed`: seed for pseudo-random generator function
+
+`--psize:`: packet size, bytes
+
+`--nodes:`: number of nodes in network
+
+`--simStop`: total simulation time, seconds
+
+`--mac`: select between `trumac`, `tdma`, or `aloha` protocols
+
+`--rate`: rate of CBR traffic, bps
+
+`--dist:`: average distance between any pair of nodes
+
+`--algo`: next-sender-selection algorithm for TRUMAC: `0` - random selection; `1` - nearest-neighbor TSP algorithm
+
+After running the script, a simulation-summary `results_trumac.txt` file should appear. The summary contains 7 columns, with the following metrics:
+
+`1 - total number of packets originated`
+
+`2 - total number of packets received by the app`
+
+`3 - total number of packets transmitted to PHY`
+
+`4 - total number of packets received from PHY`
+
+`5 - total number of collisions at PHY`
+
+`6 - average MAC send-queue size`
+
+`7 - average E2E packet delay, ms`
+
+To run multiple simulation instances, and aggregate the results, please refer to `scripts/runTRUMAC.py` script.
+
+### JMAC protocol
+
+Jamming MAC (JMAC) protocol is a security-focused MAC protocol for UWSNs that aims to provide communication security in a shared unencrypted underwater channel. JMAC computes a pair-sequence of transmission schedules that are recoverable in desirable area, and not recoverable in the adversary area. Please refer to [TBD] for more details.
+
+To repeat simulations from [TBD], `jmac_test.cc` simulation script is available. The script compares `JMAC` and `ALOHA` protocols in a specific simulation setting with `N` sensor nodes and `M` gateways, staticly allocated at the bottom and the surface, correspondingly. The script compares performance of `JMAC` and `ALOHA` in terms of PDR, throughput, and communication security (vulnerable area) provided. Here is an example:
+
+```
+./ns3 run "JmacTest --seed=1 --psize=400 --rate=120 --nodes=4 --mac=jmac --sinks=1 --simStop=1000 --center_x=1000 --center_z=1000 --radius=300 --depth=400 --epochTime=10"
+```
+
+where:
+
+`--seed`: seed for pseudo-random generator function
+
+`--psize:`: packet size, bytes
+
+`--rate`: rate of CBR traffic, bps
+
+`--nodes:`: number of nodes in network
+
+`--mac`: select between `jmac`, or `aloha` protocols
+
+`--sinks:`: number of gateways / sinks
+
+`--simStop`: total simulation time, seconds
+
+`--center_x:`: center of a circular bottom: x-coordinate, meters
+
+`--center_z:`: center of a circular bottom: z-coordinate, meters
+
+`--radius:`: radius of random nodes at bottom, meters
+
+`--depth:`: depth of the bottom, meters
+
+`--epochTime:`: Time in-between 2 CC-requests at a node, seconds
+
+After running the script, a simulation-summary `jmac_results.txt` file should appear. The summary contains 9 columns, with the following metrics:
+
+`1 - total size of vulnerable area`
+
+`2 - total energy consumed, joules`
+
+`3 - total number of packets originated`
+
+`4 - total number of packets received by the app`
+
+`5 - total number of packets scheduled for transmission at MAC (JMAC only)`
+
+`6 - total number of packets sent to PHY`
+
+`7 - total number of packets received from PHY`
+
+`8 - average MAC send-queue size`
+
+`9 - average E2E packet delay, ms`
+
+To run multiple simulation instances, and aggregate the results, please refer to `scripts/runJMAC.py` script.
+
+**Note:** Current JMAC implementation (see line `553` in `aqua-sim-mac-jmac.cc`) does not have the `auction` algorithm presented in the paper [TBD]. For the instructions on how to implement the `auction` algorithm, please refer to [TBD], and to the MATLAB code [TBD].
 
 --------------------------------------
 ## Legacy Documentation

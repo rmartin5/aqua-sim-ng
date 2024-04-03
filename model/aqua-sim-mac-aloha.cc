@@ -23,6 +23,7 @@
 #include "aqua-sim-pt-tag.h"
 #include "aqua-sim-header.h"
 #include "aqua-sim-header-mac.h"
+#include "aqua-sim-time-tag.h"
 
 #include "ns3/packet.h"
 #include "ns3/log.h"
@@ -186,7 +187,13 @@ bool AquaSimAloha::TxProcess(Ptr<Packet> pkt)
 	pkt->AddHeader(alohaH);
 	pkt->AddHeader(asHeader);
 
+  // Attach a timestamp tag to calculate E2E delay
+  AquaSimTimeTag timeTag;
+  timeTag.SetTime(Simulator::Now());
+  pkt->AddPacketTag(timeTag);
+  //
   PktQ_.push(pkt);//push packet to the queue
+  m_queueSizeTrace(PktQ_.size());
 
   //fill the next hop when sending out the packet;
   if(ALOHA_Status == PASSIVE && PktQ_.size() >= 1 && !m_blocked )
@@ -354,13 +361,18 @@ bool AquaSimAloha::RecvProcess(Ptr<Packet> pkt)
   else if(alohaH.GetPType() == AlohaHeader::DATA) {
     //process Data packet
     if( recver == myAddr || recver == AquaSimAddress::GetBroadcast() ) {
-                        pkt->RemoveHeader(asHeader);
-                        auto cpkt = pkt->Copy();
-                        pkt->AddHeader(asHeader);
-                        cpkt->RemoveHeader(alohaH);
-                        asHeader.SetSize(asHeader.GetSize() - alohaH.GetSize());
-                        cpkt->AddHeader(asHeader);
-                        SendUp(cpkt);
+      // trace the E2E delay
+      AquaSimTimeTag timeTag;
+      pkt->RemovePacketTag(timeTag);
+      m_e2eDelayTrace((Simulator::Now() - timeTag.GetTime()).GetMilliSeconds());
+      //
+      pkt->RemoveHeader(asHeader);
+      auto cpkt = pkt->Copy();
+      pkt->AddHeader(asHeader);
+      cpkt->RemoveHeader(alohaH);
+      asHeader.SetSize(asHeader.GetSize() - alohaH.GetSize());
+      cpkt->AddHeader(asHeader);
+      SendUp(cpkt);
 
 			if ( m_AckOn && (recver != AquaSimAddress::GetBroadcast()))
 	    	ReplyACK(pkt->Copy());

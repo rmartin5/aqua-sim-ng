@@ -351,6 +351,87 @@ private:
 };  // class LocalizationHeader
 
 /**
+ * \brief JMAC header
+ */
+class JammingMacHeader : public Header
+{
+public:
+	JammingMacHeader();
+  virtual ~JammingMacHeader();
+  static TypeId GetTypeId(void);
+
+  void SetPType(uint8_t m_ptype);
+  uint8_t GetPType();
+
+  // Set "schedule" - delay before a packet is transmitted by given node_id
+  void SetSchedule(uint8_t node_id, uint16_t delay_ms);
+  uint16_t GetSchedule(uint8_t node_id);
+
+  // Set/get node_id for cc-request
+  void SetNodeId(uint8_t node_id);
+  uint8_t GetNodeId();
+
+  // Set node-bit in the schedule
+  void SetNodeBit(uint8_t node_id);
+  uint8_t GetNodeBit(uint8_t node_id) const;
+  // Return an amount of nodes in the schedule (node_list)
+  uint8_t GetNodesAmount() const;
+
+  // Set/get coordinates from request/reply
+  void SetCoordinates(Vector coords);
+  Vector GetCoordinates();
+
+  //inherited methods
+  virtual uint32_t GetSerializedSize(void) const;
+  virtual void Serialize (Buffer::Iterator start) const;
+  virtual uint32_t Deserialize (Buffer::Iterator start);
+  virtual void Print (std::ostream &os) const;
+  virtual TypeId GetInstanceTypeId(void) const;
+
+private:
+  // Packet type: 0 - DATA, 1 - CC-request, 2 - CS-reply
+  uint8_t m_ptype;
+  uint8_t m_node_id;
+  // Node list for CS-header
+  uint64_t m_node_list = 0;
+  // Schedule (delay) in milliseconds for given nodes
+  std::map<uint8_t, uint16_t> m_delays_ms;
+  // store coordinates for cc-request
+  uint32_t m_x_coord;
+  uint32_t m_y_coord;
+  uint32_t m_z_coord;
+};  // class JammingMacHeader
+
+/**
+ * \brief TRUMAC header
+ */
+class TrumacHeader : public Header
+{
+public:
+	TrumacHeader();
+  virtual ~TrumacHeader();
+  static TypeId GetTypeId(void);
+
+  void SetPType(uint8_t m_ptype);
+  uint8_t GetPType();
+
+  void SetNextNodeId(uint8_t node_id);
+  uint8_t GetNextNodeId();
+
+  //inherited methods
+  virtual uint32_t GetSerializedSize(void) const;
+  virtual void Serialize (Buffer::Iterator start) const;
+  virtual uint32_t Deserialize (Buffer::Iterator start);
+  virtual void Print (std::ostream &os) const;
+  virtual TypeId GetInstanceTypeId(void) const;
+
+private:
+  // Packet type: 0 - DATA, 1 - Token
+  uint8_t m_ptype;
+  uint8_t m_next_sender_id;
+};  // class TrumacHeader
+
+/**
  * \brief mac-libra header
  */
 class MacLibraHeader : public Header
