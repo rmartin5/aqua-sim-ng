@@ -67,7 +67,7 @@ AquaSimModulation::PktSize (double txTime) {
 
 double
 AquaSimModulation::Per(int pktSize) {
-  return 1 - std::pow(m_ber, pktSize);
+  return 1 - std::pow(1 - m_ber, pktSize);
 }
 
 }  // namespace ns3
