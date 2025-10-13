@@ -887,7 +887,7 @@ AquaSimSFama::BackoffTimerProcess()
 void
 AquaSimSFama::WaitSendTimerProcess(Ptr<Packet> pkt)
 {
-	if( NULL == pkt ) {
+	if( pkt == nullptr) {
     m_datasendTimer.SetFunction(&AquaSimSFama_DataSend_Timer::expire,&m_datasendTimer);
     m_datasendTimer.Schedule(Seconds(0.00001));
 //    m_datasendTimer.Schedule(Seconds(0.00000001));

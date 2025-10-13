@@ -66,7 +66,7 @@ AquaSimRoutingBuffer::AddNewPacket(Ptr<Packet> p)
 	t1->packet=p;
 	t1->next=NULL;
 
-	if(m_head==NULL) {
+	if(m_head==nullptr) {
 		// printf("head is empty ok\n");
 		m_tail=t1;
 		m_head=t1;
@@ -120,7 +120,7 @@ AquaSimRoutingBuffer::CopyNewPacket(Ptr<Packet> pkt){
 	t1->packet=p;
 	t1->next=NULL;
 
-	if(m_head==NULL) {
+	if(m_head==nullptr) {
 		m_tail=t1;
 		m_head=t1;
 	}
@@ -284,13 +284,13 @@ void
 AquaSimRoutingBuffer::DoDispose()
 {
 	Ptr<routing_buffer_cell> tmp;
-	while (m_head != NULL) {
+	while (m_head != nullptr) {
 		m_head = m_head->next;
 		tmp->packet=0;
 		tmp=0;//delete tmp;
 		tmp = m_head;
 	}
-	while (m_tail != NULL) {
+	while (m_tail != nullptr) {
 		m_tail = m_tail->next;
 		tmp->packet=0;
 		tmp=0;//delete tmp;

@@ -189,7 +189,7 @@ void OnOffNDApplication::StopApplication () // Called at time specified by Stop
   NS_LOG_FUNCTION (this);
 
   CancelEvents ();
-  if(m_socket != 0)
+  if(m_socket != nullptr)
     {
       m_socket->Close ();
     }

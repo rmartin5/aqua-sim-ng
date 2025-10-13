@@ -138,7 +138,7 @@ AquaSimChannel::Recv(Ptr<Packet> p, Ptr<AquaSimPhy> phy)
   std::cout << "\n";*/
 
   NS_LOG_FUNCTION(this << p << phy);
-  NS_ASSERT(p != NULL || phy != NULL);
+  NS_ASSERT(p != nullptr || phy != nullptr);
   return SendUp(p,phy);
 }
 
@@ -308,7 +308,7 @@ Ptr<MobilityModel>
 AquaSimChannel::GetMobilityModel(Ptr<AquaSimNetDevice> device)
 {
   Ptr<MobilityModel> model = device->GetNode()->GetObject<MobilityModel>();
-  if (model == 0)
+  if (model == nullptr)
     {
       NS_LOG_DEBUG("MobilityModel does not exist for device " << device);
     }

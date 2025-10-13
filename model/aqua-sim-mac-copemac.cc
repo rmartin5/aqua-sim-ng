@@ -185,7 +185,7 @@ RevQueues::Push(int RevID, Time StartTime, Time EndTime,
 
   RevElem* tmp = new RevElem(RevID, StartTime, EndTime, Reservor, rev_type);
 
-  if( pkt != NULL ) {
+  if( pkt != nullptr ) {
       tmp->m_sendTimer = new PktSendTimer(mac_, pkt);
   }
 
@@ -793,7 +793,7 @@ AquaSimCopeMac::StartHandShake()
 {
   /*if( !m_PktWH.IsEmpty() ) {*/
     Ptr<Packet> pkt = MakeMultiRev();
-    if( pkt == NULL )
+    if( pkt == nullptr )
 	return;
     AquaSimHeader ash;
     pkt->PeekHeader(ash);
@@ -1305,7 +1305,7 @@ AquaSimCopeMac::ProcessDataAck(Ptr<Packet> pkt)
 	      if( m_AckWaitingList[pkt_id].m_ackWaitTimer.IsRunning() ) {
 		  m_AckWaitingList[pkt_id].m_ackWaitTimer.Cancel();
 	      }
-	      if( m_AckWaitingList[pkt_id].m_pkt!= NULL ) {
+	      if( m_AckWaitingList[pkt_id].m_pkt!= nullptr ) {
 		  m_AckWaitingList[pkt_id].m_pkt=0;
 	      }
 	  }
@@ -1343,7 +1343,7 @@ AquaSimCopeMac::ClearAckWaitingList()
   std::set<int> DelList;
   for(std::map<int, AckWaitTimer>::iterator pos = m_AckWaitingList.begin();
 		  pos!=m_AckWaitingList.end(); pos++) {
-      if( pos->second.m_pkt == NULL )
+      if( pos->second.m_pkt == nullptr )
 	  DelList.insert(pos->first);
   }
 

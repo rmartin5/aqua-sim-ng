@@ -203,7 +203,7 @@ AquaSimPhyCmn::AddModulation(Ptr<AquaSimModulation> modulation, std::string modu
   * format:  phyobj add-modulation modulation_name modulation_obj
   * the first added modulation scheme will be the default one
   */
-  if (modulation == NULL || modulationName.empty())
+  if (modulation == nullptr || modulationName.empty())
     NS_LOG_ERROR("AddModulation NULL value for modulation " << modulation << " or name " << modulationName);
   else if (m_modulations.count(modulationName) > 0)
     NS_LOG_WARN("Duplicate modulations");
@@ -223,7 +223,7 @@ AquaSimPhyCmn::UpdateTxEnergy(Time txTime) {
 	NS_LOG_FUNCTION(this << "Currently not implemented");
 	double startTime = Simulator::Now().GetSeconds(), endTime = Simulator::Now().GetSeconds() + txTime.GetSeconds();
 
-	if (NULL != EM()) {
+	if (EM() != nullptr) {
 		if (startTime >= m_updateEnergyTime) {
 			EM()->DecrIdleEnergy(startTime - m_updateEnergyTime);
 			m_updateEnergyTime = startTime;
@@ -243,7 +243,7 @@ AquaSimPhyCmn::UpdateRxEnergy(Time txTime, bool errorFlag) {
   double startTime = Simulator::Now().GetSeconds();
   double endTime = startTime + txTime.GetSeconds();
 
-  if (EM() == NULL) {
+  if (EM() == nullptr) {
     NS_LOG_FUNCTION(this << " No EnergyModel set.");
     return;
   }
@@ -274,7 +274,7 @@ AquaSimPhyCmn::UpdateRxEnergy(Time txTime, bool errorFlag) {
 void
 AquaSimPhyCmn::UpdateIdleEnergy()
 {
-  if (!m_PoweredOn || EM() == NULL )
+  if (!m_PoweredOn || EM() == nullptr )
     return;
 
   if (Simulator::Now().GetSeconds() > m_updateEnergyTime && m_PoweredOn) {
@@ -410,7 +410,7 @@ AquaSimPhyCmn::Recv(Ptr<Packet> p)
 		 GetNetDevice()->GetAddress() << ")");
     p = PrevalidateIncomingPkt(p);
 
-    if (p != NULL) {
+    if (p != nullptr) {
       //put the packet into the incoming queue
       m_sC->AddNewPacket(p);
     }
@@ -544,7 +544,7 @@ AquaSimPhyCmn::PktTransmit(Ptr<Packet> p, int channelId) {
     return false;
   }
 
-  if (GetNetDevice()->GetTransmissionStatus() == SLEEP || (NULL != EM() && EM()->GetEnergy() <= 0))
+  if (GetNetDevice()->GetTransmissionStatus() == SLEEP || (EM() != nullptr && EM()->GetEnergy() <= 0))
   {
     NS_LOG_DEBUG("Unable to reach phy layer (sleep/disable)");
     p = 0;
@@ -677,7 +677,7 @@ AquaSimPhyCmn::PowerOn() {
     m_PoweredOn = true;
     GetNetDevice()->SetTransmissionStatus(NIDLE);
     //SetPhyStatus(PHY_IDLE);
-    if (EM() != NULL) {
+    if (EM() != nullptr) {
 	    //minus the energy consumed by power on
 	    EM()->SetEnergy(std::max(0.0, EM()->GetEnergy() - m_EnergyTurnOn));
 	    m_updateEnergyTime = std::max(Simulator::Now().GetSeconds(), m_updateEnergyTime);
@@ -696,7 +696,7 @@ AquaSimPhyCmn::PowerOff() {
     m_PoweredOn = false;
     GetNetDevice()->SetTransmissionStatus(SLEEP);
     //SetPhyStatus(PHY_SLEEP);
-    if (EM() == NULL)
+    if (EM() == nullptr)
 	    return;
 
 

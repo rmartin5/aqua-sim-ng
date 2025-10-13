@@ -159,7 +159,7 @@ AquaSimRouting::SendDown(Ptr<Packet> p, AquaSimAddress nextHop, Time delay)
   //cmh->uw_flag() = true;
   //cmh->addr_type() = NS_AF_INET;
   NS_LOG_FUNCTION(this << p << nextHop << delay);
-  NS_ASSERT(p != NULL);
+  NS_ASSERT(p != nullptr);
 
   //add header to packet
   AquaSimHeader header;

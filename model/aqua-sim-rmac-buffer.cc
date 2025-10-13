@@ -49,7 +49,7 @@ TransmissionBuffer::AddNewPacket(Ptr<Packet> p){
   t1->packet=p;
   t1->next=NULL;
 
-  if(head_==NULL) {
+  if(head_==nullptr) {
      tail_=t1;
      head_=t1;
   }
@@ -87,7 +87,7 @@ TransmissionBuffer::dehead(){
    head_=t1;
    num_of_packet--;
 
-   if(head_==NULL) tail_=NULL;
+   if(head_==nullptr) tail_=NULL;
    t2=0;
    return p;
 }
@@ -120,7 +120,7 @@ TransmissionBuffer::DeletePacket(Ptr<Packet> p){
     head_=t2->next;
     num_of_packet--;
 
-   if(head_==NULL) tail_=NULL;
+   if(head_==nullptr) tail_=NULL;
 
     p=0;
     t2=0;//delete t2;
@@ -188,7 +188,7 @@ TransmissionBuffer::ToBeFull(){
 bool
 TransmissionBuffer::IsEnd(){
   if (lock_p) return (lock_p->next==current_p);
-  return(NULL==current_p);
+  return(current_p==nullptr);
 }
 
 
@@ -204,7 +204,7 @@ TransmissionBuffer::DoDispose()
   NS_LOG_FUNCTION(this);
 
   Ptr<buffer_cell> tmp = head_;
-  while(head_ != NULL) {
+  while(head_ != nullptr) {
     head_ = head_->next;
     tmp->packet=0;
     tmp=0;
@@ -212,7 +212,7 @@ TransmissionBuffer::DoDispose()
   }
 
   tmp = current_p;
-  while(current_p != NULL) {
+  while(current_p != nullptr) {
     current_p = current_p->next;
     tmp->packet=0;
     tmp=0;
@@ -220,7 +220,7 @@ TransmissionBuffer::DoDispose()
   }
 
   tmp = lock_p;
-  while(lock_p != NULL) {
+  while(lock_p != nullptr) {
     lock_p = lock_p->next;
     tmp->packet=0;
     tmp=0;
@@ -228,7 +228,7 @@ TransmissionBuffer::DoDispose()
   }
 
   tmp = tail_;
-  while(tail_ != NULL) {
+  while(tail_ != nullptr) {
     tail_ = tail_->next;
     tmp->packet=0;
     tmp=0;

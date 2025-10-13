@@ -93,7 +93,7 @@ void
 AquaSimTrafficGen::StartApplication()
 {
   NS_LOG_FUNCTION(this);
-  if (!m_socket) {
+  if (m_socket != nullptr) {
     m_socket = Socket::CreateSocket (GetNode(), m_tid);
     if (Inet6SocketAddress::IsMatchingType (m_peer)) {
       if (m_socket->Bind6 () == -1)
@@ -120,7 +120,7 @@ void
 AquaSimTrafficGen::StopApplication()
 {
   NS_LOG_FUNCTION(this);
-  if (m_socket != 0) {
+  if (m_socket != nullptr) {
     m_socket->Close();
   }
   else {

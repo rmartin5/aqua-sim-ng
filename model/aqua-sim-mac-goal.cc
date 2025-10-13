@@ -365,7 +365,7 @@ AquaSimGoal::MakeReqPkt(std::set<Ptr<Packet> > DataPktSet, Time DataSendTime, Ti
 	VBHeader vbh;
 	Ptr<Packet> DataPkt = *(DataPktSet.begin());
 
-	if (DataPkt == NULL)
+	if (DataPkt == nullptr)
 	{
 		NS_LOG_DEBUG("MakeReqPkt: No DataPkt found. "
 				"May be a potential problem for target position.");
