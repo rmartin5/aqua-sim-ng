@@ -20,7 +20,7 @@ Work supported by the UWSN Lab at University of Connecticut.
 ## Requirements
 This code is meant to be an add-on to current NS-3 software and therefore requires NS-3 and all pre-requirements of said software.
 
-Current recommended NS-3 version is `3.40`. The following system requirements must be met:
+Current recommended NS-3 version is `3.41`. The following system requirements must be met:
 
 - `gcc-11`, `g++-11` or higher for Linux
 - `clang` version `15.0.0` for Mac OS
@@ -33,14 +33,14 @@ Current recommended NS-3 version is `3.40`. The following system requirements mu
 
 To build current version of `aqua-sim-ng`, please follow these steps:
 
-- download and install `ns-3.40`:
+- download and install `ns-3.41`:
 
 ```
 mkdir workspace
 cd workspace
-wget https://www.nsnam.org/releases/ns-allinone-3.40.tar.bz2
-tar xvf ns-allinone-3.40.tar.bz2
-cd ns-allinone-3.40/ns-3.40/
+wget https://www.nsnam.org/releases/ns-allinone-3.41.tar.bz2
+tar xvf ns-allinone-3.41.tar.bz2
+cd ns-allinone-3.41/ns-3.41/
 ./ns3 clean
 ./ns3 configure --build-profile=debug --enable-examples --enable-tests --disable-python --disable-werror
 ./ns3 build
