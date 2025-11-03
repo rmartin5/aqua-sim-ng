@@ -680,7 +680,7 @@ AquaSimVBF::CreatePacket()
 
 	Ptr<Packet> pkt = Create<Packet>();
 
-	if (pkt==NULL) return NULL;
+	if (pkt==nullptr) return NULL;
 
   AquaSimHeader ash;
   VBHeader vbh;

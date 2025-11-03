@@ -107,7 +107,7 @@ AquaSimFloodingRouting::Recv(Ptr<Packet> packet, const Address &dest, uint16_t p
   vbf_neighborhood *hashPtr= PktTable.GetHash(vbh.GetSenderAddr(), packet->GetUid());
 	// Received this packet before ?
 
-	if (hashPtr != NULL) {
+	if (hashPtr != nullptr) {
     packet=0;
     return false;
   }
@@ -219,7 +219,7 @@ AquaSimFloodingRouting::CreatePacket()
 {
 	Ptr<Packet> pkt = Create<Packet>();
 
-	if (pkt==NULL) return NULL;
+	if (pkt==nullptr) return NULL;
 
   AquaSimHeader ash;
   //ash.size(36);

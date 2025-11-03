@@ -512,7 +512,7 @@ Ptr<Packet>
 AquaSimDDBR::CreatePacket()
 {
   Ptr<Packet> pkt = Create<Packet>();
-  if (pkt==NULL) return NULL;
+  if (pkt==nullptr) return NULL;
   AquaSimHeader ash;
   VBHeader vbh;
   vbh.SetTs(Simulator::Now().ToDouble(Time::S));
@@ -981,7 +981,7 @@ MMyPacketQueue::update(Ptr<Packet> p, double t, int pckett)
     if (depthval != 10)// && ((*iter)->pcket > curID))
     {
        NS_LOG_DEBUG("waiting packet time expired.OR not present..low curID");
-        if ((((*iter)->m_p) == 0) || (((*iter)->m_sendTime) < d_time))
+        if ((((*iter)->m_p) == nullptr) || (((*iter)->m_sendTime) < d_time))
         {
            NS_LOG_DEBUG("waiting packet time expired.OR not present"<< d_time<< " (*iter)->m_sendTime: "<<(*iter)->m_sendTime);
            m_dq.erase(iter);
@@ -1114,7 +1114,7 @@ AquaSimDDBR::Send_Callback(void)
   q = m_pq.front();
   // g = m_pq.front();
   m_pq.pop();
-  if (q->m_p == 0){
+  if (q->m_p == nullptr){
       // NS_LOG_DEBUG("the packet has lost");
       return;
   }
@@ -1131,7 +1131,7 @@ AquaSimDDBR::Send_Callback(void)
   {
     q = m_pq.front();
       m_pq.pop();
-  if (q->m_p == 0){
+  if (q->m_p == nullptr){
       return;
     }
       m_latest = q->m_sendTime;

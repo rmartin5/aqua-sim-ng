@@ -714,7 +714,7 @@ AquaSimDBR::MakeBeacon(void)
   ptag.SetPacketType(AquaSimPtTag::PT_DBR);
 
   Ptr<MobilityModel> model = GetNetDevice()->GetNode()->GetObject<MobilityModel>();
-  if (model == 0)
+  if (model == nullptr)
     {
       NS_LOG_DEBUG("MobilityModel does not exist for device " << GetNetDevice());
     }
@@ -841,7 +841,7 @@ AquaSimDBR::ForwardPacket(Ptr<Packet> p, int flag)
 	double delay = 0.0;
 
 	Ptr<MobilityModel> model = GetNetDevice()->GetNode()->GetObject<MobilityModel>();
-  if (model == 0)
+  if (model == nullptr)
     {
       NS_LOG_DEBUG("MobilityModel does not exist for device " << GetNetDevice());
     }
@@ -1039,7 +1039,7 @@ AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
 	//nsaddr_t dst = Address::instance().get_nodeaddr(iph->daddr());
 
   Ptr<MobilityModel> model = GetNetDevice()->GetNode()->GetObject<MobilityModel>();
-  if (model == 0)
+  if (model == nullptr)
     {
       NS_LOG_DEBUG("MobilityModel does not exist for device " << GetNetDevice());
     }
@@ -1196,7 +1196,7 @@ AquaSimDBR::HandlePktForward(Ptr<Packet> p)
 
 	//double x, y, z;
   Ptr<MobilityModel> model = GetNetDevice()->GetNode()->GetObject<MobilityModel>();
-  if (model == 0)
+  if (model == nullptr)
     {
       NS_LOG_DEBUG("MobilityModel does not exist for device " << GetNetDevice());
     }
@@ -1372,7 +1372,7 @@ AquaSimDBR::Recv(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
   //NS_LOG_DEBUG("AquaSimDBR::Recv: address:" << GetNetDevice()->GetAddress() <<
   //  " receives pkt from " << src << " to " << dst);
   Ptr<MobilityModel> model = GetNetDevice()->GetNode()->GetObject<MobilityModel>();
-  if (model == 0)
+  if (model == nullptr)
     {
       NS_LOG_DEBUG("MobilityModel does not exist for device " << GetNetDevice());
     }
@@ -1497,7 +1497,7 @@ AquaSimDBR::Recv2(Ptr<Packet> p, const Address &dest, uint16_t protocolNumber)
   //  << " receives pkt from " << src << " to " << dst);
 
   Ptr<MobilityModel> model = GetNetDevice()->GetNode()->GetObject<MobilityModel>();
-  if (model == 0)
+  if (model == nullptr)
     {
       NS_LOG_DEBUG("MobilityModel does not exist for device " << GetNetDevice());
     }

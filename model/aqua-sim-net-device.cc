@@ -174,7 +174,7 @@ AquaSimNetDevice::DoInitialize (void)
 void
 AquaSimNetDevice::CompleteConfig (void)
 {
-  if (m_mac == 0 || m_phy == 0 || /*m_app == 0 ||*/ m_node == 0 || m_phy || m_configComplete)
+  if (m_mac == nullptr || m_phy == nullptr || /*m_app == 0 ||*/ m_node == nullptr || m_phy || m_configComplete)
     {
       return;
     }
@@ -184,14 +184,14 @@ AquaSimNetDevice::CompleteConfig (void)
 void
 AquaSimNetDevice::ConnectLayers()
 {
-  if (m_phy != 0 && m_mac != 0)
+  if (m_phy != nullptr && m_mac != nullptr)
     {
       //m_phy->SetMac(m_mac);
       //m_mac->SetPhy(m_phy);
       NS_LOG_DEBUG("Phy/Mac layers set");
     }
 
-  if (m_mac != 0 && m_routing != 0)
+  if (m_mac != nullptr && m_routing != nullptr)
     {
       //m_mac->SetRouting(m_routing);
       m_routing->SetMac(m_mac);
@@ -204,7 +204,7 @@ void
 AquaSimNetDevice::SetPhy (Ptr<AquaSimPhy> phy)
 {
   //currently only supporting single layer per net device
-  if (m_phy == 0)
+  if (m_phy == nullptr)
     {
       NS_LOG_FUNCTION(this);
       m_phy = phy;
@@ -220,20 +220,20 @@ void
 AquaSimNetDevice::SetMac (Ptr<AquaSimMac> mac, Ptr<AquaSimSync> sync, Ptr<AquaSimLocalization> loc)
 {
   //currently only supporting single layer per net device
-  if (m_mac == 0)
+  if (m_mac == nullptr)
     {
       NS_LOG_FUNCTION(this);
       m_mac = mac;
       m_mac->SetDevice (Ptr<AquaSimNetDevice> (this));
 
-      if (sync != NULL)
+      if (sync != nullptr)
       {
         sync = Create<AquaSimSync>();
         m_macSync = sync;
         sync->SetDevice(Ptr<AquaSimNetDevice>(this));
       }
 
-      if (loc != NULL)
+      if (loc != nullptr)
       {
         loc = Create<AquaSimRBLocalization>();
         m_macLoc = loc;
@@ -250,7 +250,7 @@ void
 AquaSimNetDevice::SetRouting(Ptr<AquaSimRouting> routing)
 {
   //currently only supporting single layer per net device
-  if (m_routing == 0)
+  if (m_routing == nullptr)
     {
       NS_LOG_FUNCTION(this);
       m_routing = routing;
@@ -270,7 +270,7 @@ AquaSimNetDevice::SetChannel (Ptr<AquaSimChannel> channel)
   channel->AddDevice(Ptr<AquaSimNetDevice> (this));
   m_channel.push_back(channel);
 
-  if (m_phy != 0)
+  if (m_phy != nullptr)
   	{
   	  m_phy->SetChannel(m_channel);
   	  m_phy->GetSignalCache()->SetNoiseGen(channel->GetNoiseGen());
@@ -290,7 +290,7 @@ AquaSimNetDevice::SetChannel (std::vector<Ptr<AquaSimChannel> > channel)
     }
   m_channel = channel;
 
-  if (m_phy != 0)
+  if (m_phy != nullptr)
   	{
   	  m_phy->SetChannel(m_channel);
   	  m_phy->GetSignalCache()->SetNoiseGen(channel.at(0)->GetNoiseGen());
@@ -311,7 +311,7 @@ AquaSimNetDevice::SetApp (Ptr<AquaSimApp> app)
 void
 AquaSimNetDevice::SetEnergyModel (Ptr<AquaSimEnergyModel> energyModel)
 {
-  if (m_energyModel == 0)
+  if (m_energyModel == nullptr)
   {
     NS_LOG_FUNCTION(this);
     m_energyModel = energyModel;
@@ -430,7 +430,7 @@ AquaSimNetDevice::IsMoving(void)
   Ptr<Object> object = GetNode();
   Ptr<MobilityModel> model = object->GetObject<MobilityModel>();
 
-  if (model == 0){
+  if (model == nullptr){
       return false;
   }
 
@@ -542,7 +542,7 @@ AquaSimNetDevice::IsBroadcast (void) const
 bool
 AquaSimNetDevice::IsLinkUp (void) const
 {
-  return (m_phy != 0);
+  return (m_phy != nullptr);
 }
 
 bool

@@ -93,7 +93,7 @@ AquaSimRMac::AquaSimRMac()
   m_ackDataTableIndex=0;
   m_periodTableIndex=0;
   m_nextPeriod=0;
-  ack_rev_pt=NULL;
+  ack_rev_pt=nullptr;
 
   m_recvBusy=false;
   m_carrierSense=false;
@@ -953,7 +953,7 @@ AquaSimRMac::InsertACKRevLink(Ptr<Packet> p, double d)
   t1->delay=d;
   t1->next=NULL;
 
-  if(ack_rev_pt==NULL)
+  if(ack_rev_pt==nullptr)
     {
       ack_rev_pt=t1;
       NS_LOG_INFO("Node:" << m_device->GetAddress() << " ackrev link is empty");
@@ -981,7 +981,7 @@ AquaSimRMac::InsertACKRevLink(Ptr<Packet> p, double* d)
   t1->delay=s1;
   t1->next=NULL;
 
-  if(ack_rev_pt==NULL)
+  if(ack_rev_pt==nullptr)
     {
       ack_rev_pt=t1;
       NS_LOG_INFO("Node:" << m_device->GetAddress() << " ackrev link is empty");

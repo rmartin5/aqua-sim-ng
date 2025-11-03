@@ -140,7 +140,7 @@ void
 AquaSimEnergyModel::SetEnergySource(Ptr<EnergySource> source)
 {
   NS_LOG_FUNCTION(this);
-  NS_ASSERT(source != 0);
+  NS_ASSERT(source != nullptr);
 
   m_source = source;
 }

@@ -49,7 +49,7 @@ AquaSimTraceReader::GetTypeId ()
 bool
 AquaSimTraceReader::ReadFile (const std::string& fileName)
 {
-  if (m_channel == NULL) {
+  if (m_channel == nullptr) {
     NS_LOG_DEBUG("No channel provided.");
     return false;
   }

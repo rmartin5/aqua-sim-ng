@@ -163,12 +163,12 @@ AquaSimSignalCache::DeleteIncomingPacket(Ptr<Packet> p){
   Ptr<IncomingPacket> pre = m_head;
   Ptr<IncomingPacket> ptr = m_head->next;
 
-  while (ptr != NULL && ptr->packet != p) {
+  while (ptr != nullptr && ptr->packet != p) {
     ptr = ptr->next;
     pre = pre->next;
   }
 
-  if (ptr != NULL && ptr->packet == p) {
+  if (ptr != nullptr && ptr->packet == p) {
     m_pktNum--;
     m_totalPS -= m_phy->EM()->GetRxPower();
     pre->next = ptr->next;
@@ -206,7 +206,7 @@ AquaSimSignalCache::Lookup(Ptr<Packet> p){
   NS_LOG_FUNCTION(this);
   Ptr<IncomingPacket> ptr = m_head->next;
 
-  while (ptr != NULL && ptr->packet != PeekPointer(p)) {
+  while (ptr != nullptr && ptr->packet != PeekPointer(p)) {
     ptr = ptr->next;
   }
   return ptr;
@@ -218,7 +218,7 @@ AquaSimSignalCache::InvalidateIncomingPacket(){
   NS_LOG_FUNCTION(this);
   Ptr<IncomingPacket> ptr = m_head->next;
 
-  while (ptr != NULL) {
+  while (ptr != nullptr) {
     ptr->status = AquaSimPacketStamp::INVALID;
     ptr = ptr->next;
   }
@@ -230,7 +230,7 @@ AquaSimSignalCache::Status(Ptr<Packet> p){
   NS_LOG_FUNCTION(this);
   Ptr<IncomingPacket> ptr = Lookup(p);
 
-  return ptr == NULL ? AquaSimPacketStamp::INVALID : ptr->status;
+  return ptr == nullptr ? AquaSimPacketStamp::INVALID : ptr->status;
 }
 
 
@@ -242,7 +242,7 @@ AquaSimSignalCache::UpdatePacketStatus(){
 	 ps = 0;		//power strength
 	//,SINR = 0; 		//currently not used
 
-  for (Ptr<IncomingPacket> ptr = m_head->next; ptr != NULL; ptr = ptr->next) {
+  for (Ptr<IncomingPacket> ptr = m_head->next; ptr != nullptr; ptr = ptr->next) {
     ps = m_phy->EM()->GetRxPower();
     noise = m_totalPS - ps;
 
@@ -272,7 +272,7 @@ void AquaSimSignalCache::DoDispose()
 //  PktSubmissionTimer* m_pktSubTimer;
 
   Ptr<IncomingPacket> pos = m_head;
-  while (m_head != NULL) {
+  while (m_head != nullptr) {
     m_head = m_head->next;
     pos->packet = 0;
     pos = 0;
